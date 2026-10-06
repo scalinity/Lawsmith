@@ -235,8 +235,10 @@ fn guard_state(guard: State<'_, Guard>, dirty: bool) {
 
 /// Dock Quit, logout and an Apple Event quit send `terminate:`, which TAO's app delegate does not
 /// answer, so the process would end without the guard. This adds the public delegate method
-/// `applicationShouldTerminate:` to TAO's delegate class: with unsaved changes it cancels the
-/// termination and runs the shared guard (which exits through `exit_app`); otherwise it proceeds.
+/// `applicationShouldTerminate:` to TAO's delegate class. It proceeds at once only when nothing could
+/// be lost or come back as unsaved: no unsaved changes and no recovery snapshot held, so a clean
+/// Lawsmith never blocks a logout. Otherwise it cancels the termination and runs the shared guard,
+/// which finishes or refuses a pending recovery retirement and exits through `exit_app`.
 #[cfg(target_os = "macos")]
 mod terminate {
     use std::sync::{OnceLock, atomic::Ordering};
@@ -248,6 +250,8 @@ mod terminate {
     };
     use tauri::{AppHandle, Manager};
 
+    use crate::recovery::RecoveryStore;
+
     static APP: OnceLock<AppHandle> = OnceLock::new();
     const TERMINATE_CANCEL: usize = 0;
     const TERMINATE_NOW: usize = 1;
@@ -255,12 +259,11 @@ mod terminate {
     extern "C-unwind" fn should_terminate(_this: &AnyObject, _cmd: Sel, _sender: *mut AnyObject) -> usize {
         let Some(app) = APP.get() else { return TERMINATE_NOW };
         let guard = app.state::<super::Guard>();
-        if guard.intercepts() && guard.dirty.load(Ordering::SeqCst) {
-            super::request_guard(app, "quit");
-            TERMINATE_CANCEL
-        } else {
-            TERMINATE_NOW
+        if !guard.intercepts() || (!guard.dirty.load(Ordering::SeqCst) && app.state::<std::sync::Arc<RecoveryStore>>().close_if_empty()) {
+            return TERMINATE_NOW;
         }
+        super::request_guard(app, "quit");
+        TERMINATE_CANCEL
     }
 
     /// True when the method was added; false if the class is missing or already answers it.

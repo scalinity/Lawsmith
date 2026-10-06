@@ -44,6 +44,8 @@ struct State {
     last_write: Option<(u64, u64)>,
     /// Per generation, the revision through which recovery is retired.
     retired: BTreeMap<u64, u64>,
+    /// Termination is proceeding without the guard: nothing more is written.
+    closed: bool,
 }
 
 pub struct RecoveryStore {
@@ -113,6 +115,9 @@ impl RecoveryStore {
     /// destroy the fallback that may just have been recovered, so a corrupt one is replaced in place.
     pub fn write(&self, generation: u64, revision: u64, text: &str) -> Result<(), IoFailure> {
         let mut state = self.state.lock().unwrap();
+        if state.closed {
+            return Err(IoFailure::new("closed", "recovery", "the application is terminating"));
+        }
         if text.len() as u64 > RECOVERY_LIMIT {
             return Err(IoFailure::new("too-large", "recovery", "the recovery snapshot exceeds its limit"));
         }
@@ -162,6 +167,19 @@ impl RecoveryStore {
         let entry = state.retired.entry(generation).or_insert(0);
         *entry = (*entry).max(through);
         Ok(())
+    }
+
+    /// Answers whether termination may proceed without the guard, as far as recovery is concerned:
+    /// only when no snapshot is held and no operation is in progress. A snapshot held while the
+    /// document is clean is a saved revision whose retirement is pending or failed, which would come
+    /// back as unsaved work. When it answers yes, nothing is written afterwards.
+    pub fn close_if_empty(&self) -> bool {
+        let Ok(mut state) = self.state.try_lock() else { return false };
+        if state.current.is_some() || state.previous.is_some() {
+            return false;
+        }
+        state.closed = true;
+        true
     }
 
     /// Deletes the snapshots an earlier session left, as when the work offered at launch is
@@ -259,6 +277,28 @@ mod tests {
         // The document stays open, so its next revision is still written.
         store.write(3, 2, "r2").unwrap();
         assert_eq!(text(&store.load().current), "r2");
+    }
+
+    #[test]
+    fn termination_without_the_guard_needs_an_empty_idle_store() {
+        let dir = scratch("recovery-close");
+        let store = RecoveryStore::new(dir.clone());
+        store.write(1, 1, "r1").unwrap();
+        // A save of revision 1 whose retirement failed leaves its snapshot: only the guard may end the session.
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o555)).unwrap();
+        assert_eq!(store.retire(1, 1).unwrap_err().kind, "permission");
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o755)).unwrap();
+        assert!(!store.close_if_empty());
+        store.retire(1, 1).unwrap();
+        // An operation in progress (here, the held lock) is not idle either.
+        {
+            let _busy = store.state.lock().unwrap();
+            assert!(!store.close_if_empty());
+        }
+        assert!(store.close_if_empty());
+        // Once termination proceeds, a late write cannot leave a snapshot behind.
+        assert_eq!(store.write(2, 1, "late").unwrap_err().kind, "closed");
+        assert_eq!(store.load().current, Slot::Absent);
     }
 
     #[test]
