@@ -34,9 +34,9 @@ const facts: Record<string, unknown> = {
   navigatorGpu: 'gpu' in navigator,
 };
 
-/** Qualification record line: browser console plus the native shell's stderr. */
+/** Qualification record line: browser console plus the native shell's stderr. `kind`, `mode` and `t` are written last, so event data cannot overwrite them. */
 function report(kind: string, data: Record<string, unknown>) {
-  const line = JSON.stringify({ kind, ...data, mode, t: Math.round(performance.now()) });
+  const line = JSON.stringify(Object.assign({ kind }, data, { kind, mode, t: Math.round(performance.now()) }));
   console.info(line);
   invoke('report', { line }).catch(() => {});
 }

@@ -162,7 +162,7 @@ export class RecoveryWriter {
         this.setStatus({ state: 'none' });
         this.o.log('recovery', { action: 'discard', generation });
       },
-      (failure: IoFailure) => this.o.log('recovery', { action: 'discard', outcome: 'failed', generation, kind: failure.kind, message: failure.message }),
+      (failure: IoFailure) => this.o.log('recovery', { action: 'discard', outcome: 'failed', generation, failure: failure.kind, message: failure.message }),
     );
     return done;
   }

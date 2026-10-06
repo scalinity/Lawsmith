@@ -293,7 +293,7 @@ export class DocumentWorkflow {
         action,
         file: target!.name,
         revision: captured.revision,
-        kind: failure.kind,
+        failure: failure.kind,
         stage: failure.stage,
         message: failure.message,
       });
@@ -307,7 +307,7 @@ export class DocumentWorkflow {
       outcome = await this.io.openScene();
     } catch (error) {
       const failure = error as IoFailure;
-      return this.fail(`The file was not opened: ${describeFailure(failure)}. Your current scene is unchanged.`, { action: 'open', kind: failure.kind, stage: failure.stage, message: failure.message });
+      return this.fail(`The file was not opened: ${describeFailure(failure)}. Your current scene is unchanged.`, { action: 'open', failure: failure.kind, stage: failure.stage, message: failure.message });
     }
     if (outcome.outcome === 'canceled') {
       this.app.log('document', { action: 'open', outcome: 'canceled' });
