@@ -1,5 +1,6 @@
 # M2 file failure paths in the packaged app (AC6, AC7): invalid imports leave the scene untouched;
-# a canceled Save As and a refused name write nothing; a full disk preserves the existing file and
+# a canceled Save As and a refused name write nothing; the untouched bundled scene saves byte for
+# byte as the bundled file (AC1); a full disk preserves the existing file and
 # leaves editing and Save As elsewhere working; a read-only recovery directory leaves Save working.
 # Needs, under QA_STATE: scenes/bad-*.lawsmith.json, and full/ — a volume with no free space holding
 # on-full-disk.lawsmith.json, whose pristine copy is QA_STATE/on-full-disk.original.json, reached
@@ -48,6 +49,16 @@ expect document "a name without .lawsmith.json is refused" "e['action']=='save-a
 [[ -e $QA_STATE/scenes/refused-name.json ]] && fail "a refused name was written"
 say "PASS  no file was written for the refused name"
 shot files-02-refused-name
+
+# Nothing above edited the bundled scene, so its save through the real panel is the bundled file's bytes.
+n=$(count document)
+activate
+keys kd:cmd,shift t:s ku:cmd,shift
+save_panel $QA_STATE/scenes bundled-roundtrip.lawsmith.json
+wait_log document $(( n + 1 )) 10
+expect document "the untouched bundled scene saves" "e['action']=='save-as' and e['outcome']=='saved'"
+cmp -s $QA_STATE/scenes/bundled-roundtrip.lawsmith.json $REPO/src/scenes/falling-stream.lawsmith.json || fail "the saved bundled scene differs from the bundled file"
+say "PASS  the saved bundled scene is byte-identical to the bundled file"
 activate
 keys kd:cmd t:q ku:cmd
 wait_exit
