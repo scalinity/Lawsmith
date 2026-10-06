@@ -1,0 +1,1389 @@
+<!doctype html>
+<!--
+  Lawsmith run order. Realign at close-out per AGENTS.md "ORCHESTRATION.html".
+
+  Where each fact lives (edit it there, in place):
+  - A unit's state, models, eligibility and owner part: its <article class="unit"> under "Run order".
+    data-state is one of: not-started | in-progress | implemented | owner-check | accepted | blocked.
+    ("implemented" = IMPLEMENTED / REVIEW PENDING; "owner-check" = IMPLEMENTED / OWNER NATIVE CHECK REQUIRED.)
+  - Open threads: only the rows of #threads. data-owner names the owning unit's id.
+  - The gate rail, the current-unit highlight and each strip's thread links are drawn by the script at the end.
+  - The hero sentence and the masthead "Realigned" line are marked REALIGN.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="data:,">
+<title>Lawsmith run order</title>
+<style>
+  /* Dark: the src/style.css tokens. Light: Quiet Editorial. */
+  :root {
+    --shell: #141311;
+    --card: #211f1c;
+    --raised: #282521;
+    --hover: #302c27;
+    --text: #f3f0ea;
+    --text-secondary: #aaa59d;
+    --text-tertiary: #908b83;
+    --hairline: #34312c;
+    --divider: #454038;
+    --teal: #55aaa4;
+    --lavender: #c58ae5;
+    --wash: color-mix(in srgb, var(--lavender) 14%, var(--card));
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    /* Charter before Georgia: browsers without ui-serif get lining figures, so "M0" never reads as "Mo". */
+    --serif: ui-serif, "New York", Charter, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --shell: #f5f4f1;
+      --card: #fcfcfb;
+      --raised: #f8f7f4;
+      --hover: #efebe3;
+      --text: #1a1a1a;
+      --text-secondary: #4f4b45;
+      --text-tertiary: #736e67;
+      --hairline: #e6e1d8;
+      --divider: #d3ccc0;
+      --teal: #195c5d;
+      --lavender: #8d5bb0;
+      --wash: #fbf2ff;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--shell);
+    color: var(--text);
+    font: 14px/1.55 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; text-decoration-color: var(--divider); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: currentColor; }
+  a:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 4px; }
+
+  code { font: 12px/1.45 var(--mono); }
+
+  .vh {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  }
+
+  .page { max-width: 1120px; margin: 0 auto; padding: 28px 40px 80px; }
+
+  /* Masthead: no rule beneath it, as SPEC §11.1 asks of the app's own top edge. */
+  .masthead {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
+    gap: 6px 24px; font-size: 12.5px; color: var(--text-tertiary);
+  }
+  .masthead strong { color: var(--text); font-weight: 600; }
+
+  /* Hero */
+  .hero h1 {
+    font: 400 34px/1.2 var(--serif);
+    letter-spacing: -0.005em;
+    margin: 52px 0 14px;
+    max-width: 25ch;
+    font-variant-numeric: lining-nums;
+  }
+  .lede { font-size: 15px; color: var(--text-secondary); max-width: 66ch; margin: 0; }
+  .hero cite { display: block; margin-top: 10px; }
+
+  /* Gate rail */
+  .rail {
+    list-style: none; margin: 40px 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); row-gap: 20px;
+  }
+  .rail li { position: relative; text-align: center; }
+  .rail li::after {
+    content: ""; position: absolute; top: 8px; height: 1px; background: var(--divider);
+    left: calc(50% + 14px); right: calc(-50% + 14px);
+  }
+  .rail li:last-child::after { display: none; }
+  .rail a {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 0 4px 4px; border-radius: 8px; text-decoration: none;
+  }
+  .rail-gate { font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .rail .is-current .rail-gate { color: var(--teal); }
+  .spend { display: flex; height: 10px; align-items: center; }
+  .stop { font-size: 11px; line-height: 1.3; color: var(--text-tertiary); max-width: 9ch; }
+  .rail-key {
+    display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 22px 0 0; padding: 0; list-style: none;
+    font-size: 12px; color: var(--text-tertiary);
+  }
+  .rail-key li { display: inline-flex; align-items: center; gap: 8px; }
+
+  /* State marks: shape carries the state, colour only the current unit. */
+  .mark {
+    --fill: var(--text-secondary);
+    display: inline-block; flex: none; width: 17px; height: 17px; border-radius: 50%;
+    border: 1.5px solid var(--text-tertiary); background: transparent;
+  }
+  .is-current .mark { --fill: var(--teal); border-color: var(--teal); }
+  [data-state="in-progress"] .mark { background: radial-gradient(circle, var(--fill) 0 30%, transparent 33%); }
+  [data-state="implemented"] .mark,
+  [data-state="owner-check"] .mark { background: linear-gradient(90deg, var(--fill) 50%, transparent 50%); }
+  [data-state="accepted"] .mark { background: var(--fill); border-color: var(--fill); }
+  [data-state="blocked"] .mark {
+    background: linear-gradient(45deg, transparent 44%, var(--fill) 44% 56%, transparent 56%);
+  }
+
+  .dia {
+    display: inline-block; flex: none; width: 8px; height: 8px; transform: rotate(45deg);
+    border: 1.5px solid var(--lavender);
+  }
+  .dia.solid { background: var(--lavender); }
+
+  /* Sections */
+  section { margin-top: 72px; }
+  h2 { font: 600 17px/1.3 var(--sans); letter-spacing: -0.01em; margin: 0 0 8px; }
+  .intro { color: var(--text-secondary); max-width: 70ch; margin: 0; }
+  .intro + .intro { margin-top: 8px; }
+  cite { font-style: normal; font-size: 12px; color: var(--text-tertiary); }
+  cite code { font-size: 11.5px; }
+
+  /* Run order strips */
+  .units {
+    margin-top: 22px; border: 1px solid var(--hairline); border-radius: 14px;
+    background: var(--card); overflow: hidden;
+  }
+  .unit {
+    display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 18px;
+    padding: 22px 26px 20px; scroll-margin-top: 16px;
+  }
+  .unit + .unit { border-top: 1px solid var(--hairline); }
+  .unit.is-current { background: var(--raised); box-shadow: inset 3px 0 0 var(--teal); }
+  .gate { font: 600 15px/1.75 var(--sans); font-variant-numeric: tabular-nums; }
+  .is-current .gate { color: var(--teal); }
+  .unit-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+    gap: 4px 20px; margin-bottom: 14px;
+  }
+  .unit h3 { font: 400 19px/1.35 var(--serif); margin: 0; font-variant-numeric: lining-nums; }
+  .state { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); }
+  .state .mark { width: 13px; height: 13px; }
+  .unit[data-state="not-started"] .state-label::after { content: "Not started"; }
+  .unit[data-state="in-progress"] .state-label::after { content: "In progress"; }
+  .unit[data-state="implemented"] .state-label::after { content: "Implemented, review pending"; }
+  .unit[data-state="owner-check"] .state-label::after { content: "Implemented, owner native check required"; }
+  .unit[data-state="accepted"] .state-label::after { content: "Accepted"; }
+  .unit[data-state="blocked"] .state-label::after { content: "Blocked"; }
+
+  .unit-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 40px; }
+  .facts {
+    display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 7px 14px;
+    margin: 0; font-size: 13.5px; align-content: start;
+  }
+  .facts dt { color: var(--text-tertiary); }
+  .facts dd { margin: 0; }
+  .facts .soft { color: var(--text-secondary); }
+  .facts .run { font-weight: 500; }
+  .thread-list a { white-space: nowrap; }
+  .unit .src { grid-column: 2; margin: 14px 0 0; }
+
+  .m-astra::before {
+    content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 7px 1px 1px;
+    transform: rotate(45deg); background: var(--lavender);
+  }
+  .m-astra.reviews::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--lavender); }
+
+  /* Overlap matrix */
+  .two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; margin-top: 22px; }
+  .verdict h3 { font: 600 14px/1.4 var(--sans); margin: 0 0 4px; }
+  .verdict p { margin: 0; color: var(--text-secondary); }
+  .matrix-wrap { overflow-x: auto; margin-top: 28px; }
+  table.matrix { border-collapse: separate; border-spacing: 3px; }
+  .matrix .grp th {
+    position: relative; height: 26px; padding: 0;
+    font: 500 11.5px/1.3 var(--sans); color: var(--text-tertiary); border-bottom: 1px solid var(--divider);
+  }
+  .matrix .grp th span { position: absolute; left: 2px; bottom: 5px; white-space: nowrap; }
+  .matrix .grp th.kernel span { left: auto; right: 2px; }
+  .matrix .grp th:first-child, .matrix .grp th.sp { border-bottom: 0; }
+  .matrix .cols th {
+    writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; white-space: nowrap;
+    font: 11.5px/1 var(--mono); color: var(--text-secondary); padding: 6px 0 4px; height: 92px;
+  }
+  .matrix tbody th {
+    text-align: left; font: 600 12.5px/1 var(--sans); padding-right: 10px; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .matrix td { width: 22px; height: 22px; padding: 0; border-radius: 5px; background: color-mix(in srgb, var(--hairline) 55%, transparent); }
+  .matrix td.e { background: var(--text-secondary); }
+  .matrix td.p {
+    background: linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+    box-shadow: inset 0 0 0 1.5px var(--text-secondary);
+  }
+  .matrix td.sp, .matrix th.sp { width: 6px; background: none; border: 0; }
+  .matrix-key { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--text-tertiary); }
+  .matrix-key li { display: inline-flex; align-items: center; gap: 8px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+  .swatch.e { background: var(--text-secondary); }
+  .swatch.p { background: linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%); box-shadow: inset 0 0 0 1.5px var(--text-secondary); }
+  .swatch.n { background: color-mix(in srgb, var(--hairline) 55%, transparent); }
+
+  /* Allocation chart */
+  .alloc-wrap { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px 48px; margin-top: 26px; align-items: start; }
+  .alloc {
+    display: grid; grid-template-columns: 58px repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(100px, auto)) auto; gap: 4px;
+  }
+  .ax-y { display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 12px; color: var(--text-tertiary); }
+  .ax-x { text-align: center; font-size: 12px; color: var(--text-tertiary); padding-top: 4px; }
+  .ax-cap { margin: 0 0 10px; font-size: 12.5px; color: var(--text-secondary); }
+  .cell {
+    position: relative; border-radius: 10px; padding: 10px 10px 26px;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+  }
+  .z-scarce { background: var(--wash); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lavender) 30%, transparent); }
+  .z-near {
+    background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--lavender) 15%, transparent) 0 7px, transparent 7px 14px);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lavender) 30%, transparent);
+  }
+  .z-plain { box-shadow: inset 0 0 0 1px var(--hairline); }
+  .zone-name { position: absolute; left: 10px; bottom: 7px; font-size: 11px; color: var(--text-tertiary); }
+  .tok {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 7px;
+    background: var(--card); border: 1px solid var(--hairline);
+    font-weight: 600; font-size: 12.5px; text-decoration: none; font-variant-numeric: tabular-nums;
+  }
+  .tok .u {
+    width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--text-tertiary);
+    background: linear-gradient(90deg, var(--text-tertiary) 50%, transparent 50%);
+  }
+  .rule { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+  .rule li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; }
+  .rule .key { width: 18px; height: 18px; border-radius: 5px; margin-top: 2px; }
+  .rule .key.z-plain { box-shadow: inset 0 0 0 1px var(--divider); }
+  .rule b { font-weight: 600; }
+  .rule p { margin: 2px 0 0; color: var(--text-secondary); font-size: 13px; }
+  .note { margin: 18px 0 0; color: var(--text-secondary); font-size: 13px; max-width: 70ch; }
+
+  .c {
+    display: inline-block; width: 11px; height: 11px; border-radius: 50%;
+    border: 1.5px solid var(--text-secondary); margin-right: 7px; vertical-align: -1px;
+  }
+  .c.holds { background: var(--text-secondary); }
+  .c.partly { background: linear-gradient(90deg, var(--text-secondary) 50%, transparent 50%); }
+
+  /* Row tables */
+  table.rows { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13.5px; }
+  .rows th {
+    text-align: left; font-weight: 500; font-size: 12.5px; color: var(--text-tertiary);
+    padding: 0 18px 8px 0; border-bottom: 1px solid var(--divider); vertical-align: bottom;
+  }
+  .rows td { padding: 12px 18px 12px 0; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  .rows td:last-child, .rows th:last-child { padding-right: 0; }
+  .rows .lead { font-weight: 600; }
+  .rows .why { display: block; color: var(--text-secondary); font-size: 12.5px; margin-top: 2px; }
+  .rows tr:target td { background: var(--raised); }
+  .rows tr { scroll-margin-top: 16px; }
+  #threads td[data-label="Owner"] { white-space: nowrap; }
+  h3.sub { font: 600 15px/1.35 var(--sans); margin: 44px 0 6px; }
+  .nw { white-space: nowrap; }
+  @media (min-width: 721px) {
+    #threads td:first-child, .evidence td:first-child { width: 22%; }
+    .evidence td:last-child { width: 26%; }
+  }
+  .alloc-table td:first-child { white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* Session loop */
+  .loop {
+    list-style: none; margin: 24px 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 14px;
+  }
+  .loop li { border-top: 2px solid var(--divider); padding-top: 12px; }
+  .loop li.you { border-top-color: var(--teal); }
+  .loop .n { font: 600 12px/1 var(--sans); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+  .loop h3 { font: 600 14px/1.35 var(--sans); margin: 6px 0 6px; }
+  .loop p { margin: 0 0 6px; font-size: 13px; color: var(--text-secondary); }
+  .loop-return {
+    position: relative; height: 18px; margin: 14px 10% 0;
+    border: 1.5px solid var(--divider); border-top: 0; border-radius: 0 0 12px 12px;
+  }
+  .loop-return::before {
+    content: ""; position: absolute; left: -6px; top: -8px;
+    border: 5.5px solid transparent; border-bottom: 8px solid var(--divider); border-top: 0;
+  }
+  .loop-return span {
+    position: absolute; left: 50%; bottom: -10px; translate: -50% 0; padding: 0 10px;
+    background: var(--shell); font-size: 12px; color: var(--text-tertiary); white-space: nowrap;
+  }
+  .closeout { margin: 44px 0 0; padding: 0; list-style: none; counter-reset: step; display: grid; gap: 0; }
+  .closeout li {
+    counter-increment: step; display: grid; grid-template-columns: 28px 150px minmax(0, 1fr);
+    gap: 4px 14px; padding: 11px 0; border-bottom: 1px solid var(--hairline); font-size: 13.5px;
+  }
+  .closeout li::before { content: counter(step); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+  .closeout b { font-weight: 600; }
+  .closeout p { margin: 0; color: var(--text-secondary); }
+  .closeout code { color: var(--text); }
+  .route { margin-top: 22px; padding: 14px 16px; border-radius: 10px; background: var(--card); border: 1px solid var(--hairline); font-size: 13px; max-width: 78ch; }
+  .route p { margin: 0; color: var(--text-secondary); }
+  .route p + p { margin-top: 6px; }
+
+  /* Handover anatomy */
+  .anatomy {
+    margin: 22px 0 0; max-width: 900px; display: grid; grid-template-columns: 236px minmax(0, 1fr);
+    border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden;
+  }
+  .anatomy dt, .anatomy dd { margin: 0; padding: 13px 16px; }
+  .anatomy dt { background: var(--card); font-size: 13px; }
+  .anatomy dt b { display: block; font-weight: 600; }
+  .anatomy dt span { color: var(--text-secondary); font-size: 12.5px; }
+  .anatomy dd {
+    background: var(--raised); font: 12px/1.6 var(--mono); white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .anatomy dt:not(:first-of-type), .anatomy dd:not(:first-of-type) { border-top: 1px solid var(--hairline); }
+  .contrast { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 14px 24px; margin-top: 26px; }
+  .contrast figure { margin: 0; }
+  .contrast figcaption { font-size: 12.5px; color: var(--text-tertiary); margin-bottom: 6px; }
+  .contrast blockquote {
+    margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--card);
+    border: 1px solid var(--hairline); font: 12px/1.6 var(--mono);
+  }
+  .contrast .weak blockquote { color: var(--text-tertiary); }
+  .shape-rules { margin: 22px 0 0; padding-left: 18px; max-width: 74ch; color: var(--text-secondary); }
+  .shape-rules li + li { margin-top: 4px; }
+
+  /* Disciplines */
+  .disc { margin: 20px 0 0; display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr); }
+  .disc dt, .disc dd { margin: 0; padding: 13px 0; border-bottom: 1px solid var(--hairline); }
+  .disc dt { font-weight: 600; padding-right: 24px; }
+  .disc dd p { margin: 0 0 4px; color: var(--text-secondary); }
+
+  .silent { margin: 20px 0 0; padding-left: 18px; color: var(--text-secondary); max-width: 76ch; }
+  .silent li + li { margin-top: 4px; }
+
+  footer { margin-top: 80px; padding-top: 0; font-size: 12.5px; color: var(--text-tertiary); }
+  footer h2 { color: var(--text); }
+  footer ul { margin: 8px 0 0; padding-left: 18px; }
+  footer li + li { margin-top: 3px; }
+  footer .keep { margin-top: 28px; max-width: 76ch; }
+  footer p { margin: 6px 0 0; }
+
+  @media (max-width: 900px) {
+    .unit-body, .two-col, .alloc-wrap, .contrast { grid-template-columns: minmax(0, 1fr); }
+    .loop { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .loop-return { display: none; }
+    .loop li:last-child::after {
+      content: "Then the next unit, in a fresh session from main."; display: block; margin-top: 10px;
+      font-size: 12px; color: var(--text-tertiary);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .rows thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .rows, .rows tbody, .rows tr, .rows td { display: block; width: 100%; }
+    .rows tr { padding: 12px 0; border-bottom: 1px solid var(--hairline); }
+    .rows td { border: 0; padding: 3px 0; }
+    .rows td[data-label]::before {
+      content: attr(data-label); display: block; font-size: 11.5px; color: var(--text-tertiary);
+    }
+    .anatomy, .disc { grid-template-columns: minmax(0, 1fr); }
+    .anatomy dd { border-top: 0 !important; }
+    .disc dt { border-bottom: 0; padding-bottom: 2px; }
+    .disc dd { padding-top: 0; }
+    .closeout li { grid-template-columns: 22px minmax(0, 1fr); }
+    .closeout li p { grid-column: 2; }
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 20px 16px 64px; }
+    .hero h1 { font-size: 26px; margin-top: 36px; }
+    .lede { font-size: 14.5px; }
+    .rail { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .rail li:nth-child(6n)::after { display: none; }
+    section { margin-top: 56px; }
+    .unit { grid-template-columns: minmax(0, 1fr); padding: 18px 16px; }
+    .unit .src { grid-column: 1; }
+    .gate { line-height: 1.2; margin-bottom: 2px; }
+    .facts { grid-template-columns: 88px minmax(0, 1fr); }
+    .alloc { grid-template-columns: 44px repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(88px, auto)) auto; }
+    .zone-name { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <span><strong>Lawsmith</strong> run order</span>
+    <!-- REALIGN: date and the main commit this page was checked against -->
+    <span>Realigned 2026-10-06 against <code>main</code> at <code>43f47af</code></span>
+  </header>
+
+  <!-- REALIGN: the hero names the next unit and its models -->
+  <div class="hero">
+    <h1>Run M0’s four native checks, then decide whether to accept M0.</h1>
+    <p class="lede">No session can run until then. M1 starts from an accepted M0, and M0 reaching <code>main</code> did not accept it. After you accept M0, M1 runs next: GPT-6 Astra authors it and Opus 5.5 reviews it.</p>
+    <cite><code>docs/MILESTONES.md</code> How to execute this plan; <code>AGENTS.md</code> Units of work; <code>docs/evidence/M0.md</code> Status</cite>
+    <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
+    <ul class="rail-key" aria-hidden="true">
+      <li><span class="mark"></span>Not started</li>
+      <li data-state="owner-check"><span class="mark"></span>Implemented, awaiting review or owner check</li>
+      <li data-state="accepted"><span class="mark"></span>Accepted</li>
+      <li class="is-current"><span class="mark"></span>Current</li>
+      <li><span class="dia solid"></span>GPT-6 Astra authors</li>
+      <li><span class="dia"></span>GPT-6 Astra reviews</li>
+    </ul>
+    <noscript><p class="intro">The gate rail and each strip’s thread links are drawn by a small script. Every fact they show is also written out below.</p></noscript>
+  </div>
+
+  <section id="run-order" aria-labelledby="h-run">
+    <h2 id="h-run">Run order</h2>
+    <p class="intro">Every remaining unit, in the only order the record allows. Each strip shows two separate lines: what the dependency graph permits, and what should actually run given the release sequence and file overlap.</p>
+    <p class="intro">Every unit ends by pushing to <code>scalinity/Lawsmith</code>, which is public. Each push publishes, and published history stays as it is. That holds for every strip; the Destroys line lists only what a unit adds on top of it. <cite><code>AGENTS.md</code> Git workflow</cite></p>
+
+    <div class="units">
+
+      <!-- REALIGN M0 -->
+      <article class="unit" id="m0" data-gate="M0" data-state="owner-check" data-author="owner">
+        <div class="gate">M0</div>
+        <div>
+          <div class="unit-head">
+            <h3>Qualify the native spatial workspace</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>None for the checks: you run them. Opus 5.5 can then write your results into <code>docs/evidence/M0.md</code>. Only you mark M0 ACCEPTED.</dd>
+              <dt>Graph permits</dt><dd class="soft">Now. M0 is implemented: code at <code>4f4e70b</code>, record at <code>a94dd80</code>.</dd>
+              <dt>Should run</dt><dd class="run">Now, and alone. It is the only unit that unlocks M1. A failed check opens a fix-up unit on its own branch before M1, allocated by the same rule as any unit.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>Owner acceptance of the specification, which the repo does not record (see open threads). Contracts C3, C10.</dd>
+              <dt>Destroys</dt><dd>Check 2 turns Wi-Fi off, which cuts any running session’s connection: run it with no session open. Check 1 switches Displays to More Space; switch it back afterwards.</dd>
+              <dt>Your part</dt><dd>All four checks. Check 1 or an external display also covers finding 8.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/evidence/M0.md</code> Owner native checklist, Packaged app; <code>docs/MILESTONES.md</code> Roadmap, M0</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M1 -->
+      <article class="unit" id="m1" data-gate="M1" data-state="not-started" data-author="astra">
+        <div class="gate">M1</div>
+        <div>
+          <div class="unit-head">
+            <h3>Bend the falling stream</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 reviews; a small local implementation review is enough at M1.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once you mark M0 ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">First after M0 is accepted, and alone: it shares files with every later gate.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M0 accepted. Contracts C1–C6.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. Its sleep/resume check (T04) puts the Mac to sleep, which suspends every session: run that one as an owner check.</dd>
+              <dt>Your part</dt><dd>Hands-off windows for a 45–90 s recording and three 60 s focused-window P0 captures. A real-trackpad check of pointer ownership.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M1 Visual QA, Performance gate; Independent review note; <code>docs/SPEC.md</code> §17.2 T04; <code>AGENTS.md</code> Native QA 5</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M2 -->
+      <article class="unit" id="m2" data-gate="M2" data-state="not-started" data-author="astra" data-stop="Portable V0">
+        <div class="gate">M2</div>
+        <div>
+          <div class="unit-head">
+            <h3>Portable scenes and recoverable authoring</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 runs the independent review gate on state ownership and format semantics.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M1 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>domain</code> and <code>ui</code> with M1. First approved stopping point: portable V0.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M1 accepted. Contracts C3, C7, C8.</dd>
+              <dt>Destroys</dt><dd>Writes real files through the macOS dialog and a recovery directory. Use disposable files and a separate test recovery directory, never your documents or recovery data. Adds the Tauri dialog plugin, resolved against the pinned family.</dd>
+              <dt>Your part</dt><dd>The 1280×800 visual check needs More Space or an external display.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M2; Contract coverage and final scope check; <code>docs/SPEC.md</code> §17.3; <code>docs/evidence/M0.md</code> finding 4</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M3 -->
+      <article class="unit" id="m3" data-gate="M3" data-state="not-started" data-author="opus" data-reviewer="astra">
+        <div class="gate">M3</div>
+        <div>
+          <div class="unit-head">
+            <h3>A small tactile law vocabulary</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>Opus 5.5 authors. <span class="m-astra reviews">GPT-6 Astra</span> reviews the math, where OpenAI reports its lead; MILESTONES encourages a bounded independent math review here.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M2 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>persistence</code> and <code>ui</code> with M2. First gate where kernel/tests and UI/visuals can split under one integrator.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M2 accepted. Contracts C1, C2, C4, C5.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
+              <dt>Your part</dt><dd>Hands-off windows for the handle recordings.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M3 Evidence required for review, Visual QA; Delegation rule</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M4 -->
+      <article class="unit" id="m4" data-gate="M4" data-state="not-started" data-author="opus">
+        <div class="gate">M4</div>
+        <div>
+          <div class="unit-head">
+            <h3>See why motion changes</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol reviews.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M3 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>simulation</code>, <code>rendering</code> and <code>ui</code> with M3.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M3 accepted. Contracts C4, C5.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
+              <dt>Your part</dt><dd>The 1280×800 legibility check (AC7) needs More Space or an external display.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M4 Acceptance criteria 6–7</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M5 -->
+      <article class="unit" id="m5" data-gate="M5" data-state="not-started" data-author="opus" data-reviewer="astra" data-stop="Creative core">
+        <div class="gate">M5</div>
+        <div>
+          <div class="unit-head">
+            <h3>Compose a law you can hold</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>Opus 5.5 authors. <span class="m-astra reviews">GPT-6 Astra</span> runs the independent review gate on math, serialization, and whether it still feels like manipulating a law.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M4 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>ui</code> with M4. Second approved stopping point: creative core.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M4 accepted. Contracts C1, C2, C4, C8.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
+              <dt>Your part</dt><dd>Hands-off windows for the construction recording.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M5 Evidence required for review; Contract coverage and final scope check</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M6A -->
+      <article class="unit" id="m6a" data-gate="M6A" data-state="not-started" data-author="astra">
+        <div class="gate">M6A</div>
+        <div>
+          <div class="unit-head">
+            <h3>Record + exact replay</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 reviews.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M5 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>domain</code>, <code>persistence</code> and <code>ui</code> with M5.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M5 accepted. Contracts C5–C8.</dd>
+              <dt>Destroys</dt><dd>Saves run files through the native dialog. Use disposable files only.</dd>
+              <dt>Your part</dt><dd>Someone who did not implement the playback controls inspects them.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M6A Visual QA; <code>docs/SPEC.md</code> §17.3</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M6B -->
+      <article class="unit" id="m6b" data-gate="M6B" data-state="not-started" data-author="astra">
+        <div class="gate">M6B</div>
+        <div>
+          <div class="unit-head">
+            <h3>Checkpoints + seek</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 runs the complete-state review before M7, checking the linear oracle and the restored result separately.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M6A is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>simulation</code> and <code>ui</code> with M6A. M7 stays locked until M6B is accepted.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M6A accepted. Contracts C5–C8.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. Checkpoint caches stay in memory.</dd>
+              <dt>Your part</dt><dd>Hands-off windows for the native seek video.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M6B Out of scope, Evidence required for review, Failure / rollback conditions</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M7 -->
+      <article class="unit" id="m7" data-gate="M7" data-state="not-started" data-author="opus">
+        <div class="gate">M7</div>
+        <div>
+          <div class="unit-head">
+            <h3>Preserve a future, change a law</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol runs the independent review gate: two continuations of the same state, not similar-looking unrelated runs.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M6B is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>simulation</code>, <code>rendering</code> and <code>ui</code> with M6B.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M6B accepted. Contracts C4, C7, C9.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
+              <dt>Your part</dt><dd>Hands-off windows for the comparison recording.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M7 Evidence required for review, Visual QA</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M8 -->
+      <article class="unit" id="m8" data-gate="M8" data-state="not-started" data-author="opus">
+        <div class="gate">M8</div>
+        <div>
+          <div class="unit-head">
+            <h3>Make it an inviting creative instrument</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol reviews.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M7 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>rendering</code> and <code>ui</code> with M7.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M7 accepted. Contracts C1–C4, C7.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
+              <dt>Your part</dt><dd>You or an independent tester explore without a blocker (AC8). The 1280×800 check at 200% Interface Scale needs More Space or an external display (AC4).</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M8 Acceptance criteria 4, 8</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M9 -->
+      <article class="unit" id="m9" data-gate="M9" data-state="not-started" data-author="opus">
+        <div class="gate">M9</div>
+        <div>
+          <div class="unit-head">
+            <h3>Measure and secure the performance envelope</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol reviews the decision to keep CPU/WASM simulation or admit a worker or WebGPU compute.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M8 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. It shares <code>rendering</code> with M8.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M8 accepted. Contracts C4–C6, C10.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. A failed worker or compute experiment is reverted to the last correct host.</dd>
+              <dt>Your part</dt><dd>Benchmarks run in the packaged app on your Mac, with power mode recorded, under hands-off windows.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M9 Deliverables, Acceptance criterion 1, Failure / rollback conditions</cite>
+        </div>
+      </article>
+
+      <!-- REALIGN M10 -->
+      <article class="unit" id="m10" data-gate="M10" data-state="not-started" data-author="opus" data-stop="Flagship candidate">
+        <div class="gate">M10</div>
+        <div>
+          <div class="unit-head">
+            <h3>Flagship release candidate</h3>
+            <span class="state"><span class="mark" aria-hidden="true"></span><span class="state-label"></span></span>
+          </div>
+          <div class="unit-body">
+            <dl class="facts">
+              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol runs the independent accept/reject review.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M9 is ACCEPTED.</dd>
+              <dt>Should run</dt><dd class="run">Not before. Its final integration fixes may touch every module M9 does. Last approved stopping point: flagship candidate.</dd>
+            </dl>
+            <dl class="facts">
+              <dt>Needs</dt><dd>M9 accepted. All contracts.</dd>
+              <dt>Destroys</dt><dd>Nothing by itself. Tags, releases, signing and repository visibility stay your decisions.</dd>
+              <dt>Your part</dt><dd>A new tester opens an example, changes a law, saves it and explains the motion. Then the release decision.</dd>
+              <dt>Open threads</dt><dd class="thread-list"></dd>
+            </dl>
+          </div>
+          <cite class="src"><code>docs/MILESTONES.md</code> M10 Deliverables, Visual QA; <code>AGENTS.md</code> Guardrails</cite>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="concurrency" aria-labelledby="h-conc">
+    <h2 id="h-conc">What may run together</h2>
+    <p class="intro">Nothing runs beside another unit. The graph forbids it, and so would file overlap even if the graph allowed it.</p>
+
+    <div class="two-col">
+      <div class="verdict">
+        <h3>Between units: none</h3>
+        <p>The integration path is one chain, M0 → M1 → … → M10, and each gate starts from its accepted predecessor. Even ignoring the graph, every adjacent pair from M1 to M9 shares at least one expected module. Every unit also writes this page at close-out.</p>
+        <cite><code>docs/MILESTONES.md</code> Roadmap and dependency graph; <code>AGENTS.md</code> ORCHESTRATION.html</cite>
+      </div>
+      <div class="verdict">
+        <h3>Inside a unit: bounded work, from M3</h3>
+        <p>From M3, kernel and tests can run apart from UI and visuals, with one integrator owning the host/document boundary. Agree the shared semantic interface first. No gate needs several agents at once.</p>
+        <cite><code>docs/MILESTONES.md</code> Delegation rule</cite>
+      </div>
+    </div>
+
+    <div class="matrix-wrap">
+      <table class="matrix" aria-describedby="matrix-note">
+        <thead>
+          <tr class="grp">
+            <th></th>
+            <th class="kernel"><span>Kernel</span></th><th class="sp"></th>
+            <th colspan="6"><span>Integrator</span></th><th class="sp"></th>
+            <th colspan="3"><span>UI</span></th><th class="sp"></th>
+            <th colspan="3"><span>Record</span></th>
+          </tr>
+          <tr class="cols">
+            <th></th>
+            <th>fields</th><th class="sp"></th>
+            <th>simulation</th><th>domain</th><th>persistence</th><th>src/main.ts</th><th>src-tauri</th><th>lockfiles</th><th class="sp"></th>
+            <th>interaction</th><th>rendering</th><th>ui, style.css</th><th class="sp"></th>
+            <th>evidence</th><th>README</th><th>this page</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th>M0</th><td></td><td class="sp"></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="sp"></td><td></td><td></td><td></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M1</th><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M2</th><td></td><td class="sp"></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="p"><i class="vh">possible</i></td><td></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M3</th><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td></td><td></td><td></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M4</th><td class="p"><i class="vh">possible</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td></td><td></td><td></td><td></td><td class="sp"></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M5</th><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td></td><td></td><td></td><td class="sp"></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M6A</th><td></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td></td><td class="sp"></td><td></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M6B</th><td></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td></td><td></td><td></td><td></td><td class="sp"></td><td></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M7</th><td></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td></td><td></td><td></td><td class="sp"></td><td></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M8</th><td></td><td class="sp"></td><td></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td></td><td></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M9</th><td class="p"><i class="vh">possible</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td></td><td class="p"><i class="vh">possible</i></td><td></td><td class="p"><i class="vh">possible</i></td><td class="sp"></td><td></td><td class="e"><i class="vh">expected</i></td><td></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td></td><td class="e"><i class="vh">expected</i></td></tr>
+          <tr><th>M10</th><td class="p"><i class="vh">possible</i></td><td class="sp"></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="e"><i class="vh">expected</i></td><td class="sp"></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="p"><i class="vh">possible</i></td><td class="sp"></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td><td class="e"><i class="vh">expected</i></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="matrix-key" aria-hidden="true">
+      <li><span class="swatch e"></span>Expected</li>
+      <li><span class="swatch p"></span>Possible</li>
+      <li><span class="swatch n"></span>Not expected</li>
+    </ul>
+    <p class="note" id="matrix-note">Inferred, not contracted. MILESTONES lists deliverables, not paths, so each row maps a gate’s in-scope list onto SPEC §4’s module names (<code>domain</code>, <code>fields</code>, <code>simulation</code>, <code>interaction</code>, <code>rendering</code>, <code>persistence</code>, <code>ui</code>) and onto the M0 files that exist today: <code>src/main.ts</code>, <code>src/style.css</code>, <code>src/rendering/</code>, <code>src/simulation/host.ts</code>, <code>src-tauri/src/main.rs</code>. The column groups follow the Delegation rule’s split: kernel and tests, one integrator owning the host/document boundary, and UI and visuals. A gate creates a module only when it needs one.</p>
+    <cite><code>docs/SPEC.md</code> §4; <code>docs/evidence/M0.md</code> Module list; <code>docs/MILESTONES.md</code> each gate’s In scope</cite>
+  </section>
+
+  <section id="allocation" aria-labelledby="h-alloc">
+    <h2 id="h-alloc">Which model, and why</h2>
+    <p class="intro">The scarce model goes where it changes the outcome most, never where the work matters most. Three criteria decide: nothing in the repo to copy, a decision later gates inherit, and a step that cannot be undone. Each unit is placed by the first two; a half ring marks the third. The reviewer for each zone follows the measurements at the end of this section.</p>
+
+    <div class="alloc-wrap">
+      <div>
+        <p class="ax-cap">Rows: later gates inherit its decisions. Columns: nothing in the repo to copy.</p>
+        <div class="alloc" role="img" aria-label="Allocation chart. Scarce zone: M1, M2, M6A, M6B. Near the line: M3, M5, M7, M9. Plentiful: M4, M8, M10.">
+          <div class="ax-y">Holds</div>
+          <div class="cell z-scarce"></div>
+          <div class="cell z-scarce"></div>
+          <div class="cell z-scarce">
+            <a class="tok" href="#m1">M1</a>
+            <a class="tok" href="#m2">M2<span class="u" title="Partly cannot be undone"></span></a>
+            <a class="tok" href="#m6a">M6A<span class="u" title="Partly cannot be undone"></span></a>
+            <a class="tok" href="#m6b">M6B</a>
+            <span class="zone-name">Astra authors</span>
+          </div>
+
+          <div class="ax-y">Partly</div>
+          <div class="cell z-plain"></div>
+          <div class="cell z-near">
+            <a class="tok" href="#m3">M3<span class="u" title="Partly cannot be undone"></span></a>
+            <a class="tok" href="#m5">M5<span class="u" title="Partly cannot be undone"></span></a>
+            <a class="tok" href="#m7">M7</a>
+            <a class="tok" href="#m9">M9</a>
+            <span class="zone-name">Near the line</span>
+          </div>
+          <div class="cell z-scarce"></div>
+
+          <div class="ax-y">No</div>
+          <div class="cell z-plain">
+            <a class="tok" href="#m10">M10<span class="u" title="Partly cannot be undone"></span></a>
+            <span class="zone-name">Opus authors</span>
+          </div>
+          <div class="cell z-plain">
+            <a class="tok" href="#m4">M4</a>
+            <a class="tok" href="#m8">M8</a>
+          </div>
+          <div class="cell z-scarce"></div>
+
+          <div></div>
+          <div class="ax-x">No</div>
+          <div class="ax-x">Partly</div>
+          <div class="ax-x">Holds</div>
+
+        </div>
+      </div>
+
+      <ul class="rule">
+        <li>
+          <span class="key z-scarce"></span>
+          <div><b>Any criterion holds</b><p><span class="m-astra">GPT-6 Astra</span> authors; Opus 5.5 reviews, with the highest measured recall of known bugs.</p></div>
+        </li>
+        <li>
+          <span class="key z-near"></span>
+          <div><b>Near the line: two or more hold partly, none fully</b><p>Opus 5.5 authors. <span class="m-astra reviews">GPT-6 Astra</span> reviews where the review is mathematical (M3, M5); GPT-6.1 Sol reviews the rest (M7, M9), at the same measured review quality for a seventh of the cost.</p></div>
+        </li>
+        <li>
+          <span class="key z-plain"></span>
+          <div><b>Otherwise</b><p>Opus 5.5 authors; GPT-6.1 Sol reviews.</p></div>
+        </li>
+        <li>
+          <span class="key"></span>
+          <div><b>The reviewer is never the author’s model</b><p>Reviewers must be independent of the implementation they assess, and M6B warns against one faulty helper on both sides of a comparison. Nothing measures these three models reviewing each other, so the defence against a wrong finding is the loop itself: a finding closes only through a fix whose checks re-run.</p></div>
+        </li>
+      </ul>
+    </div>
+
+    <p class="note">Importance appears on neither axis. M7 is the flagship capability, yet it sits near the line, because M6B makes the complete-state decisions M7 consumes. M10 is the release candidate, yet Opus 5.5 authors it, because it integrates work that is already accepted. Score a fix-up or an owner-requested task the same way; it does not inherit its parent’s model. Under this rule, no unit reaches the scarce zone through the third criterion alone.</p>
+    <cite>Models chosen by the owner, 2026-10-06, against the measurements below: <code>gpt-6-astra</code>, <code>claude-opus-5-5</code>, <code>gpt-6.1-sol</code>. Criteria from the orchestration rules. Ratings are this page’s judgement from <code>docs/MILESTONES.md</code>, cited per row. Independence from <code>docs/MILESTONES.md</code> Delegation rule and M6B.</cite>
+
+    <table class="rows alloc-table">
+      <thead>
+        <tr><th>Unit</th><th>Nothing to copy</th><th>Later gates inherit</th><th>Cannot be undone</th><th>Author / reviewer</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Unit">M1</td>
+          <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">No host, command path, field kernel or physics adapter exists; <code>host.ts</code> only initialises Rapier.</span></td>
+          <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">M2 undo, M3 primitives (AC7) and M6A recording build on its host and command path.</span></td>
+          <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">No file format yet; save/load is out of scope.</span></td>
+          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M2</td>
+          <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">First persistence, native I/O helper, dialog plugin and undo.</span></td>
+          <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">M3 preserves its format contract; M6A run files go through its I/O helper.</span></td>
+          <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Saved <code>.lawsmith.json</code> files outlive a revert; a schema change needs a migration.</span></td>
+          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M3</td>
+          <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">M1’s box and directional leaf are the template; sphere, cylinder and drag are new.</span></td>
+          <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">M5 composes through its registry, but SPEC §8 fixes that interface.</span></td>
+          <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Equations become saved behaviour; changing one needs a reviewed semantic version.</span></td>
+          <td data-label="Author / reviewer">Opus / <span class="m-astra reviews">Astra</span></td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M4</td>
+          <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">Probes and trails are new; evaluator-backed arrows exist from M1.</span></td>
+          <td data-label="Later gates inherit"><span class="c"></span>No<span class="why">Visual-only: it cannot alter authoritative state (AC6).</span></td>
+          <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Revertible.</span></td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M5</td>
+          <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">AST validation is new; schema and registry precedents exist from M2 and M3.</span></td>
+          <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">M6A records its modulation; M9 lowers the AST only if compute is admitted.</span></td>
+          <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Expressions enter saved scene files (AC6).</span></td>
+          <td data-label="Author / reviewer">Opus / <span class="m-astra reviews">Astra</span></td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M6A</td>
+          <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">No recorder, run format or context coordinator exists.</span></td>
+          <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">Its linear replay is M6B’s oracle; M7 reuses its T09 observations.</span></td>
+          <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Saved run records are immutable.</span></td>
+          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M6B</td>
+          <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">No checkpoint, sidecar or restore exists.</span></td>
+          <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">Accepted M6B is a prerequisite for M7, which forks from its checkpoints.</span></td>
+          <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Caches are not persisted across restart.</span></td>
+          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M7</td>
+          <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">Fork, baseline and ghosts are new; complete checkpoints come from M6B.</span></td>
+          <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">M8 clarifies it and M10 demonstrates it; nothing computes from it.</span></td>
+          <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Revertible.</span></td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M8</td>
+          <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">Interface Scale, keyboard equivalents and examples are new; tokens and controls exist.</span></td>
+          <td data-label="Later gates inherit"><span class="c"></span>No<span class="why">M10 packages it.</span></td>
+          <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Revertible.</span></td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M9</td>
+          <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">The benchmark runner is new; worker and compute are conditional.</span></td>
+          <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">An admitted worker or compute path is what M10 qualifies.</span></td>
+          <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">A failed optimisation is reverted.</span></td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+        </tr>
+        <tr>
+          <td data-label="Unit">M10</td>
+          <td data-label="Nothing to copy"><span class="c"></span>No<span class="why">Integrates and documents accepted work.</span></td>
+          <td data-label="Later gates inherit"><span class="c"></span>No<span class="why">Last gate.</span></td>
+          <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Its verdict feeds your release decision; publishing stays yours.</span></td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">M0’s remaining work is yours: the four checks and the acceptance. No model criteria apply to it.</p>
+
+    <h3 class="sub" id="evidence">What the measurements say</h3>
+    <p class="intro">Each figure was read at its source on 2026-10-06. A vendor figure is a model maker’s claim about its own model; an independent one was measured by someone else.</p>
+    <table class="rows evidence">
+      <thead>
+        <tr><th>Decision</th><th>Measurement</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Decision" class="lead">Astra authors the foundation units</td>
+          <td data-label="Measurement">FrontierSWE v2: 34 ultra-long-horizon engineering and research tasks, often close to 20 hours each, including scientific computing and an OpenGL scene renderer. GPT-6 Astra 65.5%, Opus 5.5 62.3%.</td>
+          <td data-label="Source"><cite>Independent: Proximal, reported in Anthropic’s <a href="https://www-cdn.anthropic.com/fc1b44717c85dc068bc6ba5024219938094694bd/Claude%20Opus%205.5%20System%20Card.pdf">Claude Opus 5.5 System Card</a> §8.7, <span class="nw">2026-09-22</span></cite></td>
+        </tr>
+        <tr>
+          <td data-label="Decision" class="lead">Opus 5.5 reviews Astra’s units</td>
+          <td data-label="Measurement">MacroscopeBench at max effort, recall of known bugs: Opus 5.5 83.8%, GPT-6.1 Sol 69.2%, GPT-6 Astra 67.8%. Precision 84.0%, 90.7% and 91.7%; cost per review $11.58, $1.05 and $7.87.</td>
+          <td data-label="Source"><cite>Independent of the model makers: <a href="https://www.macroscope.com/benchmark">MacroscopeBench</a>, run by a code-review tool maker; mean of three runs, LLM-judged</cite></td>
+        </tr>
+        <tr>
+          <td data-label="Decision" class="lead">Sol, not Astra, for the general reviews</td>
+          <td data-label="Measurement">Same benchmark, combined score: GPT-6.1 Sol 78.5, GPT-6 Astra 78.0, at $1.05 against $7.87 per review. OpenAI describes Sol as “near-Astra performance at a lower cost”.</td>
+          <td data-label="Source"><cite>Independent: MacroscopeBench. Vendor: OpenAI API docs, GPT-6.1 Sol model page</cite></td>
+        </tr>
+        <tr>
+          <td data-label="Decision" class="lead">Astra for the two math reviews</td>
+          <td data-label="Measurement">FrontierMath Tier 4: 98%. Terminal-Bench Science 0.1, which covers simulations and model fitting: 64.6%, against 52.6% for Claude Fable 5.1. Against this, the independent SciCode leaderboard is led by Opus 5.5 at 66.9%, with its dataset under audit.</td>
+          <td data-label="Source"><cite>Vendor: <a href="https://openai.com/index/gpt-6-astra/">OpenAI, GPT-6 Astra</a>, <span class="nw">2026-09-03</span>. Independent: <a href="https://artificialanalysis.ai/evaluations/scicode">Artificial Analysis, SciCode</a></cite></td>
+        </tr>
+        <tr>
+          <td data-label="Decision" class="lead">The reviewer is never the author’s model</td>
+          <td data-label="Measurement">Not measured for these three models. In the one controlled study (Claude Opus 4.7 and GPT-5.5, static review with no code execution), Claude reviewing GPT drafts raised the pass rate from 71.6% to 89.7%. GPT reviewing Claude drafts lowered it from 91.4% to 82.8%. The authors call the effect asymmetric. Opus 5.5 reviewing Astra is the direction that helped. For Sol and Astra reviewing Opus, the loop’s re-run checks do what those reviewers could not.</td>
+          <td data-label="Source"><cite>Independent: <a href="https://arxiv.org/html/2607.21656v1">Xiang et al., Cross-Model LLM Code Review</a>, arXiv, 2026</cite></td>
+        </tr>
+        <tr>
+          <td data-label="Decision" class="lead">Not found</td>
+          <td data-label="Measurement">METR time horizons for any of the three models, SWE-bench Verified for any of them, and any measurement of these three reviewing one another.</td>
+          <td data-label="Source"><cite><a href="https://metr.org/time-horizons/">METR time-horizons data</a>; searches of <span class="nw">2026-10-05</span></cite></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="loop" aria-labelledby="h-loop">
+    <h2 id="h-loop">One unit, one session</h2>
+    <p class="intro">A session owns one unit and ends at its close-out. The next unit starts in a fresh session from <code>main</code>, so each session’s context and evidence stay attributable to one candidate.</p>
+    <cite><code>AGENTS.md</code> Units of work, Git workflow, Native QA, Reviews; <code>CLAUDE.md</code></cite>
+
+    <ol class="loop">
+      <li>
+        <span class="n">1</span>
+        <h3>Start</h3>
+        <p><code>git switch main &amp;&amp; git pull --ff-only</code> on a clean tree.</p>
+        <p><code>git worktree list</code> and this page show what other sessions own.</p>
+        <p>Read the sources of truth, then branch for the unit: <code>m1</code>, <code>m1-pointer-guard</code>.</p>
+      </li>
+      <li>
+        <span class="n">2</span>
+        <h3>Work</h3>
+        <p>Small coherent commits, staged by name.</p>
+        <p>Agree a hands-off window before synthetic input, and hit-test every click.</p>
+        <p>Verify from the <code>[lawsmith]</code> log. Finish a native sequence before editing sources that <code>tauri dev</code> serves.</p>
+      </li>
+      <li>
+        <span class="n">3</span>
+        <h3>Review</h3>
+        <p>An independent reviewer reads the candidate SHA, the diff range and the gate’s section of MILESTONES.</p>
+        <p>Address every finding. A fix closes it once re-verified. A fix that would break SPEC, MILESTONES or an owner decision is answered in writing and surfaced to you instead.</p>
+      </li>
+      <li>
+        <span class="n">4</span>
+        <h3>Close out</h3>
+        <p>Seven steps in order, each criterion met before the next. Listed below.</p>
+      </li>
+      <li class="you">
+        <span class="n">5</span>
+        <h3>You</h3>
+        <p>Run the owner checks the unit left pending.</p>
+        <p>Mark the gate ACCEPTED, or send it back. Only you can.</p>
+      </li>
+    </ol>
+    <div class="loop-return" aria-hidden="true"><span>Next unit: a fresh session from main</span></div>
+
+    <ol class="closeout">
+      <li><b>Verified</b><p>Every required check for the unit ran, and its result is in <code>docs/evidence/M&lt;n&gt;.md</code>.</p></li>
+      <li><b>Realigned</b><p>This page reflects the unit’s outcome: strip state, eligibility lines, open threads.</p></li>
+      <li><b>Committed</b><p><code>git status</code> is clean on the branch.</p></li>
+      <li><b>Merged</b><p><code>git switch main &amp;&amp; git pull --ff-only &amp;&amp; git merge --ff-only &lt;branch&gt;</code>. If that fails: <code>--no-ff</code>, resolve keeping both sides’ intent, then re-run <code>npm run typecheck</code> and <code>npm run build</code> on <code>main</code>.</p></li>
+      <li><b>Pushed</b><p><code>git push origin main</code>, then <code>git rev-parse main</code> equals <code>git rev-parse origin/main</code>.</p></li>
+      <li><b>Branch discarded</b><p>Only once <code>git merge-base --is-ancestor &lt;branch&gt; origin/main</code> succeeds and no worktree or session uses it. If <code>git branch -d</code> refuses, keep the branch and report it.</p></li>
+      <li><b>Reported</b><p>The pushed <code>main</code> SHA, the discarded branch, and what changed on this page.</p></li>
+    </ol>
+
+    <div class="route">
+      <p><b>Review route with these models.</b> Every review crosses tools.</p>
+      <p>Opus 5.5 reviews Astra’s units in a Claude Code session on the candidate SHA. The report goes back to the Codex author session for <code>source-command-address</code>.</p>
+      <p>Astra and Sol review Opus’s units in a Codex session. The report goes back to the Claude Code author session for <code>/address</code>.</p>
+      <p>A Claude Code reviewer subagent runs a Claude model, so it fits none of these pairings.</p>
+    </div>
+  </section>
+
+  <section id="handover" aria-labelledby="h-hand">
+    <h2 id="h-hand">Anatomy of the handover prompt</h2>
+    <p class="intro">The prompt you paste into a fresh session is a deliverable. The session that runs it remembers nothing, so the prompt must stand alone. AGENTS.md defines no template of its own, so the global shape applies. The example column shows the M1 prompt’s parts.</p>
+
+    <dl class="anatomy">
+      <dt><b>1 Identity and scope</b><span>The task, the absolute path, one fixed line about the project.</span></dt>
+      <dd>Implement M1, Bend the falling stream, in ~/Documents/Apps/Lawsmith: a native macOS creative instrument in which physical laws are spatially manipulable objects.</dd>
+      <dt><b>2 What else is in flight</b><span>Parallel work, owned paths, branch, and an explicit refusal to start the next thing.</span></dt>
+      <dd>Nothing else is running. Work on branch m1; you own the files M1 needs. Do not start M2.</dd>
+      <dt><b>3 Startup order</b><span>What to read, in what order, inspect before writing, and how to resume.</span></dt>
+      <dd>Read AGENTS.md, docs/MILESTONES.md § M1, docs/SPEC.md §2, §6–§11 and §18, then docs/evidence/M0.md findings 1, 5, 6 and 7. If branch m1 exists, continue from it.</dd>
+      <dt><b>4 Settle rather than inherit</b><span>Decisions the session makes from evidence, not from the last session’s habit.</span></dt>
+      <dd>Finding 7: the drag strip fills the top 40 px of the canvas, so a handle moved there is reachable only after orbiting or Frame. Keep law handles out of it or change its height. SPEC §11.1 asks for drag regions in unused top whitespace and fixes no height.</dd>
+      <dt><b>5 Constraints</b><span>Each one carries its reason.</span></dt>
+      <dd>Rapier reports dt as 0.008333333767950535, not 1/120: compare fixtures against the engine value. Only src/rendering/backend.ts reads renderer internals, so a three.js upgrade touches one file.</dd>
+      <dt><b>6 Verification</b><span>How each check is reported. An unrun check is never a pass.</span></dt>
+      <dd>A check is PASS only when it ran on the candidate and its result was captured. A native check you could not run is PENDING, with exact owner steps.</dd>
+      <dt><b>7 Close-out</b><span>Numbered, ending with what to print last.</span></dt>
+      <dd>1 Verified · 2 Realigned · 3 Committed · 4 Merged · 5 Pushed · 6 Branch discarded · 7 Reported. Print last: the pushed main SHA, the discarded branch, and what changed on ORCHESTRATION.html.</dd>
+    </dl>
+    <p class="note">In the real prompt these seven parts are one copy-ready code block in second-person imperative, with no commentary inside it. The labels here are for reading.</p>
+
+    <div class="contrast">
+      <figure class="weak">
+        <figcaption>A topic, which makes the next session rediscover</figcaption>
+        <blockquote>Look into the pointer bug.</blockquote>
+      </figure>
+      <figure>
+        <figcaption>Evidence, which lets it decide</figcaption>
+        <blockquote>About 1 in 6–8 synthetic canvas drags never delivered pointerup, leaving OrbitControls holding pointer capture (docs/evidence/M0.md, finding 1). End any gesture whose pointer reports buttons === 0, and release capture on pointer-up, cancel, blur or lost capture (SPEC §10.3).</blockquote>
+      </figure>
+    </div>
+
+    <ul class="shape-rules">
+      <li>Use absolute paths and real identifiers. Never write “as discussed” or “the file we changed”.</li>
+      <li>Give every instruction that is not self-evident its reason, so a session cannot talk itself out of it.</li>
+      <li>State refusals as plainly as tasks: do not start the next milestone; do not mark it complete unless every criterion holds.</li>
+    </ul>
+  </section>
+
+  <section id="disciplines" aria-labelledby="h-disc">
+    <h2 id="h-disc">What the record asks of you, and why</h2>
+    <p class="intro">Each discipline below cites the place in Lawsmith’s own record that justifies it.</p>
+
+    <dl class="disc">
+      <dt>Accept each gate yourself</dt>
+      <dd><p>M0’s record reached <code>main</code> at <code>a94dd80</code>, and M0 is still IMPLEMENTED / OWNER NATIVE CHECK REQUIRED. A merge is a git fact; acceptance is yours alone.</p><cite><code>docs/evidence/M0.md</code> Status; <code>AGENTS.md</code> Units of work</cite></dd>
+
+      <dt>Run the owner checks, which no session can</dt>
+      <dd><p>The built-in display offers 1168×755 pt, and macOS clamps 1280×800 and 1600×1000 windows to 1168×733. The offline launch was skipped because turning the network off would cut the session’s own connection.</p><cite><code>docs/evidence/M0.md</code> finding 4; Packaged app, offline assets and network</cite></dd>
+
+      <dt>Agree a hands-off window before synthetic input</dt>
+      <dd><p>One lost pointer-up turned a drag-region drag into a camera flip. A window capture shows a covered window as if visible, so a screenshot cannot prove what was on top.</p><cite><code>docs/evidence/M0.md</code> finding 1; <code>AGENTS.md</code> Native QA 2</cite></dd>
+
+      <dt>Confirm pointer behaviour on a real trackpad</dt>
+      <dd><p>About 1 in 6–8 synthetic canvas drags never delivered <code>pointerup</code>. The root cause is still open: WKWebView, WRY or tao, or the event injection itself.</p><cite><code>docs/evidence/M0.md</code> finding 1; <code>AGENTS.md</code> Native QA 5</cite></dd>
+
+      <dt>Keep the review even when the checks pass</dt>
+      <dd><p>The independent review of <code>9866df1</code> found no critical issue and still led to six applied fixes. Among them: timeouts on the remaining startup awaits, and a startup status layer that had been blocking the drag region.</p><cite><code>docs/evidence/M0.md</code> Review</cite></dd>
+
+      <dt>Start each unit in a fresh session from main</dt>
+      <dd><p>M0’s record has to say which results came from <code>9866df1</code> and which were re-run on <code>4f4e70b</code>. One unit per session keeps that attribution possible.</p><cite><code>docs/evidence/M0.md</code> Evidence provenance; <code>AGENTS.md</code> Units of work</cite></dd>
+
+      <dt>Refuse upgrades a unit did not ask for</dt>
+      <dd><p>The qualified Tauri family mixes alpha numbers (<code>tauri 3.0.0-alpha.4</code> with <code>tauri-build 3.0.0-alpha.3</code>). A fresh clone rebuilt both candidates with 0 files modified. The exact-replay guarantee includes that runtime identity.</p><cite><code>docs/evidence/M0.md</code> Environment, Commands and outcomes; <code>AGENTS.md</code> Stack facts</cite></dd>
+
+      <dt>Treat every push as publication</dt>
+      <dd><p><code>scalinity/Lawsmith</code> is public. <code>main</code> only moves forward, published history stays as it is, and a new kind of artifact is checked for credentials and personal identifiers before it is pushed.</p><cite><code>AGENTS.md</code> Git workflow, Guardrails</cite></dd>
+    </dl>
+  </section>
+
+  <section id="open-threads" aria-labelledby="h-threads">
+    <h2 id="h-threads">Open threads</h2>
+    <p class="intro">Every thread the record leaves open, each with the unit that owns it. Finding 7 was documented rather than fixed, so it stays open under the review rule. Close a thread by deleting its row, and record the closing evidence in that unit’s evidence file.</p>
+
+    <!-- REALIGN: open threads live only here. data-owner = owning unit id; data-short = the label shown on that unit's strip. -->
+    <table class="rows" id="threads">
+      <thead>
+        <tr><th>Thread</th><th>What the record says</th><th>Owner</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        <tr id="t-oc1" data-owner="m0" data-short="Owner check 1">
+          <td data-label="Thread" class="lead">Owner check 1: QA sizes</td>
+          <td data-label="What the record says">Choose More Space or an external display, then build and open the app. Resize to about 1280×800 and then 1600×1000. Confirm: no titlebar band or divider, traffic lights clear of content, the drag region moves the window, Move/Rotate still hit their handles.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 1</cite></td>
+        </tr>
+        <tr id="t-oc2" data-owner="m0" data-short="Owner check 2">
+          <td data-label="Thread" class="lead">Owner check 2: offline launch</td>
+          <td data-label="What the record says">Turn Wi-Fi off, quit Lawsmith, launch the <code>.app</code> again. The scene renders with the overlay reading <code>WebGPU · tauri://localhost · secure … packaged</code>.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 2</cite></td>
+        </tr>
+        <tr id="t-oc3" data-owner="m0" data-short="Owner check 3">
+          <td data-label="Thread" class="lead">Owner check 3: real-trackpad pointer</td>
+          <td data-label="What the record says">About 15 quick orbit drags on empty canvas, interleaved with gizmo drags. After each release, hovering must not rotate the camera. Then dragging the top empty area must move the window, not orbit.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 3</cite></td>
+        </tr>
+        <tr id="t-oc4" data-owner="m0" data-short="Owner check 4">
+          <td data-label="Thread" class="lead">Owner check 4: unfocused drag</td>
+          <td data-label="What the record says">With another app focused, press-drag the top empty area once. Note whether the window moves on the first gesture.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 4</cite></td>
+        </tr>
+        <tr id="t-f1" data-owner="m1" data-short="Finding 1">
+          <td data-label="Thread" class="lead">Finding 1: lost pointer-up</td>
+          <td data-label="What the record says">About 1 in 6–8 synthetic canvas drags never delivered <code>pointerup</code>; OrbitControls then keeps pointer capture, and the next press goes to the canvas. Root cause open. M1 should end a gesture whose pointer reports <code>buttons === 0</code>. Owner check 3 confirms behaviour on a real trackpad first.</td>
+          <td data-label="Owner"><a href="#m1">M1</a></td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 1; <code>SPEC.md</code> §10.3</cite></td>
+        </tr>
+        <tr id="t-f2" data-owner="m0" data-short="Finding 2">
+          <td data-label="Thread" class="lead">Finding 2: unreproduced window jump</td>
+          <td data-label="What the record says">Once, after an unfocused drag-region drag and an unfocused canvas press, the window ended at (64, 472). Six controlled repeats did not reproduce it. Watch for it during check 4.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 2</cite></td>
+        </tr>
+        <tr id="t-f3" data-owner="m0" data-short="Finding 3">
+          <td data-label="Thread" class="lead">Finding 3: unfocused dragging</td>
+          <td data-label="What the record says">Tauri documents that an Overlay drag region cannot move an unfocused window. Here it does, in one gesture, with a consistent 6 pt overshoot. Check 4 settles it on real input.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 3</cite></td>
+        </tr>
+        <tr id="t-f4" data-owner="m0" data-short="Finding 4">
+          <td data-label="Thread" class="lead">Finding 4: QA sizes unavailable</td>
+          <td data-label="What the record says">The display offers 1168×755 pt and clamps 1280×800 and 1600×1000 windows to 1168×733. Check 1 closes it for M0. The same constraint returns at M2, M4 and M8, each of which checks 1280×800.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 4; <code>AGENTS.md</code> Native QA 4</cite></td>
+        </tr>
+        <tr id="t-f5" data-owner="m1" data-short="Finding 5">
+          <td data-label="Thread" class="lead">Finding 5: startup compile</td>
+          <td data-label="What the record says">The first frame arrives about 3.3 s after a cold launch, almost all of it <code>compileAsync</code> and readback pipeline compilation. M1 keeps it in view; M0 does not optimise it.</td>
+          <td data-label="Owner"><a href="#m1">M1</a></td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 5; Frame pacing</cite></td>
+        </tr>
+        <tr id="t-f6" data-owner="m1" data-short="Finding 6">
+          <td data-label="Thread" class="lead">Finding 6: OrbitControls <code>end</code> on gizmo release</td>
+          <td data-label="What the record says">OrbitControls also receives the gizmo’s <code>pointerdown</code> and fires <code>end</code> on release with an unchanged camera. Harmless now; M1’s proxy gizmo owns this ordering.</td>
+          <td data-label="Owner"><a href="#m1">M1</a></td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 6</cite></td>
+        </tr>
+        <tr id="t-f7" data-owner="m1" data-short="Finding 7">
+          <td data-label="Thread" class="lead">Finding 7: drag strip over the canvas</td>
+          <td data-label="What the record says">The drag region fills the top 40 px of the canvas, so a gizmo handle moved there is reachable only after orbiting or Frame. It was documented, not fixed. M1 keeps law handles out of the band or revisits its height.</td>
+          <td data-label="Owner"><a href="#m1">M1</a></td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 7, Review; <code>AGENTS.md</code> Reviews</cite></td>
+        </tr>
+        <tr id="t-f8" data-owner="m0" data-short="Finding 8">
+          <td data-label="Thread" class="lead">Finding 8: DPR across displays</td>
+          <td data-label="What the record says">Only one display was available, so DPR changes between displays at the same window size are untested. It needs a second display: fold it into check 1 if you use an external one.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>M0.md</code> finding 8</cite></td>
+        </tr>
+        <tr id="t-spec" data-owner="m0" data-short="Specification acceptance">
+          <td data-label="Thread" class="lead">Specification acceptance not recorded</td>
+          <td data-label="What the record says">M0 depends on “Owner accepts specification”. Yet SPEC.md and MILESTONES.md still read “awaiting owner review”, and MILESTONES reads “Implementation status: all NOT STARTED”. Editing either needs your explicit authorization.</td>
+          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="Source"><cite><code>MILESTONES.md</code> header, Roadmap; <code>SPEC.md</code> header; <code>AGENTS.md</code> Sources of truth</cite></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top:36px">Not recorded anywhere in the repo</h2>
+    <ul class="silent">
+      <li>Who writes your owner-check results into <code>docs/evidence/M0.md</code>, and in what form.</li>
+      <li>Whether a second or external display is available, for check 1 and finding 8.</li>
+      <li>Which plan or API tier the GPT-6 Astra quota comes from, and so how scarce it is in practice.</li>
+    </ul>
+  </section>
+
+  <section id="grading" aria-labelledby="h-grade">
+    <h2 id="h-grade">Grading a new model’s output</h2>
+    <p class="intro">M0’s qualification record is the bar. Grade a unit’s evidence file against <code>docs/evidence/M0.md</code> itself, not against this summary. If any row fails, send the unit back for a fix-up before you consider accepting it.</p>
+
+    <table class="rows">
+      <thead>
+        <tr><th>Check</th><th>M0’s bar</th><th>Fails when</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Check" class="lead">Names an immutable candidate and its base</td>
+          <td data-label="M0’s bar">“code at commit <code>4f4e70b</code> … Base: <code>c75e639</code>”</td>
+          <td data-label="Fails when">It names a branch, or “latest”.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Reads runtime identity from the runtime and the lockfiles</td>
+          <td data-label="M0’s bar">WebKit <code>22625.2.5.11.1</code> from <code>AppHandle::webview_version()</code>, with Safari 27.2 marked informational; the Tauri family read from <code>Cargo.lock</code>.</td>
+          <td data-label="Fails when">Versions come from <code>package.json</code> ranges or from a browser.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Gives commands with outcomes</td>
+          <td data-label="M0’s bar">Fresh clone, <code>npm ci</code>, <code>npm run typecheck</code>, <code>npx tauri build --bundles app</code>: all exit 0, 0 files modified.</td>
+          <td data-label="Fails when">“It builds.”</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Proves a check can fail</td>
+          <td data-label="M0’s bar"><code>VITE_LAWSMITH_FAULT=webgl</code> forced a real WebGL 2 backend and a readable failure. <code>navigator.gpu</code> stayed present, so an API-presence check would have passed falsely.</td>
+          <td data-label="Fails when">A check has no negative control.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Measures instead of describing</td>
+          <td data-label="M0’s bar">47 of ~50 five-second windows at p50/p95/p99 = 17/17–18/18 ms; <code>dt</code> read back as <code>0.008333333767950535</code>.</td>
+          <td data-label="Fails when">“Smooth”, “fast”, “about 1/120”.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Takes interaction evidence from the app</td>
+          <td data-label="M0’s bar">Synthetic input behind a hit-test guard, plus the app’s own event log, with whole-window captures as support.</td>
+          <td data-label="Fails when">A cropped canvas or a screenshot is the only proof.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Leaves unrun checks pending, with exact steps</td>
+          <td data-label="M0’s bar">The four-item owner native checklist.</td>
+          <td data-label="Fails when">A native check is reported as passed without having run.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Numbers its findings and names who acts</td>
+          <td data-label="M0’s bar">Findings 1–8. Finding 1 carries a candidate cause and M1’s remedy.</td>
+          <td data-label="Fails when">A limitations paragraph has no owner.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Records the review and what it changed</td>
+          <td data-label="M0’s bar">Six applied fixes listed; finding 7 noted as not changed.</td>
+          <td data-label="Fails when">“Review addressed.”</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Holds scope</td>
+          <td data-label="M0’s bar">“M1 is not started.” “No stepped engine state is handed to M1.”</td>
+          <td data-label="Fails when">Scaffolding or empty modules appear for a later gate.</td>
+        </tr>
+        <tr>
+          <td data-label="Check" class="lead">Says which candidate each result came from</td>
+          <td data-label="M0’s bar">Evidence provenance splits <code>9866df1</code> results from <code>4f4e70b</code> results and names what was re-run.</td>
+          <td data-label="Fails when">One block of results silently spans two candidates.</td>
+        </tr>
+      </tbody>
+    </table>
+    <cite><code>docs/evidence/M0.md</code>, every section; <code>docs/MILESTONES.md</code> M0 Acceptance criterion 8; <code>docs/SPEC.md</code> §4</cite>
+  </section>
+
+  <footer>
+    <h2>Sources</h2>
+    <ul>
+      <li><code>docs/MILESTONES.md</code>: roadmap and dependency graph, each gate’s scope, review gates, delegation rule, stopping points.</li>
+      <li><code>docs/evidence/M0.md</code>: M0 status, environment, findings 1–8, review, provenance, owner checklist, module list.</li>
+      <li><code>docs/SPEC.md</code>: §1.2 delivery stages, §3 technology boundary, §4 module boundaries, §10.3 gestures, §11.1 window surface, §17.2–§17.3 tests and evidence.</li>
+      <li><code>AGENTS.md</code>: units of work, native QA, reviews, this page’s maintenance rule, git workflow. <code>src/style.css</code>: the dark tokens used here.</li>
+      <li><code>git log</code> on <code>main</code>: <code>43f47af</code> agent instructions, <code>a94dd80</code> M0 record, <code>4f4e70b</code> M0 code candidate, <code>9866df1</code> first M0 implementation, <code>c75e639</code> Tauri 3 reconciliation, <code>dde2b7c</code> SPEC and MILESTONES.</li>
+    </ul>
+    <div class="keep">
+      <h2>Keeping this page true</h2>
+      <p>Every session that finishes or blocks a unit, changes what can run next, opens or closes a finding, or moves a file boundary realigns this page before its final commit. Edit in place:</p>
+      <ul>
+        <li>The unit’s <code>data-state</code> attribute and its two eligibility lines.</li>
+        <li>The open-threads rows.</li>
+        <li>The hero sentence and the “Realigned” line.</li>
+      </ul>
+      <p>The rail and the per-strip thread links redraw themselves. If the page has uncommitted changes, or another session owns it, leave it and report what would have changed.</p>
+    </div>
+  </footer>
+
+</div>
+<script>
+  // Draws the gate rail and each strip's thread links from the strips and the threads table.
+  (() => {
+    const units = [...document.querySelectorAll('.unit')];
+    const current = units.find((u) => u.dataset.state !== 'accepted');
+    const rail = document.getElementById('rail');
+
+    for (const unit of units) {
+      const isCurrent = unit === current;
+      if (isCurrent) unit.classList.add('is-current');
+
+      const item = document.createElement('li');
+      item.dataset.state = unit.dataset.state;
+      if (isCurrent) item.classList.add('is-current');
+      const link = document.createElement('a');
+      link.href = '#' + unit.id;
+      const mark = document.createElement('span');
+      mark.className = 'mark';
+      const gate = document.createElement('span');
+      gate.className = 'rail-gate';
+      gate.textContent = unit.dataset.gate;
+      const spend = document.createElement('span');
+      spend.className = 'spend';
+      if (unit.dataset.author === 'astra' || unit.dataset.reviewer === 'astra') {
+        const dia = document.createElement('span');
+        dia.className = unit.dataset.author === 'astra' ? 'dia solid' : 'dia';
+        spend.append(dia);
+      }
+      link.append(mark, gate, spend);
+      if (unit.dataset.stop) {
+        const stop = document.createElement('span');
+        stop.className = 'stop';
+        stop.textContent = unit.dataset.stop;
+        link.append(stop);
+      }
+      const state = unit.querySelector('.state-label');
+      link.setAttribute('aria-label', unit.dataset.gate + ': ' + getComputedStyle(state, '::after').content.replace(/"/g, ''));
+      item.append(link);
+      rail.append(item);
+
+      const slot = unit.querySelector('.thread-list');
+      const rows = document.querySelectorAll('#threads tr[data-owner="' + unit.id + '"]');
+      if (!rows.length) {
+        slot.textContent = 'None open';
+        continue;
+      }
+      rows.forEach((row, i) => {
+        if (i) slot.append(', ');
+        const a = document.createElement('a');
+        a.href = '#' + row.id;
+        a.textContent = row.dataset.short;
+        slot.append(a);
+      });
+    }
+  })();
+</script>
+</body>
+</html>
