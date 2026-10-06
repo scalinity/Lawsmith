@@ -57,6 +57,10 @@ export class LawInteraction {
   private cameraActive = false;
   /** A primary press is down; seen in the capture phase, before either control handles it. */
   private pressed = false;
+  /** Last known pointer position, so the drag strip's routing can be recomputed without a move. */
+  private lastPointer: { x: number; y: number } | null = null;
+  /** Set when an owner releases the pointer; resolved on the next frame, once the law is re-applied. */
+  private routingStale = false;
   private pointerId: number | null = null;
   private press: { x: number; y: number; onGizmo: boolean } | null = null;
   private readonly raycaster = new Raycaster();
@@ -76,7 +80,15 @@ export class LawInteraction {
     gizmo.addEventListener('dragging-changed', (event) => {
       orbit.enabled = event.value !== true;
     });
-    window.addEventListener('pointerdown', () => (this.pressed = true), { capture: true });
+    window.addEventListener(
+      'pointerdown',
+      (event) => {
+        this.pressed = true;
+        this.lastPointer = { x: event.clientX, y: event.clientY };
+      },
+      { capture: true },
+    );
+    window.addEventListener('focus', () => (this.routingStale = true));
     window.addEventListener('pointerup', () => (this.pressed = false), { capture: true });
     orbit.addEventListener('start', () => {
       if (this.gesture || gizmo.dragging) o.log('ownership-conflict', { owner: 'law', intruder: 'orbit' });
@@ -85,6 +97,7 @@ export class LawInteraction {
     orbit.addEventListener('end', () => {
       if (this.cameraActive) o.log('orbit', { camera: o.camera.position.toArray().map((v) => Math.round(v * 1000) / 1000) });
       this.cameraActive = false;
+      this.routingStale = true;
     });
 
     // Registered after both controls, so these run once ownership is already decided.
@@ -137,13 +150,20 @@ export class LawInteraction {
     return this.gesture?.latest ?? null;
   }
 
-  /** Keeps the proxy on the applied law whenever no gesture owns it. */
+  /**
+   * Keeps the proxy on the applied law whenever no gesture owns it. Runs each frame after the
+   * host's acknowledgments, so a cancelled gesture's restored value is already in place here.
+   */
   syncProxy(): void {
     if (this.gesture) return;
     const f = this.o.appliedField();
     this.o.proxy.position.set(...f.pose.position);
     this.o.proxy.quaternion.set(...f.pose.rotation);
     this.o.proxy.scale.set(1, 1, 1);
+    if (this.routingStale && !this.cameraActive) {
+      this.routingStale = false;
+      this.refreshDragRegion();
+    }
   }
 
   /** Distance along the view ray to the law's semantic support box, or null on a miss. */
@@ -195,6 +215,7 @@ export class LawInteraction {
     const g = this.gesture;
     if (!g) return;
     this.gesture = null;
+    this.routingStale = true;
     if (g.cancelReason) {
       const restored = this.o.submit(g.start);
       const revision = restored.ok ? restored.value.revision : null;
@@ -240,7 +261,7 @@ export class LawInteraction {
   }
 
   private onPointerMove(event: PointerEvent): void {
-    const { gizmo, canvas, dragRegion } = this.o;
+    const { gizmo, canvas } = this.o;
     // A press whose release never arrived (M0 finding 1): the pointer reports no buttons while
     // a drag still holds it. End it the way a release would have, so nothing keeps dragging.
     if (event.buttons === 0 && event.pointerType !== 'touch') {
@@ -256,17 +277,32 @@ export class LawInteraction {
         canvas.dispatchEvent(new PointerEvent('pointercancel', { pointerId: event.pointerId, bubbles: true }));
       }
     }
-    // The native drag region yields to scene content under the pointer (M0 finding 7), so a
-    // handle or the law beneath the top band stays reachable; empty background still drags the window.
-    const band = dragRegion.getBoundingClientRect();
-    const overBand = event.clientY >= band.top && event.clientY <= band.bottom && event.clientX >= band.left && event.clientX <= band.right;
-    const yieldBand = this.gesture !== null || this.cameraActive || (overBand && this.sceneContentAt(event.clientX, event.clientY));
+    this.lastPointer = { x: event.clientX, y: event.clientY };
+    this.refreshDragRegion();
+  }
+
+  /**
+   * The native drag region yields to scene content under the pointer (M0 finding 7), so a handle
+   * or the law beneath the top band stays reachable; empty background still drags the window.
+   * Any owned gesture keeps it yielded until that owner releases the pointer.
+   */
+  private refreshDragRegion(): void {
+    const { dragRegion } = this.o;
+    const p = this.lastPointer;
+    let yieldBand = this.gesture !== null || this.cameraActive;
+    if (!yieldBand && p) {
+      const band = dragRegion.getBoundingClientRect();
+      const overBand = p.y >= band.top && p.y <= band.bottom && p.x >= band.left && p.x <= band.right;
+      yieldBand = overBand && this.sceneContentAt(p.x, p.y);
+    }
     dragRegion.style.pointerEvents = yieldBand ? 'none' : '';
   }
 
   private sceneContentAt(clientX: number, clientY: number): boolean {
     const { gizmo } = this.o;
     if (this.selected) {
+      // Place the handle pickers at the proxy's current pose; three otherwise updates them only when rendering.
+      gizmo.getHelper().updateMatrixWorld(true);
       this.toNdc(clientX, clientY);
       // The pinned implementation (TransformControls.js, pointerHover) feeds its argument to
       // Raycaster.setFromCamera, i.e. NDC {x, y}; the bundled typing's PointerEvent is wrong.
