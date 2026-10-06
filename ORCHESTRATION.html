@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> at <code>a2f6091</code></span>
+    <span>Realigned 2026-10-06 against <code>main</code> at <code>9df19d0</code></span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Run M0’s four native checks, then decide whether to accept M0.</h1>
-    <p class="lede">No session can run until then. M1 starts from an accepted M0, and M0 reaching <code>main</code> did not accept it. After you accept M0, M1 runs next: Opus 5.5 authors it and GPT-6.1 Sol reviews it.</p>
-    <cite><code>docs/MILESTONES.md</code> How to execute this plan; <code>AGENTS.md</code> Units of work; <code>docs/evidence/M0.md</code> Status</cite>
+    <h1>Start M1, Bend the falling stream, in a fresh session.</h1>
+    <p class="lede">M0 is accepted, so M1 runs next, and alone. Opus 5.5 authors it and GPT-6.1 Sol reviews it; if Claude limits bind, M1 waits for Opus rather than falling back to Astra. Its handover prompt carries findings 1, 2, 5, 6 and 7 from M0.</p>
+    <cite><code>docs/evidence/M0.md</code> Status, Owner native check results; <code>docs/MILESTONES.md</code> How to execute this plan, M1</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -438,13 +438,13 @@
 
   <section id="run-order" aria-labelledby="h-run">
     <h2 id="h-run">Run order</h2>
-    <p class="intro">Every remaining unit, in the only order the record allows. Each strip shows two separate lines: what the dependency graph permits, and what should actually run given the release sequence and file overlap.</p>
+    <p class="intro">Every unit, in the only order the record allows. Each strip shows two separate lines: what the dependency graph permits, and what should actually run given the release sequence and file overlap.</p>
     <p class="intro">Every unit ends by pushing to <code>scalinity/Lawsmith</code>, which is public. Each push publishes, and published history stays as it is. That holds for every strip; the Destroys line lists only what a unit adds on top of it. <cite><code>AGENTS.md</code> Git workflow</cite></p>
 
     <div class="units">
 
       <!-- REALIGN M0 -->
-      <article class="unit" id="m0" data-gate="M0" data-state="owner-check">
+      <article class="unit" id="m0" data-gate="M0" data-state="accepted">
         <div class="gate">M0</div>
         <div>
           <div class="unit-head">
@@ -453,18 +453,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>None for the checks: you run them. Opus 5.5 writes your results into <code>docs/evidence/M0.md</code> from your reply and the app’s <code>[lawsmith]</code> log. Only you mark M0 ACCEPTED.</dd>
-              <dt>Graph permits</dt><dd class="soft">Now. M0 is implemented: code at <code>4f4e70b</code>, record at <code>a94dd80</code>.</dd>
-              <dt>Should run</dt><dd class="run">Now, and alone. It is the only unit that unlocks M1. A failed check opens a fix-up unit on its own branch before M1, allocated by the same rule as any unit.</dd>
+              <dt>Models</dt><dd>None. You ran the four native checks; the results and the app’s logs are in <code>docs/evidence/M0.md</code>.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>4f4e70b</code>, accepted by you on 2026-10-06.</dd>
+              <dt>Should run</dt><dd class="run">Nothing. M0 is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>The accepted specification. Contracts C3, C10.</dd>
-              <dt>Destroys</dt><dd>Check 2 turns Wi-Fi off, which cuts any running session’s connection: run it with no session open. Check 1 switches Displays to More Space; switch it back afterwards.</dd>
-              <dt>Your part</dt><dd>All four checks, then the acceptance decision.</dd>
+              <dt>Destroys</dt><dd>Nothing further.</dd>
+              <dt>Your part</dt><dd>Done: all four checks passed.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/evidence/M0.md</code> Owner native checklist, Packaged app; <code>docs/MILESTONES.md</code> Roadmap, M0; <code>docs/SPEC.md</code> and <code>docs/MILESTONES.md</code> status lines</cite>
+          <cite class="src"><code>docs/evidence/M0.md</code> Status, Owner native check results; <code>docs/MILESTONES.md</code> Roadmap, M0</cite>
         </div>
       </article>
 
@@ -479,8 +479,8 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors, and M1 waits for it rather than falling back. GPT-6.1 Sol reviews; a small local implementation review is enough at M1.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once you mark M0 ACCEPTED.</dd>
-              <dt>Should run</dt><dd class="run">First after M0 is accepted, and alone: it shares files with every later gate.</dd>
+              <dt>Graph permits</dt><dd class="soft">Now: M0 is accepted.</dd>
+              <dt>Should run</dt><dd class="run">Now, and alone: it shares files with every later gate.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M0 accepted. Contracts C1–C6.</dd>
@@ -1079,7 +1079,7 @@
       <dt><b>2 What else is in flight</b><span>Parallel work, owned paths, branch, and an explicit refusal to start the next thing.</span></dt>
       <dd>Nothing else is running. Work on branch m1; you own the files M1 needs. Do not start M2.</dd>
       <dt><b>3 Startup order</b><span>What to read, in what order, inspect before writing, and how to resume.</span></dt>
-      <dd>Read AGENTS.md, docs/MILESTONES.md § M1, docs/SPEC.md §2, §6–§11 and §18, then docs/evidence/M0.md findings 1, 5, 6 and 7. If branch m1 exists, continue from it.</dd>
+      <dd>Read AGENTS.md, docs/MILESTONES.md § M1, docs/SPEC.md §2, §6–§11 and §18, then docs/evidence/M0.md findings 1, 2, 5, 6 and 7. If branch m1 exists, continue from it.</dd>
       <dt><b>4 Settle rather than inherit</b><span>Decisions the session makes from evidence, not from the last session’s habit.</span></dt>
       <dd>Finding 7: the drag strip fills the top 40 px of the canvas, so a handle moved there is reachable only after orbiting or Frame. Keep law handles out of it or change its height. SPEC §11.1 asks for drag regions in unused top whitespace and fixes no height.</dd>
       <dt><b>5 Constraints</b><span>Each one carries its reason.</span></dt>
@@ -1115,7 +1115,7 @@
 
     <dl class="disc">
       <dt>Accept each gate yourself</dt>
-      <dd><p>M0’s record reached <code>main</code> at <code>a94dd80</code>, and M0 is still IMPLEMENTED / OWNER NATIVE CHECK REQUIRED. A merge is a git fact; acceptance is yours alone.</p><cite><code>docs/evidence/M0.md</code> Status; <code>AGENTS.md</code> Units of work</cite></dd>
+      <dd><p>M0’s record reached <code>main</code> at <code>a94dd80</code>, yet M0 stayed IMPLEMENTED / OWNER NATIVE CHECK REQUIRED until your four native checks passed and you accepted it on 2026-10-06. A merge is a git fact; acceptance is yours alone.</p><cite><code>docs/evidence/M0.md</code> Status; <code>AGENTS.md</code> Units of work</cite></dd>
 
       <dt>Run the owner checks, which no session can</dt>
       <dd><p>The built-in display offers 1168×755 pt, and macOS clamps 1280×800 and 1600×1000 windows to 1168×733. The offline launch was skipped because turning the network off would cut the session’s own connection.</p><cite><code>docs/evidence/M0.md</code> finding 4; Packaged app, offline assets and network</cite></dd>
@@ -1124,7 +1124,7 @@
       <dd><p>One lost pointer-up turned a drag-region drag into a camera flip. A window capture shows a covered window as if visible, so a screenshot cannot prove what was on top.</p><cite><code>docs/evidence/M0.md</code> finding 1; <code>AGENTS.md</code> Native QA 2</cite></dd>
 
       <dt>Confirm pointer behaviour on a real trackpad</dt>
-      <dd><p>About 1 in 6–8 synthetic canvas drags never delivered <code>pointerup</code>. The root cause is still open: WKWebView, WRY or tao, or the event injection itself.</p><cite><code>docs/evidence/M0.md</code> finding 1; <code>AGENTS.md</code> Native QA 5</cite></dd>
+      <dd><p>About 1 in 6–8 synthetic canvas drags never delivered <code>pointerup</code>. The root cause is still open: WKWebView, WRY or tao, or the event injection itself. Your real-trackpad check lost none in 16 gestures.</p><cite><code>docs/evidence/M0.md</code> finding 1; <code>AGENTS.md</code> Native QA 5</cite></dd>
 
       <dt>Keep the review even when the checks pass</dt>
       <dd><p>The independent review of <code>9866df1</code> found no critical issue and still led to six applied fixes. Among them: timeouts on the remaining startup awaits, and a startup status layer that had been blocking the drag region.</p><cite><code>docs/evidence/M0.md</code> Review</cite></dd>
@@ -1150,53 +1150,17 @@
         <tr><th>Thread</th><th>What the record says</th><th>Owner</th><th>Source</th></tr>
       </thead>
       <tbody>
-        <tr id="t-oc1" data-owner="m0" data-short="Owner check 1">
-          <td data-label="Thread" class="lead">Owner check 1: QA sizes</td>
-          <td data-label="What the record says">Choose More Space or an external display, then build and open the app. Resize to about 1280×800 and then 1600×1000. Confirm: no titlebar band or divider, traffic lights clear of content, the drag region moves the window, Move/Rotate still hit their handles.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
-          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 1</cite></td>
-        </tr>
-        <tr id="t-oc2" data-owner="m0" data-short="Owner check 2">
-          <td data-label="Thread" class="lead">Owner check 2: offline launch</td>
-          <td data-label="What the record says">Turn Wi-Fi off, quit Lawsmith, launch the <code>.app</code> again. The scene renders with the overlay reading <code>WebGPU · tauri://localhost · secure … packaged</code>.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
-          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 2</cite></td>
-        </tr>
-        <tr id="t-oc3" data-owner="m0" data-short="Owner check 3">
-          <td data-label="Thread" class="lead">Owner check 3: real-trackpad pointer</td>
-          <td data-label="What the record says">About 15 quick orbit drags on empty canvas, interleaved with gizmo drags. After each release, hovering must not rotate the camera. Then dragging the top empty area must move the window, not orbit.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
-          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 3</cite></td>
-        </tr>
-        <tr id="t-oc4" data-owner="m0" data-short="Owner check 4">
-          <td data-label="Thread" class="lead">Owner check 4: unfocused drag</td>
-          <td data-label="What the record says">With another app focused, press-drag the top empty area once. Note whether the window moves on the first gesture.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
-          <td data-label="Source"><cite><code>M0.md</code> Owner native checklist 4</cite></td>
-        </tr>
         <tr id="t-f1" data-owner="m1" data-short="Finding 1">
           <td data-label="Thread" class="lead">Finding 1: lost pointer-up</td>
-          <td data-label="What the record says">About 1 in 6–8 synthetic canvas drags never delivered <code>pointerup</code>; OrbitControls then keeps pointer capture, and the next press goes to the canvas. Root cause open. M1 should end a gesture whose pointer reports <code>buttons === 0</code>. Owner check 3 confirms behaviour on a real trackpad first.</td>
+          <td data-label="What the record says">About 1 in 6–8 synthetic canvas drags never delivered <code>pointerup</code>; OrbitControls then keeps pointer capture, and the next press goes to the canvas. Root cause open. M1 should end a gesture whose pointer reports <code>buttons === 0</code>. Owner check 3 passed on a real trackpad: no pointer-up lost in 6 orbit and 10 Move drags.</td>
           <td data-label="Owner"><a href="#m1">M1</a></td>
           <td data-label="Source"><cite><code>M0.md</code> finding 1; <code>SPEC.md</code> §10.3</cite></td>
         </tr>
-        <tr id="t-f2" data-owner="m0" data-short="Finding 2">
+        <tr id="t-f2" data-owner="m1" data-short="Finding 2">
           <td data-label="Thread" class="lead">Finding 2: unreproduced window jump</td>
-          <td data-label="What the record says">Once, after an unfocused drag-region drag and an unfocused canvas press, the window ended at (64, 472). Six controlled repeats did not reproduce it. Watch for it during check 4.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="What the record says">Once, after an unfocused drag-region drag and an unfocused canvas press, the window ended at (64, 472). Six controlled repeats did not reproduce it, and none was reported during owner check 4. Watch for it during M1’s native window-drag QA.</td>
+          <td data-label="Owner"><a href="#m1">M1</a></td>
           <td data-label="Source"><cite><code>M0.md</code> finding 2</cite></td>
-        </tr>
-        <tr id="t-f3" data-owner="m0" data-short="Finding 3">
-          <td data-label="Thread" class="lead">Finding 3: unfocused dragging</td>
-          <td data-label="What the record says">Tauri documents that an Overlay drag region cannot move an unfocused window. Here it does, in one gesture, with a consistent 6 pt overshoot. Check 4 settles it on real input.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
-          <td data-label="Source"><cite><code>M0.md</code> finding 3</cite></td>
-        </tr>
-        <tr id="t-f4" data-owner="m0" data-short="Finding 4">
-          <td data-label="Thread" class="lead">Finding 4: QA sizes unavailable</td>
-          <td data-label="What the record says">The display offers 1168×755 pt and clamps 1280×800 and 1600×1000 windows to 1168×733. Check 1 closes it for M0. The same constraint returns at M2, M4 and M8, each of which checks 1280×800.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
-          <td data-label="Source"><cite><code>M0.md</code> finding 4; <code>AGENTS.md</code> Native QA 4</cite></td>
         </tr>
         <tr id="t-f5" data-owner="m1" data-short="Finding 5">
           <td data-label="Thread" class="lead">Finding 5: startup compile</td>
