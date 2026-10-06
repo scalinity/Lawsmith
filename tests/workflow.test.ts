@@ -511,6 +511,53 @@ describe('recovery (SPEC §15.3)', () => {
   });
 });
 
+describe('unexpected failures', () => {
+  it('an exception while committing an Open unfreezes the app and reports it', async () => {
+    const t = setup();
+    t.io.openQueue.push(opened(t.io, 'scene.lawsmith.json', DEFAULT_SCENE_TEXT));
+    const commit = (t.workflow as unknown as { app: WorkflowApp }).app.commit;
+    (t.workflow as unknown as { app: { commit: WorkflowApp['commit'] } }).app.commit = () => {
+      throw new Error('renderer refused the scene');
+    };
+    expect(await t.workflow.open()).toBeNull();
+    expect(t.frozen()).toBe(false);
+    expect(t.workflow.busy).toBeNull();
+    expect(t.workflow.message?.text).toContain('renderer refused the scene');
+    (t.workflow as unknown as { app: { commit: WorkflowApp['commit'] } }).app.commit = commit;
+  });
+
+  it('an exception inside the guard leaves the app open, unfrozen, and able to quit later', async () => {
+    const t = setup();
+    t.edit();
+    const app = (t.workflow as unknown as { app: { camera: WorkflowApp['camera'] } }).app;
+    const camera = app.camera;
+    app.camera = () => {
+      throw new Error('camera unavailable');
+    };
+    t.io.askQueue.push('save');
+    t.io.chooseQueue.push('a.lawsmith.json');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect(t.frozen()).toBe(false);
+    expect(t.io.exited).toBe(0);
+    app.camera = camera;
+    t.io.askQueue.push('discard');
+    expect(await t.workflow.requestExit('quit')).toBe(true);
+  });
+
+  it('a candidate that fails before commit is disposed', async () => {
+    const t = setup();
+    t.edit();
+    t.io.openQueue.push(opened(t.io, 'scene.lawsmith.json', DEFAULT_SCENE_TEXT));
+    t.io.askUnsaved = async () => {
+      throw new Error('alert failed');
+    };
+    // A failing alert is a Cancel: the candidate is disposed and nothing changes.
+    expect(await t.workflow.open()).toBe(false);
+    expect(t.disposed).toHaveLength(1);
+    expect(t.frozen()).toBe(false);
+  });
+});
+
 describe('close/quit guard (AC10)', () => {
   it('a clean document closes without asking', async () => {
     const t = setup();

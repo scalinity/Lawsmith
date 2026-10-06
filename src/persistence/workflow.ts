@@ -56,6 +56,8 @@ export class DocumentWorkflow {
   /** The revision of this generation stored at the binding; null if it has never been saved. */
   private savedRevision: number | null = 0;
   private running: { kind: string; done: Promise<unknown> } | null = null;
+  /** A candidate world not yet committed; disposed if its workflow ends any other way. */
+  private uncommitted: SimulationHost | null = null;
   private exitPending = false;
   /** The document came from recovery and has not been saved since. */
   recovered = false;
@@ -209,6 +211,13 @@ export class DocumentWorkflow {
       const done = work();
       running.done = done;
       return await done;
+    } catch (error) {
+      // An unexpected failure must not leave edits frozen or a candidate world allocated.
+      this.uncommitted?.dispose();
+      this.uncommitted = null;
+      this.app.freeze(false);
+      this.fail(`Something went wrong during ${kind}: ${error instanceof Error ? error.message : String(error)}. Your scene is unchanged.`, { action: kind, outcome: 'error' });
+      return null;
     } finally {
       this.running = null;
       this.app.onChange();
@@ -348,10 +357,12 @@ export class DocumentWorkflow {
     } catch (error) {
       return this.fail(`The scene could not be prepared: ${error instanceof Error ? error.message : String(error)}. Your current scene is unchanged.`, { action, outcome: 'candidate-failed' });
     }
+    this.uncommitted = candidate;
     const candidateMs = this.app.now() - start;
     const decision = await this.guard(action);
     if (!decision || !(await this.commitDiscard(decision))) {
       candidate.dispose();
+      this.uncommitted = null;
       this.app.log('document', { action, outcome: 'canceled', stage: 'guard' });
       return false;
     }
@@ -359,6 +370,7 @@ export class DocumentWorkflow {
       // The guard's save may have written the very file being opened: commit what it holds now.
       const reread = await this.reread(binding);
       candidate.dispose();
+      this.uncommitted = null;
       if (!reread) {
         this.release();
         return false;
@@ -366,12 +378,15 @@ export class DocumentWorkflow {
       document = reread.document;
       try {
         candidate = this.app.candidate(document);
+        this.uncommitted = candidate;
       } catch (error) {
         this.release();
         return this.fail(`The scene could not be prepared: ${error instanceof Error ? error.message : String(error)}.`, { action, outcome: 'candidate-failed' });
       }
     }
     const commitStart = this.app.now();
+    // From here the candidate belongs to the application, whatever commit does.
+    this.uncommitted = null;
     this.app.commit(document, candidate);
     this.binding = binding;
     this.savedRevision = savedRevision;
