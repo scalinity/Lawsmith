@@ -878,9 +878,19 @@ async function start() {
           // of an arrow or box handle, and eight samples around a rotation ring.
           const geometry = (mesh as Mesh).geometry;
           let local: Vector3[];
-          if (viewport.gizmo.mode === 'rotate') {
+          const torus = (geometry as { parameters?: { radialSegments?: number; tubularSegments?: number } }).parameters;
+          if (viewport.gizmo.mode === 'rotate' && torus?.radialSegments && torus.tubularSegments) {
+            // Points on the ring's center line, where a press reliably hits the tube: the mean of
+            // each tube cross-section (TorusGeometry vertex index j·(tubular+1)+i).
             const position = geometry.getAttribute('position');
-            local = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => new Vector3().fromBufferAttribute(position, Math.floor((k * position.count) / 8)));
+            const radial = torus.radialSegments;
+            const tubular = torus.tubularSegments;
+            local = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => {
+              const i = Math.floor((k * tubular) / 8);
+              const mean = new Vector3();
+              for (let j = 0; j < radial; j++) mean.add(new Vector3().fromBufferAttribute(position, j * (tubular + 1) + i));
+              return mean.divideScalar(radial);
+            });
           } else {
             geometry.computeBoundingBox();
             local = [geometry.boundingBox!.getCenter(new Vector3())];
