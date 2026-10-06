@@ -34,6 +34,11 @@ export const SIMULATION_PROFILE = Object.freeze({
     normalizedPredictionDistance: 0.019999999552965164,
     contactErp: 0.0728205069899559,
   }),
+  /**
+   * Rapier's linear-speed cap in m/s (its normalized maximum linear velocity × lengthUnit). It
+   * is not readable through the JS API, so a test characterizes it against the engine.
+   */
+  engineSpeedCap: 400,
 });
 
 export type EffectiveProfile = Record<keyof typeof SIMULATION_PROFILE.effective, number>;
@@ -156,8 +161,11 @@ const GROUPS = {
   fixedOnly: (FIXED_ONLY << 16) | FIXED,
 } as const;
 
-/** Runtime safety limits (SPEC §9.3): stop instead of letting overflow cascade. */
-const MAX_SPEED = 1000;
+/**
+ * Supported-domain runtime stops (SPEC §9.3). The speed stop sits below the engine's cap
+ * (`SIMULATION_PROFILE.engineSpeedCap`), so unsupported motion stops before Rapier clamps it.
+ */
+export const MAX_SUPPORTED_SPEED = 350;
 const MAX_POSITION = 10000;
 
 interface LiveBody {
@@ -340,12 +348,11 @@ export class SimulationHost {
     for (const live of bodies) {
       const p = live.body.translation();
       const v = live.body.linvel();
-      const valid =
-        finite3(p.x, p.y, p.z) &&
-        finite3(v.x, v.y, v.z) &&
-        Math.max(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z)) <= MAX_POSITION &&
-        Math.hypot(v.x, v.y, v.z) <= MAX_SPEED;
-      if (!valid) throw (this.fault = new SimulationFault(this.tick + 1, live.id, 'Invalid engine state'));
+      let reason: string | null = null;
+      if (!finite3(p.x, p.y, p.z) || !finite3(v.x, v.y, v.z)) reason = 'Invalid engine state';
+      else if (Math.max(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z)) > MAX_POSITION) reason = `Position outside the supported ±${MAX_POSITION} m`;
+      else if (Math.hypot(v.x, v.y, v.z) > MAX_SUPPORTED_SPEED) reason = `Speed above the supported ${MAX_SUPPORTED_SPEED} m/s`;
+      if (reason) throw (this.fault = new SimulationFault(this.tick + 1, live.id, reason));
     }
     this.tick += 1;
     this.publish();

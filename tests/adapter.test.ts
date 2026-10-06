@@ -11,7 +11,7 @@ import {
   type Vec3,
 } from '../src/domain/scene';
 import { limitAcceleration } from '../src/simulation/adapter';
-import { SimulationHost, initSimulation, type CanonicalState } from '../src/simulation/host';
+import { MAX_SUPPORTED_SPEED, SIMULATION_PROFILE, SimulationHost, initSimulation, type CanonicalState } from '../src/simulation/host';
 
 const H = 1 / 120;
 const G: Vec3 = [0, -9.81, 0];
@@ -175,27 +175,40 @@ describe('SPEC §17.1 constant-acceleration fixture', () => {
   });
 });
 
-describe('runtime faults (SPEC §9.3, §16)', () => {
-  it('stops on invalid engine state, names the body and tick, and refuses to step until reset', () => {
+describe('runtime stops (SPEC §9.3, §16)', () => {
+  it('stops outside the supported position range, names the body and tick, and refuses to step until reset', () => {
     // Crosses the ±10 000 m position stop during the first transition.
     const root = scene([sphere('far', [9999.5, 0, 0], [100, 0, 0])], []);
     const host = new SimulationHost(root);
-    expect(() => host.step()).toThrow(/Invalid engine state: far at tick 1/);
+    expect(() => host.step()).toThrow(/Position outside the supported ±10000 m: far at tick 1/);
     expect(host.fault).toMatchObject({ tick: 1, entity: 'far' });
-    expect(host.tick).toBe(0); // the corrupted transition is not published
+    expect(host.tick).toBe(0); // the stopped transition is not published
     expect(() => host.step()).toThrow();
     host.reset(root);
     expect(host.fault).toBeNull();
     host.dispose();
   });
 
-  it('characterizes the qualified engine: Rapier 0.21 caps linear speed at 400 m/s per length unit', () => {
-    // An effective engine limit absent from the profile record (M1 evidence, finding 9): the
-    // 1000 m/s stop cannot trigger, and above 400 m/s the adapter's v + h·A would not hold.
-    const host = new SimulationHost(scene([sphere('fast', [0, 0, 0], [1500, 0, 0])], []));
-    host.step();
-    expect(velocity(host, 'fast')[0]).toBe(400);
-    expect(host.fault).toBeNull();
+  it('stops a body accelerating past the supported 350 m/s, below the engine cap', () => {
+    // 349 m/s plus one limited 200 m/s² step (Δv ≈ 1.66 m/s) crosses 350 m/s, far below 400.
+    const host = new SimulationHost(scene([sphere('fast', [0, 0, 0], [349, 0, 0])], [law(200)]));
+    expect(() => host.step()).toThrow(/Speed above the supported 350 m\/s: fast at tick 1/);
     host.dispose();
+    const steady = new SimulationHost(scene([sphere('steady', [0, 0, 0], [340, 0, 0])], []));
+    steady.step();
+    expect(steady.fault).toBeNull();
+    steady.dispose();
+  });
+
+  it('characterizes the pinned engine: Rapier 0.21 caps linear speed at the profile engineSpeedCap', () => {
+    // The cap is not readable through the JS API; the supported stop must stay below it.
+    const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+    world.timestep = H;
+    const body = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setLinvel(1500, 0, 0).setCanSleep(false));
+    world.createCollider(RAPIER.ColliderDesc.ball(0.08).setMass(1), body);
+    world.step();
+    expect(body.linvel().x).toBe(SIMULATION_PROFILE.engineSpeedCap);
+    world.free();
+    expect(MAX_SUPPORTED_SPEED).toBeLessThan(SIMULATION_PROFILE.engineSpeedCap);
   });
 });
