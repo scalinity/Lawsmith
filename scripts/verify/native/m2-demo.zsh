@@ -100,14 +100,22 @@ wait_log run-digest 2 30
 logq all $APP_LOG run-digest | tail -2 > $QA_OUT/demo-b-digests.jsonl
 python3 -I - $QA_OUT/demo-a-digests.jsonl $QA_OUT/demo-b-digests.jsonl <<'PY' | tee -a $QA_OUT/qa-steps.log
 import json, sys
-a = [json.loads(l) for l in open(sys.argv[1])]
-b = [json.loads(l) for l in open(sys.argv[2])]
-for x, y in zip(a, b):
-    same = x['tick'] == y['tick'] and x['stateSha256'] == y['stateSha256'] and x['engineSha256'] == y['engineSha256']
-    print(('PASS' if same else 'FAIL'), f"equal-tick after native reopen at tick {x['tick']}: state {x['stateSha256'][:8]}/{y['stateSha256'][:8]}, engine {x['engineSha256'][:8]}/{y['engineSha256'][:8]}")
-    if not same:
-        sys.exit(1)
+# Each run needs its own digest at both ticks; pairing records in order would pass over a missing one.
+runs = [{e['tick']: e for e in map(json.loads, open(path))} for path in sys.argv[1:]]
+ok = True
+for tick in (600, 1200):
+    x, y = (run.get(tick) for run in runs)
+    if not (x and y):
+        print('FAIL', f"equal-tick after native reopen at tick {tick}: run {'A' if not x else 'B'} has no digest")
+        ok = False
+        continue
+    same = x['stateSha256'] == y['stateSha256'] and x['engineSha256'] == y['engineSha256']
+    print(('PASS' if same else 'FAIL'), f"equal-tick after native reopen at tick {tick}: state {x['stateSha256'][:8]}/{y['stateSha256'][:8]}, engine {x['engineSha256'][:8]}/{y['engineSha256'][:8]}")
+    ok = ok and same
+sys.exit(0 if ok else 1)
 PY
+# tee succeeds whatever the comparison printed, so the comparison's own status decides.
+(( pipestatus[1] == 0 )) || fail "equal-tick digests after native reopen are missing or differ"
 shot demo-08-reopened-running
 press play
 keys kd:shift t:d ku:shift
