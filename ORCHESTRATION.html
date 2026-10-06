@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> at <code>9df19d0</code></span>
+    <span>Realigned 2026-10-06 against <code>d491ea9</code>, M1’s close-out on <code>main</code></span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Start M1, Bend the falling stream, in a fresh session.</h1>
-    <p class="lede">M0 is accepted, so M1 runs next, and alone. Opus 5.5 authors it and GPT-6.1 Sol reviews it; if Claude limits bind, M1 waits for Opus rather than falling back to Astra. Its handover prompt carries findings 1, 2, 5, 6 and 7 from M0.</p>
-    <cite><code>docs/evidence/M0.md</code> Status, Owner native check results; <code>docs/MILESTONES.md</code> How to execute this plan, M1</cite>
+    <h1>Run M1’s two owner checks, then accept M1 to unlock M2.</h1>
+    <p class="lede">M1 is implemented, reviewed by GPT-6.1 Sol and remediated. P0 passes at protocol size, and exact reset holds in the packaged app. Two checks remain, deferred by you on 2026-10-06: real-trackpad pointer ownership, and sleep/wake. M2 waits for your acceptance. Settle the Rapier speed cap before M3.</p>
+    <cite><code>docs/evidence/M1.md</code> Status, Acceptance criteria, Owner native checks, Review</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -469,7 +469,7 @@
       </article>
 
       <!-- REALIGN M1 -->
-      <article class="unit" id="m1" data-gate="M1" data-state="not-started" data-tier="scarce">
+      <article class="unit" id="m1" data-gate="M1" data-state="owner-check" data-tier="scarce">
         <div class="gate">M1</div>
         <div>
           <div class="unit-head">
@@ -478,18 +478,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors, and M1 waits for it rather than falling back. GPT-6.1 Sol reviews; a small local implementation review is enough at M1.</dd>
-              <dt>Graph permits</dt><dd class="soft">Now: M0 is accepted.</dd>
-              <dt>Should run</dt><dd class="run">Now, and alone: it shares files with every later gate.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored. GPT-6.1 Sol reviewed <code>d2a04c2</code> (no critical or high findings, 3 medium, 4 low); every finding was fixed and re-verified.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>7103f2e</code>, record at <code>d491ea9</code>. Acceptance is yours.</dd>
+              <dt>Should run</dt><dd class="run">No more agent work. Your two checks, then your acceptance decision.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M0 accepted. Contracts C1–C6.</dd>
-              <dt>Destroys</dt><dd>Nothing beyond publishing. Its sleep/resume check (T04) puts the Mac to sleep, which suspends every session: run that one as an owner check.</dd>
-              <dt>Your part</dt><dd>Hands-off windows for a 45–90 s recording and three 60 s focused-window P0 captures. A real-trackpad check of pointer ownership.</dd>
+              <dt>Destroys</dt><dd>Nothing further. The sleep check puts the Mac to sleep, which suspends every session.</dd>
+              <dt>Your part</dt><dd>Two checks, deferred by you on 2026-10-06: real-trackpad pointer ownership (including <kbd>Esc</kbd> mid-drag, and grabbing a handle while the camera drifts), and sleep/wake with the stream playing. The steps are in <code>docs/evidence/M1.md</code>.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M1 Visual QA, Performance gate; Independent review note; <code>docs/SPEC.md</code> §17.2 T04; <code>AGENTS.md</code> Native QA 5</cite>
+          <cite class="src"><code>docs/evidence/M1.md</code> Status, Acceptance criteria, Owner native checks, Review; <code>docs/MILESTONES.md</code> M1</cite>
         </div>
       </article>
 
@@ -505,7 +505,7 @@
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors, and M2 waits for it rather than falling back. GPT-6.1 Sol runs the independent review gate on state ownership and format semantics.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M1 is ACCEPTED.</dd>
-              <dt>Should run</dt><dd class="run">Not before. It shares <code>domain</code> and <code>ui</code> with M1. First approved stopping point: portable V0.</dd>
+              <dt>Should run</dt><dd class="run">Not before M1 is accepted, which now waits only on your two checks. It shares <code>src/domain/</code>, <code>src/main.ts</code> and <code>index.html</code> with M1. First approved stopping point: portable V0.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M1 accepted. Contracts C3, C7, C8.</dd>
@@ -1142,7 +1142,7 @@
 
   <section id="open-threads" aria-labelledby="h-threads">
     <h2 id="h-threads">Open threads</h2>
-    <p class="intro">Every thread the record leaves open, each with the unit that owns it. Finding 7 was documented rather than fixed, so it stays open under the review rule. Close a thread by deleting its row, and record the closing evidence in that unit’s evidence file.</p>
+    <p class="intro">Every thread the record leaves open, each with the unit that owns it. M1 closed M0 findings 6 and 7. Close a thread by deleting its row, and record the closing evidence in that unit’s evidence file.</p>
 
     <!-- REALIGN: open threads live only here. data-owner = owning unit id; data-short = the label shown on that unit's strip. -->
     <table class="rows" id="threads">
@@ -1152,33 +1152,27 @@
       <tbody>
         <tr id="t-f1" data-owner="m1" data-short="Finding 1">
           <td data-label="Thread" class="lead">Finding 1: lost pointer-up</td>
-          <td data-label="What the record says">About 1 in 6–8 synthetic canvas drags never delivered <code>pointerup</code>; OrbitControls then keeps pointer capture, and the next press goes to the canvas. Root cause open. M1 should end a gesture whose pointer reports <code>buttons === 0</code>. Owner check 3 passed on a real trackpad: no pointer-up lost in 6 orbit and 10 Move drags.</td>
+          <td data-label="What the record says">M1 ends a drag that is still held when the pointer reports <code>buttons === 0</code>, the way its lost release would have. No pointer-up was lost in 127 synthetic drags in M1, and a loss could not be forced, so that path has no native evidence yet. The root cause is still unknown. It closes on M1’s real-trackpad owner check.</td>
           <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M0.md</code> finding 1; <code>SPEC.md</code> §10.3</cite></td>
+          <td data-label="Source"><cite><code>M1.md</code> finding 1, Owner native checks</cite></td>
         </tr>
         <tr id="t-f2" data-owner="m1" data-short="Finding 2">
           <td data-label="Thread" class="lead">Finding 2: unreproduced window jump</td>
-          <td data-label="What the record says">Once, after an unfocused drag-region drag and an unfocused canvas press, the window ended at (64, 472). Six controlled repeats did not reproduce it, and none was reported during owner check 4. Watch for it during M1’s native window-drag QA.</td>
+          <td data-label="What the record says">Recurred once in 11 synthetic drag-region drags in M1: the window’s origin landed on the drag’s end point. It did not recur in 10 targeted repeats or the final session. No fix is claimed. It waits on your real-input observation; M1 proposes moving it to M8 if you never see it, which needs your approval.</td>
           <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M0.md</code> finding 2</cite></td>
+          <td data-label="Source"><cite><code>M1.md</code> finding 2, Window and drag region</cite></td>
         </tr>
         <tr id="t-f5" data-owner="m1" data-short="Finding 5">
           <td data-label="Thread" class="lead">Finding 5: startup compile</td>
-          <td data-label="What the record says">The first frame arrives about 3.3 s after a cold launch, almost all of it <code>compileAsync</code> and readback pipeline compilation. M1 keeps it in view; M0 does not optimise it.</td>
+          <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails, so nothing was optimised. M1 proposes M9 as owner, pending your approval.</td>
           <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M0.md</code> finding 5; Frame pacing</cite></td>
+          <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup</cite></td>
         </tr>
-        <tr id="t-f6" data-owner="m1" data-short="Finding 6">
-          <td data-label="Thread" class="lead">Finding 6: OrbitControls <code>end</code> on gizmo release</td>
-          <td data-label="What the record says">OrbitControls also receives the gizmo’s <code>pointerdown</code> and fires <code>end</code> on release with an unchanged camera. Harmless now; M1’s proxy gizmo owns this ordering.</td>
-          <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M0.md</code> finding 6</cite></td>
-        </tr>
-        <tr id="t-f7" data-owner="m1" data-short="Finding 7">
-          <td data-label="Thread" class="lead">Finding 7: drag strip over the canvas</td>
-          <td data-label="What the record says">The drag region fills the top 40 px of the canvas, so a gizmo handle moved there is reachable only after orbiting or Frame. It was documented, not fixed. M1 keeps law handles out of the band or revisits its height.</td>
-          <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M0.md</code> finding 7, Review; <code>AGENTS.md</code> Reviews</cite></td>
+        <tr id="t-speed" data-owner="m3" data-short="Speed cap">
+          <td data-label="Thread" class="lead">Rapier 400 m/s speed cap</td>
+          <td data-label="What the record says">Rapier 0.21 caps linear speed at 400 m/s per length unit. SPEC §9.3’s 1000 m/s stop therefore cannot fire, and SPEC §9.1’s velocity update fails above 400 m/s. It is harmless in M1 (about 10 m/s), and a test pins it. It needs your decision on SPEC or the profile before M3, where 200 m/s² laws reach 400 m/s in about 2 s.</td>
+          <td data-label="Owner"><a href="#m3">M3</a>, your decision</td>
+          <td data-label="Source"><cite><code>M1.md</code> finding 6; <code>SPEC.md</code> §9.1, §9.3</cite></td>
         </tr>
         <tr id="t-f8" data-owner="deferred" data-short="Finding 8">
           <td data-label="Thread" class="lead">Finding 8: DPR across displays</td>
