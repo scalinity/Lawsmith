@@ -3,6 +3,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { DocumentController } from '../src/domain/document';
 import { STARTING_RECIPE, cloneFrozen } from '../src/domain/scene';
+import { createDocument } from '../src/persistence/sceneFile';
 import {
   FIXTURE_TICKS,
   compareRuns,
@@ -154,7 +155,7 @@ describe('T04 live scheduler', () => {
 describe('T04 reset of the authored configuration', () => {
   it('settles pending edits, rebuilds the current configuration at tick 0, and never replays a drag', () => {
     const host = new SimulationHost(cloneFrozen(STARTING_RECIPE));
-    const document = new DocumentController(STARTING_RECIPE, host);
+    const document = new DocumentController(createDocument(STARTING_RECIPE, { title: 'recipe' }), host);
     const base = STARTING_RECIPE.fields[0]!;
     for (let i = 0; i < 90; i++) host.step();
     // A drag: several previews, then one still-pending final value.
@@ -183,7 +184,7 @@ describe('T04 reset of the authored configuration', () => {
 
   it('rejects an invalid edit before it reaches the host', () => {
     const host = new SimulationHost(cloneFrozen(STARTING_RECIPE));
-    const document = new DocumentController(STARTING_RECIPE, host);
+    const document = new DocumentController(createDocument(STARTING_RECIPE, { title: 'recipe' }), host);
     const base = STARTING_RECIPE.fields[0]!;
     const result = document.putField({ ...base, region: { kind: 'box', halfExtents: [0, 2, 1.5] } });
     expect(result.ok).toBe(false);
@@ -191,5 +192,27 @@ describe('T04 reset of the authored configuration', () => {
     expect(host.lastAppliedSequence).toBe(0);
     expect(host.appliedFields()[0]).toEqual(base);
     host.dispose();
+  });
+});
+
+describe('M1 regression oracle', () => {
+  const sha256 = async (data: string | Uint8Array) => {
+    const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
+    const digest = await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>);
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  // The accepted M1 packaged app's run digests for the recipe (docs/evidence/M1.md, Exact reset
+  // and cadence: state 95ff02d6…/c0871e51…, engine 935d92ed…/95c100da…). M2 must not move them.
+  it('the recipe still reaches the accepted M1 state and engine digests at ticks 600 and 1200', async () => {
+    const host = new SimulationHost(cloneFrozen(STARTING_RECIPE));
+    const seen: Record<number, [string, string]> = {};
+    for (let t = 1; t <= 1200; t++) {
+      host.step();
+      if (t === 600 || t === 1200) seen[t] = [await sha256(JSON.stringify(host.canonicalState())), await sha256(host.engineSnapshot())];
+    }
+    host.dispose();
+    expect(seen[600]).toEqual(['95ff02d66f208149a621fda3439b5fda5222c04d157d26d74e508b4fab00467e', '935d92ed16b6dbbbf4ab5b1b0594c9c9b8d6d2f91567c8bad871851916663d09']);
+    expect(seen[1200]).toEqual(['c0871e511bfaf8dfd1bf67792f5bca4bd4a97b7e004ce5883880b1d88924c855', '95c100da14eb5fde78e15f668ff1c27cbadc16eb8703e21941a146f1f892618b']);
   });
 });

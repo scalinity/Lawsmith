@@ -6,6 +6,7 @@ import {
   type CollisionMode,
   type EmitterDefinition,
   type FieldDefinition,
+  type Quat,
   type SceneDefinition,
   type Vec3,
 } from '../domain/scene';
@@ -112,8 +113,15 @@ export interface PutField {
   readonly kind: 'putField';
   readonly field: FieldDefinition;
 }
-/** M1's command vocabulary: a complete validated field put (SPEC §10.2). */
-export type CommandPayload = PutField;
+export interface RemoveField {
+  readonly kind: 'removeField';
+  readonly id: string;
+}
+/** The command vocabulary (SPEC §10.2): a complete validated field put, or removal of a known law. */
+export type CommandPayload = PutField | RemoveField;
+
+/** The law a command addresses. */
+export const commandTarget = (payload: CommandPayload) => (payload.kind === 'putField' ? payload.field.id : payload.id);
 
 export interface CommandAck {
   readonly tick: number;
@@ -188,6 +196,7 @@ interface PendingCommand {
 }
 
 const byId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+const IDENTITY: Quat = [0, 0, 0, 1];
 const finite3 = (x: number, y: number, z: number) => Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z);
 
 /**
@@ -259,25 +268,34 @@ export class SimulationHost {
     this.bodies = [];
     for (const def of [...root.bodies].sort(byId)) {
       const mass = def.type === 'dynamic' ? def.massKg : null;
-      const body = this.createBody(def.position, def.linearVelocity, def.collider, def.material, def.collisionMode, mass);
+      const { position, rotation } = def.initialPose;
+      const body = this.createBody(position, rotation, def.initialLinearVelocity, def.initialAngularVelocity, def.collider, def.material, def.collisionMode, mass);
       if (mass !== null) this.bodies.push({ id: def.id, body, radius: radiusOf(def.collider), deathTick: Infinity });
     }
     this.publish();
   }
 
-  /** Queues a validated command for the next boundary; a newer put for the same law replaces an unconsumed one. */
+  /**
+   * Queues a validated command for the next boundary. A put replaces an unconsumed put for the same
+   * law at the end of the queue (pointer coalescing, SPEC §10.2); structural order is otherwise kept.
+   */
   submit(payload: CommandPayload, documentRevision: number): void {
     const last = this.pending[this.pending.length - 1];
-    if (last && last.payload.field.id === payload.field.id) this.pending[this.pending.length - 1] = { documentRevision, payload };
+    const coalesce = last && payload.kind === 'putField' && last.payload.kind === 'putField' && last.payload.field.id === payload.field.id;
+    if (coalesce) this.pending[this.pending.length - 1] = { documentRevision, payload };
     else this.pending.push({ documentRevision, payload });
   }
 
   /** Applies queued commands at the current boundary n, in sequence order, without advancing (SPEC §10.2). */
   settleBoundary(): void {
     for (const { documentRevision, payload } of this.pending) {
-      this.lastAppliedSequence += 1;
-      const index = this.fieldDefs.findIndex((f) => f.id === payload.field.id);
-      if (index >= 0) {
+      const index = this.fieldDefs.findIndex((f) => f.id === commandTarget(payload));
+      if (payload.kind === 'removeField') {
+        // Delete requires a known ID (SPEC §10.2); the document controller only removes laws it holds.
+        if (index < 0) throw new Error(`removeField: no law ${payload.id}`);
+        this.fieldDefs.splice(index, 1);
+        this.compiled.splice(index, 1);
+      } else if (index >= 0) {
         this.fieldDefs[index] = payload.field;
         this.compiled[index] = compileField(payload.field);
       } else {
@@ -285,6 +303,7 @@ export class SimulationHost {
         this.fieldDefs.sort(byId);
         this.compiled = this.fieldDefs.map(compileField);
       }
+      this.lastAppliedSequence += 1;
       this.acks.push({ tick: this.tick, sequence: this.lastAppliedSequence, documentRevision, payload });
     }
     this.pending.length = 0;
@@ -415,6 +434,7 @@ export class SimulationHost {
     for (const emitter of this.emitters) {
       const def = emitter.def;
       if (n < def.startTick || (n - def.startTick) % def.intervalTicks !== 0) continue;
+      if (def.emissionCount !== undefined && emitter.ordinal >= def.emissionCount) continue;
       // Exactly three draws per scheduled birth, even for zero jitter or a skipped spawn.
       const ox = (2 * this.draw(emitter) - 1) * def.jitter[0];
       const oy = (2 * this.draw(emitter) - 1) * def.jitter[1];
@@ -425,8 +445,18 @@ export class SimulationHost {
         continue;
       }
       const { template } = def;
-      const position: Vec3 = [def.position[0] + ox, def.position[1] + oy, def.position[2] + oz];
-      const body = this.createBody(position, template.linearVelocity, template.collider, template.material, template.collisionMode, template.massKg);
+      const origin = def.pose.position;
+      const position: Vec3 = [origin[0] + ox, origin[1] + oy, origin[2] + oz];
+      const body = this.createBody(
+        position,
+        IDENTITY,
+        template.initialLinearVelocity,
+        template.initialAngularVelocity,
+        template.collider,
+        template.material,
+        template.collisionMode,
+        template.massKg,
+      );
       this.bodies.push({ id: `${def.id}:${ordinal}`, body, radius: radiusOf(template.collider), deathTick: n + def.lifetimeTicks });
     }
   }
@@ -439,7 +469,9 @@ export class SimulationHost {
   /** Creates one body with one centered collider; a dynamic collider carries the full authored mass (SPEC §5.2). */
   private createBody(
     position: Vec3,
+    rotation: Quat,
     velocity: Vec3,
+    angularVelocity: Vec3,
     collider: ColliderShape,
     material: BodyMaterial,
     mode: CollisionMode,
@@ -450,11 +482,13 @@ export class SimulationHost {
         ? RAPIER.RigidBodyDesc.fixed()
         : RAPIER.RigidBodyDesc.dynamic()
             .setLinvel(velocity[0], velocity[1], velocity[2])
+            .setAngvel({ x: angularVelocity[0], y: angularVelocity[1], z: angularVelocity[2] })
             .setLinearDamping(0)
             .setAngularDamping(0)
             .setCcdEnabled(true)
             .setCanSleep(false);
     desc.setTranslation(position[0], position[1], position[2]);
+    desc.setRotation({ x: rotation[0], y: rotation[1], z: rotation[2], w: rotation[3] });
     const body = this.world!.createRigidBody(desc);
     const shape =
       collider.kind === 'sphere'

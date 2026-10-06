@@ -67,12 +67,13 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     if (body.type !== 'fixed' || body.collider.kind !== 'box') continue;
     const [hx, hy, hz] = body.collider.halfExtents;
     const block = new Mesh(new BoxGeometry(2 * hx, 2 * hy, 2 * hz), new MeshStandardNodeMaterial({ color: tokenColor('--floor'), roughness: 1 }));
-    block.position.set(...body.position);
+    block.position.set(...body.initialPose.position);
     block.receiveShadow = true;
     scene.add(block);
     const size = 2 * Math.min(hx, hz);
     const grid = new GridHelper(size, Math.round(size), tokenColor('--divider'), tokenColor('--grid-minor'));
-    grid.position.set(body.position[0], body.position[1] + hy + 0.002, body.position[2]);
+    const [bx, by, bz] = body.initialPose.position;
+    grid.position.set(bx, by + hy + 0.002, bz);
     scene.add(grid);
   }
 
@@ -86,7 +87,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
     const outline = new LineSegments(geometry, new LineBasicNodeMaterial({ color: tertiary }));
-    outline.position.set(...emitter.position);
+    outline.position.set(...emitter.pose.position);
     scene.add(outline);
   }
 

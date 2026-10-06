@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { DocumentController } from './domain/document';
 import { STARTING_RECIPE, cloneFrozen, type FieldDefinition } from './domain/scene';
+import { createDocument } from './persistence/sceneFile';
 import { FIELD_KERNEL_VERSION } from './fields/directional';
 import { LawInteraction, type TransformMode } from './interaction/lawGesture';
 import { identifyBackend, isQualifiedWebGPU, probeRenderedPixels, watchGPUErrors } from './rendering/backend';
@@ -126,7 +127,7 @@ async function start() {
 
   // Authority: the host owns the world; the document controller owns the authored scene.
   const host = new SimulationHost(cloneFrozen(STARTING_RECIPE));
-  const authoring = new DocumentController(STARTING_RECIPE, host);
+  const authoring = new DocumentController(createDocument(STARTING_RECIPE, { title: 'Falling stream' }), host);
   const scheduler = new FixedStepScheduler(STEP_MS);
   const LAW_ID = STARTING_RECIPE.fields[0]!.id;
   const appliedLaw = () => host.appliedFields().find((f) => f.id === LAW_ID)!;
@@ -186,7 +187,7 @@ async function start() {
           appliedRevision: ack.documentRevision,
           tick: ack.tick,
           sequence: ack.sequence,
-          field: lawSummary(ack.payload.field),
+          field: ack.payload.kind === 'putField' ? lawSummary(ack.payload.field) : { removed: ack.payload.id },
         });
       }
     }

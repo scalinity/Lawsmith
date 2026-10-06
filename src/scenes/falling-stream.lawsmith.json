@@ -1,0 +1,105 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "The starting recipe: a seeded stream of spheres falling past one directional law.",
+    "title": "Falling stream"
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [9, 7, 11],
+      "target": [0, 1, 0]
+    },
+    "laws": [
+      {
+        "color": "#55aaa4",
+        "id": "sideways",
+        "label": "Sideways",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["emitter.xorshift32.v1", "primitive.directional.v1", "region.box.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [
+      {
+        "id": "stream",
+        "intervalTicks": 8,
+        "jitter": [0.25, 0, 0.25],
+        "lifetimeTicks": 512,
+        "pose": {
+          "position": [0, 6, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "seed": 1279350577,
+        "startTick": 0,
+        "template": {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.08
+          },
+          "collisionMode": "fixedOnly",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [0, -0.5, 0],
+          "massKg": 1,
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          }
+        }
+      }
+    ],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "direction": [1, 0, 0],
+          "kind": "directional",
+          "strength": 12
+        },
+        "id": "sideways",
+        "pose": {
+          "position": [3, 1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [1.5, 2, 1.5],
+          "kind": "box"
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}
