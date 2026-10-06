@@ -1,17 +1,22 @@
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { Euler, Quaternion } from 'three/webgpu';
 import { DocumentController } from './domain/document';
-import { STARTING_RECIPE, cloneFrozen, type FieldDefinition } from './domain/scene';
-import { createDocument } from './persistence/sceneFile';
+import { LAW_COLORS, cloneFrozen, type FieldDefinition, type SceneDocument, type Vec3 } from './domain/scene';
 import { FIELD_KERNEL_VERSION } from './fields/directional';
-import { LawInteraction, type TransformMode } from './interaction/lawGesture';
+import { LawInteraction, type GestureEnd, type TransformMode } from './interaction/lawGesture';
+import { EditLatency, percentile, percentiles } from './measurement';
+import { defaultDocument } from './persistence/defaultScene';
+import { nativeIo } from './persistence/io';
+import { createDocument, semanticDigest } from './persistence/sceneFile';
+import { DocumentWorkflow, type RecoveryOffer } from './persistence/workflow';
 import { identifyBackend, isQualifiedWebGPU, probeRenderedPixels, watchGPUErrors } from './rendering/backend';
 import { createRenderer, createViewport, MAX_PIXEL_RATIO } from './rendering/viewport';
 import { createWorldView } from './rendering/worldView';
 import { compareRuns, runAtCadence, runFixedSteps, runResetFixture, scriptedRecipeEdits } from './simulation/fixtures';
 import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation } from './simulation/host';
 import { FixedStepScheduler } from './simulation/scheduler';
-import { EditLatency, percentile, percentiles } from './measurement';
 
 const mode = import.meta.env.DEV ? 'dev' : 'packaged';
 // Dev-only fault injection for the controlled-failure check; compiled out of production builds.
@@ -48,7 +53,7 @@ function withTimeout<T>(work: Promise<T>, what: string): Promise<T> {
 function showFailure(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   report('failure', { message, facts });
-  for (const id of ['status', 'tools', 'diagnostics', 'laws', 'transport']) $(id).hidden = true;
+  for (const id of ['status', 'tools', 'diagnostics', 'panel', 'transport']) $(id).hidden = true;
   $('failure-summary').textContent = message;
   $('failure-detail').textContent = JSON.stringify(facts, null, 2);
   $('failure').hidden = false;
@@ -83,11 +88,25 @@ async function sha256(data: string | Uint8Array): Promise<string> {
 }
 
 const lawSummary = (f: FieldDefinition) => ({
+  id: f.id,
   enabled: f.enabled,
   position: f.pose.position,
   rotation: f.pose.rotation,
   halfExtents: f.region.halfExtents,
 });
+
+const GESTURE_LABEL: Record<TransformMode, string> = { translate: 'Move law', rotate: 'Rotate law', scale: 'Resize law' };
+const BUSY_TEXT: Record<string, string> = {
+  save: 'Saving…',
+  'save-as': 'Saving…',
+  open: 'Opening…',
+  new: 'Starting a new scene…',
+  recover: 'Recovering…',
+  'discard-recovery': 'Discarding recovered work…',
+  close: 'Closing…',
+  quit: 'Quitting…',
+};
+const DEGREES = 180 / Math.PI;
 
 async function start() {
   const begin = performance.now();
@@ -125,18 +144,19 @@ async function start() {
   });
   const simulationReady = performance.now();
 
-  // Authority: the host owns the world; the document controller owns the authored scene.
-  const host = new SimulationHost(cloneFrozen(STARTING_RECIPE));
-  const authoring = new DocumentController(createDocument(STARTING_RECIPE, { title: 'Falling stream' }), host);
+  // Authority: the host owns the world; the document controller owns the authored document. A
+  // committed import replaces the host, so everything reads it through this binding.
+  const initial = defaultDocument();
+  let host = new SimulationHost(cloneFrozen(initial.semantic));
+  const authoring = new DocumentController(initial, host);
   const scheduler = new FixedStepScheduler(STEP_MS);
-  const LAW_ID = STARTING_RECIPE.fields[0]!.id;
-  const appliedLaw = () => host.appliedFields().find((f) => f.id === LAW_ID)!;
+  const appliedLaw = (id: string) => host.appliedFields().find((f) => f.id === id);
 
   const viewport = createViewport(renderer, report);
-  const world = createWorldView(viewport.scene, STARTING_RECIPE);
+  const world = createWorldView(viewport.scene, initial.semantic);
 
   // Edit latency (SPEC §18): accepted edit → first frame submitted with its applied revision.
-  const editLatency = new EditLatency();
+  let editLatency = new EditLatency();
   /** Final revisions of gestures and toggles, reported once the host applies them. */
   const awaited = new Set<number>();
   const submit = (candidate: FieldDefinition) => {
@@ -145,25 +165,42 @@ async function start() {
     return result;
   };
 
-  const interaction = new LawInteraction({
-    canvas: renderer.domElement,
-    dragRegion: $('drag-region'),
-    camera: viewport.camera,
-    gizmo: viewport.gizmo,
-    orbit: viewport.orbit,
-    proxy: viewport.proxy,
-    appliedField: appliedLaw,
-    submit,
-    onGestureEnd: (revision) => awaitApplied(revision),
-    onSelectionChange: () => syncControls(),
-    log: report,
-  });
+  let frozen = false;
+  let cameraMoved = false;
+
+  const interaction = new LawInteraction(
+    {
+      canvas: renderer.domElement,
+      dragRegion: $('drag-region'),
+      camera: viewport.camera,
+      gizmo: viewport.gizmo,
+      orbit: viewport.orbit,
+      proxy: viewport.proxy,
+      appliedField: (id) => appliedLaw(id),
+      pickable: () => host.appliedFields().filter((f) => authoring.presentationOf(f.id).visible),
+      submit,
+      onGestureEnd: (end) => gestureEnded(end),
+      onSelectionChange: () => renderPanel(),
+      log: report,
+    },
+    initial.semantic.fields[0]?.id ?? null,
+  );
+
+  /** One completed drag is one author-undo entry; a cancel restored its start and records nothing. */
+  const gestureEnded = (end: GestureEnd) => {
+    awaitApplied(end.revision);
+    if (!end.cancelled && end.latest) {
+      const presentation = authoring.presentationOf(end.start.id);
+      authoring.record({ label: GESTURE_LABEL[end.mode], id: end.start.id, before: { field: end.start, presentation }, after: { field: end.latest, presentation } });
+    }
+    edited();
+  };
 
   /** Reports a change once the host has applied it; a gesture's last preview may already be applied at release. */
   const awaitApplied = (revision: number | null) => {
     if (revision === null) return;
     if (revision <= authoring.appliedRevision) {
-      report('law-applied', { revision, appliedRevision: authoring.appliedRevision, tick: host.tick, sequence: host.lastAppliedSequence, field: lawSummary(appliedLaw()) });
+      report('law-applied', { revision, appliedRevision: authoring.appliedRevision, tick: host.tick, sequence: host.lastAppliedSequence });
     } else {
       awaited.add(revision);
     }
@@ -192,6 +229,11 @@ async function start() {
       }
     }
   };
+  /** Applies queued commands at the current boundary now (SPEC §10.2), as the next step would. */
+  const settleNow = () => {
+    host.settleBoundary();
+    absorb();
+  };
 
   // Exact-run evidence from the live loop: digests at ticks 600 and 1200 of every run.
   const captureDigest = () => {
@@ -206,6 +248,15 @@ async function start() {
     );
   };
 
+  /** The semantic digest of the settled document, so the log shows what a presentation edit did not change. */
+  const reportDigest = (reason: string) => {
+    const snapshot = authoring.snapshot(authoring.camera);
+    const generation = authoring.generation;
+    semanticDigest(createDocument(snapshot.semantic, snapshot.metadata, snapshot.presentation)).then((semantic) =>
+      report('digest', { reason, generation, revision: snapshot.revision, semanticSha256: semantic }),
+    );
+  };
+
   const showSimError = (message: string, offerReset: boolean) => {
     $('sim-error-text').textContent = message;
     $('sim-error-reset').hidden = !offerReset;
@@ -214,7 +265,7 @@ async function start() {
 
   const setPlaying = (playing: boolean, reason: string) => {
     if (playing === scheduler.playing) return;
-    if (playing && host.fault) return;
+    if (playing && (host.fault || frozen)) return;
     if (playing) scheduler.play();
     else scheduler.pause();
     notePlaying(playing, reason);
@@ -250,7 +301,7 @@ async function start() {
   };
 
   const stepOnce = () => {
-    if (interaction.gesture || host.fault) return;
+    if (interaction.gesture || host.fault || frozen) return;
     setPlaying(false, 'step');
     try {
       timedStep();
@@ -262,60 +313,435 @@ async function start() {
   };
 
   const resetScene = () => {
+    if (frozen) return;
     if (interaction.gesture) {
       report('sim-control', { action: 'reset-refused', reason: 'gesture active', tick: host.tick });
       return;
     }
     setPlaying(false, 'reset');
-    host.settleBoundary();
-    absorb();
+    settleNow();
     authoring.reset();
     runIndex += 1;
     editsSinceReset = 0;
     if (p0) p0.invalid ??= 'reset during capture';
     $('sim-error').hidden = true;
-    report('sim-control', { action: 'reset', tick: host.tick, run: runIndex, field: lawSummary(appliedLaw()) });
+    report('sim-control', { action: 'reset', tick: host.tick, run: runIndex, laws: authoring.scene.fields.map(lawSummary) });
     syncControls();
   };
 
+  // ------------------------------------------------------------------ document workflows
+
+  /** The camera framing a save records: the live camera once the user has moved it, else the document's. */
+  const savedCamera = () => {
+    if (cameraMoved) {
+      const p = viewport.camera.position;
+      const t = viewport.orbit.target;
+      authoring.setCamera({ position: [p.x, p.y, p.z], target: [t.x, t.y, t.z] });
+      cameraMoved = false;
+    }
+    return authoring.camera;
+  };
+
+  const applyCamera = (camera: SceneDocument['presentation']['camera']) => {
+    if (camera) viewport.setView(camera.position, camera.target);
+    else viewport.resetView();
+    cameraMoved = false;
+  };
+
+  const workflow = new DocumentWorkflow(nativeIo, {
+    controller: authoring,
+    quiesce: (reason) => {
+      setPlaying(false, reason);
+      interaction.release(reason);
+      settleNow();
+    },
+    freeze: (value) => {
+      frozen = value;
+      for (const id of ['panel', 'tools', 'transport']) $(id).inert = value;
+      viewport.gizmo.enabled = !value;
+      report('guard', { frozen: value, tick: host.tick });
+    },
+    gestureActive: () => interaction.gesture !== null,
+    camera: savedCamera,
+    candidate: (document) => new SimulationHost(cloneFrozen(document.semantic)),
+    commit: (document, candidate) => {
+      setPlaying(false, 'load');
+      const displaced = host;
+      host = candidate;
+      authoring.load(document, candidate);
+      displaced.dispose();
+      world.setScene(document.semantic);
+      applyCamera(document.presentation.camera);
+      interaction.select(document.semantic.fields[0]?.id ?? null);
+      editLatency = new EditLatency();
+      awaited.clear();
+      runIndex += 1;
+      editsSinceReset = 0;
+      if (p0) p0.invalid ??= 'scene replaced during capture';
+      $('sim-error').hidden = true;
+      report('sim-control', { action: 'load', tick: host.tick, playing: scheduler.playing, run: runIndex, laws: document.semantic.fields.map(lawSummary) });
+      reportDigest('load');
+    },
+    log: report,
+    now: () => performance.now(),
+    onChange: () => renderPanel(),
+  });
+
+  /** After any accepted authored edit: recovery follows after a short debounce, and the panel refreshes. */
+  const edited = () => {
+    workflow.edited();
+    renderPanel();
+  };
+
+  /** Commits a field being typed in, then runs a file workflow. */
+  const runFile = (action: 'open' | 'save' | 'saveAs' | 'newScene') => {
+    if (frozen) return;
+    if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
+    const t = host.tick;
+    void workflow[action]().then((outcome) => {
+      report('file-control', { action, outcome, tickBefore: t, tickAfter: host.tick, playing: scheduler.playing });
+      if (outcome && action !== 'open' && action !== 'newScene') reportDigest(action);
+      renderPanel();
+    });
+  };
+
+  // ------------------------------------------------------------------ authoring commands
+
+  const selectedLaw = () => (interaction.selectedId === null ? undefined : appliedLaw(interaction.selectedId));
+  const blocked = () => frozen || interaction.gesture !== null;
+
+  const undo = (redo: boolean) => {
+    if (blocked()) return;
+    const result = redo ? authoring.redo() : authoring.undo();
+    if (result.ok) {
+      settleNow();
+      if (appliedLaw(result.value.id)) interaction.select(result.value.id);
+      else if (interaction.selectedId === result.value.id) interaction.select(authoring.scene.fields[0]?.id ?? null);
+      edited();
+    }
+    report('history', {
+      action: redo ? 'redo' : 'undo',
+      ok: result.ok,
+      label: result.ok ? result.value.label : null,
+      law: result.ok ? result.value.id : null,
+      reason: result.ok ? null : result.reason,
+      revision: authoring.revision,
+      tick: host.tick,
+      laws: host.appliedFields().map(lawSummary),
+    });
+    renderPanel();
+  };
+
+  const toggleEnabled = (id: string) => {
+    if (blocked()) return;
+    const law = appliedLaw(id);
+    if (!law) return;
+    const result = authoring.editField(id, law.enabled ? 'Disable law' : 'Enable law', (f) => ({ ...f, enabled: !f.enabled }));
+    if (result.ok) {
+      editLatency.accept(result.value.revision, performance.now());
+      awaitApplied(result.value.revision);
+      edited();
+      reportDigest('enabled');
+    }
+    report('control', { law: id, enabled: !law.enabled, revision: result.ok ? result.value.revision : null });
+  };
+
+  const toggleVisible = (id: string) => {
+    if (blocked()) return;
+    const visible = !authoring.presentationOf(id).visible;
+    const result = authoring.setLawPresentation(id, { visible });
+    report('control', { law: id, visible, revision: result.ok ? result.value.revision : null });
+    if (result.ok) {
+      edited();
+      reportDigest('visibility');
+    }
+  };
+
+  const duplicateSelected = () => {
+    const law = selectedLaw();
+    if (blocked() || !law) return;
+    const result = authoring.duplicate(law.id);
+    if (result.ok) {
+      settleNow();
+      interaction.select(result.value.id);
+      edited();
+    } else showDetailsError(result.reason);
+    report('control', { duplicate: law.id, created: result.ok ? result.value.id : null, reason: result.ok ? null : result.reason, laws: host.appliedFields().length });
+  };
+
+  const deleteSelected = () => {
+    const law = selectedLaw();
+    if (blocked() || !law) return;
+    const result = authoring.remove(law.id);
+    if (result.ok) {
+      settleNow();
+      interaction.select(authoring.scene.fields[0]?.id ?? null);
+      edited();
+    }
+    report('control', { delete: law.id, ok: result.ok, laws: host.appliedFields().length });
+  };
+
+  const setArrows = () => {
+    if (blocked()) return;
+    authoring.setArrows(!authoring.arrows);
+    report('control', { arrows: authoring.arrows, revision: authoring.revision });
+    edited();
+    reportDigest('arrows');
+  };
+
+  // ------------------------------------------------------------------ panel
+
+  const lawList = $<HTMLUListElement>('law-list');
+  const details = $('details');
+  const detailsError = $('details-error');
+  const colorGroup = $('law-colors');
+  const labelInput = $<HTMLInputElement>('law-label');
+  const strengthInput = $<HTMLInputElement>('law-strength');
+  const fadeInput = $<HTMLInputElement>('law-fade');
+  const triples = new Map(
+    [...details.querySelectorAll<HTMLFieldSetElement>('fieldset.triple')].map((set) => [set.dataset.property!, [...set.querySelectorAll('input')]] as const),
+  );
+
+  const EYE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>';
+  const EYE_OFF = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z"/><path d="M2.5 13.5l11-11"/></svg>';
+
+  for (const color of LAW_COLORS) {
+    const swatch = document.createElement('button');
+    swatch.type = 'button';
+    swatch.className = 'swatch';
+    swatch.setAttribute('role', 'radio');
+    swatch.setAttribute('aria-label', `Color ${color}`);
+    swatch.style.setProperty('--swatch', color);
+    swatch.dataset.color = color;
+    colorGroup.append(swatch);
+  }
+
+  let listSignature = '';
+  let detailsSignature = '';
+  function showDetailsError(text: string | null, input?: HTMLInputElement) {
+    detailsError.hidden = text === null;
+    detailsError.textContent = text ?? '';
+    for (const field of details.querySelectorAll('input')) field.removeAttribute('aria-invalid');
+    if (input && text) input.setAttribute('aria-invalid', 'true');
+  }
+
+  const fmt = (value: number, digits: number) => String(Math.round(value * 10 ** digits) / 10 ** digits);
+
+  function renderPanel() {
+    // Document.
+    const busy = workflow.busy;
+    const file = workflow.fileName;
+    $('doc-title').textContent = authoring.metadata.title;
+    const state = $('doc-state');
+    state.dataset.dirty = String(workflow.dirty);
+    state.textContent = busy
+      ? (BUSY_TEXT[busy] ?? 'Working…')
+      : workflow.dirty
+        ? file
+          ? `Edited since it was saved to ${file}`
+          : workflow.recovered
+            ? 'Recovered, not saved to a file yet'
+            : 'Edited, not saved to a file'
+        : file
+          ? `Saved to ${file}`
+          : 'Not saved to a file';
+    for (const id of ['file-new', 'file-open', 'file-save', 'file-save-as']) $<HTMLButtonElement>(id).disabled = busy !== null;
+    const message = $('doc-message');
+    message.hidden = workflow.message === null;
+    message.textContent = workflow.message?.text ?? '';
+    message.dataset.kind = workflow.message?.kind ?? '';
+    const recovery = workflow.recovery.status;
+    const recoveryLine = $('doc-recovery');
+    recoveryLine.hidden = !(recovery.state === 'failed' || (recovery.state === 'written' && workflow.dirty));
+    recoveryLine.textContent =
+      recovery.state === 'failed' ? `Recovery is unavailable: ${recovery.reason}. Save and Save As still work.` : recovery.state === 'written' ? `A recovery copy holds revision ${recovery.revision}.` : '';
+
+    // History and visualization default.
+    $<HTMLButtonElement>('undo').disabled = !authoring.canUndo;
+    $<HTMLButtonElement>('redo').disabled = !authoring.canRedo;
+    $('arrows-toggle').setAttribute('aria-pressed', String(authoring.arrows));
+
+    // Laws list, rebuilt only when something it shows changed.
+    const laws = host.appliedFields();
+    const selectedId = interaction.selectedId;
+    const signature = JSON.stringify([selectedId, laws.map((f) => [f.id, f.enabled, f.expression.strength, authoring.presentationOf(f.id)])]);
+    if (signature !== listSignature) {
+      listSignature = signature;
+      lawList.replaceChildren(
+        ...laws.map((f) => {
+          const p = authoring.presentationOf(f.id);
+          const item = document.createElement('li');
+          item.className = 'law-row';
+          item.style.setProperty('--law-color', p.color);
+          const select = document.createElement('button');
+          select.type = 'button';
+          select.className = 'law-select';
+          select.dataset.id = f.id;
+          select.dataset.action = 'select';
+          select.setAttribute('aria-pressed', String(f.id === selectedId));
+          const name = document.createElement('span');
+          name.className = 'law-name';
+          name.textContent = p.label; // text, never markup (SPEC §15.2)
+          const meta = document.createElement('span');
+          meta.className = 'law-meta';
+          meta.textContent = `directional, ${fmt(f.expression.strength, 2)} m/s²`;
+          select.append(name, meta);
+          const visible = document.createElement('button');
+          visible.type = 'button';
+          visible.className = 'law-visible';
+          visible.dataset.id = f.id;
+          visible.dataset.action = 'visible';
+          visible.setAttribute('aria-pressed', String(p.visible));
+          visible.setAttribute('aria-label', `Show ${p.label} in the viewport`);
+          visible.title = p.visible ? 'Shown. Hiding it keeps its effect.' : 'Hidden. Its effect still applies.';
+          visible.innerHTML = p.visible ? EYE : EYE_OFF;
+          const enabled = document.createElement('button');
+          enabled.type = 'button';
+          enabled.className = 'law-enabled';
+          enabled.dataset.id = f.id;
+          enabled.dataset.action = 'enabled';
+          enabled.setAttribute('aria-pressed', String(f.enabled));
+          enabled.setAttribute('aria-label', `${p.label} enabled`);
+          enabled.textContent = f.enabled ? 'On' : 'Off';
+          item.append(select, visible, enabled);
+          return item;
+        }),
+      );
+    }
+    const law = selectedLaw();
+    $<HTMLButtonElement>('law-duplicate').disabled = !law;
+    $<HTMLButtonElement>('law-delete').disabled = !law;
+
+    // Selected-law details: refreshed from the applied value, never over a field being typed in.
+    details.hidden = !law;
+    if (!law) return;
+    const p = authoring.presentationOf(law.id);
+    const detailSignature = JSON.stringify([law, p]);
+    if (detailSignature === detailsSignature) return;
+    detailsSignature = detailSignature;
+    $('details-title').textContent = p.label;
+    const focused = document.activeElement;
+    const show = (input: HTMLInputElement, value: string) => {
+      if (input !== focused) input.value = value;
+    };
+    show(labelInput, p.label);
+    for (const swatch of colorGroup.querySelectorAll<HTMLButtonElement>('.swatch')) swatch.setAttribute('aria-checked', String(swatch.dataset.color === p.color));
+    triples.get('position')!.forEach((input, i) => show(input, fmt(law.pose.position[i]!, 3)));
+    const euler = new Euler().setFromQuaternion(new Quaternion(...law.pose.rotation), 'XYZ');
+    triples.get('rotation')!.forEach((input, i) => show(input, fmt([euler.x, euler.y, euler.z][i]! * DEGREES, 1)));
+    triples.get('extent')!.forEach((input, i) => show(input, fmt(law.region.halfExtents[i]!, 3)));
+    show(strengthInput, fmt(law.expression.strength, 3));
+    show(fadeInput, fmt(law.edgeFade, 3));
+  }
+
+  /** A precise value typed into the details: one complete validated edit and one undo entry. */
+  const editSelected = (label: string, input: HTMLInputElement, change: (f: FieldDefinition, value: number) => FieldDefinition) => {
+    const law = selectedLaw();
+    if (!law || blocked()) return;
+    const value = input.value.trim() === '' ? NaN : Number(input.value);
+    const result = authoring.editField(law.id, label, (f) => change(f, value));
+    if (!result.ok) {
+      showDetailsError(`${result.reason[0]!.toUpperCase()}${result.reason.slice(1)}. The last valid value is kept.`, input);
+      report('control', { law: law.id, precise: label, rejected: result.reason });
+      detailsSignature = '';
+      return;
+    }
+    showDetailsError(null);
+    awaitApplied(result.value.revision);
+    settleNow();
+    report('control', { law: law.id, precise: label, revision: result.value.revision, field: lawSummary(result.value.field) });
+    edited();
+  };
+
+  const withAxis = (v: Vec3, axis: number, value: number): Vec3 => v.map((c, i) => (i === axis ? value : c)) as unknown as Vec3;
+  triples.get('position')!.forEach((input, axis) =>
+    input.addEventListener('change', () => editSelected('Move law', input, (f, v) => ({ ...f, pose: { ...f.pose, position: withAxis(f.pose.position, axis, v) } }))),
+  );
+  triples.get('rotation')!.forEach((input, axis) =>
+    input.addEventListener('change', () =>
+      editSelected('Rotate law', input, (f, v) => {
+        // Only the edited angle changes; the others keep full precision from the applied rotation.
+        const euler = new Euler().setFromQuaternion(new Quaternion(...f.pose.rotation), 'XYZ');
+        euler[(['x', 'y', 'z'] as const)[axis]!] = v / DEGREES;
+        const q = new Quaternion().setFromEuler(euler);
+        return { ...f, pose: { ...f.pose, rotation: [q.x, q.y, q.z, q.w] } };
+      }),
+    ),
+  );
+  triples.get('extent')!.forEach((input, axis) =>
+    input.addEventListener('change', () => editSelected('Resize law', input, (f, v) => ({ ...f, region: { kind: 'box', halfExtents: withAxis(f.region.halfExtents, axis, v) } }))),
+  );
+  strengthInput.addEventListener('change', () => editSelected('Change strength', strengthInput, (f, v) => ({ ...f, expression: { ...f.expression, strength: v } })));
+  fadeInput.addEventListener('change', () => editSelected('Change fade', fadeInput, (f, v) => ({ ...f, edgeFade: v })));
+  labelInput.addEventListener('change', () => {
+    const law = selectedLaw();
+    if (!law || blocked()) return;
+    const result = authoring.setLawPresentation(law.id, { label: labelInput.value.trim() });
+    if (!result.ok) {
+      showDetailsError(`The name ${result.reason.replace(/^label /, '')}. The last valid name is kept.`, labelInput);
+      detailsSignature = '';
+      return;
+    }
+    showDetailsError(null);
+    report('control', { law: law.id, label: labelInput.value.trim(), revision: result.value.revision });
+    edited();
+    reportDigest('label');
+  });
+  colorGroup.addEventListener('click', (event) => {
+    const color = (event.target as HTMLElement).closest<HTMLButtonElement>('.swatch')?.dataset.color;
+    const law = selectedLaw();
+    if (!color || !law || blocked()) return;
+    const result = authoring.setLawPresentation(law.id, { color });
+    report('control', { law: law.id, color, revision: result.ok ? result.value.revision : null });
+    if (result.ok) {
+      edited();
+      reportDigest('color');
+    }
+  });
+  lawList.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]');
+    if (!button) return;
+    const id = button.dataset.id!;
+    if (button.dataset.action === 'select') {
+      if (!interaction.gesture) interaction.select(interaction.selectedId === id ? null : id);
+    } else if (button.dataset.action === 'visible') toggleVisible(id);
+    else toggleEnabled(id);
+  });
+  $('law-duplicate').addEventListener('click', duplicateSelected);
+  $('law-delete').addEventListener('click', deleteSelected);
+  $('arrows-toggle').addEventListener('click', setArrows);
+  $('undo').addEventListener('click', () => undo(false));
+  $('redo').addEventListener('click', () => undo(true));
+  $('file-new').addEventListener('click', () => runFile('newScene'));
+  $('file-open').addEventListener('click', () => runFile('open'));
+  $('file-save').addEventListener('click', () => runFile('save'));
+  $('file-save-as').addEventListener('click', () => runFile('saveAs'));
+
   // Controls reflect authoritative state, refreshed only when it changes.
   const playButton = $('play');
-  const enabledButton = $('law-enabled');
   const modeButtons = document.querySelectorAll<HTMLButtonElement>('[data-mode]');
-  let shown = { playing: false, enabled: true, selected: true };
+  let shownPlaying = false;
   function syncControls() {
-    const next = { playing: scheduler.playing, enabled: appliedLaw().enabled, selected: interaction.selected };
-    if (next.playing !== shown.playing) {
-      playButton.setAttribute('aria-pressed', String(next.playing));
-      playButton.firstChild!.textContent = next.playing ? 'Pause ' : 'Play ';
+    if (scheduler.playing !== shownPlaying) {
+      shownPlaying = scheduler.playing;
+      playButton.setAttribute('aria-pressed', String(shownPlaying));
+      playButton.firstChild!.textContent = shownPlaying ? 'Pause ' : 'Play ';
     }
-    if (next.enabled !== shown.enabled) {
-      enabledButton.setAttribute('aria-pressed', String(next.enabled));
-      enabledButton.textContent = next.enabled ? 'On' : 'Off';
-    }
-    if (next.selected !== shown.selected) $('law-select').setAttribute('aria-pressed', String(next.selected));
-    shown = next;
   }
 
   const setMode = (next: TransformMode) => {
-    if (interaction.gesture) return;
+    if (interaction.gesture || frozen) return;
     interaction.setMode(next);
     modeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === next)));
     report('control', { transformMode: next });
   };
   const frameLaw = () => {
     if (interaction.gesture) return;
-    const law = appliedLaw();
-    if (interaction.selected) viewport.frame(law.pose.position, Math.hypot(...law.region.halfExtents));
+    const law = selectedLaw();
+    if (law) viewport.frame(law.pose.position, Math.hypot(...law.region.halfExtents));
     else viewport.resetView();
-    report('control', { frame: interaction.selected ? 'law' : 'default' });
-  };
-  const toggleEnabled = () => {
-    if (interaction.gesture) return;
-    const law = appliedLaw();
-    const result = submit({ ...law, enabled: !law.enabled });
-    if (result.ok) awaitApplied(result.value.revision);
-    report('control', { enabled: !law.enabled, revision: result.ok ? result.value.revision : null });
+    cameraMoved = true;
+    report('control', { frame: law ? law.id : 'default' });
   };
 
   modeButtons.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode as TransformMode)));
@@ -323,10 +749,10 @@ async function start() {
   $('reset-view').addEventListener('click', () => {
     if (interaction.gesture) return;
     viewport.resetView();
+    cameraMoved = true;
     report('control', { resetView: true });
   });
-  $('law-select').addEventListener('click', () => interaction.select(!interaction.selected));
-  enabledButton.addEventListener('click', toggleEnabled);
+  viewport.orbit.addEventListener('start', () => (cameraMoved = true));
   playButton.addEventListener('click', () => setPlaying(!scheduler.playing, 'control'));
   $('step').addEventListener('click', stepOnce);
   $('reset').addEventListener('click', resetScene);
@@ -347,7 +773,7 @@ async function start() {
     invalid: string | null;
   }
   const startP0 = () => {
-    if (p0) return;
+    if (p0 || frozen) return;
     setPlaying(true, 'p0');
     p0 = { run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], invalid: null };
     report('p0', { phase: 'warmup', run: p0.run });
@@ -391,7 +817,7 @@ async function start() {
     const root = cloneFrozen(authoring.scene);
     const t0 = performance.now();
     const reset = runResetFixture(root);
-    const script = scriptedRecipeEdits(root.fields[0]);
+    const script = root.fields[0] ? scriptedRecipeEdits(root.fields[0]) : [];
     const referenceHost = new SimulationHost(root);
     const reference = runFixedSteps(referenceHost, script);
     referenceHost.dispose();
@@ -399,7 +825,7 @@ async function start() {
     const scriptedReset = runResetFixture(root, script);
     report('fixtures', {
       elapsedMs: Math.round(performance.now() - t0),
-      root: lawSummary(root.fields[0]!),
+      root: root.fields.map(lawSummary),
       reset,
       scriptedReset,
       cadence,
@@ -408,8 +834,26 @@ async function start() {
   };
 
   window.addEventListener('keydown', (event) => {
+    const typing = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
+    if (event.metaKey && !event.ctrlKey && !event.altKey) {
+      const key = event.key.toLowerCase();
+      if (key === 'o' || key === 's') {
+        event.preventDefault();
+        runFile(key === 'o' ? 'open' : event.shiftKey ? 'saveAs' : 'save');
+      } else if (key === 'z' && !typing) {
+        // Author undo outside text editing; a focused text field keeps its own undo (SPEC §11.1).
+        event.preventDefault();
+        undo(event.shiftKey);
+      }
+      return;
+    }
     if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (typing) {
+      if (event.key === 'Escape') (event.target as HTMLElement).blur();
+      return;
+    }
     if (event.target instanceof HTMLButtonElement && (event.key === ' ' || event.key === 'Enter')) return;
+    if (frozen) return;
     switch (event.key) {
       case 't': return setMode('translate');
       case 'r': return setMode('rotate');
@@ -420,8 +864,11 @@ async function start() {
         return setPlaying(!scheduler.playing, 'keyboard');
       case '.': return stepOnce();
       case 'R': return resetScene();
+      case 'Backspace':
+      case 'Delete':
+        return deleteSelected();
       case 'Escape':
-        if (!interaction.cancel('escape')) interaction.select(false);
+        if (!interaction.cancel('escape')) interaction.select(null);
         return;
       case 'P': return startP0();
       case 'D':
@@ -460,10 +907,21 @@ async function start() {
   renderer.onDeviceLost = (info) => {
     report('gpu-device-lost', { message: info.message, reason: info.reason });
     pauseFor('device-lost');
-    showSimError('The graphics device was lost. Quit and reopen Lawsmith; the scene restarts from its recipe.', false);
+    showSimError('The graphics device was lost. Save your scene, then quit and reopen Lawsmith.', false);
   };
 
-  world.updateLaw(appliedLaw(), host.compiledField(LAW_ID)!, { selected: true, preview: null, throttle: false });
+  const drawLaws = () =>
+    world.updateLaws(
+      host.appliedFields().map((field) => ({ field, compiled: host.compiledField(field.id)!, presentation: authoring.presentationOf(field.id) })),
+      {
+        selectedId: interaction.selectedId,
+        preview: interaction.previewField(),
+        throttle: interaction.gesture !== null,
+        arrows: authoring.arrows,
+      },
+    );
+
+  drawLaws();
   await withTimeout(renderer.compileAsync(viewport.scene, viewport.camera), 'Scene pipeline compilation');
   const distinctColors = await withTimeout(probeRenderedPixels(renderer, viewport.scene, viewport.camera), 'Rendered-frame readback');
   report('render-probe', { distinctColors, gpuErrors: gpuErrors.length });
@@ -483,6 +941,7 @@ async function start() {
   let previous = { workMs: 0, beforeMs: 0, maxStepMs: 0, steps: 0 };
   const clock = $('clock');
   let clockTick = -1;
+  let shownRevision = -1;
 
   viewport.start({
     before(time) {
@@ -511,15 +970,16 @@ async function start() {
       absorb();
       world.updateBodies(host);
       interaction.syncProxy();
-      world.updateLaw(appliedLaw(), host.compiledField(LAW_ID)!, {
-        selected: interaction.selected,
-        preview: interaction.previewField(),
-        throttle: interaction.gesture !== null,
-      });
+      drawLaws();
       syncControls();
       if (host.tick !== clockTick) {
         clockTick = host.tick;
         clock.textContent = `tick ${host.tick} · ${(host.tick * STEP_SECONDS).toFixed(3)} s`;
+      }
+      // The panel follows applied changes without a per-frame rebuild, and not during a drag.
+      if (authoring.appliedRevision !== shownRevision && !interaction.gesture) {
+        shownRevision = authoring.appliedRevision;
+        renderPanel();
       }
       frameBeforeMs = performance.now() - beforeStart;
     },
@@ -582,14 +1042,16 @@ async function start() {
     const e = [...edits].sort((a, b) => a - b);
     const frameMs = intervals.reduce((sum, v) => sum + v, 0);
     const simWall = frameMs > 0 ? (frameSteps.reduce((sum, v) => sum + v, 0) * STEP_MS) / frameMs : 0;
-    const law = appliedLaw();
+    const laws = host.appliedFields();
     const canvas = renderer.domElement;
+    const captures = workflow.recovery.captureMs;
     overlay.textContent = [
       `${backend.backend}${backend.compatibilityMode ? ' (compatibility)' : ''} · ${location.origin} · ${window.isSecureContext ? 'secure' : 'NOT secure'} · ${mode}`,
-      `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws 1 (${law.enabled ? '1 on' : 'off'}) · arrows ${world.arrowCount()}`,
+      `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws ${laws.length} (${laws.filter((f) => f.enabled).length} on) · arrows ${world.arrowCount()}`,
       `steps/frame ${frameSteps[frameSteps.length - 1] ?? 0} · sim/wall ${simWall.toFixed(2)} · debt dropped ${Math.round(scheduler.droppedMs)} ms · skipped ${host.skippedEmissions}`,
       `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${e.length ? ms(percentile(e, 0.95)) : '—'} p95 ms`,
       `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls}`,
+      `document gen ${authoring.generation} rev ${authoring.revision} (applied ${authoring.appliedRevision}, stored ${workflow.stored ?? '—'}) · recovery capture ${captures.length ? `${ms(Math.max(...captures))} ms max` : '—'}`,
       `DPR ${window.devicePixelRatio} → ${renderer.getPixelRatio()} (cap ${MAX_PIXEL_RATIO}) · ${window.innerWidth}×${window.innerHeight} css · ${canvas.width}×${canvas.height} px · GPU errors ${gpuErrors.length}`,
       p0 ? `P0 run ${p0.run} ${p0.phase} ${Math.floor((performance.now() - p0.phaseStart) / 1000)} s${p0.invalid ? ` · invalid: ${p0.invalid}` : ''}` : '',
     ]
@@ -617,8 +1079,48 @@ async function start() {
   }, 500);
 
   $('status').hidden = true;
-  for (const id of ['tools', 'laws', 'transport']) $(id).hidden = false;
+  for (const id of ['tools', 'panel', 'transport']) $(id).hidden = false;
   overlay.hidden = false;
+  renderPanel();
+  reportDigest('startup');
+
+  // Launch recovery (SPEC §15.3): offer the newest valid unsaved snapshot, never silently.
+  const offer = await workflow.recoveryOffer().catch((error: unknown) => {
+    report('recovery', { action: 'launch', error: String(error) });
+    return null;
+  });
+  if (offer) showRecoveryOffer(offer);
+
+  // Close and Quit run the shared guard from here on.
+  await listen<string>('lawsmith://guard-request', (event) => {
+    report('guard', { request: event.payload, tick: host.tick, revision: authoring.revision, dirty: workflow.dirty });
+    void workflow.requestExit(event.payload === 'quit' ? 'quit' : 'close').then(() => renderPanel());
+  });
+  await invoke('guard_ready');
+  report('guard', { action: 'ready' });
+
+  function showRecoveryOffer(offer: RecoveryOffer) {
+    const panel = $('recovery-offer');
+    const { envelope } = offer;
+    const title = envelope.document.metadata.title;
+    $('recovery-text').textContent = offer.older
+      ? `The newest recovery copy could not be used (${offer.newestProblem}). An older copy of “${title}” is available: revision ${envelope.revision}. Recovering opens it paused at tick 0, without a file.`
+      : `“${title}”, revision ${envelope.revision}, was not saved. Recovering opens it paused at tick 0, without a file; Save then asks where it goes.`;
+    panel.hidden = false;
+    const done = () => {
+      panel.hidden = true;
+      renderPanel();
+    };
+    $('recovery-accept').onclick = () => {
+      report('recovery', { action: 'offer-accepted', revision: envelope.revision, older: offer.older });
+      void workflow.recover(offer).then(done);
+    };
+    $('recovery-discard').onclick = () => {
+      report('recovery', { action: 'offer-discarded', revision: envelope.revision, older: offer.older });
+      void workflow.discardRecovery().then(done);
+    };
+    $('recovery-accept').focus();
+  }
 }
 
 start().catch(showFailure);

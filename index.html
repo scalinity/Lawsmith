@@ -11,10 +11,14 @@
     <div id="viewport"></div>
 
     <!-- Top area of the continuous surface. Only #drag-region moves the window, and it steps
-         aside wherever the law or its handles lie beneath it; the canvas is a separate hit target. -->
+         aside wherever a law or its handles lie beneath it; the canvas is a separate hit target. -->
     <div id="top-rail">
       <div id="drag-region" data-tauri-drag-region></div>
       <div id="tools" hidden>
+        <div class="pair" role="group" aria-label="History">
+          <button type="button" id="undo" disabled>Undo <kbd>⌘Z</kbd></button>
+          <button type="button" id="redo" disabled>Redo <kbd>⇧⌘Z</kbd></button>
+        </div>
         <div class="segmented" role="group" aria-label="Transform mode">
           <button type="button" data-mode="translate" aria-pressed="true">Move <kbd>T</kbd></button>
           <button type="button" data-mode="rotate" aria-pressed="false">Rotate <kbd>R</kbd></button>
@@ -25,17 +29,71 @@
       </div>
     </div>
 
-    <section id="laws" aria-labelledby="laws-title" hidden>
-      <h2 id="laws-title">Laws</h2>
-      <div class="law-row">
-        <button type="button" id="law-select" aria-pressed="true">
-          <span class="law-name">Sideways</span>
-          <span class="law-meta">directional · 12 m/s²</span>
-        </button>
-        <button type="button" id="law-enabled" aria-pressed="true" aria-label="Sideways enabled">On</button>
-      </div>
-      <p class="legend"><span class="arrow-glyph" aria-hidden="true"></span>drive A · 1 m = 20 m/s²</p>
-    </section>
+    <aside id="panel" aria-label="Scene" hidden>
+      <section id="document" aria-labelledby="doc-title">
+        <h1 id="doc-title">Falling stream</h1>
+        <p id="doc-state">Not saved to a file</p>
+        <div class="file-actions" role="group" aria-label="Scene file">
+          <button type="button" id="file-new">New</button>
+          <button type="button" id="file-open" title="Open a scene (⌘O)">Open…</button>
+          <button type="button" id="file-save" title="Save the setup (⌘S)">Save</button>
+          <button type="button" id="file-save-as" title="Save the setup to a new file (⇧⌘S)">Save As…</button>
+        </div>
+        <p class="note">Save keeps the setup: laws, bodies and emitters, not the current motion. A scene opens paused at tick 0.</p>
+        <p id="doc-message" role="status" hidden></p>
+        <p id="doc-recovery" hidden></p>
+      </section>
+
+      <section id="laws" aria-labelledby="laws-title">
+        <h2 id="laws-title">Laws</h2>
+        <ul id="law-list"></ul>
+        <div class="law-actions">
+          <button type="button" id="law-duplicate">Duplicate</button>
+          <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
+        </div>
+      </section>
+
+      <section id="details" aria-labelledby="details-title" hidden>
+        <h2 id="details-title">Sideways</h2>
+        <div class="field-row">
+          <label for="law-label">Name</label>
+          <input id="law-label" type="text" maxlength="200" spellcheck="false" autocomplete="off" />
+        </div>
+        <div class="field-row">
+          <span class="label" id="color-label">Color</span>
+          <div id="law-colors" role="radiogroup" aria-labelledby="color-label"></div>
+        </div>
+        <fieldset class="triple" data-property="position">
+          <legend>Position <span class="unit">m</span></legend>
+          <input type="number" step="0.1" aria-label="Position x" data-axis="0" />
+          <input type="number" step="0.1" aria-label="Position y" data-axis="1" />
+          <input type="number" step="0.1" aria-label="Position z" data-axis="2" />
+        </fieldset>
+        <fieldset class="triple" data-property="rotation">
+          <legend>Rotation <span class="unit">°</span></legend>
+          <input type="number" step="5" aria-label="Rotation about x" data-axis="0" />
+          <input type="number" step="5" aria-label="Rotation about y" data-axis="1" />
+          <input type="number" step="5" aria-label="Rotation about z" data-axis="2" />
+        </fieldset>
+        <fieldset class="triple" data-property="extent">
+          <legend>Half extents <span class="unit">m</span></legend>
+          <input type="number" step="0.1" min="0.01" max="100" aria-label="Half extent x" data-axis="0" />
+          <input type="number" step="0.1" min="0.01" max="100" aria-label="Half extent y" data-axis="1" />
+          <input type="number" step="0.1" min="0.01" max="100" aria-label="Half extent z" data-axis="2" />
+        </fieldset>
+        <div class="pair-fields">
+          <label>Strength <span class="unit">m/s²</span> <input id="law-strength" type="number" step="1" min="0" max="200" /></label>
+          <label>Fade <input id="law-fade" type="number" step="0.05" min="0" max="1" /></label>
+        </div>
+        <p id="details-error" role="alert" hidden></p>
+      </section>
+
+      <footer class="legend">
+        <span class="arrow-glyph" aria-hidden="true"></span>
+        <span>Drive A, 1 m of arrow = 20 m/s²</span>
+        <button type="button" id="arrows-toggle" aria-pressed="true">Arrows</button>
+      </footer>
+    </aside>
 
     <div id="transport" role="group" aria-label="Simulation" hidden>
       <button type="button" id="play">Play <kbd>Space</kbd></button>
@@ -43,6 +101,15 @@
       <button type="button" id="reset">Reset <kbd>⇧R</kbd></button>
       <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
     </div>
+
+    <section id="recovery-offer" role="alertdialog" aria-labelledby="recovery-title" aria-describedby="recovery-text" hidden>
+      <h2 id="recovery-title">Unsaved work from an earlier session</h2>
+      <p id="recovery-text"></p>
+      <div class="offer-actions">
+        <button type="button" id="recovery-discard">Discard</button>
+        <button type="button" id="recovery-accept" class="primary">Recover</button>
+      </div>
+    </section>
 
     <p id="status" role="status">Starting…</p>
     <pre id="diagnostics" hidden></pre>

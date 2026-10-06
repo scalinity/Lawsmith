@@ -1,6 +1,6 @@
-// Direct manipulation of the law (SPEC §10.3). TransformControls moves a proxy object; each
-// change becomes a complete validated law value submitted through the document controller.
-// The proxy is never physics state, and the law is picked by its semantic box, not its mesh.
+// Direct manipulation of laws (SPEC §10.3). TransformControls moves a proxy object; each change
+// becomes a complete validated law value submitted through the document controller. The proxy
+// is never physics state, and a law is picked by its semantic box, not its mesh.
 import { Box3, Matrix4, Quaternion, Raycaster, Vector2, Vector3, type Object3D, type PerspectiveCamera } from 'three/webgpu';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { TransformControls } from 'three/addons/controls/TransformControls.js';
@@ -19,14 +19,26 @@ export interface LawInteractionOptions {
   gizmo: TransformControls;
   orbit: OrbitControls;
   proxy: Object3D;
-  /** The law as the host last applied it: the last valid semantic value. */
-  appliedField(): FieldDefinition;
+  /** A law as the host last applied it: its last valid semantic value. */
+  appliedField(id: string): FieldDefinition | undefined;
+  /** The laws that can be picked in the viewport: applied and visible. */
+  pickable(): readonly FieldDefinition[];
   /** Submits a complete law value through the document controller. */
-  submit(candidate: FieldDefinition): Validated<{ revision: number }>;
-  /** A gesture ended; `revision` is its final submitted value (a restore, for a cancel). */
-  onGestureEnd(revision: number | null): void;
-  onSelectionChange(selected: boolean): void;
+  submit(candidate: FieldDefinition): Validated<{ revision: number; field: FieldDefinition }>;
+  /** A gesture ended: a commit carries its accepted endpoints (one undo entry); a cancel restored `start`. */
+  onGestureEnd(end: GestureEnd): void;
+  onSelectionChange(id: string | null): void;
   log(kind: string, data: Record<string, unknown>): void;
+}
+
+export interface GestureEnd {
+  readonly mode: TransformMode;
+  readonly start: FieldDefinition;
+  /** The last accepted value, or null if no preview was accepted. */
+  readonly latest: FieldDefinition | null;
+  readonly cancelled: boolean;
+  /** The final submitted revision (the restore, for a cancel). */
+  readonly revision: number | null;
 }
 
 interface Gesture {
@@ -51,7 +63,8 @@ const summary = (f: FieldDefinition) => ({
 });
 
 export class LawInteraction {
-  selected = true;
+  /** The selected law's ID; the gizmo is attached only while one is selected and applied. */
+  selectedId: string | null;
   gesture: Gesture | null = null;
   /** True between OrbitControls `start` and `end` for a pointer drag (wheel zoom is not a gesture). */
   private cameraActive = false;
@@ -72,7 +85,11 @@ export class LawInteraction {
   private readonly rotation = new Quaternion();
   private readonly one = new Vector3(1, 1, 1);
 
-  constructor(private readonly o: LawInteractionOptions) {
+  constructor(
+    private readonly o: LawInteractionOptions,
+    initial: string | null,
+  ) {
+    this.selectedId = initial;
     const { gizmo, orbit, canvas } = o;
     gizmo.addEventListener('mouseDown', () => this.begin());
     gizmo.addEventListener('objectChange', () => this.preview());
@@ -110,7 +127,7 @@ export class LawInteraction {
       this.press = null;
       if (!press || press.onGizmo || event.button !== 0) return;
       if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > CLICK_SLOP_PX) return;
-      this.select(this.pickLaw(event.clientX, event.clientY) !== null);
+      this.select(this.pickLaw(event.clientX, event.clientY)?.id ?? null);
     });
     canvas.addEventListener('pointercancel', () => this.cancel('pointercancel'));
     // Capture also ends normally inside TransformControls' own pointerup, just before it
@@ -128,13 +145,24 @@ export class LawInteraction {
     this.o.gizmo.setMode(mode);
   }
 
-  select(selected: boolean): void {
-    if (selected === this.selected || this.gesture) return;
-    this.selected = selected;
-    if (selected) this.o.gizmo.attach(this.o.proxy);
-    else this.o.gizmo.detach();
-    this.o.onSelectionChange(selected);
-    this.o.log('selection', { selected, field: this.o.appliedField().id });
+  get selected(): boolean {
+    return this.selectedId !== null;
+  }
+
+  select(id: string | null): void {
+    if (id === this.selectedId || this.gesture) return;
+    this.selectedId = id;
+    this.attachGizmo();
+    this.o.onSelectionChange(id);
+    this.o.log('selection', { selected: id !== null, field: id });
+  }
+
+  /** Ends an active gesture as a release would, at its last accepted value (file workflows, guards). */
+  release(reason: string): boolean {
+    if (!this.gesture) return false;
+    this.gesture.endReason = reason;
+    this.finishDrag();
+    return true;
   }
 
   /** Cancels an active gesture and restores its starting value through the command path. */
@@ -156,7 +184,9 @@ export class LawInteraction {
    */
   syncProxy(): void {
     if (this.gesture) return;
-    const f = this.o.appliedField();
+    const f = this.selectedId === null ? undefined : this.o.appliedField(this.selectedId);
+    this.attachGizmo(f !== undefined);
+    if (!f) return;
     this.o.proxy.position.set(...f.pose.position);
     this.o.proxy.quaternion.set(...f.pose.rotation);
     this.o.proxy.scale.set(1, 1, 1);
@@ -166,22 +196,36 @@ export class LawInteraction {
     }
   }
 
-  /** Distance along the view ray to the law's semantic support box, or null on a miss. */
-  pickLaw(clientX: number, clientY: number): number | null {
-    const f = this.o.appliedField();
+  /** The nearest pickable law whose semantic support box the view ray hits, or null on a miss. */
+  pickLaw(clientX: number, clientY: number): { id: string; distance: number } | null {
     this.toNdc(clientX, clientY);
     this.raycaster.setFromCamera(this.ndc, this.o.camera);
-    this.position.set(...f.pose.position);
-    this.inverse.compose(this.position, this.rotation.set(...f.pose.rotation), this.one).invert();
-    const ray = this.raycaster.ray.clone().applyMatrix4(this.inverse);
-    const [hx, hy, hz] = f.region.halfExtents;
-    this.box.min.set(-hx, -hy, -hz);
-    this.box.max.set(hx, hy, hz);
-    return ray.intersectBox(this.box, this.hit) ? ray.origin.distanceTo(this.hit) : null;
+    let nearest: { id: string; distance: number } | null = null;
+    for (const f of this.o.pickable()) {
+      this.position.set(...f.pose.position);
+      this.inverse.compose(this.position, this.rotation.set(...f.pose.rotation), this.one).invert();
+      const ray = this.raycaster.ray.clone().applyMatrix4(this.inverse);
+      const [hx, hy, hz] = f.region.halfExtents;
+      this.box.min.set(-hx, -hy, -hz);
+      this.box.max.set(hx, hy, hz);
+      if (!ray.intersectBox(this.box, this.hit)) continue;
+      // Rotation is rigid, so local distance equals world distance.
+      const distance = ray.origin.distanceTo(this.hit);
+      if (!nearest || distance < nearest.distance) nearest = { id: f.id, distance };
+    }
+    return nearest;
+  }
+
+  /** The gizmo shows while a law is selected and applied; it is detached otherwise. */
+  private attachGizmo(present = true): void {
+    const attach = this.selectedId !== null && present;
+    if (attach && this.o.gizmo.object !== this.o.proxy) this.o.gizmo.attach(this.o.proxy);
+    if (!attach && this.o.gizmo.object) this.o.gizmo.detach();
   }
 
   private begin(): void {
-    const start = this.o.appliedField();
+    const start = this.selectedId === null ? undefined : this.o.appliedField(this.selectedId);
+    if (!start) return;
     this.gesture = {
       mode: this.o.gizmo.mode as TransformMode,
       start,
@@ -203,7 +247,7 @@ export class LawInteraction {
     const result = this.o.submit(candidate);
     g.samples += 1;
     if (result.ok) {
-      g.latest = candidate;
+      g.latest = result.value.field;
       g.firstRevision ??= result.value.revision;
       g.lastRevision = result.value.revision;
     } else {
@@ -220,7 +264,7 @@ export class LawInteraction {
       const restored = this.o.submit(g.start);
       const revision = restored.ok ? restored.value.revision : null;
       this.o.log('gesture', { phase: 'cancel', reason: g.cancelReason, transformMode: g.mode, samples: g.samples, restoredRevision: revision, field: summary(g.start), camera: this.cameraPosition() });
-      this.o.onGestureEnd(revision);
+      this.o.onGestureEnd({ mode: g.mode, start: g.start, latest: g.latest, cancelled: true, revision });
       return;
     }
     this.o.log('gesture', {
@@ -232,9 +276,10 @@ export class LawInteraction {
       firstRevision: g.firstRevision,
       lastRevision: g.lastRevision,
       field: summary(g.latest ?? g.start),
+      lawId: g.start.id,
       camera: this.cameraPosition(),
     });
-    this.o.onGestureEnd(g.lastRevision);
+    this.o.onGestureEnd({ mode: g.mode, start: g.start, latest: g.latest, cancelled: false, revision: g.lastRevision });
   }
 
   /** Ends TransformControls' drag through its public pointerUp, then settles our gesture. */
@@ -301,7 +346,7 @@ export class LawInteraction {
 
   private sceneContentAt(clientX: number, clientY: number): boolean {
     const { gizmo } = this.o;
-    if (this.selected) {
+    if (this.selected && this.o.gizmo.object) {
       // Place the handle pickers at the proxy's current pose; three otherwise updates them only when rendering.
       gizmo.getHelper().updateMatrixWorld(true);
       this.toNdc(clientX, clientY);

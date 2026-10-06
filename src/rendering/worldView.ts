@@ -1,9 +1,10 @@
 // Read-only presentation of host observations: fixed geometry from the scene definition,
-// instanced bodies at their last completed positions, and the law drawn from its applied
-// definition. Nothing here is physics state; the law's mesh is never the field.
+// instanced bodies at their last completed positions, and each law drawn from its applied
+// definition. Nothing here is physics state; a law's mesh is never the field.
 import {
   BoxGeometry,
   BufferGeometry,
+  Color,
   ConeGeometry,
   CylinderGeometry,
   DoubleSide,
@@ -21,10 +22,12 @@ import {
   Quaternion,
   SphereGeometry,
   Vector3,
+  type Material,
+  type Object3D,
   type Scene,
 } from 'three/webgpu';
 import { abs, float, max, mix, smoothstep, uniform, uv } from 'three/tsl';
-import type { FieldDefinition, SceneDefinition } from '../domain/scene';
+import type { FieldDefinition, LawPresentation, SceneDefinition } from '../domain/scene';
 import { sampleField, type CompiledField } from '../fields/directional';
 import type { SimulationHost } from '../simulation/host';
 import { tokenColor } from './viewport';
@@ -42,20 +45,59 @@ const SHAFT_RADIUS = 0.012;
 const HEAD_RADIUS = 0.045;
 const HEAD_LENGTH = 0.12;
 
-export interface LawViewState {
-  selected: boolean;
+/** One applied law as the view needs it: its definition, the host's evaluator for it, its display state. */
+export interface LawView {
+  field: FieldDefinition;
+  compiled: CompiledField;
+  presentation: LawPresentation;
+}
+
+export interface LawsViewState {
+  selectedId: string | null;
   /** The gesture's latest accepted value, outlined until the host applies it (SPEC §10.1). */
   preview: FieldDefinition | null;
-  /** Throttle arrow refreshes to 30 Hz (during a gesture); otherwise refresh on the next frame. */
+  /** Throttle the selected law's arrow refreshes to 30 Hz (during a gesture). */
   throttle: boolean;
+  /** Presentation default: draw drive arrows. */
+  arrows: boolean;
 }
 
 export interface WorldView {
+  /** Rebuilds fixed geometry, emitter outlines and body capacity for a newly loaded scene. */
+  setScene(root: SceneDefinition): void;
   updateBodies(host: SimulationHost): void;
-  /** Draws the applied law. `compiled` is the host's evaluator for it; arrows sample it directly. */
-  updateLaw(field: FieldDefinition, compiled: CompiledField, state: LawViewState): void;
+  /** Draws the applied laws. Arrows sample each law's compiled evaluator directly. */
+  updateLaws(laws: readonly LawView[], state: LawsViewState): void;
   /** Number of arrows currently drawn. */
   arrowCount(): number;
+}
+
+interface LawVisual {
+  group: Group;
+  shell: Mesh;
+  outer: LineSegments;
+  inner: LineSegments;
+  shellIntensity: { value: number };
+  shellMaterial: MeshBasicNodeMaterial;
+  outerMaterial: LineBasicNodeMaterial;
+  innerMaterial: LineBasicNodeMaterial;
+  shafts: InstancedMesh;
+  heads: InstancedMesh;
+  color: Color;
+  /** What the drawn arrows were sampled from; a new compiled field or a toggle redraws them. */
+  arrowSource: CompiledField | null;
+  arrowsShown: boolean;
+  arrowRefreshedAt: number;
+}
+
+/** Releases the GPU resources a subtree owns; shared geometries survive. */
+function disposeTree(object: Object3D, shared: ReadonlySet<BufferGeometry>): void {
+  object.traverse((child) => {
+    const node = child as Partial<Mesh>;
+    if (node.geometry && !shared.has(node.geometry)) node.geometry.dispose();
+    const material = node.material as Material | Material[] | undefined;
+    for (const m of Array.isArray(material) ? material : material ? [material] : []) m.dispose();
+  });
 }
 
 export function createWorldView(scene: Scene, root: SceneDefinition): WorldView {
@@ -63,74 +105,128 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const lavender = tokenColor('--lavender');
   const tertiary = tokenColor('--text-tertiary');
 
-  for (const body of root.bodies) {
-    if (body.type !== 'fixed' || body.collider.kind !== 'box') continue;
-    const [hx, hy, hz] = body.collider.halfExtents;
-    const block = new Mesh(new BoxGeometry(2 * hx, 2 * hy, 2 * hz), new MeshStandardNodeMaterial({ color: tokenColor('--floor'), roughness: 1 }));
-    block.position.set(...body.initialPose.position);
-    block.receiveShadow = true;
-    scene.add(block);
-    const size = 2 * Math.min(hx, hz);
-    const grid = new GridHelper(size, Math.round(size), tokenColor('--divider'), tokenColor('--grid-minor'));
-    const [bx, by, bz] = body.initialPose.position;
-    grid.position.set(bx, by + hy + 0.002, bz);
-    scene.add(grid);
-  }
-
-  // Emitters: an outline of the spawn jitter square.
-  for (const emitter of root.emitters) {
-    const jx = Math.max(emitter.jitter[0], 0.05);
-    const jz = Math.max(emitter.jitter[2], 0.05);
-    const corners = [-jx, -jz, jx, -jz, jx, -jz, jx, jz, jx, jz, -jx, jz, -jx, jz, -jx, -jz];
-    const points: number[] = [];
-    for (let i = 0; i < corners.length; i += 2) points.push(corners[i]!, 0, corners[i + 1]!);
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
-    const outline = new LineSegments(geometry, new LineBasicNodeMaterial({ color: tertiary }));
-    outline.position.set(...emitter.pose.position);
-    scene.add(outline);
-  }
-
-  const bodies = new InstancedMesh(
-    new SphereGeometry(1, 20, 14),
-    new MeshStandardNodeMaterial({ color: tokenColor('--body'), roughness: 0.45, metalness: 0.05 }),
-    root.simulation.maxLiveBodies,
-  );
-  bodies.count = 0;
-  bodies.castShadow = true;
-  bodies.frustumCulled = false;
-  scene.add(bodies);
-
-  // The law: a translucent support shell, its outer edges and, when selected, the inner
-  // full-strength surface at d = 1 − f. The TSL cue raises opacity toward each face's
-  // border, so the box reads through its own translucency; it computes no field values.
   const unitBox = new BoxGeometry(2, 2, 2);
   const unitEdges = new EdgesGeometry(unitBox);
-  const law = new Group();
-  const shellIntensity = uniform(1);
-  const shellMaterial = new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide });
+  const shaftGeometry = new CylinderGeometry(1, 1, 1, 6).translate(0, 0.5, 0);
+  const headGeometry = new ConeGeometry(1, 1, 12).translate(0, 0.5, 0);
+  const sphereGeometry = new SphereGeometry(1, 20, 14);
+  const shared = new Set<BufferGeometry>([unitBox, unitEdges, shaftGeometry, headGeometry, sphereGeometry]);
+  const arrowMaterial = new MeshBasicNodeMaterial({ color: lavender });
+
+  let fixed = new Group();
+  let bodies: InstancedMesh | null = null;
+
+  function setScene(next: SceneDefinition): void {
+    scene.remove(fixed);
+    disposeTree(fixed, shared);
+    fixed = new Group();
+    for (const body of next.bodies) {
+      if (body.type !== 'fixed') continue;
+      const block = new Group();
+      block.position.set(...body.initialPose.position);
+      block.quaternion.set(...body.initialPose.rotation);
+      const material = new MeshStandardNodeMaterial({ color: tokenColor('--floor'), roughness: 1 });
+      if (body.collider.kind === 'box') {
+        const [hx, hy, hz] = body.collider.halfExtents;
+        const mesh = new Mesh(new BoxGeometry(2 * hx, 2 * hy, 2 * hz), material);
+        mesh.receiveShadow = true;
+        block.add(mesh);
+        // A grid on the top face, so entry into a law's support can be judged against the floor.
+        const size = 2 * Math.min(hx, hz);
+        const grid = new GridHelper(size, Math.max(1, Math.round(size)), tokenColor('--divider'), tokenColor('--grid-minor'));
+        grid.position.y = hy + 0.002;
+        block.add(grid);
+      } else {
+        const mesh = new Mesh(sphereGeometry, material);
+        mesh.scale.setScalar(body.collider.radius);
+        mesh.receiveShadow = true;
+        block.add(mesh);
+      }
+      fixed.add(block);
+    }
+    // Emitters: an outline of the spawn jitter square.
+    for (const emitter of next.emitters) {
+      const jx = Math.max(emitter.jitter[0], 0.05);
+      const jz = Math.max(emitter.jitter[2], 0.05);
+      const corners = [-jx, -jz, jx, -jz, jx, -jz, jx, jz, jx, jz, -jx, jz, -jx, jz, -jx, -jz];
+      const points: number[] = [];
+      for (let i = 0; i < corners.length; i += 2) points.push(corners[i]!, 0, corners[i + 1]!);
+      const geometry = new BufferGeometry();
+      geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
+      const outline = new LineSegments(geometry, new LineBasicNodeMaterial({ color: tertiary }));
+      outline.position.set(...emitter.pose.position);
+      fixed.add(outline);
+    }
+    scene.add(fixed);
+
+    const capacity = next.simulation.maxLiveBodies;
+    if (!bodies || bodies.instanceMatrix.count !== capacity) {
+      if (bodies) {
+        scene.remove(bodies);
+        bodies.dispose();
+      }
+      bodies = new InstancedMesh(sphereGeometry, new MeshStandardNodeMaterial({ color: tokenColor('--body'), roughness: 0.45, metalness: 0.05 }), capacity);
+      bodies.castShadow = true;
+      bodies.frustumCulled = false;
+      scene.add(bodies);
+    }
+    bodies.count = 0;
+  }
+
+  // Each law: a translucent support shell, its outer edges and, when selected, the inner
+  // full-strength surface at d = 1 − f. The TSL cue raises opacity toward each face's border, so
+  // the box reads through its own translucency; it computes no field values.
   const border = max(abs(uv().x.sub(0.5)), abs(uv().y.sub(0.5))).mul(2);
-  shellMaterial.opacityNode = mix(float(0.035), float(0.15), smoothstep(0.86, 1, border)).mul(shellIntensity);
-  const shell = new Mesh(unitBox, shellMaterial);
-  shell.renderOrder = 1;
-  const outerMaterial = new LineBasicNodeMaterial({ color: teal, transparent: true });
-  const outer = new LineSegments(unitEdges, outerMaterial);
-  const inner = new LineSegments(unitEdges, new LineBasicNodeMaterial({ color: teal, transparent: true, opacity: 0.35 }));
-  law.add(shell, outer, inner);
-  scene.add(law);
+  const visuals = new Map<string, LawVisual>();
+
+  function createVisual(): LawVisual {
+    const shellIntensity = uniform(1);
+    const shellMaterial = new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide });
+    shellMaterial.opacityNode = mix(float(0.035), float(0.15), smoothstep(0.86, 1, border)).mul(shellIntensity);
+    const shell = new Mesh(unitBox, shellMaterial);
+    shell.renderOrder = 1;
+    const outerMaterial = new LineBasicNodeMaterial({ color: teal, transparent: true });
+    const innerMaterial = new LineBasicNodeMaterial({ color: teal, transparent: true, opacity: 0.35 });
+    const outer = new LineSegments(unitEdges, outerMaterial);
+    const inner = new LineSegments(unitEdges, innerMaterial);
+    const group = new Group();
+    group.add(shell, outer, inner);
+    const shafts = new InstancedMesh(shaftGeometry, arrowMaterial, MAX_ARROWS);
+    const heads = new InstancedMesh(headGeometry, arrowMaterial, MAX_ARROWS);
+    for (const mesh of [shafts, heads]) {
+      mesh.count = 0;
+      mesh.frustumCulled = false;
+      scene.add(mesh);
+    }
+    scene.add(group);
+    return {
+      group,
+      shell,
+      outer,
+      inner,
+      shellIntensity,
+      shellMaterial,
+      outerMaterial,
+      innerMaterial,
+      shafts,
+      heads,
+      color: new Color(),
+      arrowSource: null,
+      arrowsShown: false,
+      arrowRefreshedAt: -Infinity,
+    };
+  }
+
+  function removeVisual(visual: LawVisual): void {
+    scene.remove(visual.group, visual.shafts, visual.heads);
+    for (const m of [visual.shellMaterial, visual.outerMaterial, visual.innerMaterial]) m.dispose();
+    visual.shafts.dispose();
+    visual.heads.dispose();
+  }
 
   const preview = new LineSegments(unitEdges, new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.8 }));
   preview.visible = false;
   scene.add(preview);
-
-  const arrowMaterial = new MeshBasicNodeMaterial({ color: lavender });
-  const shafts = new InstancedMesh(new CylinderGeometry(1, 1, 1, 6).translate(0, 0.5, 0), arrowMaterial, MAX_ARROWS);
-  const heads = new InstancedMesh(new ConeGeometry(1, 1, 12).translate(0, 0.5, 0), arrowMaterial, MAX_ARROWS);
-  for (const mesh of [shafts, heads]) {
-    mesh.count = 0;
-    mesh.frustumCulled = false;
-    scene.add(mesh);
-  }
 
   const matrix = new Matrix4();
   const position = new Vector3();
@@ -139,12 +235,11 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const up = new Vector3(0, 1, 0);
   const direction = new Vector3();
   const drive = [0, 0, 0];
-  let arrowSource: CompiledField | null = null;
-  let arrowRefreshedAt = -Infinity;
 
   /** Samples the host's compiled evaluator on the local lattice and draws one arrow per nonzero drive. */
-  function refreshArrows(c: CompiledField) {
+  function refreshArrows(visual: LawVisual, c: CompiledField) {
     const { m } = c;
+    const { shafts, heads } = visual;
     let n = 0;
     for (const fx of LATTICE) {
       for (const fy of LATTICE) {
@@ -180,8 +275,13 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     object.quaternion.set(...field.pose.rotation);
   }
 
+  setScene(root);
+
   return {
+    setScene,
+
     updateBodies(host) {
+      if (!bodies) return;
       const { positions, radii, count } = host;
       for (let i = 0; i < count; i++) {
         const r = radii[i]!;
@@ -192,32 +292,57 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       bodies.instanceMatrix.needsUpdate = true;
     },
 
-    updateLaw(field, compiled, state) {
-      const [hx, hy, hz] = field.region.halfExtents;
-      place(law, field);
-      shell.scale.set(hx, hy, hz);
-      outer.scale.set(hx, hy, hz);
-      const core = 1 - field.edgeFade;
-      inner.scale.set(core * hx, core * hy, core * hz);
-      inner.visible = state.selected && field.edgeFade > 0 && field.enabled;
-      shellIntensity.value = !field.enabled ? 0.35 : state.selected ? 1 : 0.7;
-      outerMaterial.color.copy(field.enabled ? teal : tertiary);
-      outerMaterial.opacity = !field.enabled ? 0.6 : state.selected ? 1 : 0.5;
+    updateLaws(laws, state) {
+      const now = performance.now();
+      const present = new Set<string>();
+      for (const { field, compiled, presentation } of laws) {
+        present.add(field.id);
+        let visual = visuals.get(field.id);
+        if (!visual) visuals.set(field.id, (visual = createVisual()));
+        const selected = field.id === state.selectedId;
+        const [hx, hy, hz] = field.region.halfExtents;
+        visual.group.visible = presentation.visible;
+        place(visual.group, field);
+        visual.shell.scale.set(hx, hy, hz);
+        visual.outer.scale.set(hx, hy, hz);
+        const core = 1 - field.edgeFade;
+        visual.inner.scale.set(core * hx, core * hy, core * hz);
+        visual.inner.visible = selected && field.edgeFade > 0 && field.enabled;
+        visual.color.set(presentation.color);
+        visual.shellIntensity.value = !field.enabled ? 0.35 : selected ? 1 : 0.7;
+        visual.shellMaterial.color.copy(visual.color);
+        visual.innerMaterial.color.copy(visual.color);
+        visual.outerMaterial.color.copy(field.enabled ? visual.color : tertiary);
+        visual.outerMaterial.opacity = !field.enabled ? 0.6 : selected ? 1 : 0.5;
+
+        // Hiding a law hides its arrows too; its effect is unchanged (SPEC §5.4).
+        const show = state.arrows && presentation.visible;
+        const due = !state.throttle || !selected || now - visual.arrowRefreshedAt >= ARROW_REFRESH_MS;
+        if (show && (compiled !== visual.arrowSource || !visual.arrowsShown) && due) {
+          refreshArrows(visual, compiled);
+          visual.arrowSource = compiled;
+          visual.arrowRefreshedAt = now;
+        }
+        visual.arrowsShown = show;
+        visual.shafts.visible = visual.heads.visible = show;
+      }
+      for (const [id, visual] of visuals) {
+        if (present.has(id)) continue;
+        removeVisual(visual);
+        visuals.delete(id);
+      }
 
       preview.visible = state.preview !== null;
       if (state.preview) {
         place(preview, state.preview);
         preview.scale.set(...state.preview.region.halfExtents);
       }
-
-      const now = performance.now();
-      if (compiled !== arrowSource && (!state.throttle || now - arrowRefreshedAt >= ARROW_REFRESH_MS)) {
-        refreshArrows(compiled);
-        arrowSource = compiled;
-        arrowRefreshedAt = now;
-      }
     },
 
-    arrowCount: () => shafts.count,
+    arrowCount: () => {
+      let n = 0;
+      for (const visual of visuals.values()) if (visual.arrowsShown) n += visual.shafts.count;
+      return n;
+    },
   };
 }

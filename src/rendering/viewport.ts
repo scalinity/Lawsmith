@@ -61,6 +61,8 @@ export interface Viewport {
   /** Points the camera at `center`, far enough back to show a sphere of `radius`. */
   frame(center: readonly [number, number, number], radius: number): void;
   resetView(): void;
+  /** Places the camera exactly, as a scene's saved framing; no inertia carries over. */
+  setView(position: readonly [number, number, number], target: readonly [number, number, number]): void;
   start(hooks: FrameHooks): void;
 }
 
@@ -120,6 +122,13 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
   }
   resetView();
 
+  function setView(position: readonly [number, number, number], target: readonly [number, number, number]) {
+    haltOrbitInertia(orbit);
+    camera.position.set(position[0], position[1], position[2]);
+    orbit.target.set(target[0], target[1], target[2]);
+    orbit.update();
+  }
+
   const offset = new Vector3();
   function frame(center: readonly [number, number, number], radius: number) {
     const distance = radius / Math.sin((Math.PI * camera.fov) / 360) + 1;
@@ -162,6 +171,7 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
     proxy,
     frame,
     resetView,
+    setView,
     start(hooks) {
       let last: number | undefined;
       renderer.setAnimationLoop((time: number) => {
