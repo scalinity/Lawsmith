@@ -167,6 +167,19 @@ const finite = (values: readonly number[]) => values.every(Number.isFinite);
 const within = (value: number, min: number, max: number) => Number.isFinite(value) && value >= min && value <= max;
 
 /**
+ * Unit vector by scaled normalization: dividing by the largest magnitude first keeps the length
+ * in [1, 2], so no finite nonzero input overflows or underflows. Null for zero or nonfinite input.
+ */
+function unit(values: readonly number[]): number[] | null {
+  if (!finite(values)) return null;
+  const scale = Math.max(...values.map(Math.abs));
+  if (!(scale > 0)) return null;
+  const scaled = values.map((c) => c / scale);
+  const length = Math.hypot(...scaled);
+  return scaled.map((c) => c / length);
+}
+
+/**
  * Validates a complete field put against SPEC §9.3's supported domain and resolves it:
  * the quaternion and direction are normalized. Invalid input is rejected before any host
  * mutation; nothing is clamped silently.
@@ -176,30 +189,28 @@ export function validateField(field: FieldDefinition): Validated<FieldDefinition
   if (typeof field.enabled !== 'boolean') return { ok: false, reason: 'enabled must be a boolean' };
   const { position, rotation } = field.pose;
   if (!position.every((c) => within(c, -1000, 1000))) return { ok: false, reason: 'position components must be within ±1000 m' };
-  if (!finite(rotation)) return { ok: false, reason: 'rotation must be finite' };
-  const qLength = Math.hypot(...rotation);
-  if (!(qLength > 1e-6)) return { ok: false, reason: 'rotation must be a nonzero quaternion' };
+  const q = unit(rotation);
+  if (!q) return { ok: false, reason: 'rotation must be a finite nonzero quaternion' };
   if (field.region.kind !== 'box') return { ok: false, reason: 'only box support exists in M1' };
   if (!field.region.halfExtents.every((h) => within(h, 0.01, 100))) return { ok: false, reason: 'box half-extents must be within 0.01–100 m' };
   if (!within(field.edgeFade, 0, 1)) return { ok: false, reason: 'edge fade must be within 0–1' };
   const { expression } = field;
   if (expression.kind !== 'directional') return { ok: false, reason: 'only the directional primitive exists in M1' };
   if (!within(expression.strength, 0, 200)) return { ok: false, reason: 'directional strength must be within 0–200 m/s²' };
-  if (!finite(expression.direction)) return { ok: false, reason: 'direction must be finite' };
-  const dLength = Math.hypot(...expression.direction);
-  if (!(dLength > 0)) return { ok: false, reason: 'direction must be nonzero' };
+  const d = unit(expression.direction);
+  if (!d) return { ok: false, reason: 'direction must be finite and nonzero' };
 
-  const [qx, qy, qz, qw] = rotation;
-  const [dx, dy, dz] = expression.direction;
+  const [qx, qy, qz, qw] = q as [number, number, number, number];
+  const [dx, dy, dz] = d as [number, number, number];
   return {
     ok: true,
     value: cloneFrozen({
       id: field.id,
       enabled: field.enabled,
-      pose: { position: [...position], rotation: [qx / qLength, qy / qLength, qz / qLength, qw / qLength] },
+      pose: { position: [...position], rotation: [qx, qy, qz, qw] },
       region: { kind: 'box', halfExtents: [...field.region.halfExtents] },
       edgeFade: field.edgeFade,
-      expression: { kind: 'directional', direction: [dx / dLength, dy / dLength, dz / dLength], strength: expression.strength },
+      expression: { kind: 'directional', direction: [dx, dy, dz], strength: expression.strength },
     } satisfies FieldDefinition),
   };
 }

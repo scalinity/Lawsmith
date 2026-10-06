@@ -135,6 +135,36 @@ describe('field validation (SPEC §9.3)', () => {
     expect(Object.isFrozen(result.value.pose.position)).toBe(true);
   });
 
+  it('normalizes very large finite rotations and directions to finite unit values', () => {
+    const big = Number.MAX_VALUE;
+    const result = validateField(
+      withChanges({
+        pose: { position: [3, 1, 0], rotation: [1e308, 1e308, 1e308, 1e308] },
+        expression: { kind: 'directional', direction: [big, big, big], strength: 12 },
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const unit = (v: readonly number[]) => Math.sqrt(v.reduce((sum, c) => sum + c * c, 0));
+    expectVec(result.value.pose.rotation, [0.5, 0.5, 0.5, 0.5]);
+    expectVec(result.value.expression.direction, [1 / Math.sqrt(3), 1 / Math.sqrt(3), 1 / Math.sqrt(3)]);
+    expect(Math.abs(unit(result.value.pose.rotation) - 1)).toBeLessThanOrEqual(1e-8);
+    expect(Math.abs(unit(result.value.expression.direction) - 1)).toBeLessThanOrEqual(1e-8);
+  });
+
+  it('normalizes very small nonzero rotations and directions without underflow', () => {
+    const result = validateField(
+      withChanges({
+        pose: { position: [3, 1, 0], rotation: [0, 0, 0, 1e-300] },
+        expression: { kind: 'directional', direction: [0, 5e-324, 0], strength: 12 },
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.pose.rotation).toEqual([0, 0, 0, 1]);
+    expect(result.value.expression.direction).toEqual([0, 1, 0]);
+  });
+
   it.each([
     ['a half-extent below 0.01 m', { region: { kind: 'box', halfExtents: [0.005, 2, 1.5] } }],
     ['a negative half-extent', { region: { kind: 'box', halfExtents: [-1.5, 2, 1.5] } }],
