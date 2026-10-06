@@ -159,6 +159,19 @@ describe('T06 canonical quaternions (SPEC §15.1)', () => {
     expect(canonicalQuat(loaded(first).semantic.fields[0]!.pose.rotation)).toEqual(loaded(first).semantic.fields[0]!.pose.rotation);
   });
 
+  it('accepts a near-unit identity emitter rotation and stores the exact identity', () => {
+    const value = json();
+    value.semantic.emitters[0].pose.rotation = [0, 0, 0, 1 + 4e-13];
+    const document = loaded(value);
+    expect(document.semantic.emitters[0]!.pose.rotation).toEqual([0, 0, 0, 1]);
+    expect(serializeScene(loaded(serializeScene(document)))).toBe(serializeScene(document));
+    // Scaled or sign-flipped identities resolve the same way; any vector part is still a rotation.
+    value.semantic.emitters[0].pose.rotation = [0, 0, 0, -2];
+    expect(loaded(value).semantic.emitters[0]!.pose.rotation).toEqual([0, 0, 0, 1]);
+    value.semantic.emitters[0].pose.rotation = [1e-9, 0, 0, 1];
+    expect(rejection(value)!.path).toBe('semantic.emitters[0].pose.rotation');
+  });
+
   it('rejects a zero quaternion', () => {
     const value = json();
     value.semantic.fields[0].pose.rotation = [0, 0, 0, 0];

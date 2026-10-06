@@ -406,8 +406,9 @@ export function validateEmitter(emitter: EmitterDefinition): Validated<EmitterDe
   const q = canonicalQuat(rotation);
   if (!q) return reject('pose.rotation', 'rotation must be a finite nonzero quaternion');
   // SPEC §5.3 gives emitters a pose but does not define what its rotation does; rather than
-  // invent or ignore it, schema 1 accepts only the identity.
-  if (!(q[0] === 0 && q[1] === 0 && q[2] === 0 && q[3] === 1)) return reject('pose.rotation', 'emitter rotation must be the identity in this build');
+  // invent or ignore it, schema 1 accepts only the identity: a zero vector part, whatever retained
+  // near-unit w the canonical form keeps, stored as the exact identity.
+  if (!(q[0] === 0 && q[1] === 0 && q[2] === 0)) return reject('pose.rotation', 'emitter rotation must be the identity in this build');
   if (!emitter.jitter.every((j) => within(j, 0, 100))) return reject('jitter', 'jitter extents must be within 0–100 m');
   // Resolved spawn positions stay inside the supported ±1000 m.
   if (!position.every((c, i) => Math.abs(c) + emitter.jitter[i]! <= 1000)) return reject('jitter', 'spawn positions after jitter must stay within ±1000 m');
@@ -438,7 +439,7 @@ export function validateEmitter(emitter: EmitterDefinition): Validated<EmitterDe
     ok: true,
     value: {
       id: emitter.id,
-      pose: { position: vec(position), rotation: q },
+      pose: { position: vec(position), rotation: IDENTITY },
       template: {
         collider: collider.value,
         massKg: t.massKg,
