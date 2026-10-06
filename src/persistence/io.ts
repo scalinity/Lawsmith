@@ -23,6 +23,8 @@ export interface DocumentIo {
   recoveryLoad(): Promise<{ current: RecoverySlot; previous: RecoverySlot }>;
   recoveryWrite(generation: number, revision: number, text: string): Promise<void>;
   recoveryRetire(generation: number, through: number): Promise<void>;
+  /** Reports that launch validation accepted the earlier session's current snapshot, so it is kept as the previous one. */
+  recoveryCurrentValid(): Promise<void>;
   recoveryDiscard(generation: number): Promise<void>;
   /** Deletes only the snapshots an earlier session left. */
   recoveryDiscardEarlier(): Promise<void>;
@@ -38,6 +40,7 @@ export const nativeIo: DocumentIo = {
   recoveryLoad: () => invoke('recovery_load'),
   recoveryWrite: (generation, revision, text) => invoke('recovery_write', { generation, revision, text }),
   recoveryRetire: (generation, through) => invoke('recovery_retire', { generation, through }),
+  recoveryCurrentValid: () => invoke('recovery_current_valid'),
   recoveryDiscard: (generation) => invoke('recovery_discard', { generation }),
   recoveryDiscardEarlier: () => invoke('recovery_discard_earlier'),
   askUnsaved: (title) => invoke('ask_unsaved', { title }),

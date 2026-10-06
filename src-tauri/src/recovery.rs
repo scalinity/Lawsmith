@@ -23,11 +23,18 @@ const PREVIOUS: &str = "previous.lawsmith-recovery.json";
 const INCOMING: &str = "incoming.lawsmith-recovery.json";
 
 /// What this session knows about a snapshot file. Files present at launch belong to an earlier
-/// session: once this session saves or discards, they are no longer unsaved work.
+/// session: once this session saves or discards, they are no longer unsaved work. Whether such a
+/// file is a valid snapshot is the frontend's verdict at launch; this session's own writes are.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Stamp {
-    Foreign,
+    Foreign { validated: bool },
     Session { generation: u64, revision: u64 },
+}
+
+impl Stamp {
+    fn is_valid(self) -> bool {
+        self != Stamp::Foreign { validated: false }
+    }
 }
 
 #[derive(Default)]
@@ -62,8 +69,8 @@ pub struct Slots {
 impl RecoveryStore {
     pub fn new(dir: PathBuf) -> Self {
         let state = State {
-            current: dir.join(CURRENT).exists().then_some(Stamp::Foreign),
-            previous: dir.join(PREVIOUS).exists().then_some(Stamp::Foreign),
+            current: dir.join(CURRENT).exists().then_some(Stamp::Foreign { validated: false }),
+            previous: dir.join(PREVIOUS).exists().then_some(Stamp::Foreign { validated: false }),
             ..State::default()
         };
         // A temporary left by an interrupted write is never a snapshot.
@@ -92,8 +99,18 @@ impl RecoveryStore {
         Slots { current: self.slot(CURRENT), previous: self.slot(PREVIOUS) }
     }
 
+    /// Records the frontend's launch verdict that the earlier session's current snapshot is valid,
+    /// so this session's first write keeps it as the previous snapshot.
+    pub fn validated_current(&self) {
+        if let Some(Stamp::Foreign { validated }) = &mut self.state.lock().unwrap().current {
+            *validated = true;
+        }
+    }
+
     /// Writes the snapshot for `(generation, revision)`. The new bytes are complete and synchronized
-    /// before the old current moves to previous, so a failure never leaves no valid snapshot.
+    /// before the old current moves to previous, so a failure never leaves no valid snapshot. Only a
+    /// valid current becomes the previous one: rotating a corrupt current over a valid previous would
+    /// destroy the fallback that may just have been recovered, so a corrupt one is replaced in place.
     pub fn write(&self, generation: u64, revision: u64, text: &str) -> Result<(), IoFailure> {
         let mut state = self.state.lock().unwrap();
         if text.len() as u64 > RECOVERY_LIMIT {
@@ -111,7 +128,7 @@ impl RecoveryStore {
         let current = self.dir.join(CURRENT);
         let incoming = self.dir.join(INCOMING);
         replace_file(&incoming, |f| f.write_all(text.as_bytes()))?;
-        if state.current.is_some() {
+        if state.current.is_some_and(Stamp::is_valid) {
             if let Err(e) = fs::rename(&current, self.dir.join(PREVIOUS)) {
                 let _ = fs::remove_file(&incoming);
                 return Err(IoFailure::io("recovery-rotate", e));
@@ -131,7 +148,7 @@ impl RecoveryStore {
         let mut guard = self.state.lock().unwrap();
         let state = &mut *guard;
         let covered = |stamp: Stamp| match stamp {
-            Stamp::Foreign => true,
+            Stamp::Foreign { .. } => true,
             Stamp::Session { generation: g, revision: r } => g < generation || (g == generation && r <= through),
         };
         for (name, slot) in [(CURRENT, &mut state.current), (PREVIOUS, &mut state.previous)] {
@@ -153,7 +170,7 @@ impl RecoveryStore {
         let mut guard = self.state.lock().unwrap();
         let state = &mut *guard;
         for (name, slot) in [(CURRENT, &mut state.current), (PREVIOUS, &mut state.previous)] {
-            if *slot == Some(Stamp::Foreign) {
+            if matches!(slot, Some(Stamp::Foreign { .. })) {
                 remove(&self.dir.join(name))?;
                 *slot = None;
             }
@@ -288,6 +305,44 @@ mod tests {
         let slots = RecoveryStore::new(dir).load();
         assert!(matches!(slots.current, Slot::Unreadable { .. }));
         assert_eq!(text(&slots.previous), "older valid");
+    }
+
+    #[test]
+    fn a_corrupt_current_is_replaced_without_rotating_over_the_valid_previous() {
+        let dir = scratch("recovery-corrupt-recover");
+        fs::write(dir.join(CURRENT), "{\"truncated\": ").unwrap();
+        fs::write(dir.join(PREVIOUS), "older valid").unwrap();
+        // The frontend found the current corrupt and offered the previous; recovering it writes at once.
+        let store = RecoveryStore::new(dir);
+        store.write(1, 1, "recovered").unwrap();
+        let slots = store.load();
+        assert_eq!((text(&slots.current), text(&slots.previous)), ("recovered", "older valid"));
+    }
+
+    #[test]
+    fn a_recovery_write_interrupted_before_promotion_keeps_the_valid_previous() {
+        let dir = scratch("recovery-corrupt-interrupted");
+        // A current the write cannot replace stops it just before promotion, as termination would.
+        fs::create_dir(dir.join(CURRENT)).unwrap();
+        fs::write(dir.join(CURRENT).join("blocker"), "").unwrap();
+        fs::write(dir.join(PREVIOUS), "older valid").unwrap();
+        let store = RecoveryStore::new(dir.clone());
+        assert!(matches!(store.load().current, Slot::Unreadable { .. }));
+        assert_eq!(store.write(1, 1, "recovered").unwrap_err().stage, "recovery-commit");
+        assert_eq!(text(&store.load().previous), "older valid");
+        // The next launch discards the incoming temporary and still finds the valid previous.
+        assert_eq!(text(&RecoveryStore::new(dir).load().previous), "older valid");
+    }
+
+    #[test]
+    fn a_validated_current_from_an_earlier_session_becomes_the_previous() {
+        let dir = scratch("recovery-validated");
+        fs::write(dir.join(CURRENT), "earlier valid").unwrap();
+        let store = RecoveryStore::new(dir);
+        store.validated_current();
+        store.write(1, 1, "recovered").unwrap();
+        let slots = store.load();
+        assert_eq!((text(&slots.current), text(&slots.previous)), ("recovered", "earlier valid"));
     }
 
     #[test]

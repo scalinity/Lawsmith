@@ -38,6 +38,8 @@ class FakeIo implements DocumentIo {
   held: Deferred[] = [];
   exited = 0;
   recovery = { current: null as null | { g: number; r: number; text: string }, previous: null as null | { g: number; r: number; text: string } };
+  /** A current left by an earlier session counts as valid only once launch validation says so; this session's writes always do. */
+  currentValid = false;
   lastWrite: [number, number] | null = null;
   retired = new Map<number, number>();
   failRecovery: IoFailure | null = null;
@@ -84,8 +86,9 @@ class FakeIo implements DocumentIo {
     if (this.lastWrite && (g < this.lastWrite[0] || (g === this.lastWrite[0] && r <= this.lastWrite[1]))) throw failure('stale', 'recovery');
     if (r <= (this.retired.get(g) ?? -1)) throw failure('stale', 'recovery');
     if (this.failRecovery) throw this.failRecovery;
-    if (this.recovery.current) this.recovery.previous = this.recovery.current;
+    if (this.recovery.current && this.currentValid) this.recovery.previous = this.recovery.current;
     this.recovery.current = { g, r, text };
+    this.currentValid = true;
     this.lastWrite = [g, r];
   }
   async recoveryRetire(g: number, through: number) {
@@ -95,6 +98,9 @@ class FakeIo implements DocumentIo {
       const s = this.recovery[slot];
       if (s && (s.g < g || (s.g === g && s.r <= through))) this.recovery[slot] = null;
     }
+  }
+  async recoveryCurrentValid() {
+    this.currentValid = true;
   }
   async recoveryDiscard(g: number) {
     if (this.failDiscard) throw this.failDiscard;
@@ -389,6 +395,22 @@ describe('recovery (SPEC §15.3)', () => {
     expect(offer).toMatchObject({ older: true });
     expect(offer!.envelope.revision).toBe(1);
     expect(offer!.newestProblem).toContain('JSON');
+  });
+
+  it('recovering the previous copy over a corrupt current keeps that copy as the fallback', async () => {
+    const t = setup();
+    t.edit();
+    await t.workflow.recovery.writeNow();
+    const valid = t.io.recovery.current!;
+    const restart = setup();
+    restart.io.recovery = { current: { g: 1, r: 2, text: '{"truncated": ' }, previous: valid };
+    const offer = await restart.workflow.recoveryOffer();
+    expect(offer).toMatchObject({ older: true });
+    expect(await restart.workflow.recover(offer!)).toBe(true);
+    await restart.workflow.recovery.writeNow();
+    // The recovered work is this session's current; the valid copy it came from is still the previous.
+    expect(restart.io.recovery.current!.g).toBe(restart.controller.generation);
+    expect(restart.io.recovery.previous).toEqual(valid);
   });
 
   it('a stale queued write is rejected and never replaces newer work', async () => {

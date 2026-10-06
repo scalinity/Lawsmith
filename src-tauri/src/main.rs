@@ -169,6 +169,13 @@ async fn recovery_retire(store: State<'_, std::sync::Arc<RecoveryStore>>, genera
     blocking(move || store.retire(generation, through)).await?
 }
 
+/// The frontend validated the earlier session's current snapshot at launch.
+#[tauri::command]
+async fn recovery_current_valid(store: State<'_, std::sync::Arc<RecoveryStore>>) -> Result<(), IoFailure> {
+    let store = store.inner().clone();
+    blocking(move || store.validated_current()).await
+}
+
 /// Retires a generation's recovery entirely (an accepted Discard).
 #[tauri::command]
 async fn recovery_discard(store: State<'_, std::sync::Arc<RecoveryStore>>, generation: u64) -> Result<(), IoFailure> {
@@ -388,6 +395,7 @@ fn main() {
             recovery_load,
             recovery_write,
             recovery_retire,
+            recovery_current_valid,
             recovery_discard,
             recovery_discard_earlier,
             ask_unsaved,

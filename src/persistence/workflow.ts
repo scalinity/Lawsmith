@@ -163,7 +163,12 @@ export class DocumentWorkflow {
       current: current === null ? 'absent' : current.ok ? { generation: current.envelope.generation, revision: current.envelope.revision } : { invalid: current.reason },
       previous: previous === null ? 'absent' : previous.ok ? { generation: previous.envelope.generation, revision: previous.envelope.revision } : { invalid: previous.reason },
     });
-    if (current?.ok) return { envelope: current.envelope, older: false, newestProblem: null };
+    if (current?.ok) {
+      // Only a validated current may become the previous snapshot when this session writes; an
+      // unconfirmed one is replaced in place, so the previous fallback survives either way.
+      await this.io.recoveryCurrentValid().catch((error: unknown) => this.app.log('recovery', { action: 'validated-current', outcome: 'failed', error: String(error) }));
+      return { envelope: current.envelope, older: false, newestProblem: null };
+    }
     if (previous?.ok) return { envelope: previous.envelope, older: true, newestProblem: current && !current.ok ? current.reason : 'the newest copy is missing' };
     if (current || previous) this.message = { kind: 'error', text: 'Recovery files from an earlier session could not be read; they were left in place.' };
     return null;
