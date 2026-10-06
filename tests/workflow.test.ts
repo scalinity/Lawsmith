@@ -51,6 +51,9 @@ class FakeIo implements DocumentIo {
   async openScene(): Promise<OpenOutcome> {
     return this.openQueue.shift() ?? { outcome: 'canceled' };
   }
+  async readScene(token: number) {
+    return { text: this.disk.get(this.tokens.get(token)!)!, readMs: 0.1 };
+  }
   async chooseDestination(): Promise<ChooseOutcome> {
     const name = this.chooseQueue.shift();
     if (!name) return { outcome: 'canceled' };
@@ -328,6 +331,21 @@ describe('transactional Open (SPEC §15.2)', () => {
     t.io.askQueue.push('discard');
     expect(await t.workflow.open()).toBe(true);
     expect(t.io.recovery.current).toBeNull();
+  });
+
+  it('opening the bound file with Save in the guard commits what the save wrote, not the bytes read before it', async () => {
+    const t = setup();
+    t.io.chooseQueue.push('a.lawsmith.json');
+    await t.workflow.saveAs();
+    t.edit();
+    // The Open dialog reads a.lawsmith.json as it was, then the guard saves the edit into it.
+    const token = [...t.io.tokens].find(([, name]) => name === 'a.lawsmith.json')![0];
+    t.io.openQueue.push({ outcome: 'opened', token, name: 'a.lawsmith.json', text: t.io.disk.get('a.lawsmith.json')!, readMs: 0.1 });
+    t.io.askQueue.push('save');
+    expect(await t.workflow.open()).toBe(true);
+    expect(t.controller.scene.fields[0]!.enabled).toBe(false);
+    expect(t.workflow.dirty).toBe(false);
+    expect(t.disposed).toHaveLength(1);
   });
 
   it('New replaces through the same guard and starts an unbound clean document', async () => {

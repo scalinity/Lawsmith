@@ -334,12 +334,13 @@ export class DocumentWorkflow {
    */
   private async replace(
     action: string,
-    document: SceneDocument,
+    chosen: SceneDocument,
     binding: { token: number; name: string } | null,
     savedRevision: number | null,
     timing: { readMs: number; parseMs: number; bytes: number } | null = null,
   ): Promise<boolean> {
     this.app.quiesce(action);
+    let document = chosen;
     const start = this.app.now();
     let candidate: SimulationHost;
     try {
@@ -353,6 +354,22 @@ export class DocumentWorkflow {
       candidate.dispose();
       this.app.log('document', { action, outcome: 'canceled', stage: 'guard' });
       return false;
+    }
+    if (decision.kind === 'saved' && binding) {
+      // The guard's save may have written the very file being opened: commit what it holds now.
+      const reread = await this.reread(binding);
+      candidate.dispose();
+      if (!reread) {
+        this.release();
+        return false;
+      }
+      document = reread.document;
+      try {
+        candidate = this.app.candidate(document);
+      } catch (error) {
+        this.release();
+        return this.fail(`The scene could not be prepared: ${error instanceof Error ? error.message : String(error)}.`, { action, outcome: 'candidate-failed' });
+      }
     }
     const commitStart = this.app.now();
     this.app.commit(document, candidate);
@@ -379,6 +396,22 @@ export class DocumentWorkflow {
     });
     if (action !== 'recover') this.message = binding ? { kind: 'info', text: `Opened ${binding.name}. It starts paused at tick 0.` } : null;
     return true;
+  }
+
+  private async reread(binding: { token: number; name: string }): Promise<{ document: SceneDocument } | null> {
+    try {
+      const { text } = await this.io.readScene(binding.token);
+      const parsed = parseScene(text);
+      if (parsed.ok) {
+        this.app.log('document', { action: 'open', outcome: 'reread', file: binding.name });
+        return parsed;
+      }
+      this.fail(`${binding.name} was not opened: ${parsed.error.message}.`, { action: 'open', outcome: 'rejected', file: binding.name, path: parsed.error.path, reason: parsed.error.reason });
+    } catch (error) {
+      const failure = error as IoFailure;
+      this.fail(`${binding.name} was not opened: ${describeFailure(failure)}.`, { action: 'open', failure: failure.kind, stage: failure.stage });
+    }
+    return null;
   }
 
   /**

@@ -80,6 +80,23 @@ async fn open_scene(window: WebviewWindow, destinations: State<'_, Destinations>
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Read {
+    text: String,
+    read_ms: f64,
+}
+
+/// Reads the file behind a dialog-issued token again, bounded and strict UTF-8: an Open whose guard
+/// saved first must commit what that file holds now.
+#[tauri::command]
+async fn read_scene(destinations: State<'_, Destinations>, token: u64) -> Result<Read, IoFailure> {
+    let path = destinations.path(token).ok_or_else(|| IoFailure::new("unknown-destination", "read", "this file was not chosen in this session"))?;
+    let start = Instant::now();
+    let text = blocking(move || read_bounded_utf8(&path, SCENE_LIMIT)).await??;
+    Ok(Read { text, read_ms: elapsed_ms(start) })
+}
+
+#[derive(Serialize)]
 #[serde(tag = "outcome", rename_all = "lowercase")]
 enum ChooseOutcome {
     Canceled,
@@ -306,6 +323,7 @@ fn main() {
             runtime_identity,
             report,
             open_scene,
+            read_scene,
             choose_scene_destination,
             write_scene,
             recovery_load,

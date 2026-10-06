@@ -16,6 +16,8 @@ export type RecoverySlot = { state: 'absent' } | { state: 'unreadable'; reason: 
 /** Operations reject with an `IoFailure`. */
 export interface DocumentIo {
   openScene(): Promise<OpenOutcome>;
+  /** Reads a dialog-chosen file again (bounded, strict UTF-8). */
+  readScene(token: number): Promise<{ text: string; readMs: number }>;
   chooseDestination(suggestedName: string): Promise<ChooseOutcome>;
   writeScene(token: number, text: string): Promise<{ writeMs: number }>;
   recoveryLoad(): Promise<{ current: RecoverySlot; previous: RecoverySlot }>;
@@ -30,6 +32,7 @@ export interface DocumentIo {
 
 export const nativeIo: DocumentIo = {
   openScene: () => invoke('open_scene'),
+  readScene: (token) => invoke('read_scene', { token }),
   chooseDestination: (suggestedName) => invoke('choose_scene_destination', { suggestedName }),
   writeScene: (token, text) => invoke('write_scene', { token, text }),
   recoveryLoad: () => invoke('recovery_load'),
