@@ -367,7 +367,9 @@ export class SimulationHost {
       lastAppliedSequence: this.lastAppliedSequence,
       skippedEmissions: this.skippedEmissions,
       emitters: this.emitters.map((e) => ({ id: e.def.id, prngState: e.prng, ordinal: e.ordinal })),
-      fields: this.fieldDefs,
+      // A snapshot of the array: settling replaces entries in place, and a checkpoint must keep
+      // the laws of its own tick. The entries themselves are frozen.
+      fields: [...this.fieldDefs],
       bodies: [...this.bodies].sort(byId).map((live) => {
         const t = live.body.translation();
         const r = live.body.rotation();

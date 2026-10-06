@@ -53,6 +53,21 @@ describe('T04 exact reset', () => {
     expect(at600!.divergence!.path).toMatch(/^(emitters|bodies)\./);
   });
 
+  it('a checkpoint keeps the laws of its own tick: later edits cannot rewrite it', () => {
+    // Two runs whose laws differ at tick 600 but converge by tick 700. The laws stay far from
+    // the stream, so engine bytes cannot tell them apart; only the semantic checkpoint can.
+    const base = STARTING_RECIPE.fields[0]!;
+    const at = (atTick: number, x: number) => ({ atTick, payload: { kind: 'putField' as const, field: cloneFrozen({ ...base, pose: { ...base.pose, position: [x, 1, 0] as const } }) } });
+    const first = runFixedSteps(new SimulationHost(STARTING_RECIPE), [at(100, 40), at(700, 60)]);
+    const second = runFixedSteps(new SimulationHost(STARTING_RECIPE), [at(100, 50), at(700, 60)]);
+    expect(first[0]!.state.fields[0]!.pose.position).toEqual([40, 1, 0]);
+    const [at600, at1200] = compareRuns(first, second);
+    expect(at600!.engineBytesEqual).toBe(true);
+    expect(at600!.equal).toBe(false);
+    expect(at600!.divergence!.path).toBe('fields.0.pose.position.0');
+    expect(at1200!.equal).toBe(true);
+  });
+
   it('the emitter keeps at most 64 live bodies and consumes three PRNG draws per birth', () => {
     const host = new SimulationHost(STARTING_RECIPE);
     let maxLive = 0;
