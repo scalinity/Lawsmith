@@ -1,6 +1,6 @@
 # Lawsmith — Engineering Specification
 
-**Version:** 1.0 · **Date:** 2026-10-05 · **Status:** proposed baseline, awaiting owner review  
+**Version:** 1.0 · **Date:** 2026-10-05 · **Status:** accepted baseline  
 **Companion:** [MILESTONES.md](MILESTONES.md) · **Target:** a Tauri 3 (prerelease, exactly pinned) macOS desktop application on Apple Silicon
 
 > Grab a rule, move it through the world, and see motion change for an understandable reason.

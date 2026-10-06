@@ -7,6 +7,8 @@
     data-state is one of: not-started | in-progress | implemented | owner-check | accepted | blocked.
     ("implemented" = IMPLEMENTED / REVIEW PENDING; "owner-check" = IMPLEMENTED / OWNER NATIVE CHECK REQUIRED.)
   - Open threads: only the rows of #threads. data-owner names the owning unit's id.
+  - data-tier marks how a unit handles Claude usage limits: "scarce" waits for Opus 5.5, "near" falls back to
+    GPT-6 Astra with Opus 5.5 reviewing, and no tier falls back to GPT-6 Astra with GPT-6.1 Sol reviewing.
   - The gate rail, the current-unit highlight and each strip's thread links are drawn by the script at the end.
   - The hero sentence and the masthead "Realigned" line are marked REALIGN.
 -->
@@ -191,11 +193,6 @@
   .thread-list a { white-space: nowrap; }
   .unit .src { grid-column: 2; margin: 14px 0 0; }
 
-  .m-astra::before {
-    content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 7px 1px 1px;
-    transform: rotate(45deg); background: var(--lavender);
-  }
-  .m-astra.reviews::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--lavender); }
 
   /* Overlap matrix */
   .two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; margin-top: 22px; }
@@ -363,8 +360,6 @@
   .disc dt { font-weight: 600; padding-right: 24px; }
   .disc dd p { margin: 0 0 4px; color: var(--text-secondary); }
 
-  .silent { margin: 20px 0 0; padding-left: 18px; color: var(--text-secondary); max-width: 76ch; }
-  .silent li + li { margin-top: 4px; }
 
   footer { margin-top: 80px; padding-top: 0; font-size: 12.5px; color: var(--text-tertiary); }
   footer h2 { color: var(--text); }
@@ -421,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> at <code>43f47af</code></span>
+    <span>Realigned 2026-10-06 against <code>main</code> at <code>a2f6091</code></span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
     <h1>Run M0’s four native checks, then decide whether to accept M0.</h1>
-    <p class="lede">No session can run until then. M1 starts from an accepted M0, and M0 reaching <code>main</code> did not accept it. After you accept M0, M1 runs next: GPT-6 Astra authors it and Opus 5.5 reviews it.</p>
+    <p class="lede">No session can run until then. M1 starts from an accepted M0, and M0 reaching <code>main</code> did not accept it. After you accept M0, M1 runs next: Opus 5.5 authors it and GPT-6.1 Sol reviews it.</p>
     <cite><code>docs/MILESTONES.md</code> How to execute this plan; <code>AGENTS.md</code> Units of work; <code>docs/evidence/M0.md</code> Status</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -435,8 +430,8 @@
       <li data-state="owner-check"><span class="mark"></span>Implemented, awaiting review or owner check</li>
       <li data-state="accepted"><span class="mark"></span>Accepted</li>
       <li class="is-current"><span class="mark"></span>Current</li>
-      <li><span class="dia solid"></span>GPT-6 Astra authors</li>
-      <li><span class="dia"></span>GPT-6 Astra reviews</li>
+      <li><span class="dia solid"></span>Waits for Opus 5.5</li>
+      <li><span class="dia"></span>Opus 5.5 reviews if GPT-6 Astra stands in</li>
     </ul>
     <noscript><p class="intro">The gate rail and each strip’s thread links are drawn by a small script. Every fact they show is also written out below.</p></noscript>
   </div>
@@ -449,7 +444,7 @@
     <div class="units">
 
       <!-- REALIGN M0 -->
-      <article class="unit" id="m0" data-gate="M0" data-state="owner-check" data-author="owner">
+      <article class="unit" id="m0" data-gate="M0" data-state="owner-check">
         <div class="gate">M0</div>
         <div>
           <div class="unit-head">
@@ -458,23 +453,23 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>None for the checks: you run them. Opus 5.5 can then write your results into <code>docs/evidence/M0.md</code>. Only you mark M0 ACCEPTED.</dd>
+              <dt>Models</dt><dd>None for the checks: you run them. Opus 5.5 writes your results into <code>docs/evidence/M0.md</code> from your reply and the app’s <code>[lawsmith]</code> log. Only you mark M0 ACCEPTED.</dd>
               <dt>Graph permits</dt><dd class="soft">Now. M0 is implemented: code at <code>4f4e70b</code>, record at <code>a94dd80</code>.</dd>
               <dt>Should run</dt><dd class="run">Now, and alone. It is the only unit that unlocks M1. A failed check opens a fix-up unit on its own branch before M1, allocated by the same rule as any unit.</dd>
             </dl>
             <dl class="facts">
-              <dt>Needs</dt><dd>Owner acceptance of the specification, which the repo does not record (see open threads). Contracts C3, C10.</dd>
+              <dt>Needs</dt><dd>The accepted specification. Contracts C3, C10.</dd>
               <dt>Destroys</dt><dd>Check 2 turns Wi-Fi off, which cuts any running session’s connection: run it with no session open. Check 1 switches Displays to More Space; switch it back afterwards.</dd>
-              <dt>Your part</dt><dd>All four checks. Check 1 or an external display also covers finding 8.</dd>
+              <dt>Your part</dt><dd>All four checks, then the acceptance decision.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/evidence/M0.md</code> Owner native checklist, Packaged app; <code>docs/MILESTONES.md</code> Roadmap, M0</cite>
+          <cite class="src"><code>docs/evidence/M0.md</code> Owner native checklist, Packaged app; <code>docs/MILESTONES.md</code> Roadmap, M0; <code>docs/SPEC.md</code> and <code>docs/MILESTONES.md</code> status lines</cite>
         </div>
       </article>
 
       <!-- REALIGN M1 -->
-      <article class="unit" id="m1" data-gate="M1" data-state="not-started" data-author="astra">
+      <article class="unit" id="m1" data-gate="M1" data-state="not-started" data-tier="scarce">
         <div class="gate">M1</div>
         <div>
           <div class="unit-head">
@@ -483,7 +478,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 reviews; a small local implementation review is enough at M1.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors, and M1 waits for it rather than falling back. GPT-6.1 Sol reviews; a small local implementation review is enough at M1.</dd>
               <dt>Graph permits</dt><dd class="soft">Once you mark M0 ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">First after M0 is accepted, and alone: it shares files with every later gate.</dd>
             </dl>
@@ -499,7 +494,7 @@
       </article>
 
       <!-- REALIGN M2 -->
-      <article class="unit" id="m2" data-gate="M2" data-state="not-started" data-author="astra" data-stop="Portable V0">
+      <article class="unit" id="m2" data-gate="M2" data-state="not-started" data-tier="scarce" data-stop="Portable V0">
         <div class="gate">M2</div>
         <div>
           <div class="unit-head">
@@ -508,7 +503,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 runs the independent review gate on state ownership and format semantics.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors, and M2 waits for it rather than falling back. GPT-6.1 Sol runs the independent review gate on state ownership and format semantics.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M1 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>domain</code> and <code>ui</code> with M1. First approved stopping point: portable V0.</dd>
             </dl>
@@ -524,7 +519,7 @@
       </article>
 
       <!-- REALIGN M3 -->
-      <article class="unit" id="m3" data-gate="M3" data-state="not-started" data-author="opus" data-reviewer="astra">
+      <article class="unit" id="m3" data-gate="M3" data-state="not-started" data-tier="near">
         <div class="gate">M3</div>
         <div>
           <div class="unit-head">
@@ -533,7 +528,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors. <span class="m-astra reviews">GPT-6 Astra</span> reviews the math, where OpenAI reports its lead; MILESTONES encourages a bounded independent math review here.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the bounded independent math review MILESTONES encourages here. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M2 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>persistence</code> and <code>ui</code> with M2. First gate where kernel/tests and UI/visuals can split under one integrator.</dd>
             </dl>
@@ -549,7 +544,7 @@
       </article>
 
       <!-- REALIGN M4 -->
-      <article class="unit" id="m4" data-gate="M4" data-state="not-started" data-author="opus">
+      <article class="unit" id="m4" data-gate="M4" data-state="not-started">
         <div class="gate">M4</div>
         <div>
           <div class="unit-head">
@@ -558,7 +553,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol reviews.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews. If Claude limits bind, GPT-6 Astra authors.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M3 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>simulation</code>, <code>rendering</code> and <code>ui</code> with M3.</dd>
             </dl>
@@ -574,7 +569,7 @@
       </article>
 
       <!-- REALIGN M5 -->
-      <article class="unit" id="m5" data-gate="M5" data-state="not-started" data-author="opus" data-reviewer="astra" data-stop="Creative core">
+      <article class="unit" id="m5" data-gate="M5" data-state="not-started" data-tier="near" data-stop="Creative core">
         <div class="gate">M5</div>
         <div>
           <div class="unit-head">
@@ -583,7 +578,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors. <span class="m-astra reviews">GPT-6 Astra</span> runs the independent review gate on math, serialization, and whether it still feels like manipulating a law.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the independent review gate on math, serialization, and whether it still feels like manipulating a law. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M4 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>ui</code> with M4. Second approved stopping point: creative core.</dd>
             </dl>
@@ -599,7 +594,7 @@
       </article>
 
       <!-- REALIGN M6A -->
-      <article class="unit" id="m6a" data-gate="M6A" data-state="not-started" data-author="astra">
+      <article class="unit" id="m6a" data-gate="M6A" data-state="not-started" data-tier="scarce">
         <div class="gate">M6A</div>
         <div>
           <div class="unit-head">
@@ -608,7 +603,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 reviews.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors, and M6A waits for it rather than falling back. GPT-6.1 Sol reviews.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M5 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>domain</code>, <code>persistence</code> and <code>ui</code> with M5.</dd>
             </dl>
@@ -624,7 +619,7 @@
       </article>
 
       <!-- REALIGN M6B -->
-      <article class="unit" id="m6b" data-gate="M6B" data-state="not-started" data-author="astra">
+      <article class="unit" id="m6b" data-gate="M6B" data-state="not-started" data-tier="scarce">
         <div class="gate">M6B</div>
         <div>
           <div class="unit-head">
@@ -633,7 +628,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd><span class="m-astra">GPT-6 Astra</span> authors. Opus 5.5 runs the complete-state review before M7, checking the linear oracle and the restored result separately.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors, and M6B waits for it rather than falling back. GPT-6.1 Sol runs the complete-state review before M7, checking the linear oracle and the restored result separately.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M6A is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>simulation</code> and <code>ui</code> with M6A. M7 stays locked until M6B is accepted.</dd>
             </dl>
@@ -649,7 +644,7 @@
       </article>
 
       <!-- REALIGN M7 -->
-      <article class="unit" id="m7" data-gate="M7" data-state="not-started" data-author="opus">
+      <article class="unit" id="m7" data-gate="M7" data-state="not-started" data-tier="near">
         <div class="gate">M7</div>
         <div>
           <div class="unit-head">
@@ -658,7 +653,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol runs the independent review gate: two continuations of the same state, not similar-looking unrelated runs.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the independent review gate: two continuations of the same state, not similar-looking unrelated runs. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M6B is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>simulation</code>, <code>rendering</code> and <code>ui</code> with M6B.</dd>
             </dl>
@@ -674,7 +669,7 @@
       </article>
 
       <!-- REALIGN M8 -->
-      <article class="unit" id="m8" data-gate="M8" data-state="not-started" data-author="opus">
+      <article class="unit" id="m8" data-gate="M8" data-state="not-started">
         <div class="gate">M8</div>
         <div>
           <div class="unit-head">
@@ -683,7 +678,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol reviews.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews. If Claude limits bind, GPT-6 Astra authors.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M7 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>rendering</code> and <code>ui</code> with M7.</dd>
             </dl>
@@ -699,7 +694,7 @@
       </article>
 
       <!-- REALIGN M9 -->
-      <article class="unit" id="m9" data-gate="M9" data-state="not-started" data-author="opus">
+      <article class="unit" id="m9" data-gate="M9" data-state="not-started" data-tier="near">
         <div class="gate">M9</div>
         <div>
           <div class="unit-head">
@@ -708,7 +703,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol reviews the decision to keep CPU/WASM simulation or admit a worker or WebGPU compute.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews the decision to keep CPU/WASM simulation or admit a worker or WebGPU compute. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M8 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. It shares <code>rendering</code> with M8.</dd>
             </dl>
@@ -724,7 +719,7 @@
       </article>
 
       <!-- REALIGN M10 -->
-      <article class="unit" id="m10" data-gate="M10" data-state="not-started" data-author="opus" data-stop="Flagship candidate">
+      <article class="unit" id="m10" data-gate="M10" data-state="not-started" data-stop="Flagship candidate">
         <div class="gate">M10</div>
         <div>
           <div class="unit-head">
@@ -733,7 +728,7 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol runs the independent accept/reject review.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the independent accept/reject review. If Claude limits bind, GPT-6 Astra authors.</dd>
               <dt>Graph permits</dt><dd class="soft">Once M9 is ACCEPTED.</dd>
               <dt>Should run</dt><dd class="run">Not before. Its final integration fixes may touch every module M9 does. Last approved stopping point: flagship candidate.</dd>
             </dl>
@@ -813,12 +808,12 @@
 
   <section id="allocation" aria-labelledby="h-alloc">
     <h2 id="h-alloc">Which model, and why</h2>
-    <p class="intro">The scarce model goes where it changes the outcome most, never where the work matters most. Three criteria decide: nothing in the repo to copy, a decision later gates inherit, and a step that cannot be undone. Each unit is placed by the first two; a half ring marks the third. The reviewer for each zone follows the measurements at the end of this section.</p>
+    <p class="intro">Opus 5.5 authors every unit: you rate it the better model, and Claude’s usage limits are what make it scarce. GPT-6 Astra, on your GPT Pro 100 plan, stands in only when those limits bind. The chart decides what happens then. Opus goes where it changes the outcome most, never where the work matters most. Three criteria decide: nothing in the repo to copy, a decision later gates inherit, and a step that cannot be undone. Each unit is placed by the first two; a half ring marks the third.</p>
 
     <div class="alloc-wrap">
       <div>
         <p class="ax-cap">Rows: later gates inherit its decisions. Columns: nothing in the repo to copy.</p>
-        <div class="alloc" role="img" aria-label="Allocation chart. Scarce zone: M1, M2, M6A, M6B. Near the line: M3, M5, M7, M9. Plentiful: M4, M8, M10.">
+        <div class="alloc" role="img" aria-label="Allocation chart. Waits for Opus: M1, M2, M6A, M6B. Near the line: M3, M5, M7, M9. May fall back to Astra: M4, M8, M10.">
           <div class="ax-y">Holds</div>
           <div class="cell z-scarce"></div>
           <div class="cell z-scarce"></div>
@@ -827,7 +822,7 @@
             <a class="tok" href="#m2">M2<span class="u" title="Partly cannot be undone"></span></a>
             <a class="tok" href="#m6a">M6A<span class="u" title="Partly cannot be undone"></span></a>
             <a class="tok" href="#m6b">M6B</a>
-            <span class="zone-name">Astra authors</span>
+            <span class="zone-name">Waits for Opus</span>
           </div>
 
           <div class="ax-y">Partly</div>
@@ -844,7 +839,7 @@
           <div class="ax-y">No</div>
           <div class="cell z-plain">
             <a class="tok" href="#m10">M10<span class="u" title="Partly cannot be undone"></span></a>
-            <span class="zone-name">Opus authors</span>
+            <span class="zone-name">May fall back</span>
           </div>
           <div class="cell z-plain">
             <a class="tok" href="#m4">M4</a>
@@ -863,15 +858,15 @@
       <ul class="rule">
         <li>
           <span class="key z-scarce"></span>
-          <div><b>Any criterion holds</b><p><span class="m-astra">GPT-6 Astra</span> authors; Opus 5.5 reviews, with the highest measured recall of known bugs.</p></div>
+          <div><b>Any criterion holds</b><p>Opus 5.5 authors and GPT-6.1 Sol reviews. If Claude limits bind, the unit waits for them to reset rather than falling back.</p></div>
         </li>
         <li>
           <span class="key z-near"></span>
-          <div><b>Near the line: two or more hold partly, none fully</b><p>Opus 5.5 authors. <span class="m-astra reviews">GPT-6 Astra</span> reviews where the review is mathematical (M3, M5); GPT-6.1 Sol reviews the rest (M7, M9), at the same measured review quality for a seventh of the cost.</p></div>
+          <div><b>Near the line: two or more hold partly, none fully</b><p>Opus 5.5 authors and GPT-6.1 Sol reviews. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews, so Opus still checks the unit, with the highest measured recall of known bugs.</p></div>
         </li>
         <li>
           <span class="key z-plain"></span>
-          <div><b>Otherwise</b><p>Opus 5.5 authors; GPT-6.1 Sol reviews.</p></div>
+          <div><b>Otherwise</b><p>Opus 5.5 authors and GPT-6.1 Sol reviews. If Claude limits bind, GPT-6 Astra authors and Sol still reviews.</p></div>
         </li>
         <li>
           <span class="key"></span>
@@ -880,12 +875,12 @@
       </ul>
     </div>
 
-    <p class="note">Importance appears on neither axis. M7 is the flagship capability, yet it sits near the line, because M6B makes the complete-state decisions M7 consumes. M10 is the release candidate, yet Opus 5.5 authors it, because it integrates work that is already accepted. Score a fix-up or an owner-requested task the same way; it does not inherit its parent’s model. Under this rule, no unit reaches the scarce zone through the third criterion alone.</p>
-    <cite>Models chosen by the owner, 2026-10-06, against the measurements below: <code>gpt-6-astra</code>, <code>claude-opus-5-5</code>, <code>gpt-6.1-sol</code>. Criteria from the orchestration rules. Ratings are this page’s judgement from <code>docs/MILESTONES.md</code>, cited per row. Independence from <code>docs/MILESTONES.md</code> Delegation rule and M6B.</cite>
+    <p class="note">Importance appears on neither axis. M7 is the flagship capability, yet it sits near the line, because M6B makes the complete-state decisions M7 consumes. M10 is the release candidate, yet it may fall back to Astra, because it integrates work that is already accepted. Score a fix-up or an owner-requested task the same way; it does not inherit its parent’s model. Under this rule, no unit reaches the waiting zone through the third criterion alone. To fall back mid-unit, start a fresh Codex session with the unit’s handover prompt; its resume step continues from the unit’s branch.</p>
+    <cite>Models chosen by the owner, 2026-10-06: <code>claude-opus-5-5</code> by default, <code>gpt-6-astra</code> as the fallback on the GPT Pro 100 plan, <code>gpt-6.1-sol</code> for review. Criteria from the orchestration rules. Ratings are this page’s judgement from <code>docs/MILESTONES.md</code>, cited per row. Independence from <code>docs/MILESTONES.md</code> Delegation rule and M6B.</cite>
 
     <table class="rows alloc-table">
       <thead>
-        <tr><th>Unit</th><th>Nothing to copy</th><th>Later gates inherit</th><th>Cannot be undone</th><th>Author / reviewer</th></tr>
+        <tr><th>Unit</th><th>Nothing to copy</th><th>Later gates inherit</th><th>Cannot be undone</th><th>Author / reviewer</th><th>If Claude limits bind</th></tr>
       </thead>
       <tbody>
         <tr>
@@ -893,21 +888,24 @@
           <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">No host, command path, field kernel or physics adapter exists; <code>host.ts</code> only initialises Rapier.</span></td>
           <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">M2 undo, M3 primitives (AC7) and M6A recording build on its host and command path.</span></td>
           <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">No file format yet; save/load is out of scope.</span></td>
-          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Waits for Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M2</td>
           <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">First persistence, native I/O helper, dialog plugin and undo.</span></td>
           <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">M3 preserves its format contract; M6A run files go through its I/O helper.</span></td>
           <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Saved <code>.lawsmith.json</code> files outlive a revert; a schema change needs a migration.</span></td>
-          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Waits for Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M3</td>
           <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">M1’s box and directional leaf are the template; sphere, cylinder and drag are new.</span></td>
           <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">M5 composes through its registry, but SPEC §8 fixes that interface.</span></td>
           <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Equations become saved behaviour; changing one needs a reviewed semantic version.</span></td>
-          <td data-label="Author / reviewer">Opus / <span class="m-astra reviews">Astra</span></td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Astra / Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M4</td>
@@ -915,27 +913,31 @@
           <td data-label="Later gates inherit"><span class="c"></span>No<span class="why">Visual-only: it cannot alter authoritative state (AC6).</span></td>
           <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Revertible.</span></td>
           <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Astra / Sol</td>
         </tr>
         <tr>
           <td data-label="Unit">M5</td>
           <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">AST validation is new; schema and registry precedents exist from M2 and M3.</span></td>
           <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">M6A records its modulation; M9 lowers the AST only if compute is admitted.</span></td>
           <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Expressions enter saved scene files (AC6).</span></td>
-          <td data-label="Author / reviewer">Opus / <span class="m-astra reviews">Astra</span></td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Astra / Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M6A</td>
           <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">No recorder, run format or context coordinator exists.</span></td>
           <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">Its linear replay is M6B’s oracle; M7 reuses its T09 observations.</span></td>
           <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Saved run records are immutable.</span></td>
-          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Waits for Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M6B</td>
           <td data-label="Nothing to copy"><span class="c holds"></span>Holds<span class="why">No checkpoint, sidecar or restore exists.</span></td>
           <td data-label="Later gates inherit"><span class="c holds"></span>Holds<span class="why">Accepted M6B is a prerequisite for M7, which forks from its checkpoints.</span></td>
           <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Caches are not persisted across restart.</span></td>
-          <td data-label="Author / reviewer"><span class="m-astra">Astra</span> / Opus</td>
+          <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Waits for Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M7</td>
@@ -943,6 +945,7 @@
           <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">M8 clarifies it and M10 demonstrates it; nothing computes from it.</span></td>
           <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Revertible.</span></td>
           <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Astra / Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M8</td>
@@ -950,6 +953,7 @@
           <td data-label="Later gates inherit"><span class="c"></span>No<span class="why">M10 packages it.</span></td>
           <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Revertible.</span></td>
           <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Astra / Sol</td>
         </tr>
         <tr>
           <td data-label="Unit">M9</td>
@@ -957,6 +961,7 @@
           <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">An admitted worker or compute path is what M10 qualifies.</span></td>
           <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">A failed optimisation is reverted.</span></td>
           <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Astra / Opus</td>
         </tr>
         <tr>
           <td data-label="Unit">M10</td>
@@ -964,6 +969,7 @@
           <td data-label="Later gates inherit"><span class="c"></span>No<span class="why">Last gate.</span></td>
           <td data-label="Cannot be undone"><span class="c partly"></span>Partly<span class="why">Its verdict feeds your release decision; publishing stays yours.</span></td>
           <td data-label="Author / reviewer">Opus / Sol</td>
+          <td data-label="If Claude limits bind">Astra / Sol</td>
         </tr>
       </tbody>
     </table>
@@ -977,28 +983,23 @@
       </thead>
       <tbody>
         <tr>
-          <td data-label="Decision" class="lead">Astra authors the foundation units</td>
-          <td data-label="Measurement">FrontierSWE v2: 34 ultra-long-horizon engineering and research tasks, often close to 20 hours each, including scientific computing and an OpenGL scene renderer. GPT-6 Astra 65.5%, Opus 5.5 62.3%.</td>
-          <td data-label="Source"><cite>Independent: Proximal, reported in Anthropic’s <a href="https://www-cdn.anthropic.com/fc1b44717c85dc068bc6ba5024219938094694bd/Claude%20Opus%205.5%20System%20Card.pdf">Claude Opus 5.5 System Card</a> §8.7, <span class="nw">2026-09-22</span></cite></td>
+          <td data-label="Decision" class="lead">Opus 5.5 authors by default</td>
+          <td data-label="Measurement">Your judgement from use. On CursorBench 4.0, Cursor’s agentic coding tasks measured by Cursor, Opus 5.5 scored 57.8%, the top of its public leaderboard. The one independent result favouring Astra is FrontierSWE v2, 34 ultra-long-horizon tasks like the foundation units: GPT-6 Astra 65.5%, Opus 5.5 62.3%.</td>
+          <td data-label="Source"><cite>Independent: Cursor and Proximal, both reported in Anthropic’s <a href="https://www-cdn.anthropic.com/fc1b44717c85dc068bc6ba5024219938094694bd/Claude%20Opus%205.5%20System%20Card.pdf">Claude Opus 5.5 System Card</a> §8.7–§8.8, <span class="nw">2026-09-22</span></cite></td>
         </tr>
         <tr>
-          <td data-label="Decision" class="lead">Opus 5.5 reviews Astra’s units</td>
+          <td data-label="Decision" class="lead">Opus 5.5 reviews when Astra stands in near the line</td>
           <td data-label="Measurement">MacroscopeBench at max effort, recall of known bugs: Opus 5.5 83.8%, GPT-6.1 Sol 69.2%, GPT-6 Astra 67.8%. Precision 84.0%, 90.7% and 91.7%; cost per review $11.58, $1.05 and $7.87.</td>
           <td data-label="Source"><cite>Independent of the model makers: <a href="https://www.macroscope.com/benchmark">MacroscopeBench</a>, run by a code-review tool maker; mean of three runs, LLM-judged</cite></td>
         </tr>
         <tr>
-          <td data-label="Decision" class="lead">Sol, not Astra, for the general reviews</td>
-          <td data-label="Measurement">Same benchmark, combined score: GPT-6.1 Sol 78.5, GPT-6 Astra 78.0, at $1.05 against $7.87 per review. OpenAI describes Sol as “near-Astra performance at a lower cost”.</td>
+          <td data-label="Decision" class="lead">Sol reviews Opus 5.5’s work</td>
+          <td data-label="Measurement">Opus cannot review its own work. Of the other two on the same benchmark: GPT-6.1 Sol 78.5, GPT-6 Astra 78.0, at $1.05 against $7.87 per review, which also keeps Astra’s quota for standing in. OpenAI describes Sol as “near-Astra performance at a lower cost”.</td>
           <td data-label="Source"><cite>Independent: MacroscopeBench. Vendor: OpenAI API docs, GPT-6.1 Sol model page</cite></td>
         </tr>
         <tr>
-          <td data-label="Decision" class="lead">Astra for the two math reviews</td>
-          <td data-label="Measurement">FrontierMath Tier 4: 98%. Terminal-Bench Science 0.1, which covers simulations and model fitting: 64.6%, against 52.6% for Claude Fable 5.1. Against this, the independent SciCode leaderboard is led by Opus 5.5 at 66.9%, with its dataset under audit.</td>
-          <td data-label="Source"><cite>Vendor: <a href="https://openai.com/index/gpt-6-astra/">OpenAI, GPT-6 Astra</a>, <span class="nw">2026-09-03</span>. Independent: <a href="https://artificialanalysis.ai/evaluations/scicode">Artificial Analysis, SciCode</a></cite></td>
-        </tr>
-        <tr>
           <td data-label="Decision" class="lead">The reviewer is never the author’s model</td>
-          <td data-label="Measurement">Not measured for these three models. In the one controlled study (Claude Opus 4.7 and GPT-5.5, static review with no code execution), Claude reviewing GPT drafts raised the pass rate from 71.6% to 89.7%. GPT reviewing Claude drafts lowered it from 91.4% to 82.8%. The authors call the effect asymmetric. Opus 5.5 reviewing Astra is the direction that helped. For Sol and Astra reviewing Opus, the loop’s re-run checks do what those reviewers could not.</td>
+          <td data-label="Measurement">Not measured for these three models. In the one controlled study (Claude Opus 4.7 and GPT-5.5, static review with no code execution), Claude reviewing GPT drafts raised the pass rate from 71.6% to 89.7%. GPT reviewing Claude drafts lowered it from 91.4% to 82.8%. The authors call the effect asymmetric. Opus 5.5 reviewing Astra is the direction that helped. Sol reviewing Opus, the default pairing here, is the direction that hurt; the loop’s re-run checks do what those static reviewers could not.</td>
           <td data-label="Source"><cite>Independent: <a href="https://arxiv.org/html/2607.21656v1">Xiang et al., Cross-Model LLM Code Review</a>, arXiv, 2026</cite></td>
         </tr>
         <tr>
@@ -1062,9 +1063,9 @@
 
     <div class="route">
       <p><b>Review route with these models.</b> Every review crosses tools.</p>
-      <p>Opus 5.5 reviews Astra’s units in a Claude Code session on the candidate SHA. The report goes back to the Codex author session for <code>source-command-address</code>.</p>
-      <p>Astra and Sol review Opus’s units in a Codex session. The report goes back to the Claude Code author session for <code>/address</code>.</p>
-      <p>A Claude Code reviewer subagent runs a Claude model, so it fits none of these pairings.</p>
+      <p>Sol reviews Opus’s units in a Codex session on the candidate SHA. The report goes back to the Claude Code author session for <code>/address</code>.</p>
+      <p>When Astra stands in, it authors in Codex. Opus 5.5 reviews it in a Claude Code session, or Sol in Codex. The report goes back to the Codex author session for <code>source-command-address</code>.</p>
+      <p>A Claude Code reviewer subagent runs a Claude model, so it cannot review an Opus-authored unit.</p>
     </div>
   </section>
 
@@ -1215,27 +1216,15 @@
           <td data-label="Owner"><a href="#m1">M1</a></td>
           <td data-label="Source"><cite><code>M0.md</code> finding 7, Review; <code>AGENTS.md</code> Reviews</cite></td>
         </tr>
-        <tr id="t-f8" data-owner="m0" data-short="Finding 8">
+        <tr id="t-f8" data-owner="deferred" data-short="Finding 8">
           <td data-label="Thread" class="lead">Finding 8: DPR across displays</td>
-          <td data-label="What the record says">Only one display was available, so DPR changes between displays at the same window size are untested. It needs a second display: fold it into check 1 if you use an external one.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
+          <td data-label="What the record says">Only one display was available, so DPR changes between displays at the same window size are untested. Deferred by your decision until you use an iPad as a second display through Duet. It blocks no unit.</td>
+          <td data-label="Owner">You, deferred</td>
           <td data-label="Source"><cite><code>M0.md</code> finding 8</cite></td>
-        </tr>
-        <tr id="t-spec" data-owner="m0" data-short="Specification acceptance">
-          <td data-label="Thread" class="lead">Specification acceptance not recorded</td>
-          <td data-label="What the record says">M0 depends on “Owner accepts specification”. Yet SPEC.md and MILESTONES.md still read “awaiting owner review”, and MILESTONES reads “Implementation status: all NOT STARTED”. Editing either needs your explicit authorization.</td>
-          <td data-label="Owner"><a href="#m0">M0</a>, you</td>
-          <td data-label="Source"><cite><code>MILESTONES.md</code> header, Roadmap; <code>SPEC.md</code> header; <code>AGENTS.md</code> Sources of truth</cite></td>
         </tr>
       </tbody>
     </table>
 
-    <h2 style="margin-top:36px">Not recorded anywhere in the repo</h2>
-    <ul class="silent">
-      <li>Who writes your owner-check results into <code>docs/evidence/M0.md</code>, and in what form.</li>
-      <li>Whether a second or external display is available, for check 1 and finding 8.</li>
-      <li>Which plan or API tier the GPT-6 Astra quota comes from, and so how scarce it is in practice.</li>
-    </ul>
   </section>
 
   <section id="grading" aria-labelledby="h-grade">
@@ -1352,9 +1341,9 @@
       gate.textContent = unit.dataset.gate;
       const spend = document.createElement('span');
       spend.className = 'spend';
-      if (unit.dataset.author === 'astra' || unit.dataset.reviewer === 'astra') {
+      if (unit.dataset.tier) {
         const dia = document.createElement('span');
-        dia.className = unit.dataset.author === 'astra' ? 'dia solid' : 'dia';
+        dia.className = unit.dataset.tier === 'scarce' ? 'dia solid' : 'dia';
         spend.append(dia);
       }
       link.append(mark, gate, spend);

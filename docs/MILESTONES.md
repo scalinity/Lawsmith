@@ -1,7 +1,7 @@
 # Lawsmith — Executable Milestone Plan
 
-**Version:** 1.0 · **Date:** 2026-10-05 · **Status:** proposed plan, awaiting owner review  
-**Authority:** [SPEC.md](SPEC.md) · **Milestones:** 12 gates: M0–M5, M6A, M6B, M7–M10 · **Implementation status:** all NOT STARTED
+**Version:** 1.0 · **Date:** 2026-10-05 · **Status:** accepted plan  
+**Authority:** [SPEC.md](SPEC.md) · **Milestones:** 12 gates: M0–M5, M6A, M6B, M7–M10 · **Implementation status:** each milestone's record in [evidence/](evidence/)
 
 This plan builds a personal creative instrument delivered as **`Lawsmith.app`, a Tauri 3 macOS application (prerelease line, exactly pinned) with a TypeScript/Three.js frontend in the system WKWebView**. Its order is deliberate: qualify the smallest native shell, make a law bend a stream, make that experiment portable, then deepen vocabulary, explanation, composition and replay. **WebGPU-first graphics are present from M0 through Three.js WebGPURenderer. TSL is the preferred GPU authoring layer.** Advanced GPU evaluation/simulation remains conditional on measured need; raw WGSL requires a demonstrated reason to drop below TSL. Rust stays thin and simulation remains frontend-owned. No source code, repository, or implementation milestone is created by this specification session.
 
@@ -840,4 +840,4 @@ A flagship personal project worth sharing, with an explicit owner decision about
 
 No milestone grants permission to build an excluded future idea merely because an interface could support it. The approved stopping points remain portable V0 at M2, creative core at M5, and flagship candidate at M10. The core loop must remain enjoyable at every one.
 
-**End of proposed plan. Await owner review of SPEC.md and MILESTONES.md; do not begin M0 in this specification session.**
+**End of plan.**
