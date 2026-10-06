@@ -50,7 +50,9 @@ const ms = (value: number) => value.toFixed(1);
 
 async function start() {
   const begin = performance.now();
-  facts.runtime = await invoke<Record<string, string>>('runtime_identity').catch((e: unknown) => `unavailable: ${String(e)}`);
+  facts.runtime = await withTimeout(invoke<Record<string, string>>('runtime_identity'), 'Native runtime identity').catch(
+    (e: unknown) => `unavailable: ${String(e)}`,
+  );
   report('runtime', { ...facts, userAgent: navigator.userAgent });
 
   const renderer = await withTimeout(createRenderer($('viewport'), fault === 'webgl'), 'WebGPU renderer initialization');
@@ -77,8 +79,11 @@ async function start() {
   const simulationReady = performance.now();
 
   const viewport = createViewport(renderer, report);
-  await renderer.compileAsync(viewport.scene, viewport.camera);
-  const distinctColors = await probeRenderedPixels(renderer, viewport.scene, viewport.camera);
+  await withTimeout(renderer.compileAsync(viewport.scene, viewport.camera), 'Scene pipeline compilation');
+  const distinctColors = await withTimeout(
+    probeRenderedPixels(renderer, viewport.scene, viewport.camera),
+    'Rendered-frame readback',
+  );
   report('render-probe', { distinctColors, gpuErrors: gpuErrors.length });
   if (distinctColors < 4) throw new Error('The WebGPU renderer initialized but produced an empty frame.');
 

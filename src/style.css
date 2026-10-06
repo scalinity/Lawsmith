@@ -118,6 +118,7 @@ kbd {
   place-items: center;
   margin: 0;
   color: var(--text-tertiary);
+  pointer-events: none;
 }
 
 #status[hidden],
@@ -146,6 +147,9 @@ kbd {
   left: 50%;
   translate: -50% -50%;
   width: min(560px, calc(100vw - 48px));
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  box-sizing: border-box;
   padding: 24px 28px;
   border: 1px solid var(--divider);
   border-radius: 14px;

@@ -34,6 +34,8 @@ export interface BackendReport {
   coordinateSystemIsWebGPU: boolean;
   /** WebGPU feature-level compatibility mode; still WebGPU, unlike the WebGL 2 fallback. */
   compatibilityMode: boolean | null;
+  /** Effective MSAA samples; three forces 0 in compatibility mode. */
+  samples: number;
   adapter: GPUAdapterInfoLike | 'unavailable';
   features: string[];
 }
@@ -56,6 +58,7 @@ export function identifyBackend(renderer: WebGPURenderer): BackendReport {
           : 'unknown',
     coordinateSystemIsWebGPU: renderer.coordinateSystem === WebGPUCoordinateSystem,
     compatibilityMode: backend.compatibilityMode ?? null,
+    samples: renderer.samples,
     adapter:
       info && (info.vendor || info.architecture || info.device || info.description)
         ? { vendor: info.vendor, architecture: info.architecture, device: info.device, description: info.description }

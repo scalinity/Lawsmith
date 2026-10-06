@@ -119,12 +119,18 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
   }
   frameView();
 
-  let resizeLog: number | undefined;
-  window.addEventListener('resize', () => {
+  function fit() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
     renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  // The window may have been resized during startup, before this listener existed.
+  fit();
+
+  let resizeLog: number | undefined;
+  window.addEventListener('resize', () => {
+    fit();
     clearTimeout(resizeLog);
     resizeLog = window.setTimeout(() => {
       log('resize', {
