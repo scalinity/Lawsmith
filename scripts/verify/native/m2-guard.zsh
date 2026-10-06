@@ -1,7 +1,9 @@
 # M2 unsaved-work guard and launch recovery in the packaged app (AC9, AC10): Close, Quit and Dock
 # Quit share one guard; Cancel keeps everything; Close and Quit together raise one alert; Save in
 # the guard saves first; a crash is recovered at the next launch; a corrupt newest snapshot offers the
-# older one; an Open asks before replacing unsaved work; saved or discarded work never comes back.
+# older one, which stays the fallback once recovered; an Open asks before replacing unsaved work;
+# Dock Quit runs the guard while a saved revision's recovery copy is still on disk, and a clean one
+# with nothing in recovery quits at once; saved or discarded work never comes back.
 # Needs QA_STATE/scenes/calibration.lawsmith.json (any valid scene).
 # Usage: QA_STATE=… QA_OUT=… scripts/verify/verify.sh native m2-guard
 source ${0:A:h}/lib.zsh
@@ -135,6 +137,38 @@ keys kd:cmd t:q ku:cmd
 wait_exit
 nothing_offered guard-j $R4
 
+# --- Recovering the older copy keeps it as the fallback ----------------------------------------------
+segment "recover the older copy over a corrupt newest one"
+R6=$QA_STATE/recovery-guard-6-$stamp
+fresh guard-m $R6
+toggle_law
+sleep 1.5
+toggle_law
+sleep 1.5
+kill -9 $APP_PID
+print -n 'not a snapshot {' > $R6/current.lawsmith-recovery.json
+say "the newest snapshot was overwritten with invalid bytes"
+launch guard-n $R6
+activate
+expect recovery "the corrupt newest copy is reported and the previous one found" "e['action']=='launch' and 'invalid' in e['current'] and 'revision' in e['previous']"
+press recovery-accept
+wait_log document 1 15
+expect document "Recover opens the older copy" "e['action']=='recover' and e['outcome']=='committed'"
+sleep 1.5
+expect recovery "the recovered work is written as a snapshot of this session" "e['action']=='write' and e['generation']==2"
+kill -9 $APP_PID
+say "the test instance was killed after its first recovery write"
+launch guard-o $R6
+activate
+expect recovery "the recovered older copy is still a valid previous snapshot" "e['action']=='launch' and e['current']['generation']==2 and 'revision' in e['previous']"
+press recovery-discard
+sleep 1
+expect recovery "the offer is resolved by Discard" "e['action']=='offer-resolved' and e['outcome'] is True"
+activate
+keys kd:cmd t:q ku:cmd
+wait_exit
+nothing_offered guard-p $R6
+
 # --- Open asks before replacing unsaved work -------------------------------------------------------
 segment "open replaces unsaved work"
 R5=$QA_STATE/recovery-guard-5-$stamp
@@ -157,4 +191,36 @@ activate
 keys kd:cmd t:q ku:cmd
 wait_exit
 nothing_offered guard-l $R5
+
+# --- Dock Quit while a saved revision's recovery copy is still on disk -----------------------------
+segment "dock quit with an unretired recovery copy"
+R7=$QA_STATE/recovery-guard-7-$stamp
+fresh guard-q $R7
+toggle_law
+sleep 1.5
+expect recovery "the edit is kept in a recovery snapshot" "e['action']=='write' and e['revision']>=1"
+chmod 555 $R7
+n=$(count document)
+keys kd:cmd t:s ku:cmd
+save_panel $QA_STATE/scenes guard-unretired.lawsmith.json
+wait_log document $(( n + 1 )) 15
+expect document "the save succeeds but its recovery copy cannot be removed" "e['action']=='save-as' and e['outcome']=='saved' and e['recoveryRetired'] is False"
+refused=$(grep -c '"outcome":"refused"' $APP_LOG)
+dock_quit
+sleep 1.5
+running || { chmod 755 $R7; fail "Dock Quit exited while a saved revision's recovery copy was on disk" }
+(( $(grep -c '"outcome":"refused"' $APP_LOG) > refused )) || { chmod 755 $R7; fail "the guard did not refuse to quit" }
+(( $(recovery_files $R7) >= 1 )) || { chmod 755 $R7; fail "the recovery copy vanished" }
+say "PASS  Dock Quit ran the guard, which stayed open while the copy could not be removed"
+chmod 755 $R7
+dock_quit
+wait_exit
+expect recovery "the guard retried the retirement before exiting" "e['action']=='retire'"
+(( $(recovery_files $R7) == 0 )) || fail "the saved revision's recovery copy is still on disk"
+launch guard-r $R7
+expect recovery "saved work is not offered after restart" "e['action']=='launch' and e['current']=='absent' and e['previous']=='absent'"
+dock_quit
+wait_exit
+grep -q '"request":"quit"' $APP_LOG && fail "a clean Dock Quit with nothing in recovery ran the guard"
+say "PASS  a clean Dock Quit with nothing in recovery quit at once, without the guard"
 say "m2-guard complete"
