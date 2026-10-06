@@ -416,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>d491ea9</code>, M1’s close-out on <code>main</code></span>
+    <span>Realigned 2026-10-06 against <code>e1f5e62</code>, your decisions after M1’s close-out</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
     <h1>Run M1’s two owner checks, then accept M1 to unlock M2.</h1>
-    <p class="lede">M1 is implemented, reviewed by GPT-6.1 Sol and remediated. P0 passes at protocol size, and exact reset holds in the packaged app. Two checks remain, deferred by you on 2026-10-06: real-trackpad pointer ownership, and sleep/wake. M2 waits for your acceptance. Settle the Rapier speed cap before M3.</p>
+    <p class="lede">M1 is implemented, reviewed by GPT-6.1 Sol and remediated. P0 passes at protocol size, and exact reset holds in the packaged app. Two checks remain, deferred by you on 2026-10-06: real-trackpad pointer ownership, and sleep/wake. M2 waits for your acceptance.</p>
     <cite><code>docs/evidence/M1.md</code> Status, Acceptance criteria, Owner native checks, Review</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -1152,27 +1152,21 @@
       <tbody>
         <tr id="t-f1" data-owner="m1" data-short="Finding 1">
           <td data-label="Thread" class="lead">Finding 1: lost pointer-up</td>
-          <td data-label="What the record says">M1 ends a drag that is still held when the pointer reports <code>buttons === 0</code>, the way its lost release would have. No pointer-up was lost in 127 synthetic drags in M1, and a loss could not be forced, so that path has no native evidence yet. The root cause is still unknown. It closes on M1’s real-trackpad owner check.</td>
+          <td data-label="What the record says">M1 ends a drag that is still held when the pointer reports <code>buttons === 0</code>, the way its lost release would have. No pointer-up was lost in 127 synthetic drags in M1, and a loss could not be forced, so that path has no native evidence yet. The root cause is still unknown, and by your decision none is needed: a passing real-trackpad owner check closes it.</td>
           <td data-label="Owner"><a href="#m1">M1</a></td>
           <td data-label="Source"><cite><code>M1.md</code> finding 1, Owner native checks</cite></td>
         </tr>
         <tr id="t-f2" data-owner="m1" data-short="Finding 2">
           <td data-label="Thread" class="lead">Finding 2: unreproduced window jump</td>
-          <td data-label="What the record says">Recurred once in 11 synthetic drag-region drags in M1: the window’s origin landed on the drag’s end point. It did not recur in 10 targeted repeats or the final session. No fix is claimed. It waits on your real-input observation; M1 proposes moving it to M8 if you never see it, which needs your approval.</td>
+          <td data-label="What the record says">Recurred once in 11 synthetic drag-region drags in M1: the window’s origin landed on the drag’s end point. It did not recur in 10 targeted repeats or the final session. No fix is claimed. By your decision, it moves to M8 as a non-blocking regression watch if your real-trackpad check does not reproduce it; if real input does, it stays with M1.</td>
           <td data-label="Owner"><a href="#m1">M1</a></td>
           <td data-label="Source"><cite><code>M1.md</code> finding 2, Window and drag region</cite></td>
         </tr>
-        <tr id="t-f5" data-owner="m1" data-short="Finding 5">
+        <tr id="t-f5" data-owner="m9" data-short="Finding 5">
           <td data-label="Thread" class="lead">Finding 5: startup compile</td>
-          <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails, so nothing was optimised. M1 proposes M9 as owner, pending your approval.</td>
-          <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup</cite></td>
-        </tr>
-        <tr id="t-speed" data-owner="m3" data-short="Speed cap">
-          <td data-label="Thread" class="lead">Rapier 400 m/s speed cap</td>
-          <td data-label="What the record says">Rapier 0.21 caps linear speed at 400 m/s per length unit. SPEC §9.3’s 1000 m/s stop therefore cannot fire, and SPEC §9.1’s velocity update fails above 400 m/s. It is harmless in M1 (about 10 m/s), and a test pins it. It needs your decision on SPEC or the profile before M3, where 200 m/s² laws reach 400 m/s in about 2 s.</td>
-          <td data-label="Owner"><a href="#m3">M3</a>, your decision</td>
-          <td data-label="Source"><cite><code>M1.md</code> finding 6; <code>SPEC.md</code> §9.1, §9.3</cite></td>
+          <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails. Moved to M9 by your decision, to measure with the performance envelope; it is not to be optimised opportunistically in M2.</td>
+          <td data-label="Owner"><a href="#m9">M9</a></td>
+          <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup, Owner decisions</cite></td>
         </tr>
         <tr id="t-f8" data-owner="deferred" data-short="Finding 8">
           <td data-label="Thread" class="lead">Finding 8: DPR across displays</td>
