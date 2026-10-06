@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>e1f5e62</code>, your decisions after M1’s close-out</span>
+    <span>Realigned 2026-10-06 against <code>main</code> at <code>ab61e7e</code>, with M1 accepted</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Run M1’s two owner checks, then accept M1 to unlock M2.</h1>
-    <p class="lede">M1 is implemented, reviewed by GPT-6.1 Sol and remediated. P0 passes at protocol size, and exact reset holds in the packaged app. Two checks remain, deferred by you on 2026-10-06: real-trackpad pointer ownership, and sleep/wake. M2 waits for your acceptance.</p>
-    <cite><code>docs/evidence/M1.md</code> Status, Acceptance criteria, Owner native checks, Review</cite>
+    <h1>Start M2, Portable scenes and recoverable authoring, in a fresh session.</h1>
+    <p class="lede">M1 is accepted, so M2 runs next, and alone. Opus 5.5 authors it and GPT-6.1 Sol runs its independent review gate; if Claude limits bind, M2 waits for Opus rather than falling back to Astra. No open thread belongs to M2. Its 1280×800 check needs More Space.</p>
+    <cite><code>docs/evidence/M1.md</code> Status, Owner native check results; <code>docs/MILESTONES.md</code> M2</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -469,7 +469,7 @@
       </article>
 
       <!-- REALIGN M1 -->
-      <article class="unit" id="m1" data-gate="M1" data-state="owner-check" data-tier="scarce">
+      <article class="unit" id="m1" data-gate="M1" data-state="accepted" data-tier="scarce">
         <div class="gate">M1</div>
         <div>
           <div class="unit-head">
@@ -479,17 +479,17 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authored. GPT-6.1 Sol reviewed <code>d2a04c2</code> (no critical or high findings, 3 medium, 4 low); every finding was fixed and re-verified.</dd>
-              <dt>Graph permits</dt><dd class="soft">Done: code at <code>7103f2e</code>, record at <code>d491ea9</code>. Acceptance is yours.</dd>
-              <dt>Should run</dt><dd class="run">No more agent work. Your two checks, then your acceptance decision.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>7103f2e</code>, accepted by you on 2026-10-06.</dd>
+              <dt>Should run</dt><dd class="run">Nothing. M1 is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M0 accepted. Contracts C1–C6.</dd>
               <dt>Destroys</dt><dd>Nothing further. The sleep check puts the Mac to sleep, which suspends every session.</dd>
-              <dt>Your part</dt><dd>Two checks, deferred by you on 2026-10-06: real-trackpad pointer ownership (including <kbd>Esc</kbd> mid-drag, and grabbing a handle while the camera drifts), and sleep/wake with the stream playing. The steps are in <code>docs/evidence/M1.md</code>.</dd>
+              <dt>Your part</dt><dd>Done: the real-trackpad and sleep checks passed, and the results and the app’s log are in <code>docs/evidence/M1.md</code>.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/evidence/M1.md</code> Status, Acceptance criteria, Owner native checks, Review; <code>docs/MILESTONES.md</code> M1</cite>
+          <cite class="src"><code>docs/evidence/M1.md</code> Status, Owner native check results, Review; <code>docs/MILESTONES.md</code> M1</cite>
         </div>
       </article>
 
@@ -504,8 +504,8 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors, and M2 waits for it rather than falling back. GPT-6.1 Sol runs the independent review gate on state ownership and format semantics.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once M1 is ACCEPTED.</dd>
-              <dt>Should run</dt><dd class="run">Not before M1 is accepted, which now waits only on your two checks. It shares <code>src/domain/</code>, <code>src/main.ts</code> and <code>index.html</code> with M1. First approved stopping point: portable V0.</dd>
+              <dt>Graph permits</dt><dd class="soft">Now: M1 is accepted.</dd>
+              <dt>Should run</dt><dd class="run">Now, and alone. It shares <code>src/domain/</code>, <code>src/main.ts</code> and <code>index.html</code> with M1, and files with every later gate. First approved stopping point: portable V0.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M1 accepted. Contracts C3, C7, C8.</dd>
@@ -1142,7 +1142,7 @@
 
   <section id="open-threads" aria-labelledby="h-threads">
     <h2 id="h-threads">Open threads</h2>
-    <p class="intro">Every thread the record leaves open, each with the unit that owns it. M1 closed M0 findings 6 and 7. Close a thread by deleting its row, and record the closing evidence in that unit’s evidence file.</p>
+    <p class="intro">Every thread the record leaves open, each with the unit that owns it. M1 closed M0 findings 1, 6 and 7. Close a thread by deleting its row, and record the closing evidence in that unit’s evidence file.</p>
 
     <!-- REALIGN: open threads live only here. data-owner = owning unit id; data-short = the label shown on that unit's strip. -->
     <table class="rows" id="threads">
@@ -1150,17 +1150,11 @@
         <tr><th>Thread</th><th>What the record says</th><th>Owner</th><th>Source</th></tr>
       </thead>
       <tbody>
-        <tr id="t-f1" data-owner="m1" data-short="Finding 1">
-          <td data-label="Thread" class="lead">Finding 1: lost pointer-up</td>
-          <td data-label="What the record says">M1 ends a drag that is still held when the pointer reports <code>buttons === 0</code>, the way its lost release would have. No pointer-up was lost in 127 synthetic drags in M1, and a loss could not be forced, so that path has no native evidence yet. The root cause is still unknown, and by your decision none is needed: a passing real-trackpad owner check closes it.</td>
-          <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M1.md</code> finding 1, Owner native checks</cite></td>
-        </tr>
-        <tr id="t-f2" data-owner="m1" data-short="Finding 2">
+        <tr id="t-f2" data-owner="m8" data-short="Finding 2">
           <td data-label="Thread" class="lead">Finding 2: unreproduced window jump</td>
-          <td data-label="What the record says">Recurred once in 11 synthetic drag-region drags in M1: the window’s origin landed on the drag’s end point. It did not recur in 10 targeted repeats or the final session. No fix is claimed. By your decision, it moves to M8 as a non-blocking regression watch if your real-trackpad check does not reproduce it; if real input does, it stays with M1.</td>
-          <td data-label="Owner"><a href="#m1">M1</a></td>
-          <td data-label="Source"><cite><code>M1.md</code> finding 2, Window and drag region</cite></td>
+          <td data-label="What the record says">Recurred once in 11 synthetic drag-region drags in M1: the window’s origin landed on the drag’s end point. It did not recur in 10 targeted repeats, the final session or your real-trackpad check (which did not specifically drag the window). Moved to M8 by your decision as a non-blocking native-interaction regression watch; its cause may stay unknown.</td>
+          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="Source"><cite><code>M1.md</code> finding 2, Owner native check results</cite></td>
         </tr>
         <tr id="t-f5" data-owner="m9" data-short="Finding 5">
           <td data-label="Thread" class="lead">Finding 5: startup compile</td>
