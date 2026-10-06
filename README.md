@@ -15,6 +15,7 @@ npm ci                                  # install the locked frontend and CLI de
 npm run typecheck                       # strict TypeScript check
 npm test                                # Vitest: field, adapter, reset, cadence, scene format, undo and workflow tests
 (cd src-tauri && cargo test)            # native file replacement and recovery store tests, in temporary directories
+scripts/verify/verify.sh unit           # all of the above in one command
 npx tauri dev                           # development app: WKWebView on the Vite dev server
 npx tauri build --bundles app           # production build of Lawsmith.app
 open src-tauri/target/release/bundle/macos/Lawsmith.app
@@ -31,6 +32,12 @@ open -n src-tauri/target/release/bundle/macos/Lawsmith.app --stdout lawsmith.log
 `LAWSMITH_RECOVERY_DIR=<dir>` points recovery files at a separate directory, so QA runs never touch your own unsaved-work recovery (by default it lives in the app's local data directory). For the packaged app: `open -n …/Lawsmith.app --env LAWSMITH_RECOVERY_DIR=/path/to/dir --stdout lawsmith.log --stderr lawsmith.log`.
 
 Dev-only startup fault injection, compiled out of production builds: `VITE_LAWSMITH_FAULT=webgl npx tauri dev` forces the WebGL 2 backend; `VITE_LAWSMITH_FAULT=rapier-hang npx tauri dev` stalls physics initialization until its timeout.
+
+## Native verification
+
+`scripts/verify/verify.sh native <scenario>` drives the packaged app the way a person would: real handle drags, the real macOS Open and Save panels, Close, Quit and Dock Quit, a simulated crash. It checks every step against the app's own `[lawsmith]` log events. The M2 scenarios are `m2-demo`, `m2-files`, `m2-guard` and `m2-authoring`. They need `QA_STATE` (a disposable directory holding the test scenes and recovery directories) and `QA_OUT` (where logs, captures and the recording go); `scripts/verify/native/lib.zsh` documents the fixtures each one expects.
+
+Input is guarded. Every click is hit-tested against the Lawsmith process under test; keys require it to be frontmost; any keyboard or mouse input newer than the harness's own aborts the run, so it never fights a person. Each focus-changing segment holds an exclusive `flock` on `/private/tmp/mac-gui-automation.lock`, which other automation on the same Mac also takes. The Open and Save panels start in a folder the harness seeds in Lawsmith's own preferences, so they never navigate; remove those preferences afterwards with `defaults delete local.lawsmith` if they did not exist before.
 
 ## Controls
 
