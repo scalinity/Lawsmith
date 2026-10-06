@@ -10,7 +10,7 @@ export interface IoFailure {
 }
 
 export type OpenOutcome = { outcome: 'canceled' } | { outcome: 'opened'; token: number; name: string; text: string; readMs: number };
-export type ChooseOutcome = { outcome: 'canceled' } | { outcome: 'chosen'; token: number; name: string };
+export type ChooseOutcome = { outcome: 'canceled' } | { outcome: 'chosen'; token: number; name: string } | { outcome: 'refused'; name: string };
 export type RecoverySlot = { state: 'absent' } | { state: 'unreadable'; reason: string } | { state: 'present'; text: string };
 
 /** Operations reject with an `IoFailure`. */

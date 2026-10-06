@@ -261,6 +261,11 @@ export class DocumentWorkflow {
         this.message = { kind: 'info', text: 'Save As canceled. Nothing was written.' };
         return false;
       }
+      if (choice.outcome === 'refused') {
+        this.app.log('document', { action, outcome: 'refused-name', name: choice.name });
+        this.message = { kind: 'error', text: `Scene files end in .lawsmith.json, so “${choice.name}” was not used. Nothing was written; choose Save As again and keep that ending.` };
+        return false;
+      }
       target = { token: choice.token, name: choice.name };
     }
     const start = this.app.now();

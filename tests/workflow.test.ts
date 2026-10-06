@@ -57,6 +57,7 @@ class FakeIo implements DocumentIo {
   async chooseDestination(): Promise<ChooseOutcome> {
     const name = this.chooseQueue.shift();
     if (!name) return { outcome: 'canceled' };
+    if (!name.endsWith('.lawsmith.json')) return { outcome: 'refused', name };
     const token = this.nextToken++;
     this.tokens.set(token, name);
     return { outcome: 'chosen', token, name };
@@ -271,6 +272,16 @@ describe('Save and Save As', () => {
     expect(await saving).toBe(false);
     expect(t.workflow.fileName).toBeNull();
     expect(t.workflow.dirty).toBe(true);
+  });
+
+  it('a destination without the .lawsmith.json suffix is refused: nothing is bound or written', async () => {
+    const t = setup();
+    t.edit();
+    t.io.chooseQueue.push('foo.json');
+    expect(await t.workflow.saveAs()).toBe(false);
+    expect(t.workflow.fileName).toBeNull();
+    expect(t.io.writes).toEqual([]);
+    expect(t.workflow.message?.text).toContain('.lawsmith.json');
   });
 
   it('suggests the title with an explicit .lawsmith.json suffix', () => {

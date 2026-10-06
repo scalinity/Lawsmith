@@ -16,7 +16,7 @@ use tauri::{
 };
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult};
 
-use document_io::{Destinations, IoFailure, SCENE_LIMIT, display_name, read_bounded_utf8, replace_file};
+use document_io::{Destinations, IoFailure, SCENE_LIMIT, display_name, is_scene_name, read_bounded_utf8, replace_file};
 use recovery::{RecoveryStore, Slots};
 
 /// Native half of the qualification record (SPEC §13.1): facts only the shell can report.
@@ -101,6 +101,8 @@ async fn read_scene(destinations: State<'_, Destinations>, token: u64) -> Result
 enum ChooseOutcome {
     Canceled,
     Chosen { token: u64, name: String },
+    /// A name without the `.lawsmith.json` suffix: nothing is bound or written.
+    Refused { name: String },
 }
 
 /// The Save Scene As dialog. Choosing a path is not a save: the token binds only after a write succeeds.
@@ -117,7 +119,12 @@ async fn choose_scene_destination(window: WebviewWindow, destinations: State<'_,
         return Ok(ChooseOutcome::Canceled);
     };
     let path = chosen.into_path().map_err(|e| IoFailure::new("not-found", "dialog", e.to_string()))?;
-    Ok(ChooseOutcome::Chosen { name: display_name(&path), token: destinations.issue(path) })
+    let name = display_name(&path);
+    // Renaming after the dialog could replace a file the user never confirmed, so refuse instead.
+    if !is_scene_name(&name) {
+        return Ok(ChooseOutcome::Refused { name });
+    }
+    Ok(ChooseOutcome::Chosen { name, token: destinations.issue(path) })
 }
 
 #[derive(Serialize)]

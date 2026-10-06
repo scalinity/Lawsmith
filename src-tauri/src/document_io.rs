@@ -79,6 +79,11 @@ pub fn display_name(path: &Path) -> String {
     path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()
 }
 
+/// Scene files keep the explicit `.lawsmith.json` suffix (SPEC §15.3).
+pub fn is_scene_name(name: &str) -> bool {
+    name.len() > ".lawsmith.json".len() && name.ends_with(".lawsmith.json")
+}
+
 /// Reads a regular file as strict UTF-8, enforcing `limit` before and during the read, so a file
 /// that grows while being read cannot bypass the bound.
 pub fn read_bounded_utf8(path: &Path, limit: u64) -> Result<String, IoFailure> {
@@ -286,6 +291,14 @@ pub(crate) mod tests {
         assert_eq!(read_bounded_utf8(&latin1, 64).unwrap_err().kind, "not-utf8");
         assert_eq!(read_bounded_utf8(&dir, 64).unwrap_err().kind, "not-a-file");
         assert_eq!(read_bounded_utf8(&dir.join("absent"), 64).unwrap_err().kind, "not-found");
+    }
+
+    #[test]
+    fn scene_names_keep_the_double_suffix() {
+        assert!(is_scene_name("Falling stream.lawsmith.json"));
+        assert!(!is_scene_name("foo.json"));
+        assert!(!is_scene_name("foo"));
+        assert!(!is_scene_name(".lawsmith.json"));
     }
 
     #[test]
