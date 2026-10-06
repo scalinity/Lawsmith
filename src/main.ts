@@ -3,7 +3,7 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Euler, Quaternion } from 'three/webgpu';
 import { DocumentController } from './domain/document';
-import { LAW_COLORS, cloneFrozen, type FieldDefinition, type SceneDocument, type Vec3 } from './domain/scene';
+import { LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type SceneDocument, type Vec3 } from './domain/scene';
 import { FIELD_KERNEL_VERSION } from './fields/directional';
 import { LawInteraction, type GestureEnd, type TransformMode } from './interaction/lawGesture';
 import { EditLatency, percentile, percentiles } from './measurement';
@@ -344,7 +344,11 @@ async function start() {
     if (cameraMoved) {
       const p = viewport.camera.position;
       const t = viewport.orbit.target;
-      authoring.setCamera({ position: [p.x, p.y, p.z], target: [t.x, t.y, t.z] });
+      const camera = { position: [p.x, p.y, p.z] as const, target: [t.x, t.y, t.z] as const };
+      // A framing the file reader would refuse is never saved; the previous framing is kept.
+      const problem = checkCamera(camera);
+      if (problem) report('control', { camera: 'not-recorded', reason: problem });
+      else authoring.setCamera(camera);
       cameraMoved = false;
     }
     return authoring.camera;

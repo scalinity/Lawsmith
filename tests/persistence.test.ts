@@ -3,7 +3,7 @@
 // digest's presentation independence, and equal-tick behavior of a reloaded scene. Expected values
 // come from SPEC rules (sign rule, unit retention, limits), not from captured serializer output.
 import { beforeAll, describe, expect, it } from 'vitest';
-import { STARTING_RECIPE, canonicalQuat, cloneFrozen, type Quat, type SceneDocument } from '../src/domain/scene';
+import { STARTING_RECIPE, canonicalQuat, checkCamera, cloneFrozen, type Quat, type SceneDocument } from '../src/domain/scene';
 import { DEFAULT_SCENE_TEXT, defaultDocument } from '../src/persistence/defaultScene';
 import { createDocument, parseScene, semanticDigest, serializeScene } from '../src/persistence/sceneFile';
 import { FIXTURE_TICKS, compareRuns, runFixedSteps, scriptedRecipeEdits } from '../src/simulation/fixtures';
@@ -249,6 +249,17 @@ describe('T06 transactional rejection (AC6)', () => {
     const text = JSON.stringify(value).replace('"enabled":true', '"enabled":true,"__proto__":{"enabled":false}');
     expect(rejection(text)!.path).toBe('semantic.fields[0].__proto__');
     expect(({} as Json).enabled).toBeUndefined();
+  });
+});
+
+describe('T06 camera framing', () => {
+  it('the reader and the save-time capture share one check, so a saved camera reopens', () => {
+    const value = json();
+    value.presentation.camera = { position: [0, 0, 12000], target: [0, 0, 0] };
+    expect(rejection(value)!.path).toBe('presentation.camera');
+    expect(checkCamera({ position: [0, 0, 12000], target: [0, 0, 0] })).not.toBeNull();
+    expect(checkCamera({ position: [9, 7, 11], target: [0, 1, 0] })).toBeNull();
+    expect(checkCamera({ position: [1, 1, 1], target: [1, 1, 1] })).not.toBeNull();
   });
 });
 

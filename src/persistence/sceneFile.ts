@@ -23,6 +23,7 @@ import {
   type ScenePresentation,
   type SimulationSettings,
   type Vec3,
+  checkCamera,
   checkLawPresentation,
 } from '../domain/scene';
 
@@ -322,8 +323,8 @@ function presentation(value: unknown, path: string, scene: SceneDefinition): Sce
     const c = object(o.camera, at(path, 'camera'), ['position', 'target']);
     const position = vec3(c.position, at(path, 'camera.position'));
     const target = vec3(c.target, at(path, 'camera.target'));
-    if (![...position, ...target].every((v) => Math.abs(v) <= 10000)) throw new ImportError(at(path, 'camera'), 'components must be within ±10000 m');
-    if (position.every((v, i) => v === target[i])) throw new ImportError(at(path, 'camera'), 'position and target must differ');
+    const problem = checkCamera({ position, target });
+    if (problem) throw new ImportError(at(path, 'camera'), problem);
     camera = { position, target };
   }
   const lawsPath = at(path, 'laws');

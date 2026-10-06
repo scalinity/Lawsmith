@@ -218,6 +218,13 @@ export function defaultLawPresentation(id: EntityId): LawPresentation {
 
 const COLOR_PATTERN = /^#[0-9a-f]{6}$/;
 
+/** Checks a camera framing; the reader and the save-time capture share it, so a saved camera always reopens. */
+export function checkCamera(camera: { position: Vec3; target: Vec3 }): string | null {
+  if (![...camera.position, ...camera.target].every((v) => Number.isFinite(v) && Math.abs(v) <= 10000)) return 'camera components must be within ±10000 m';
+  if (camera.position.every((v, i) => v === camera.target[i])) return 'camera position and target must differ';
+  return null;
+}
+
 /** Checks a law presentation entry; labels are display text, never markup (SPEC §15.2). */
 export function checkLawPresentation(p: LawPresentation): string | null {
   if (p.label.length === 0 || p.label.length > SCENE_LIMITS.textLength) return `label must be 1–${SCENE_LIMITS.textLength} characters`;

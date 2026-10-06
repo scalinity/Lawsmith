@@ -103,6 +103,8 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
   const gizmo = new TransformControls(camera, renderer.domElement);
   const orbit = new OrbitControls(camera, renderer.domElement);
   orbit.enableDamping = true;
+  // Within the far plane; a saved framing also stays inside the reader's camera bounds.
+  orbit.maxDistance = 150;
   const inertia = orbit as unknown as OrbitInertia;
   if (!inertia._sphericalDelta || !inertia._panOffset) throw new Error('OrbitControls internals differ from three 0.186.1; recheck haltOrbitInertia.');
   // A law gesture owns the pointer: the camera must not keep drifting from an earlier orbit.
