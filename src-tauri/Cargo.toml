@@ -14,6 +14,7 @@ tauri = { version = "=3.0.0-alpha.4", features = [] }
 tauri-runtime-wry = "=3.0.0-alpha.4"
 # Native Open/Save dialogs (SPEC §15.3): the official Tauri 3 line, resolved against the pinned family.
 tauri-plugin-dialog = "=3.0.0-alpha.2"
+serde = { version = "=1.0.229", features = ["derive"] }
 
 # The published tauri-plugin-dialog 3.0.0-alpha.2 (crates.io checksum b2e3971a…, official tag
 # dialog-v3.0.0-alpha.2) does not build against tauri 3.0.0-alpha.4, which moved
