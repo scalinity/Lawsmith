@@ -12,3 +12,13 @@ tauri-build = { version = "=3.0.0-alpha.3", features = [] }
 [dependencies]
 tauri = { version = "=3.0.0-alpha.4", features = [] }
 tauri-runtime-wry = "=3.0.0-alpha.4"
+# Native Open/Save dialogs (SPEC §15.3): the official Tauri 3 line, resolved against the pinned family.
+tauri-plugin-dialog = "=3.0.0-alpha.2"
+
+# The published tauri-plugin-dialog 3.0.0-alpha.2 (crates.io checksum b2e3971a…, official tag
+# dialog-v3.0.0-alpha.2) does not build against tauri 3.0.0-alpha.4, which moved
+# `run_on_main_thread` onto the `Manager` trait. The vendored copy is that exact archive plus the
+# one-line `Manager` import from upstream PR tauri-apps/plugins-workspace#3655 (owner decision,
+# M2). Remove this patch once a fixed official release is published and qualified.
+[patch.crates-io]
+tauri-plugin-dialog = { path = "vendor/tauri-plugin-dialog-3.0.0-alpha.2" }
