@@ -51,6 +51,11 @@
           <button type="button" id="law-duplicate">Duplicate</button>
           <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
         </div>
+        <div class="legend">
+          <span class="arrow-glyph" aria-hidden="true"></span>
+          <span>Drive A, 1 m of arrow = 20 m/s²</span>
+          <button type="button" id="arrows-toggle" aria-pressed="true">Arrows</button>
+        </div>
       </section>
 
       <section id="details" aria-labelledby="details-title" hidden>
@@ -88,11 +93,6 @@
         <p id="details-error" role="alert" hidden></p>
       </section>
 
-      <footer class="legend">
-        <span class="arrow-glyph" aria-hidden="true"></span>
-        <span>Drive A, 1 m of arrow = 20 m/s²</span>
-        <button type="button" id="arrows-toggle" aria-pressed="true">Arrows</button>
-      </footer>
     </aside>
 
     <div id="transport" role="group" aria-label="Simulation" hidden>

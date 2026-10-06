@@ -154,13 +154,11 @@ kbd {
   background: rgb(33 31 28 / 0.9);
 }
 
-#panel > section,
-#panel > footer {
+#panel > section {
   padding: 10px 12px;
 }
 
-#panel > section + section,
-#panel > footer {
+#panel > section + section {
   border-top: 1px solid var(--hairline);
 }
 
@@ -424,6 +422,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 10px;
   font-size: 11.5px;
   color: var(--text-tertiary);
 }
