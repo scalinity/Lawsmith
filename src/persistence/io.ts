@@ -22,7 +22,8 @@ export interface DocumentIo {
   recoveryWrite(generation: number, revision: number, text: string): Promise<void>;
   recoveryRetire(generation: number, through: number): Promise<void>;
   recoveryDiscard(generation: number): Promise<void>;
-  recoveryDiscardAll(): Promise<void>;
+  /** Deletes only the snapshots an earlier session left. */
+  recoveryDiscardEarlier(): Promise<void>;
   askUnsaved(title: string): Promise<'save' | 'discard' | 'cancel'>;
   exit(): Promise<void>;
 }
@@ -35,7 +36,7 @@ export const nativeIo: DocumentIo = {
   recoveryWrite: (generation, revision, text) => invoke('recovery_write', { generation, revision, text }),
   recoveryRetire: (generation, through) => invoke('recovery_retire', { generation, through }),
   recoveryDiscard: (generation) => invoke('recovery_discard', { generation }),
-  recoveryDiscardAll: () => invoke('recovery_discard_all'),
+  recoveryDiscardEarlier: () => invoke('recovery_discard_earlier'),
   askUnsaved: (title) => invoke('ask_unsaved', { title }),
   exit: () => invoke('exit_app'),
 };

@@ -173,17 +173,19 @@ export class DocumentWorkflow {
       const done = await this.replace('recover', offer.envelope.document, null, null);
       if (done) {
         this.recovered = true;
+        // The recovered work gets a snapshot of this session right away.
+        this.recovery.schedule();
         this.message = { kind: 'info', text: `Recovered “${offer.envelope.document.metadata.title}” (revision ${offer.envelope.revision}${offer.older ? ', an older copy' : ''}). Save it to choose where it goes.` };
       }
       return done;
     });
   }
 
-  /** Discards unsaved work offered at launch. */
+  /** Discards the unsaved work offered at launch; snapshots of this session are kept. */
   discardRecovery(): Promise<boolean | null> {
     return this.exclusive('discard-recovery', async () => {
       try {
-        await this.io.recoveryDiscardAll();
+        await this.io.recoveryDiscardEarlier();
         this.app.log('recovery', { action: 'discard-launch' });
         return true;
       } catch (error) {

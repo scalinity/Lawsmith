@@ -152,10 +152,11 @@ async fn recovery_discard(store: State<'_, std::sync::Arc<RecoveryStore>>, gener
     blocking(move || store.retire(generation, u64::MAX)).await?
 }
 
+/// Discards the unsaved work an earlier session left (the launch offer's Discard).
 #[tauri::command]
-async fn recovery_discard_all(store: State<'_, std::sync::Arc<RecoveryStore>>) -> Result<(), IoFailure> {
+async fn recovery_discard_earlier(store: State<'_, std::sync::Arc<RecoveryStore>>) -> Result<(), IoFailure> {
     let store = store.inner().clone();
-    blocking(move || store.discard_all()).await?
+    blocking(move || store.discard_earlier()).await?
 }
 
 /// The unsaved-work guard's native alert: Save, Don't Save (⌘D) or Cancel (Esc).
@@ -311,7 +312,7 @@ fn main() {
             recovery_write,
             recovery_retire,
             recovery_discard,
-            recovery_discard_all,
+            recovery_discard_earlier,
             ask_unsaved,
             guard_ready,
             exit_app,

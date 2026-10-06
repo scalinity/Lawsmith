@@ -165,8 +165,16 @@ async function start() {
     return result;
   };
 
+  /** Edits are frozen while the guard decides, and while launch recovery waits for an answer. */
   let frozen = false;
+  let guardFrozen = false;
+  let offerPending = false;
   let cameraMoved = false;
+  const applyFreeze = () => {
+    frozen = guardFrozen || offerPending;
+    for (const id of ['panel', 'tools', 'transport']) $(id).inert = frozen;
+    viewport.gizmo.enabled = !frozen;
+  };
 
   const interaction = new LawInteraction(
     {
@@ -356,9 +364,8 @@ async function start() {
       settleNow();
     },
     freeze: (value) => {
-      frozen = value;
-      for (const id of ['panel', 'tools', 'transport']) $(id).inert = value;
-      viewport.gizmo.enabled = !value;
+      guardFrozen = value;
+      applyFreeze();
       report('guard', { frozen: value, tick: host.tick });
     },
     gestureActive: () => interaction.gesture !== null,
@@ -1099,16 +1106,28 @@ async function start() {
   await invoke('guard_ready');
   report('guard', { action: 'ready' });
 
+  /**
+   * The launch offer is modal: until the user recovers or discards it, nothing in this session can
+   * edit, save or write recovery, so the earlier work cannot be rotated away or retired unanswered.
+   */
   function showRecoveryOffer(offer: RecoveryOffer) {
     const panel = $('recovery-offer');
+    offerPending = true;
+    applyFreeze();
     const { envelope } = offer;
     const title = envelope.document.metadata.title;
     $('recovery-text').textContent = offer.older
       ? `The newest recovery copy could not be used (${offer.newestProblem}). An older copy of “${title}” is available: revision ${envelope.revision}. Recovering opens it paused at tick 0, without a file.`
       : `“${title}”, revision ${envelope.revision}, was not saved. Recovering opens it paused at tick 0, without a file; Save then asks where it goes.`;
     panel.hidden = false;
-    const done = () => {
-      panel.hidden = true;
+    // Only a completed answer resolves the offer; a refused or failed one leaves it up.
+    const done = (outcome: boolean | null) => {
+      report('recovery', { action: 'offer-resolved', outcome });
+      if (outcome === true) {
+        offerPending = false;
+        panel.hidden = true;
+      }
+      applyFreeze();
       renderPanel();
     };
     $('recovery-accept').onclick = () => {

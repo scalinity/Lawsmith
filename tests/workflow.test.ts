@@ -96,8 +96,11 @@ class FakeIo implements DocumentIo {
     if (this.failDiscard) throw this.failDiscard;
     await this.recoveryRetire(g, Number.MAX_SAFE_INTEGER);
   }
-  async recoveryDiscardAll() {
-    this.recovery = { current: null, previous: null };
+  /** Snapshots present before this fake session began; only these does the launch Discard remove. */
+  earlier = new Set<'current' | 'previous'>();
+  async recoveryDiscardEarlier() {
+    for (const slot of this.earlier) this.recovery[slot] = null;
+    this.earlier.clear();
   }
   async askUnsaved(title: string) {
     this.asked.push(title);
@@ -451,6 +454,31 @@ describe('recovery (SPEC §15.3)', () => {
     restart.io.chooseQueue.push('recovered.lawsmith.json');
     expect(await restart.workflow.save()).toBe(true);
     expect(restart.io.writes[0]!.name).toBe('recovered.lawsmith.json');
+  });
+
+  it('the launch Discard removes only the earlier session’s snapshots', async () => {
+    const t = setup();
+    t.io.recovery = { current: null, previous: { g: 9, r: 4, text: 'earlier session' } };
+    t.io.earlier.add('previous');
+    t.edit();
+    await t.workflow.recovery.writeNow();
+    expect(await t.workflow.discardRecovery()).toBe(true);
+    expect(t.io.recovery.previous).toBeNull();
+    expect(t.io.recovery.current!.g).toBe(t.controller.generation);
+  });
+
+  it('recovered work is written as a snapshot of this session soon after recovery', async () => {
+    const t = setup();
+    t.edit();
+    await t.workflow.recovery.writeNow();
+    const restart = setup();
+    restart.io.recovery = structuredClone(t.io.recovery);
+    const offer = await restart.workflow.recoveryOffer();
+    expect(await restart.workflow.recover(offer!)).toBe(true);
+    await new Promise((r) => setTimeout(r, 650));
+    await restart.workflow.recovery.settled();
+    expect(restart.io.recovery.current!.g).toBe(restart.controller.generation);
+    expect(restart.io.recovery.previous!.text).toBe(t.io.recovery.current!.text);
   });
 
   it('the envelope is validated like an imported scene', () => {

@@ -145,13 +145,16 @@ impl RecoveryStore {
         Ok(())
     }
 
-    /// Deletes every snapshot, as when unsaved work offered at launch is discarded.
-    pub fn discard_all(&self) -> Result<(), IoFailure> {
+    /// Deletes the snapshots an earlier session left, as when the work offered at launch is
+    /// discarded. Snapshots this session wrote are never touched.
+    pub fn discard_earlier(&self) -> Result<(), IoFailure> {
         let mut guard = self.state.lock().unwrap();
         let state = &mut *guard;
         for (name, slot) in [(CURRENT, &mut state.current), (PREVIOUS, &mut state.previous)] {
-            remove(&self.dir.join(name))?;
-            *slot = None;
+            if *slot == Some(Stamp::Foreign) {
+                remove(&self.dir.join(name))?;
+                *slot = None;
+            }
         }
         Ok(())
     }
@@ -233,6 +236,18 @@ mod tests {
         assert_eq!(text(&store.load().current), "from a crash");
         store.retire(1, 0).unwrap();
         assert_eq!(store.load().current, Slot::Absent);
+    }
+
+    #[test]
+    fn discarding_earlier_work_keeps_this_sessions_snapshots() {
+        let dir = scratch("recovery-discard-earlier");
+        fs::write(dir.join(PREVIOUS), "from a crash").unwrap();
+        let store = RecoveryStore::new(dir);
+        store.write(1, 1, "this session").unwrap();
+        store.discard_earlier().unwrap();
+        let slots = store.load();
+        assert_eq!(text(&slots.current), "this session");
+        assert_eq!(slots.previous, Slot::Absent);
     }
 
     #[test]
