@@ -1651,6 +1651,7 @@ dependencies = [
 name = "lawsmith"
 version = "0.0.0"
 dependencies = [
+ "objc2",
  "serde",
  "tauri",
  "tauri-build",

@@ -534,7 +534,13 @@ async function start() {
 
   const fmt = (value: number, digits: number) => String(Math.round(value * 10 ** digits) / 10 ** digits);
 
+  let reportedDirty: boolean | null = null;
   function renderPanel() {
+    // The native side answers Dock Quit and logout synchronously, so it keeps the dirty state too.
+    if (workflow.dirty !== reportedDirty) {
+      reportedDirty = workflow.dirty;
+      invoke('guard_state', { dirty: reportedDirty }).catch(() => {});
+    }
     // Document.
     const busy = workflow.busy;
     const file = workflow.fileName;

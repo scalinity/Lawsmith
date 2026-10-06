@@ -16,6 +16,10 @@ tauri-runtime-wry = "=3.0.0-alpha.4"
 tauri-plugin-dialog = "=3.0.0-alpha.2"
 serde = { version = "=1.0.229", features = ["derive"] }
 
+# Already locked through TAO; used only to give TAO's app delegate `applicationShouldTerminate:`.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "=0.6.5"
+
 # The published tauri-plugin-dialog 3.0.0-alpha.2 (crates.io checksum b2e3971a…, official tag
 # dialog-v3.0.0-alpha.2) does not build against tauri 3.0.0-alpha.4, which moved
 # `run_on_main_thread` onto the `Manager` trait. The vendored copy is that exact archive plus the

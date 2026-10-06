@@ -199,6 +199,8 @@ async fn ask_unsaved(window: WebviewWindow, title: String) -> Result<&'static st
 struct Guard {
     ready: AtomicBool,
     exiting: AtomicBool,
+    /// The frontend's report of unsaved changes, for quit requests AppKit must answer synchronously.
+    dirty: AtomicBool,
 }
 
 impl Guard {
@@ -210,6 +212,54 @@ impl Guard {
 #[tauri::command]
 fn guard_ready(guard: State<'_, Guard>) {
     guard.ready.store(true, Ordering::SeqCst);
+}
+
+#[tauri::command]
+fn guard_state(guard: State<'_, Guard>, dirty: bool) {
+    guard.dirty.store(dirty, Ordering::SeqCst);
+}
+
+/// Dock Quit, logout and an Apple Event quit send `terminate:`, which TAO's app delegate does not
+/// answer, so the process would end without the guard. This adds the public delegate method
+/// `applicationShouldTerminate:` to TAO's delegate class: with unsaved changes it cancels the
+/// termination and runs the shared guard (which exits through `exit_app`); otherwise it proceeds.
+#[cfg(target_os = "macos")]
+mod terminate {
+    use std::sync::{OnceLock, atomic::Ordering};
+
+    use objc2::{
+        ffi,
+        runtime::{AnyClass, AnyObject, Imp, Sel},
+        sel,
+    };
+    use tauri::{AppHandle, Manager};
+
+    static APP: OnceLock<AppHandle> = OnceLock::new();
+    const TERMINATE_CANCEL: usize = 0;
+    const TERMINATE_NOW: usize = 1;
+
+    extern "C-unwind" fn should_terminate(_this: &AnyObject, _cmd: Sel, _sender: *mut AnyObject) -> usize {
+        let Some(app) = APP.get() else { return TERMINATE_NOW };
+        let guard = app.state::<super::Guard>();
+        if guard.intercepts() && guard.dirty.load(Ordering::SeqCst) {
+            super::request_guard(app, "quit");
+            TERMINATE_CANCEL
+        } else {
+            TERMINATE_NOW
+        }
+    }
+
+    /// True when the method was added; false if the class is missing or already answers it.
+    pub fn install(app: AppHandle) -> bool {
+        let _ = APP.set(app);
+        let Some(class) = AnyClass::get(c"TaoAppDelegateParent") else { return false };
+        let method: extern "C-unwind" fn(&AnyObject, Sel, *mut AnyObject) -> usize = should_terminate;
+        // SAFETY: the type encoding "Q@:@" matches the signature: NSUInteger return, self, _cmd, sender.
+        unsafe {
+            let imp: Imp = std::mem::transmute(method);
+            ffi::class_addMethod(class as *const AnyClass as *mut AnyClass, sel!(applicationShouldTerminate:), imp, c"Q@:@".as_ptr()).as_bool()
+        }
+    }
 }
 
 /// Exits after the frontend's guard has committed.
@@ -317,6 +367,8 @@ fn main() {
                 None => app.path().app_local_data_dir()?.join("recovery"),
             };
             app.manage(std::sync::Arc::new(RecoveryStore::new(dir)));
+            #[cfg(target_os = "macos")]
+            eprintln!("[lawsmith] {{\"kind\":\"native\",\"terminateGuard\":{}}}", terminate::install(app.handle().clone()));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -333,6 +385,7 @@ fn main() {
             recovery_discard_earlier,
             ask_unsaved,
             guard_ready,
+            guard_state,
             exit_app,
         ])
         .build(tauri::generate_context!())
