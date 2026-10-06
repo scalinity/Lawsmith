@@ -10,6 +10,7 @@ import { createWorldView } from './rendering/worldView';
 import { compareRuns, runAtCadence, runFixedSteps, runResetFixture, scriptedRecipeEdits } from './simulation/fixtures';
 import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation } from './simulation/host';
 import { FixedStepScheduler } from './simulation/scheduler';
+import { EditLatency, percentile, percentiles } from './measurement';
 
 const mode = import.meta.env.DEV ? 'dev' : 'packaged';
 // Dev-only fault injection for the controlled-failure check; compiled out of production builds.
@@ -52,14 +53,8 @@ function showFailure(error: unknown) {
   $('failure').hidden = false;
 }
 
-const percentile = (sorted: number[], p: number) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] ?? 0;
 const ms = (value: number) => value.toFixed(1);
 const round3 = (value: number) => Math.round(value * 1000) / 1000;
-/** p50, p95, p99 and max of a sample, in its own units. */
-function spread(values: readonly number[]): number[] {
-  const sorted = [...values].sort((a, b) => a - b);
-  return [0.5, 0.95, 0.99].map((p) => round3(percentile(sorted, p))).concat(round3(sorted[sorted.length - 1] ?? 0));
-}
 /** Keeps the last `limit` values. */
 function pushBounded(values: number[], value: number, limit: number) {
   values.push(value);
@@ -140,12 +135,12 @@ async function start() {
   const world = createWorldView(viewport.scene, STARTING_RECIPE);
 
   // Edit latency (SPEC §18): accepted edit → first frame submitted with its applied revision.
-  const pendingEdits: { revision: number; acceptedAt: number }[] = [];
+  const editLatency = new EditLatency();
   /** Final revisions of gestures and toggles, reported once the host applies them. */
   const awaited = new Set<number>();
   const submit = (candidate: FieldDefinition) => {
     const result = authoring.putField(candidate);
-    if (result.ok) pendingEdits.push({ revision: result.value.revision, acceptedAt: performance.now() });
+    if (result.ok) editLatency.accept(result.value.revision, performance.now());
     return result;
   };
 
@@ -182,6 +177,7 @@ async function start() {
   const absorb = () => {
     for (const ack of authoring.sync()) {
       editsSinceReset += 1;
+      editLatency.acknowledge(ack.documentRevision);
       for (const revision of awaited) {
         if (revision > ack.documentRevision) continue;
         awaited.delete(revision);
@@ -342,6 +338,7 @@ async function start() {
     phaseStart: number;
     tickStart: number;
     droppedStart: number;
+    supersededStart: number;
     intervals: number[];
     work: number[];
     steps: number[];
@@ -351,7 +348,7 @@ async function start() {
   const startP0 = () => {
     if (p0) return;
     setPlaying(true, 'p0');
-    p0 = { run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, intervals: [], work: [], steps: [], edits: [], invalid: null };
+    p0 = { run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], invalid: null };
     report('p0', { phase: 'warmup', run: p0.run });
   };
   const finishP0 = (capture: P0Capture, now: number) => {
@@ -360,6 +357,8 @@ async function start() {
     report('p0-run', {
       run: capture.run,
       invalid: capture.invalid,
+      // A gate with no samples was not measured; its percentiles are null, never zero.
+      incomplete: capture.edits.length ? null : 'no accepted edits during the capture: edit latency not measured',
       wallMs: round3(wallMs),
       ticks: host.tick - capture.tickStart,
       simWallRatio: round3(((host.tick - capture.tickStart) * STEP_MS) / wallMs),
@@ -369,11 +368,12 @@ async function start() {
       viewport: { css: [window.innerWidth, window.innerHeight], devicePixelRatio: window.devicePixelRatio, pixelRatio: renderer.getPixelRatio(), canvas: [canvas.width, canvas.height] },
       timerResolutionMs: timerMs,
       percentiles: 'p50, p95, p99, max',
-      stepMs: spread(capture.steps),
-      editMs: spread(capture.edits),
-      intervalMs: spread(capture.intervals),
-      workMs: spread(capture.work),
+      stepMs: percentiles(capture.steps),
+      editMs: percentiles(capture.edits),
+      intervalMs: percentiles(capture.intervals),
+      workMs: percentiles(capture.work),
       samples: { steps: capture.steps.length, edits: capture.edits.length, frames: capture.intervals.length },
+      editsSuperseded: editLatency.superseded - capture.supersededStart,
       raw: {
         stepMs: capture.steps.map(round3),
         editMs: capture.edits.map(round3),
@@ -524,8 +524,7 @@ async function start() {
     },
     after(interval, frameWork) {
       const submitted = performance.now();
-      while (pendingEdits.length && pendingEdits[0]!.revision <= authoring.appliedRevision) {
-        const latency = submitted - pendingEdits.shift()!.acceptedAt;
+      for (const latency of editLatency.frameSubmitted(authoring.appliedRevision, submitted)) {
         pushBounded(edits, latency, 240);
         if (p0?.phase === 'measure') p0.edits.push(latency);
       }
@@ -559,7 +558,7 @@ async function start() {
       if (p0) {
         if (!scheduler.playing) p0.invalid ??= 'paused during capture';
         if (p0.phase === 'warmup' && submitted - p0.phaseStart >= 10_000) {
-          Object.assign(p0, { phase: 'measure', phaseStart: submitted, tickStart: host.tick, droppedStart: scheduler.droppedMs });
+          Object.assign(p0, { phase: 'measure', phaseStart: submitted, tickStart: host.tick, droppedStart: scheduler.droppedMs, supersededStart: editLatency.superseded });
           report('p0', { phase: 'measure', run: p0.run });
         } else if (p0.phase === 'measure') {
           p0.intervals.push(interval);
@@ -588,7 +587,7 @@ async function start() {
       `${backend.backend}${backend.compatibilityMode ? ' (compatibility)' : ''} · ${location.origin} · ${window.isSecureContext ? 'secure' : 'NOT secure'} · ${mode}`,
       `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws 1 (${law.enabled ? '1 on' : 'off'}) · arrows ${world.arrowCount()}`,
       `steps/frame ${frameSteps[frameSteps.length - 1] ?? 0} · sim/wall ${simWall.toFixed(2)} · debt dropped ${Math.round(scheduler.droppedMs)} ms · skipped ${host.skippedEmissions}`,
-      `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${ms(percentile(e, 0.95))} p95 ms`,
+      `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${e.length ? ms(percentile(e, 0.95)) : '—'} p95 ms`,
       `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls}`,
       `DPR ${window.devicePixelRatio} → ${renderer.getPixelRatio()} (cap ${MAX_PIXEL_RATIO}) · ${window.innerWidth}×${window.innerHeight} css · ${canvas.width}×${canvas.height} px · GPU errors ${gpuErrors.length}`,
       p0 ? `P0 run ${p0.run} ${p0.phase} ${Math.floor((performance.now() - p0.phaseStart) / 1000)} s${p0.invalid ? ` · invalid: ${p0.invalid}` : ''}` : '',
@@ -608,7 +607,7 @@ async function start() {
         playing: scheduler.playing,
         bodies: host.count,
         stepMs: [0.5, 0.95, 0.99].map((p) => round3(percentile(s, p))),
-        editMs: [0.5, 0.95, 0.99].map((p) => round3(percentile(e, p))),
+        editMs: e.length ? [0.5, 0.95, 0.99].map((p) => round3(percentile(e, p))) : null,
         editSamples: e.length,
         simWallRatio: round3(simWall),
         droppedMs: round3(scheduler.droppedMs),
