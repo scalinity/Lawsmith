@@ -145,7 +145,7 @@ kbd {
   position: fixed;
   top: 52px;
   left: 12px;
-  width: 268px;
+  width: 284px;
   max-height: calc(100vh - 52px - 150px);
   overflow-y: auto;
   box-sizing: border-box;
@@ -191,14 +191,14 @@ kbd {
 }
 
 .file-actions {
-  display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  display: flex;
   gap: 6px;
 }
 
 .file-actions button,
 .law-actions button {
-  padding: 0 9px;
+  padding: 0 8px;
+  white-space: nowrap;
 }
 
 .note {

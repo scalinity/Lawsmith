@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { Euler, Quaternion } from 'three/webgpu';
+import { Euler, Quaternion, Vector3, type Mesh, type Object3D } from 'three/webgpu';
 import { DocumentController } from './domain/document';
 import { LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type SceneDocument, type Vec3 } from './domain/scene';
 import { FIELD_KERNEL_VERSION } from './fields/directional';
@@ -827,6 +827,84 @@ async function start() {
     });
   };
 
+  /**
+   * Layout readback (Shift+L): where the controls, laws and gizmo handles are in CSS pixels, so a
+   * QA harness can aim its input and assert the structural layout instead of reading screenshots.
+   */
+  const layoutReport = () => {
+    const box = (element: Element | null) => {
+      if (!element || (element as HTMLElement).closest('[hidden]')) return null;
+      const r = element.getBoundingClientRect();
+      return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
+    };
+    const controls: Record<string, number[] | null> = {};
+    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #drag-region, #recovery-offer, #details, button[id], input[id]')) {
+      controls[element.id] = box(element);
+    }
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
+    const laws = [...lawList.querySelectorAll('.law-row')].map((row) => ({
+      id: row.querySelector<HTMLElement>('.law-select')!.dataset.id,
+      select: box(row.querySelector('.law-select')),
+      visible: box(row.querySelector('.law-visible')),
+      enabled: box(row.querySelector('.law-enabled')),
+    }));
+    const inputs = Object.fromEntries([...details.querySelectorAll('input')].map((input) => [input.getAttribute('aria-label') ?? input.id, box(input)]));
+    const swatches = Object.fromEntries([...colorGroup.querySelectorAll<HTMLButtonElement>('.swatch')].map((s) => [s.dataset.color, box(s)]));
+    const toScreen = (v: Vector3) => {
+      v.project(viewport.camera);
+      return [Math.round(((v.x + 1) / 2) * window.innerWidth * 10) / 10, Math.round(((1 - v.y) / 2) * window.innerHeight * 10) / 10];
+    };
+    const law = selectedLaw();
+    let support: number[] | null = null;
+    if (law) {
+      const [hx, hy, hz] = law.region.halfExtents;
+      const q = new Quaternion(...law.pose.rotation);
+      const points = [-1, 1].flatMap((sx) => [-1, 1].flatMap((sy) => [-1, 1].map((sz) => toScreen(new Vector3(sx * hx, sy * hy, sz * hz).applyQuaternion(q).add(new Vector3(...law.pose.position))))));
+      const xs = points.map((p) => p[0]!);
+      const ys = points.map((p) => p[1]!);
+      support = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    }
+    // Pinned three 0.186.1: TransformControlsGizmo keeps its pick meshes in `picker[mode]`.
+    let handles: { name: string; points: number[][] }[] | null = null;
+    const helper = viewport.gizmo.getHelper();
+    helper.updateMatrixWorld(true);
+    const gizmo = helper.children.find((c) => 'picker' in c) as (Object3D & { picker?: Record<string, Object3D> }) | undefined;
+    const pickers = law && viewport.gizmo.object ? gizmo?.picker?.[viewport.gizmo.mode] : undefined;
+    if (pickers) {
+      handles = pickers.children
+        .filter((mesh) => mesh.scale.x > 1e-6)
+        .map((mesh) => {
+          // three bakes each handle's offset into its geometry, so project the geometry: the center
+          // of an arrow or box handle, and eight samples around a rotation ring.
+          const geometry = (mesh as Mesh).geometry;
+          let local: Vector3[];
+          if (viewport.gizmo.mode === 'rotate') {
+            const position = geometry.getAttribute('position');
+            local = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => new Vector3().fromBufferAttribute(position, Math.floor((k * position.count) / 8)));
+          } else {
+            geometry.computeBoundingBox();
+            local = [geometry.boundingBox!.getCenter(new Vector3())];
+          }
+          return { name: mesh.name, points: local.map((p) => toScreen(p.applyMatrix4(mesh.matrixWorld))) };
+        });
+    }
+    report('layout', {
+      viewport: [window.innerWidth, window.innerHeight],
+      devicePixelRatio: window.devicePixelRatio,
+      controls,
+      laws,
+      inputs,
+      swatches,
+      selected: law?.id ?? null,
+      transformMode: viewport.gizmo.mode,
+      support,
+      handles,
+      camera: viewport.camera.position.toArray(),
+      // World → clip space, so a harness can find where any world point appears.
+      viewProjection: viewport.camera.projectionMatrix.clone().multiply(viewport.camera.matrixWorldInverse).elements,
+    });
+  };
+
   // Determinism fixtures in this runtime (T04): the same code the Vitest harness runs.
   const runFixtures = async () => {
     setPlaying(false, 'fixtures');
@@ -870,6 +948,8 @@ async function start() {
       return;
     }
     if (event.target instanceof HTMLButtonElement && (event.key === ' ' || event.key === 'Enter')) return;
+    // A readback changes nothing, so it also works while edits are frozen.
+    if (event.key === 'L') return layoutReport();
     if (frozen) return;
     switch (event.key) {
       case 't': return setMode('translate');
