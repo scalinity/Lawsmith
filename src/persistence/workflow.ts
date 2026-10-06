@@ -130,6 +130,8 @@ export class DocumentWorkflow {
         const decision = await this.guard(request);
         if (!decision) return false;
         if (!(await this.commitDiscard(decision))) return false;
+        // Nothing may exit while a write or retirement is still in flight (SPEC §15.3).
+        await this.recovery.settled();
         return true;
       });
       if (!proceed) return false;
@@ -263,7 +265,8 @@ export class DocumentWorkflow {
       this.binding = target;
       this.savedRevision = captured.revision;
       this.recovered = false;
-      void this.recovery.retireThrough(captured.generation, captured.revision);
+      // The save is complete only when recovery through its revision is retired too.
+      const retired = await this.recovery.retireThrough(captured.generation, captured.revision);
       const later = this.app.controller.revision - captured.revision;
       this.app.log('document', {
         action,
@@ -272,12 +275,15 @@ export class DocumentWorkflow {
         generation: captured.generation,
         revision: captured.revision,
         laterEdits: later,
+        recoveryRetired: retired,
         bytes: captured.text.length,
         captureMs: round(captureMs),
         writeMs: round(writeMs),
         saveMs: round(this.app.now() - start),
       });
-      this.message = { kind: 'info', text: later > 0 ? `Saved revision ${captured.revision} to ${target!.name}. Later edits are not saved yet.` : `Saved to ${target!.name}.` };
+      this.message = retired
+        ? { kind: 'info', text: later > 0 ? `Saved revision ${captured.revision} to ${target!.name}. Later edits are not saved yet.` : `Saved to ${target!.name}.` }
+        : { kind: 'error', text: `Saved to ${target!.name}, but its recovery copy could not be removed${this.recovery.status.state === 'failed' ? ` (${this.recovery.status.reason})` : ''}. Closing waits until it can be.` };
       return true;
     } catch (error) {
       const failure = error as IoFailure;
@@ -384,6 +390,8 @@ export class DocumentWorkflow {
     const controller = this.app.controller;
     controller.settle();
     if (!this.dirty) {
+      // A saved revision whose recovery copy is still on disk would come back as unsaved after restart.
+      if (!(await this.recovery.ensureRetired())) return this.refuse('Your scene is saved, but its recovery copy could not be removed. Nothing was closed; try again.');
       this.app.log('guard', { reason, outcome: 'clean', generation: controller.generation, revision: controller.revision });
       return { kind: 'clean' };
     }
@@ -398,8 +406,10 @@ export class DocumentWorkflow {
     if (choice === 'discard') return { kind: 'discard', generation: controller.generation };
     const saved = await this.saveNow(false);
     controller.settle();
-    // Re-evaluate after the save: only a document that is now clean may be replaced or closed.
+    // Re-evaluate after the save: only a document that is now clean, with its recovery retired
+    // through the saved revision, may be replaced or closed.
     if (!saved || this.dirty) return this.release();
+    if (!(await this.recovery.ensureRetired())) return this.refuse('Your scene is saved, but its recovery copy could not be removed. Nothing was closed; try again.');
     return { kind: 'saved' };
   }
 
@@ -419,6 +429,12 @@ export class DocumentWorkflow {
   private release(): null {
     this.app.freeze(false);
     return null;
+  }
+
+  private refuse(text: string): null {
+    this.message = { kind: 'error', text };
+    this.app.log('guard', { outcome: 'refused', reason: text });
+    return this.release();
   }
 
   private fail(text: string, data: Record<string, unknown> = {}): false {

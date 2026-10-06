@@ -42,6 +42,11 @@ class FakeIo implements DocumentIo {
   retired = new Map<number, number>();
   failRecovery: IoFailure | null = null;
   failDiscard: IoFailure | null = null;
+  failRetire: IoFailure | null = null;
+  holdRecovery = false;
+  heldRecovery: Deferred[] = [];
+  /** The recovery store as it was when the app exited: what the next launch would find. */
+  recoveryAtExit: unknown = null;
 
   async openScene(): Promise<OpenOutcome> {
     return this.openQueue.shift() ?? { outcome: 'canceled' };
@@ -71,6 +76,7 @@ class FakeIo implements DocumentIo {
     return { current: slot(this.recovery.current), previous: slot(this.recovery.previous) };
   }
   async recoveryWrite(g: number, r: number, text: string) {
+    if (this.holdRecovery) await new Promise<void>((resolve, reject) => this.heldRecovery.push({ resolve, reject }));
     if (this.lastWrite && (g < this.lastWrite[0] || (g === this.lastWrite[0] && r <= this.lastWrite[1]))) throw failure('stale', 'recovery');
     if (r <= (this.retired.get(g) ?? -1)) throw failure('stale', 'recovery');
     if (this.failRecovery) throw this.failRecovery;
@@ -79,6 +85,7 @@ class FakeIo implements DocumentIo {
     this.lastWrite = [g, r];
   }
   async recoveryRetire(g: number, through: number) {
+    if (this.failRetire) throw this.failRetire;
     this.retired.set(g, Math.max(this.retired.get(g) ?? -1, through));
     for (const slot of ['current', 'previous'] as const) {
       const s = this.recovery[slot];
@@ -98,6 +105,7 @@ class FakeIo implements DocumentIo {
   }
   async exit() {
     this.exited += 1;
+    this.recoveryAtExit = structuredClone(this.recovery);
   }
 }
 
@@ -486,6 +494,56 @@ describe('close/quit guard (AC10)', () => {
     expect(await t.workflow.requestExit('quit')).toBe(true);
     expect(t.io.disk.has('kept.lawsmith.json')).toBe(true);
     expect(t.io.exited).toBe(1);
+  });
+
+  it('Save in the guard retires recovery before exiting, even with a recovery write in flight', async () => {
+    const t = setup();
+    t.edit();
+    t.io.holdRecovery = true;
+    const writing = t.workflow.recovery.writeNow();
+    t.io.askQueue.push('save');
+    t.io.chooseQueue.push('kept.lawsmith.json');
+    const quitting = t.workflow.requestExit('quit');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(t.io.exited).toBe(0);
+    t.io.holdRecovery = false;
+    t.io.heldRecovery.shift()!.resolve();
+    await writing;
+    expect(await quitting).toBe(true);
+    // The next launch would find nothing: the saved revision is not offered as unsaved.
+    expect(t.io.recoveryAtExit).toEqual({ current: null, previous: null });
+  });
+
+  it('a recovery copy that cannot be retired keeps the app open after Save, and a later quit retries', async () => {
+    const t = setup();
+    t.edit();
+    await t.workflow.recovery.writeNow();
+    t.io.failRetire = failure('permission', 'recovery-retire');
+    t.io.askQueue.push('save');
+    t.io.chooseQueue.push('kept.lawsmith.json');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect(t.io.exited).toBe(0);
+    expect(t.frozen()).toBe(false);
+    expect(t.workflow.dirty).toBe(false);
+    // Clean now, but the saved revision's copy is still on disk: quitting retries and refuses.
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect(t.io.asked).toHaveLength(1);
+    t.io.failRetire = null;
+    expect(await t.workflow.requestExit('quit')).toBe(true);
+    expect(t.io.recoveryAtExit).toEqual({ current: null, previous: null });
+  });
+
+  it('Command+S then an immediate quit exits only after the save’s retirement', async () => {
+    const t = setup();
+    t.io.chooseQueue.push('a.lawsmith.json');
+    t.edit();
+    await t.workflow.recovery.writeNow();
+    const saving = t.workflow.save();
+    const quitting = t.workflow.requestExit('quit');
+    await saving;
+    expect(await quitting).toBe(true);
+    expect(t.io.asked).toEqual([]);
+    expect(t.io.recoveryAtExit).toEqual({ current: null, previous: null });
   });
 
   it('a canceled Save As inside the guard aborts the quit and keeps recovery eligible', async () => {

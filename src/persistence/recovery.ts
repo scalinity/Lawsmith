@@ -70,6 +70,8 @@ export class RecoveryWriter {
   private chain: Promise<void> = Promise.resolve();
   private last: { generation: number; revision: number } | null = null;
   private readonly retired = new Map<number, number>();
+  /** A retirement the native store has not acknowledged; it must succeed before the document is closed or replaced. */
+  private unretired: { generation: number; through: number } | null = null;
   status: RecoveryStatus = { state: 'none' };
   /** Main-thread time of each capture (settle + snapshot + serialize), for the M2 stall gate. */
   readonly captureMs: number[] = [];
@@ -115,18 +117,37 @@ export class RecoveryWriter {
     return this.chain;
   }
 
-  /** After an explicit save of `revision`: retire recovery at or before it in its generation. */
-  retireThrough(generation: number, revision: number): Promise<void> {
+  /**
+   * After an explicit save of `revision`: retire recovery at or before it in its generation, behind
+   * any write already queued. Resolves true once the native store has acknowledged the retirement.
+   */
+  retireThrough(generation: number, revision: number): Promise<boolean> {
     this.retired.set(generation, Math.max(this.retired.get(generation) ?? -1, revision));
-    const done = this.chain.then(() => this.o.io.recoveryRetire(generation, revision));
-    this.chain = done.then(
-      () => this.o.log('recovery', { action: 'retire', generation, through: revision }),
+    const done = this.chain.then(() => this.o.io.recoveryRetire(generation, revision)).then(
+      () => {
+        if (this.unretired && this.unretired.generation <= generation) this.unretired = null;
+        this.o.log('recovery', { action: 'retire', generation, through: revision });
+        return true;
+      },
       (failure: IoFailure) => {
+        this.unretired = { generation, through: Math.max(revision, this.unretired?.generation === generation ? this.unretired.through : -1) };
         this.setStatus({ state: 'failed', reason: describeFailure(failure) });
-        this.o.log('recovery', { action: 'retire', outcome: 'failed', generation, through: revision, kind: failure.kind, message: failure.message });
+        this.o.log('recovery', { action: 'retire', outcome: 'failed', generation, through: revision, failure: failure.kind, message: failure.message });
+        return false;
       },
     );
-    return this.chain;
+    this.chain = done.then(() => {});
+    return done;
+  }
+
+  /**
+   * Before a document is closed or replaced: every queued write and retirement has settled, and no
+   * saved revision is still eligible on disk. A retirement that failed earlier is retried once.
+   */
+  async ensureRetired(): Promise<boolean> {
+    await this.chain;
+    const pending = this.unretired;
+    return pending ? this.retireThrough(pending.generation, pending.through) : true;
   }
 
   /**
