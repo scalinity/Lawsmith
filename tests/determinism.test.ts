@@ -12,7 +12,7 @@ import {
   runResetFixture,
   scriptedRecipeEdits,
 } from '../src/simulation/fixtures';
-import { SimulationHost, initSimulation, xorshift32 } from '../src/simulation/host';
+import { SimulationFault, SimulationHost, initSimulation, xorshift32 } from '../src/simulation/host';
 import { FixedStepScheduler, MAX_STEPS_PER_FRAME } from '../src/simulation/scheduler';
 
 const STEP_MS = 1000 / 120;
@@ -83,6 +83,19 @@ describe('T04 exact reset', () => {
     let prng = STARTING_RECIPE.emitters[0]!.seed;
     for (let i = 0; i < 450; i++) prng = xorshift32(prng);
     expect(state.emitters[0]).toEqual({ id: 'stream', prngState: prng, ordinal: 150 });
+  });
+
+  it('an unbounded emitter faults before a birth whose death tick would leave the safe-integer range', () => {
+    const [stream] = STARTING_RECIPE.emitters;
+    const host = new SimulationHost(cloneFrozen({ ...STARTING_RECIPE, emitters: [{ ...stream!, intervalTicks: 1, lifetimeTicks: Number.MAX_SAFE_INTEGER }] }));
+    // Boundary 0: death tick 2^53 − 1 is still safe.
+    host.step();
+    const before = host.canonicalState();
+    // Boundary 1: 1 + (2^53 − 1) is not; nothing at that boundary changes.
+    expect(() => host.step()).toThrow(SimulationFault);
+    expect(host.fault).toMatchObject({ tick: 1, entity: 'stream' });
+    expect(host.canonicalState()).toEqual(before);
+    host.dispose();
   });
 
   it('xorshift32-v1 matches the reference recurrence', () => {

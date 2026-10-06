@@ -184,6 +184,10 @@ interface LiveBody {
   readonly deathTick: number;
 }
 
+/** A scheduled birth falls at boundary n: on the emitter's interval, and within its count. */
+const due = ({ def, ordinal }: EmitterState, n: number) =>
+  n >= def.startTick && (n - def.startTick) % def.intervalTicks === 0 && (def.emissionCount === undefined || ordinal < def.emissionCount);
+
 interface EmitterState {
   readonly def: EmitterDefinition;
   prng: number;
@@ -426,15 +430,21 @@ export class SimulationHost {
   /** Boundary n: expire bodies with deathTick ≤ n in stable ID order, then spawn due bodies by emitter ID (SPEC §5.3). */
   private runLifecycle(): void {
     const n = this.tick;
+    // SPEC §5.3: a birth whose death tick or ordinal would leave the safe-integer range faults before
+    // this boundary changes anything. Import bounds a finite schedule; this guards an unbounded one.
+    for (const emitter of this.emitters) {
+      if (due(emitter, n) && !(Number.isSafeInteger(n + emitter.def.lifetimeTicks) && Number.isSafeInteger(emitter.ordinal + 1))) {
+        throw (this.fault = new SimulationFault(n, emitter.def.id, 'Emitter schedule leaves the safe-integer range'));
+      }
+    }
     const expiring = this.bodies.filter((b) => b.deathTick <= n);
     if (expiring.length) {
       for (const live of expiring.sort(byId)) this.world!.removeRigidBody(live.body);
       this.bodies = this.bodies.filter((b) => b.deathTick > n);
     }
     for (const emitter of this.emitters) {
+      if (!due(emitter, n)) continue;
       const def = emitter.def;
-      if (n < def.startTick || (n - def.startTick) % def.intervalTicks !== 0) continue;
-      if (def.emissionCount !== undefined && emitter.ordinal >= def.emissionCount) continue;
       // Exactly three draws per scheduled birth, even for zero jitter or a skipped spawn.
       const ox = (2 * this.draw(emitter) - 1) * def.jitter[0];
       const oy = (2 * this.draw(emitter) - 1) * def.jitter[1];

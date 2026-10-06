@@ -416,6 +416,12 @@ export function validateEmitter(emitter: EmitterDefinition): Validated<EmitterDe
   if (!isSafeCount(emitter.intervalTicks, 1)) return reject('intervalTicks', 'intervalTicks must be a positive safe integer');
   if (!isSafeCount(emitter.lifetimeTicks, 1)) return reject('lifetimeTicks', 'lifetimeTicks must be a positive safe integer');
   if (emitter.emissionCount !== undefined && !isSafeCount(emitter.emissionCount, 0)) return reject('emissionCount', 'emissionCount must be a nonnegative safe integer');
+  // SPEC §5.3: a finite schedule's last death tick, startTick + (emissionCount − 1) × intervalTicks +
+  // lifetimeTicks, stays a safe integer (computed exactly). The host guards an unbounded schedule at each birth.
+  if (emitter.emissionCount) {
+    const lastDeath = BigInt(emitter.startTick) + BigInt(emitter.emissionCount - 1) * BigInt(emitter.intervalTicks) + BigInt(emitter.lifetimeTicks);
+    if (lastDeath > BigInt(Number.MAX_SAFE_INTEGER)) return reject('emissionCount', 'the last emitted body’s death tick must stay within the safe-integer range');
+  }
   const t = emitter.template;
   if (!within(t.massKg, 0.001, 1000)) return reject('template.massKg', 'mass must be within 0.001–1000 kg');
   const collider = validateCollider(t.collider, 'template.collider');

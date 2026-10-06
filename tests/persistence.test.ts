@@ -191,6 +191,7 @@ describe('T06 transactional rejection (AC6)', () => {
     ['a fixed body with velocity', (v) => (v.semantic.bodies[0].initialLinearVelocity = [0, 1, 0]), 'semantic.bodies[0].initialLinearVelocity'],
     ['an emitter rotation this build does not define', (v) => (v.semantic.emitters[0].pose.rotation = [0, 0, Math.SQRT1_2, Math.SQRT1_2]), 'semantic.emitters[0].pose.rotation'],
     ['spawn positions beyond ±1000 m', (v) => (v.semantic.emitters[0].pose.position = [999.9, 6, 0]), 'semantic.emitters[0].jitter'],
+    ['an emitter schedule past the safe-integer range', (v) => Object.assign(v.semantic.emitters[0], { startTick: 0, intervalTicks: 8, lifetimeTicks: Number.MAX_SAFE_INTEGER, emissionCount: 2 }), 'semantic.emitters[0].emissionCount'],
     ['a dynamic box body', (v) => v.semantic.bodies.push({ ...v.semantic.bodies[0], id: 'crate', type: 'dynamic', massKg: 1 }), 'semantic.bodies[1].collider.kind'],
     ['a presentation entry for no law', (v) => (v.presentation.laws[0].id = 'ghost'), 'presentation.laws[0].id'],
     ['an empty label', (v) => (v.presentation.laws[0].label = ''), 'presentation.laws[0]'],
@@ -204,6 +205,14 @@ describe('T06 transactional rejection (AC6)', () => {
     const value = json();
     mutate(value);
     expect(rejection(value)!.path).toBe(path);
+  });
+
+  it('accepts a finite emitter schedule whose last death tick is exactly the safe-integer limit', () => {
+    const value = json();
+    Object.assign(value.semantic.emitters[0], { startTick: 0, intervalTicks: 8, lifetimeTicks: Number.MAX_SAFE_INTEGER - 8, emissionCount: 2 });
+    expect(parse(value).ok).toBe(true);
+    value.semantic.emitters[0].lifetimeTicks += 1;
+    expect(rejection(value)!.path).toBe('semantic.emitters[0].emissionCount');
   });
 
   it('rejects an unknown required capability before reading the scene', () => {
