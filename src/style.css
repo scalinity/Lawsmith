@@ -10,6 +10,10 @@
   --divider: #454038;
   --teal: #55aaa4;
   --lavender: #c58ae5;
+  --floor: #1d1b18;
+  --grid-minor: #2c2925;
+  --body: #efebe3;
+  --danger: #e0806b;
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --serif: ui-serif, "New York", Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
@@ -123,8 +127,153 @@ kbd {
 
 #status[hidden],
 #diagnostics[hidden],
-#failure[hidden] {
+#failure[hidden],
+#laws[hidden],
+#transport[hidden],
+#sim-error[hidden] {
   display: none;
+}
+
+/* Laws list: below the traffic lights, clear of the drag band. */
+#laws {
+  position: fixed;
+  top: 52px;
+  left: 12px;
+  width: 232px;
+  padding: 10px 10px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: rgb(33 31 28 / 0.88);
+}
+
+#laws h2 {
+  margin: 0 0 6px 2px;
+  font: 600 11px/1.4 var(--sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.law-row {
+  display: flex;
+  gap: 6px;
+}
+
+#law-select {
+  flex: 1;
+  height: auto;
+  min-height: 40px;
+  padding: 5px 8px;
+  display: grid;
+  justify-items: start;
+  text-align: left;
+  border-left: 3px solid var(--teal);
+}
+
+#law-select[aria-pressed="true"] {
+  background: var(--raised);
+  border-color: var(--divider);
+  border-left-color: var(--teal);
+}
+
+.law-name {
+  color: var(--text);
+}
+
+.law-meta {
+  font: 11px var(--mono);
+  color: var(--text-tertiary);
+}
+
+#law-enabled {
+  width: 48px;
+  min-height: 40px;
+  height: auto;
+}
+
+#law-enabled[aria-pressed="true"] {
+  color: var(--teal);
+}
+
+#law-enabled[aria-pressed="false"] {
+  color: var(--text-tertiary);
+  border-style: dashed;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 2px 0;
+  font: 11px var(--mono);
+  color: var(--text-tertiary);
+}
+
+/* 0.6 m of arrow = 12 m/s²; the glyph is only a key, not to scale. */
+.arrow-glyph {
+  width: 18px;
+  height: 2px;
+  background: var(--lavender);
+  position: relative;
+}
+
+.arrow-glyph::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  border-left: 5px solid var(--lavender);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+#transport {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: rgb(33 31 28 / 0.88);
+}
+
+#play {
+  min-width: 96px;
+}
+
+#play[aria-pressed="true"] {
+  color: var(--teal);
+  background: var(--raised);
+}
+
+#clock {
+  min-width: 150px;
+  padding: 0 6px;
+  font: 11px var(--mono);
+  color: var(--text-secondary);
+}
+
+#sim-error {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100vw - 48px));
+  padding: 8px 8px 8px 14px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+#sim-error p {
+  margin: 0;
+  color: var(--text);
 }
 
 #diagnostics {

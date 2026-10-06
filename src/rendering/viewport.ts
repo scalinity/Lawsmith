@@ -2,40 +2,50 @@ import {
   Color,
   DirectionalLight,
   Fog,
-  GridHelper,
   HemisphereLight,
-  IcosahedronGeometry,
-  MathUtils,
-  Mesh,
-  MeshStandardNodeMaterial,
+  Object3D,
   PerspectiveCamera,
-  PlaneGeometry,
   Scene,
+  Vector3,
   WebGPURenderer,
 } from 'three/webgpu';
-import { color, mix, positionLocal, smoothstep } from 'three/tsl';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 /** Render-resolution cap from SPEC §18.2; CSS layout and pointer math stay in CSS pixels. */
 export const MAX_PIXEL_RATIO = 1.5;
 
-const SHELL = 0x141311;
-const DEFAULT_CAMERA = [5.5, 3.6, 6.5] as const;
+/** SPEC §2.2 initial view. */
+const DEFAULT_CAMERA = new Vector3(9, 7, 11);
+const DEFAULT_TARGET = new Vector3(0, 1, 0);
 
-export type TransformMode = 'translate' | 'rotate';
 export type ViewportLog = (kind: string, data: Record<string, unknown>) => void;
+
+/** Reads a `:root` color token from src/style.css, so scene colors share the UI palette. */
+export function tokenColor(name: string): Color {
+  return new Color(getComputedStyle(document.documentElement).getPropertyValue(name).trim());
+}
+
+export interface FrameHooks {
+  /** Simulation and view updates for this presentation frame, before rendering. */
+  before(timeMs: number): void;
+  /** Called after the frame is submitted; `intervalMs` is undefined on the first frame. */
+  after(intervalMs: number | undefined, workMs: number): void;
+}
 
 export interface Viewport {
   renderer: WebGPURenderer;
   scene: Scene;
   camera: PerspectiveCamera;
-  setMode(mode: TransformMode): void;
-  frameView(): void;
-  start(onFrame: (intervalMs: number, workMs: number) => void): void;
+  orbit: OrbitControls;
+  gizmo: TransformControls;
+  /** The TransformControls target. It is not a law: gestures read it and submit commands. */
+  proxy: Object3D;
+  /** Points the camera at `center`, far enough back to show a sphere of `radius`. */
+  frame(center: readonly [number, number, number], radius: number): void;
+  resetView(): void;
+  start(hooks: FrameHooks): void;
 }
-
-const round = (values: number[]) => values.map((v) => Math.round(v * 1000) / 1000);
 
 /** Creates the renderer and waits for its backend; the caller identifies which backend it got. */
 export async function createRenderer(host: HTMLElement, forceWebGL: boolean): Promise<WebGPURenderer> {
@@ -48,76 +58,53 @@ export async function createRenderer(host: HTMLElement, forceWebGL: boolean): Pr
   return renderer;
 }
 
-/** M0 qualification scene: a spatial frame, one node material with a TSL cue, one gizmo target. */
+/** Scene frame, lights, camera and controls. Law, bodies and fixed geometry belong to the world view. */
 export function createViewport(renderer: WebGPURenderer, log: ViewportLog): Viewport {
+  const shell = tokenColor('--shell');
   const scene = new Scene();
-  scene.background = new Color(SHELL);
-  scene.fog = new Fog(SHELL, 16, 42);
+  scene.background = shell;
+  scene.fog = new Fog(shell, 22, 60);
 
   const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
 
-  scene.add(new HemisphereLight(0xf3f0ea, 0x1a1917, 1.1));
-  const sun = new DirectionalLight(0xf3f0ea, 2.4);
-  sun.position.set(5, 10, 6);
+  scene.add(new HemisphereLight(tokenColor('--text'), tokenColor('--card'), 1.1));
+  const sun = new DirectionalLight(tokenColor('--text'), 2.4);
+  sun.position.set(6, 12, 7);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left = sun.shadow.camera.bottom = -6;
-  sun.shadow.camera.right = sun.shadow.camera.top = 6;
+  sun.shadow.camera.left = sun.shadow.camera.bottom = -9;
+  sun.shadow.camera.right = sun.shadow.camera.top = 9;
   scene.add(sun);
 
-  const floor = new Mesh(new PlaneGeometry(80, 80), new MeshStandardNodeMaterial({ color: 0x1d1b18, roughness: 1 }));
-  floor.rotation.x = -Math.PI / 2;
-  floor.receiveShadow = true;
-  scene.add(floor);
-
-  const grid = new GridHelper(30, 30, 0x454038, 0x2c2925);
-  grid.position.y = 0.002;
-  scene.add(grid);
-
-  // Temporary gizmo target. The TSL cue is a local-space teal→lavender gradient, so it
-  // turns with the object and makes rotation readable.
-  const material = new MeshStandardNodeMaterial({ roughness: 0.42, metalness: 0.08, flatShading: true });
-  material.colorNode = mix(color(0x55aaa4), color(0xc58ae5), smoothstep(-0.9, 0.9, positionLocal.y));
-  const target = new Mesh(new IcosahedronGeometry(0.9, 0), material);
-  target.position.set(0, 1.1, 0);
-  target.castShadow = true;
-  scene.add(target);
-
+  // Construction order is pointer ownership (M0 finding 6). Both controls listen for
+  // `pointerdown` on the canvas, and listeners run in registration order. TransformControls
+  // registers first, so a press on a handle starts the gizmo drag, whose `dragging-changed`
+  // disables orbit before OrbitControls sees the press. Orbit then neither captures the
+  // pointer nor fires `end` on release.
+  const gizmo = new TransformControls(camera, renderer.domElement);
   const orbit = new OrbitControls(camera, renderer.domElement);
   orbit.enableDamping = true;
-  orbit.addEventListener('end', () => log('orbit', { camera: round(camera.position.toArray()) }));
-  const gizmo = new TransformControls(camera, renderer.domElement);
-  gizmo.attach(target);
+  const proxy = new Object3D();
+  proxy.name = 'law-proxy';
+  scene.add(proxy);
+  gizmo.attach(proxy);
   scene.add(gizmo.getHelper());
 
-  // TransformControls keeps a constant screen size: each frame it scales its handles by
-  // `distance × screenFactor × size / 4` (pinned 0.186.1). Choosing `size` to cancel the
-  // distance keeps the rotation rings (radius 0.5 handle units) a fixed world size just
-  // outside the target as the camera zooms; the clamp keeps far views grabbable.
-  const RING_WORLD_RADIUS = 1.2;
-  function fitGizmo() {
-    const screenFactor = Math.min((1.9 * Math.tan((Math.PI * camera.fov) / 360)) / camera.zoom, 7);
-    const distance = camera.position.distanceTo(target.position);
-    gizmo.size = MathUtils.clamp((RING_WORLD_RADIUS * 8) / (distance * screenFactor), 0.5, 8);
-  }
-  gizmo.addEventListener('dragging-changed', (event) => {
-    const dragging = event.value === true;
-    orbit.enabled = !dragging;
-    if (!dragging) {
-      log('gizmo', {
-        transformMode: gizmo.mode,
-        position: round(target.position.toArray()),
-        rotation: round([target.rotation.x, target.rotation.y, target.rotation.z]),
-      });
-    }
-  });
-
-  function frameView() {
-    camera.position.set(...DEFAULT_CAMERA);
-    orbit.target.copy(target.position);
+  function resetView() {
+    camera.position.copy(DEFAULT_CAMERA);
+    orbit.target.copy(DEFAULT_TARGET);
     orbit.update();
   }
-  frameView();
+  resetView();
+
+  const offset = new Vector3();
+  function frame(center: readonly [number, number, number], radius: number) {
+    const distance = radius / Math.sin((Math.PI * camera.fov) / 360) + 1;
+    offset.subVectors(camera.position, orbit.target).normalize().multiplyScalar(distance);
+    orbit.target.set(center[0], center[1], center[2]);
+    camera.position.copy(orbit.target).add(offset);
+    orbit.update();
+  }
 
   function fit() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -147,16 +134,19 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
     renderer,
     scene,
     camera,
-    setMode: (mode) => gizmo.setMode(mode),
-    frameView,
-    start(onFrame) {
+    orbit,
+    gizmo,
+    proxy,
+    frame,
+    resetView,
+    start(hooks) {
       let last: number | undefined;
       renderer.setAnimationLoop((time: number) => {
         const begin = performance.now();
+        hooks.before(time);
         orbit.update();
-        fitGizmo();
         renderer.render(scene, camera);
-        if (last !== undefined) onFrame(time - last, performance.now() - begin);
+        hooks.after(last === undefined ? undefined : time - last, performance.now() - begin);
         last = time;
       });
     },

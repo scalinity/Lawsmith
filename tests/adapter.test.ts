@@ -174,3 +174,28 @@ describe('SPEC §17.1 constant-acceleration fixture', () => {
     host.dispose();
   });
 });
+
+describe('runtime faults (SPEC §9.3, §16)', () => {
+  it('stops on invalid engine state, names the body and tick, and refuses to step until reset', () => {
+    // Crosses the ±10 000 m position stop during the first transition.
+    const root = scene([sphere('far', [9999.5, 0, 0], [100, 0, 0])], []);
+    const host = new SimulationHost(root);
+    expect(() => host.step()).toThrow(/Invalid engine state: far at tick 1/);
+    expect(host.fault).toMatchObject({ tick: 1, entity: 'far' });
+    expect(host.tick).toBe(0); // the corrupted transition is not published
+    expect(() => host.step()).toThrow();
+    host.reset(root);
+    expect(host.fault).toBeNull();
+    host.dispose();
+  });
+
+  it('characterizes the qualified engine: Rapier 0.21 caps linear speed at 400 m/s per length unit', () => {
+    // An effective engine limit absent from the profile record (M1 evidence, finding 9): the
+    // 1000 m/s stop cannot trigger, and above 400 m/s the adapter's v + h·A would not hold.
+    const host = new SimulationHost(scene([sphere('fast', [0, 0, 0], [1500, 0, 0])], []));
+    host.step();
+    expect(velocity(host, 'fast')[0]).toBe(400);
+    expect(host.fault).toBeNull();
+    host.dispose();
+  });
+});

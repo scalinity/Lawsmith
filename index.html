@@ -10,21 +10,47 @@
   <body>
     <div id="viewport"></div>
 
-    <!-- Top area of the continuous surface. Only #drag-region moves the window; the
-         tools are ordinary controls, and the canvas below stays a separate hit target. -->
+    <!-- Top area of the continuous surface. Only #drag-region moves the window, and it steps
+         aside wherever the law or its handles lie beneath it; the canvas is a separate hit target. -->
     <div id="top-rail">
       <div id="drag-region" data-tauri-drag-region></div>
       <div id="tools" hidden>
         <div class="segmented" role="group" aria-label="Transform mode">
           <button type="button" data-mode="translate" aria-pressed="true">Move <kbd>T</kbd></button>
           <button type="button" data-mode="rotate" aria-pressed="false">Rotate <kbd>R</kbd></button>
+          <button type="button" data-mode="scale" aria-pressed="false">Extent <kbd>S</kbd></button>
         </div>
         <button type="button" id="frame-view">Frame <kbd>F</kbd></button>
+        <button type="button" id="reset-view">Reset view</button>
       </div>
+    </div>
+
+    <section id="laws" aria-labelledby="laws-title" hidden>
+      <h2 id="laws-title">Laws</h2>
+      <div class="law-row">
+        <button type="button" id="law-select" aria-pressed="true">
+          <span class="law-name">Sideways</span>
+          <span class="law-meta">directional · 12 m/s²</span>
+        </button>
+        <button type="button" id="law-enabled" aria-pressed="true" aria-label="Sideways enabled">On</button>
+      </div>
+      <p class="legend"><span class="arrow-glyph" aria-hidden="true"></span>drive A · 1 m = 20 m/s²</p>
+    </section>
+
+    <div id="transport" role="group" aria-label="Simulation" hidden>
+      <button type="button" id="play">Play <kbd>Space</kbd></button>
+      <button type="button" id="step">Step <kbd>.</kbd></button>
+      <button type="button" id="reset">Reset <kbd>⇧R</kbd></button>
+      <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
     </div>
 
     <p id="status" role="status">Starting…</p>
     <pre id="diagnostics" hidden></pre>
+
+    <div id="sim-error" role="alert" hidden>
+      <p id="sim-error-text"></p>
+      <button type="button" id="sim-error-reset">Reset scene</button>
+    </div>
 
     <section id="failure" role="alert" hidden>
       <h1>Lawsmith could not start</h1>
