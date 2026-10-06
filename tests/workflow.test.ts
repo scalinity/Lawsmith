@@ -600,7 +600,7 @@ describe('close/quit guard (AC10)', () => {
     expect(t.workflow.dirty).toBe(true);
   });
 
-  it('a Discard whose recovery cannot be retired aborts the close', async () => {
+  it('a Discard whose recovery cannot be retired aborts the close, and recovery keeps working', async () => {
     const t = setup();
     t.edit();
     await t.workflow.recovery.writeNow();
@@ -610,6 +610,19 @@ describe('close/quit guard (AC10)', () => {
     expect(t.io.exited).toBe(0);
     expect(t.io.recovery.current).not.toBeNull();
     expect(t.frozen()).toBe(false);
+    t.io.failDiscard = null;
+    t.edit();
+    await t.workflow.recovery.writeNow();
+    expect(t.io.recovery.current!.r).toBe(t.controller.revision);
+    expect(t.workflow.recovery.status).toMatchObject({ state: 'written', revision: t.controller.revision });
+  });
+
+  it('a stale reply for an eligible write is reported, not ignored', async () => {
+    const t = setup();
+    t.edit();
+    t.io.lastWrite = [t.controller.generation, 99];
+    await t.workflow.recovery.writeNow();
+    expect(t.workflow.recovery.status).toEqual({ state: 'failed', reason: 'the recovery store refused this revision as out of date' });
   });
 
   it('simultaneous Close and Quit coalesce into one guard', async () => {

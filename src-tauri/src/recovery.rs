@@ -130,8 +130,6 @@ impl RecoveryStore {
     pub fn retire(&self, generation: u64, through: u64) -> Result<(), IoFailure> {
         let mut guard = self.state.lock().unwrap();
         let state = &mut *guard;
-        let entry = state.retired.entry(generation).or_insert(0);
-        *entry = (*entry).max(through);
         let covered = |stamp: Stamp| match stamp {
             Stamp::Foreign => true,
             Stamp::Session { generation: g, revision: r } => g < generation || (g == generation && r <= through),
@@ -142,6 +140,10 @@ impl RecoveryStore {
                 *slot = None;
             }
         }
+        // Recorded only once the snapshots are gone: a failed retirement leaves recovery working
+        // for a document that stays open.
+        let entry = state.retired.entry(generation).or_insert(0);
+        *entry = (*entry).max(through);
         Ok(())
     }
 
@@ -226,6 +228,20 @@ mod tests {
         assert_eq!((slots.current, slots.previous), (Slot::Absent, Slot::Absent));
         // The next document generation writes normally.
         store.write(5, 1, "next").unwrap();
+    }
+
+    #[test]
+    fn a_failed_discard_keeps_recovery_working() {
+        let dir = scratch("recovery-failed-discard");
+        let store = RecoveryStore::new(dir.clone());
+        store.write(3, 1, "r1").unwrap();
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o555)).unwrap();
+        let failure = store.retire(3, u64::MAX).unwrap_err();
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o755)).unwrap();
+        assert_eq!(failure.kind, "permission");
+        // The document stays open, so its next revision is still written.
+        store.write(3, 2, "r2").unwrap();
+        assert_eq!(text(&store.load().current), "r2");
     }
 
     #[test]

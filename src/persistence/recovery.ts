@@ -106,12 +106,10 @@ export class RecoveryWriter {
         this.o.log('recovery', { action: 'write', generation: capture.generation, revision: capture.revision, bytes: capture.text.length, captureMs: round(captureMs), ackMs: round(this.o.now() - sent) });
       } catch (error) {
         const failure = error as IoFailure;
-        if (failure.kind === 'stale') {
-          this.o.log('recovery', { action: 'write', outcome: 'stale', generation: capture.generation, revision: capture.revision, message: failure.message });
-          return;
-        }
-        this.setStatus({ state: 'failed', reason: describeFailure(failure) });
-        this.o.log('recovery', { action: 'write', outcome: 'failed', generation: capture.generation, revision: capture.revision, kind: failure.kind, stage: failure.stage, message: failure.message });
+        // This write was checked as eligible before it was sent, so a stale reply means the store and
+        // this document disagree: report it rather than let recovery stop silently.
+        this.setStatus({ state: 'failed', reason: failure.kind === 'stale' ? 'the recovery store refused this revision as out of date' : describeFailure(failure) });
+        this.o.log('recovery', { action: 'write', outcome: failure.kind === 'stale' ? 'stale' : 'failed', generation: capture.generation, revision: capture.revision, failure: failure.kind, stage: failure.stage, message: failure.message });
       }
     });
     return this.chain;
