@@ -1,0 +1,14 @@
+[package]
+name = "lawsmith"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.95"
+publish = false
+
+# Tauri 3 prerelease family, pinned exactly (SPEC §3). Component versions differ by design.
+[build-dependencies]
+tauri-build = { version = "=3.0.0-alpha.3", features = [] }
+
+[dependencies]
+tauri = { version = "=3.0.0-alpha.4", features = [] }
+tauri-runtime-wry = "=3.0.0-alpha.4"

@@ -1,0 +1,176 @@
+:root {
+  --shell: #141311;
+  --card: #211f1c;
+  --raised: #282521;
+  --hover: #302c27;
+  --text: #f3f0ea;
+  --text-secondary: #aaa59d;
+  --text-tertiary: #908b83;
+  --hairline: #34312c;
+  --divider: #454038;
+  --teal: #55aaa4;
+  --lavender: #c58ae5;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --serif: ui-serif, "New York", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--shell);
+  color: var(--text);
+  font: 13px/1.4 var(--sans);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#viewport,
+#viewport canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+}
+
+/* Transparent to the pointer except for its two children. */
+#top-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+#drag-region {
+  flex: 1;
+  align-self: stretch;
+  pointer-events: auto;
+}
+
+#tools {
+  display: flex;
+  gap: 8px;
+  margin: 0 12px 0 8px;
+  pointer-events: auto;
+}
+
+#tools[hidden] {
+  display: none;
+}
+
+button {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text-secondary);
+  font: inherit;
+  cursor: default;
+}
+
+button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.segmented {
+  display: flex;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.segmented button {
+  border: 0;
+  border-radius: 0;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--hairline);
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--raised);
+  color: var(--teal);
+}
+
+kbd {
+  margin-left: 4px;
+  font: 11px var(--mono);
+  color: var(--text-tertiary);
+}
+
+#status {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--text-tertiary);
+}
+
+#status[hidden],
+#diagnostics[hidden],
+#failure[hidden] {
+  display: none;
+}
+
+#diagnostics {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: rgb(33 31 28 / 0.85);
+  color: var(--text-tertiary);
+  font: 11px/1.5 var(--mono);
+  pointer-events: none;
+}
+
+#failure {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: min(560px, calc(100vw - 48px));
+  padding: 24px 28px;
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  background: var(--card);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+#failure h1 {
+  margin: 0 0 8px;
+  font: 400 24px/1.25 var(--serif);
+}
+
+#failure-summary {
+  margin: 0 0 16px;
+  color: var(--text-secondary);
+}
+
+#failure-detail {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--shell);
+  color: var(--text-tertiary);
+  font: 11px/1.5 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}

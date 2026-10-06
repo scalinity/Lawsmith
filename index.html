@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Lawsmith</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="viewport"></div>
+
+    <!-- Top area of the continuous surface. Only #drag-region moves the window; the
+         tools are ordinary controls, and the canvas below stays a separate hit target. -->
+    <div id="top-rail">
+      <div id="drag-region" data-tauri-drag-region></div>
+      <div id="tools" hidden>
+        <div class="segmented" role="group" aria-label="Transform mode">
+          <button type="button" data-mode="translate" aria-pressed="true">Move <kbd>T</kbd></button>
+          <button type="button" data-mode="rotate" aria-pressed="false">Rotate <kbd>R</kbd></button>
+        </div>
+        <button type="button" id="frame-view">Frame <kbd>F</kbd></button>
+      </div>
+    </div>
+
+    <p id="status" role="status">Starting…</p>
+    <pre id="diagnostics" hidden></pre>
+
+    <section id="failure" role="alert" hidden>
+      <h1>Lawsmith could not start</h1>
+      <p id="failure-summary"></p>
+      <pre id="failure-detail"></pre>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
