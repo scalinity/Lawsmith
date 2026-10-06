@@ -21,6 +21,23 @@ const DEFAULT_TARGET = new Vector3(0, 1, 0);
 
 export type ViewportLog = (kind: string, data: Record<string, unknown>) => void;
 
+interface OrbitInertia {
+  _sphericalDelta?: { set(radius: number, phi: number, theta: number): unknown };
+  _panOffset?: { set(x: number, y: number, z: number): unknown };
+}
+
+/**
+ * Clears OrbitControls' residual damping, the same reset its `update()` applies when damping is
+ * off (pinned three 0.186.1: `_sphericalDelta.set(0, 0, 0)` and `_panOffset.set(0, 0, 0)`).
+ * OrbitControls has no public way to stop inertia, and `update()` applies it even while
+ * disabled. Startup checks these fields exist, so a three.js upgrade fails loudly here.
+ */
+function haltOrbitInertia(orbit: OrbitControls): void {
+  const inertia = orbit as unknown as OrbitInertia;
+  inertia._sphericalDelta!.set(0, 0, 0);
+  inertia._panOffset!.set(0, 0, 0);
+}
+
 /** Reads a `:root` color token from src/style.css, so scene colors share the UI palette. */
 export function tokenColor(name: string): Color {
   return new Color(getComputedStyle(document.documentElement).getPropertyValue(name).trim());
@@ -84,6 +101,12 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
   const gizmo = new TransformControls(camera, renderer.domElement);
   const orbit = new OrbitControls(camera, renderer.domElement);
   orbit.enableDamping = true;
+  const inertia = orbit as unknown as OrbitInertia;
+  if (!inertia._sphericalDelta || !inertia._panOffset) throw new Error('OrbitControls internals differ from three 0.186.1; recheck haltOrbitInertia.');
+  // A law gesture owns the pointer: the camera must not keep drifting from an earlier orbit.
+  gizmo.addEventListener('dragging-changed', (event) => {
+    if (event.value === true) haltOrbitInertia(orbit);
+  });
   const proxy = new Object3D();
   proxy.name = 'law-proxy';
   scene.add(proxy);

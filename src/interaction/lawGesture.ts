@@ -193,7 +193,7 @@ export class LawInteraction {
       cancelReason: null,
       endReason: 'pointerup',
     };
-    this.o.log('gesture', { phase: 'begin', transformMode: this.gesture.mode, field: summary(start) });
+    this.o.log('gesture', { phase: 'begin', transformMode: this.gesture.mode, field: summary(start), camera: this.cameraPosition() });
   }
 
   private preview(): void {
@@ -219,7 +219,7 @@ export class LawInteraction {
     if (g.cancelReason) {
       const restored = this.o.submit(g.start);
       const revision = restored.ok ? restored.value.revision : null;
-      this.o.log('gesture', { phase: 'cancel', reason: g.cancelReason, transformMode: g.mode, samples: g.samples, restoredRevision: revision, field: summary(g.start) });
+      this.o.log('gesture', { phase: 'cancel', reason: g.cancelReason, transformMode: g.mode, samples: g.samples, restoredRevision: revision, field: summary(g.start), camera: this.cameraPosition() });
       this.o.onGestureEnd(revision);
       return;
     }
@@ -232,6 +232,7 @@ export class LawInteraction {
       firstRevision: g.firstRevision,
       lastRevision: g.lastRevision,
       field: summary(g.latest ?? g.start),
+      camera: this.cameraPosition(),
     });
     this.o.onGestureEnd(g.lastRevision);
   }
@@ -310,6 +311,11 @@ export class LawInteraction {
       if (gizmo.axis !== null) return true;
     }
     return this.pickLaw(clientX, clientY) !== null;
+  }
+
+  /** Full-precision camera position, so a log can show the camera did not move during a gesture. */
+  private cameraPosition(): number[] {
+    return this.o.camera.position.toArray();
   }
 
   private toNdc(clientX: number, clientY: number): void {

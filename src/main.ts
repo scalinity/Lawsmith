@@ -307,6 +307,7 @@ async function start() {
     report('control', { transformMode: next });
   };
   const frameLaw = () => {
+    if (interaction.gesture) return;
     const law = appliedLaw();
     if (interaction.selected) viewport.frame(law.pose.position, Math.hypot(...law.region.halfExtents));
     else viewport.resetView();
@@ -323,6 +324,7 @@ async function start() {
   modeButtons.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode as TransformMode)));
   $('frame-view').addEventListener('click', frameLaw);
   $('reset-view').addEventListener('click', () => {
+    if (interaction.gesture) return;
     viewport.resetView();
     report('control', { resetView: true });
   });
