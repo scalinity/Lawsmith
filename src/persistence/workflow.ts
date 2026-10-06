@@ -10,8 +10,13 @@ import type { DocumentIo, IoFailure } from './io';
 import { RecoveryWriter, describeFailure, parseRecovery, serializeRecovery, type RecoveryCapture, type RecoveryEnvelope } from './recovery';
 import { createDocument, parseScene, serializeScene } from './sceneFile';
 
+/** A candidate world, with whatever else its promotion needs, owned by the workflow until commit. */
+export interface Candidate {
+  dispose(): void;
+}
+
 /** What the workflow needs from the running application. */
-export interface WorkflowApp {
+export interface WorkflowApp<C extends Candidate = SimulationHost> {
   readonly controller: DocumentController;
   /** Pauses, discards scheduling debt and ends any gesture at its last accepted value. */
   quiesce(reason: string): void;
@@ -20,10 +25,16 @@ export interface WorkflowApp {
   gestureActive(): boolean;
   /** The camera framing a save records. */
   camera(): ScenePresentation['camera'];
-  /** Builds one unstepped candidate world for a validated document; throws if it cannot. */
-  candidate(document: SceneDocument): SimulationHost;
-  /** Promotes a candidate: the controller adopts the document and the displaced world is disposed. */
-  commit(document: SceneDocument, candidate: SimulationHost): void;
+  /**
+   * Builds one unstepped candidate world for a validated document, and prepares everything its
+   * promotion needs (its view included); throws if it cannot, leaving nothing allocated.
+   */
+  candidate(document: SceneDocument): C;
+  /**
+   * Promotes a candidate: the controller adopts the document and the displaced world is disposed.
+   * It must not fail: everything fallible belongs in `candidate`, before anything is replaced.
+   */
+  commit(document: SceneDocument, candidate: C): void;
   log(kind: string, data: Record<string, unknown>): void;
   now(): number;
   onChange(): void;
@@ -51,13 +62,13 @@ export function suggestedName(title: string): string {
   return `${base}.lawsmith.json`;
 }
 
-export class DocumentWorkflow {
+export class DocumentWorkflow<C extends Candidate = SimulationHost> {
   private binding: { token: number; name: string } | null = null;
   /** The revision of this generation stored at the binding; null if it has never been saved. */
   private savedRevision: number | null = 0;
   private running: { kind: string; done: Promise<unknown> } | null = null;
   /** A candidate world not yet committed; disposed if its workflow ends any other way. */
-  private uncommitted: SimulationHost | null = null;
+  private uncommitted: C | null = null;
   private exitPending = false;
   /**
    * Launch recovery is answered once the lookup finds nothing to offer, or the user recovers or
@@ -72,7 +83,7 @@ export class DocumentWorkflow {
 
   constructor(
     private readonly io: DocumentIo,
-    private readonly app: WorkflowApp,
+    private readonly app: WorkflowApp<C>,
   ) {
     this.recovery = new RecoveryWriter({
       io,
@@ -391,7 +402,7 @@ export class DocumentWorkflow {
     this.app.quiesce(action);
     let document = chosen;
     const start = this.app.now();
-    let candidate: SimulationHost;
+    let candidate: C;
     try {
       candidate = this.app.candidate(document);
     } catch (error) {

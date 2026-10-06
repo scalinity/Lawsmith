@@ -13,7 +13,7 @@ import { createDocument, semanticDigest } from './persistence/sceneFile';
 import { DocumentWorkflow, type RecoveryOffer } from './persistence/workflow';
 import { identifyBackend, isQualifiedWebGPU, probeRenderedPixels, watchGPUErrors } from './rendering/backend';
 import { createRenderer, createViewport, MAX_PIXEL_RATIO } from './rendering/viewport';
-import { createWorldView } from './rendering/worldView';
+import { createWorldView, type PreparedScene } from './rendering/worldView';
 import { compareRuns, runAtCadence, runFixedSteps, runResetFixture, scriptedRecipeEdits } from './simulation/fixtures';
 import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation } from './simulation/host';
 import { FixedStepScheduler } from './simulation/scheduler';
@@ -378,14 +378,33 @@ async function start() {
     },
     gestureActive: () => interaction.gesture !== null,
     camera: savedCamera,
-    candidate: (document) => new SimulationHost(cloneFrozen(document.semantic)),
+    // The candidate world and its view are both built before anything is replaced, so a failure
+    // to prepare either leaves the current scene, undo history and world exactly as they were.
+    candidate: (document) => {
+      const candidateHost = new SimulationHost(cloneFrozen(document.semantic));
+      let view: PreparedScene;
+      try {
+        view = world.prepareScene(document.semantic);
+      } catch (error) {
+        candidateHost.dispose();
+        throw error;
+      }
+      return {
+        host: candidateHost,
+        view,
+        dispose: () => {
+          candidateHost.dispose();
+          world.discardScene(view);
+        },
+      };
+    },
     commit: (document, candidate) => {
       setPlaying(false, 'load');
       const displaced = host;
-      host = candidate;
-      authoring.load(document, candidate);
+      host = candidate.host;
+      authoring.load(document, candidate.host);
       displaced.dispose();
-      world.setScene(document.semantic);
+      world.showScene(candidate.view);
       applyCamera(document.presentation.camera);
       interaction.select(document.semantic.fields[0]?.id ?? null);
       editLatency = new EditLatency();

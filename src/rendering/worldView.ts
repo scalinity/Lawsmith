@@ -62,9 +62,20 @@ export interface LawsViewState {
   arrows: boolean;
 }
 
+/** A scene's fixed geometry, emitter outlines and body capacity, built beside the displayed scene. */
+export interface PreparedScene {
+  readonly fixed: Group;
+  /** Body instances for a new capacity; null when the displayed ones already fit. */
+  readonly bodies: InstancedMesh | null;
+}
+
 export interface WorldView {
-  /** Rebuilds fixed geometry, emitter outlines and body capacity for a newly loaded scene. */
-  setScene(root: SceneDefinition): void;
+  /** Builds a loaded scene's view without touching the displayed one; this is the step that can fail. */
+  prepareScene(root: SceneDefinition): PreparedScene;
+  /** Displays a prepared scene and releases the one it replaces. */
+  showScene(prepared: PreparedScene): void;
+  /** Releases a prepared scene that will not be shown. */
+  discardScene(prepared: PreparedScene): void;
   updateBodies(host: SimulationHost): void;
   /** Draws the applied laws. Arrows sample each law's compiled evaluator directly. */
   updateLaws(laws: readonly LawView[], state: LawsViewState): void;
@@ -116,10 +127,8 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   let fixed = new Group();
   let bodies: InstancedMesh | null = null;
 
-  function setScene(next: SceneDefinition): void {
-    scene.remove(fixed);
-    disposeTree(fixed, shared);
-    fixed = new Group();
+  function prepareScene(next: SceneDefinition): PreparedScene {
+    const built = new Group();
     for (const body of next.bodies) {
       if (body.type !== 'fixed') continue;
       const block = new Group();
@@ -142,7 +151,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
         mesh.receiveShadow = true;
         block.add(mesh);
       }
-      fixed.add(block);
+      built.add(block);
     }
     // Emitters: an outline of the spawn jitter square.
     for (const emitter of next.emitters) {
@@ -155,22 +164,36 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
       const outline = new LineSegments(geometry, new LineBasicNodeMaterial({ color: tertiary }));
       outline.position.set(...emitter.pose.position);
-      fixed.add(outline);
+      built.add(outline);
     }
-    scene.add(fixed);
 
     const capacity = next.simulation.maxLiveBodies;
-    if (!bodies || bodies.instanceMatrix.count !== capacity) {
+    if (bodies && bodies.instanceMatrix.count === capacity) return { fixed: built, bodies: null };
+    const fresh = new InstancedMesh(sphereGeometry, new MeshStandardNodeMaterial({ color: tokenColor('--body'), roughness: 0.45, metalness: 0.05 }), capacity);
+    fresh.castShadow = true;
+    fresh.frustumCulled = false;
+    return { fixed: built, bodies: fresh };
+  }
+
+  function showScene(prepared: PreparedScene): void {
+    scene.remove(fixed);
+    disposeTree(fixed, shared);
+    fixed = prepared.fixed;
+    scene.add(fixed);
+    if (prepared.bodies) {
       if (bodies) {
         scene.remove(bodies);
         bodies.dispose();
       }
-      bodies = new InstancedMesh(sphereGeometry, new MeshStandardNodeMaterial({ color: tokenColor('--body'), roughness: 0.45, metalness: 0.05 }), capacity);
-      bodies.castShadow = true;
-      bodies.frustumCulled = false;
+      bodies = prepared.bodies;
       scene.add(bodies);
     }
-    bodies.count = 0;
+    bodies!.count = 0;
+  }
+
+  function discardScene(prepared: PreparedScene): void {
+    disposeTree(prepared.fixed, shared);
+    prepared.bodies?.dispose();
   }
 
   // Each law: a translucent support shell, its outer edges and, when selected, the inner
@@ -275,10 +298,12 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     object.quaternion.set(...field.pose.rotation);
   }
 
-  setScene(root);
+  showScene(prepareScene(root));
 
   return {
-    setScene,
+    prepareScene,
+    showScene,
+    discardScene,
 
     updateBodies(host) {
       if (!bodies) return;

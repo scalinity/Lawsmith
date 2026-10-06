@@ -615,6 +615,35 @@ describe('unexpected failures', () => {
     expect(await t.workflow.requestExit('quit')).toBe(true);
   });
 
+  it('a view that fails to prepare after its world was built replaces nothing', async () => {
+    const t = await setup();
+    t.edit();
+    t.io.chooseQueue.push('kept.lawsmith.json');
+    await t.workflow.save();
+    t.edit();
+    await t.workflow.recovery.writeNow();
+    const before = { scene: t.controller.scene, generation: t.controller.generation, revision: t.controller.revision, host: t.host(), recovery: structuredClone(t.io.recovery) };
+    const app = (t.workflow as unknown as { app: WorkflowApp }).app;
+    app.candidate = (doc) => {
+      // As main.ts builds a candidate: the world exists, then its view cannot be prepared.
+      new SimulationHost(doc.semantic).dispose();
+      throw new Error('view preparation failed');
+    };
+    t.io.openQueue.push(opened(t.io, 'other.lawsmith.json', DEFAULT_SCENE_TEXT));
+    expect(await t.workflow.open()).toBe(false);
+    expect(t.workflow.message?.text).toContain('view preparation failed');
+    expect(t.io.asked).toEqual([]);
+    expect(t.controller.scene).toBe(before.scene);
+    expect([t.controller.generation, t.controller.revision]).toEqual([before.generation, before.revision]);
+    expect(t.controller.canUndo).toBe(true);
+    expect(t.host()).toBe(before.host);
+    t.host().step();
+    expect(t.workflow.fileName).toBe('kept.lawsmith.json');
+    expect(t.workflow.dirty).toBe(true);
+    expect(t.io.recovery).toEqual(before.recovery);
+    expect(t.frozen()).toBe(false);
+  });
+
   it('a candidate that fails before commit is disposed', async () => {
     const t = await setup();
     t.edit();
