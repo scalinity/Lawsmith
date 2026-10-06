@@ -3,7 +3,7 @@
 **Version:** 1.0 · **Date:** 2026-10-05 · **Status:** proposed plan, awaiting owner review  
 **Authority:** [SPEC.md](SPEC.md) · **Milestones:** 12 gates: M0–M5, M6A, M6B, M7–M10 · **Implementation status:** all NOT STARTED
 
-This plan builds a personal creative instrument delivered as **`Lawsmith.app`, a Tauri 2 macOS application with a TypeScript/Three.js frontend in WKWebView**. Its order is deliberate: qualify the smallest native shell, make a law bend a stream, make that experiment portable, then deepen vocabulary, explanation, composition and replay. **WebGPU-first graphics are present from M0 through Three.js WebGPURenderer. TSL is the preferred GPU authoring layer.** Advanced GPU evaluation/simulation remains conditional on measured need; raw WGSL requires a demonstrated reason to drop below TSL. Rust stays thin and simulation remains frontend-owned. No source code, repository, or implementation milestone is created by this specification session.
+This plan builds a personal creative instrument delivered as **`Lawsmith.app`, a Tauri 3 macOS application (prerelease line, exactly pinned) with a TypeScript/Three.js frontend in the system WKWebView**. Its order is deliberate: qualify the smallest native shell, make a law bend a stream, make that experiment portable, then deepen vocabulary, explanation, composition and replay. **WebGPU-first graphics are present from M0 through Three.js WebGPURenderer. TSL is the preferred GPU authoring layer.** Advanced GPU evaluation/simulation remains conditional on measured need; raw WGSL requires a demonstrated reason to drop below TSL. Rust stays thin and simulation remains frontend-owned. No source code, repository, or implementation milestone is created by this specification session.
 
 ## How to execute this plan
 
@@ -15,7 +15,7 @@ All acceptance criteria are conjunctive unless explicitly marked conditional. A 
 
 References to T01–T12 require only cases for capabilities implemented through the current milestone unless explicitly stated otherwise. Later test cases do not pull future features into an early gate. M10 requires the complete implemented acceptance suite. Reuse existing evidence when its candidate, affected code, settings and workload remain unchanged; repeat measurements to resolve a concrete change or uncertainty.
 
-Throughout these gates, edit latency means accepted input to the first frame submission containing its applied revision; frame interval means the foreground frame-callback pacing metric in SPEC §18. Neither is a physical input-to-photon claim. Primary graphics measurements identify an actual WebGPU backend in the packaged app. Native automation follows SPEC §17.3: the currently documented optional macOS embedded WebDriver route is distinct from Playwright/browser harnesses, and test-only instrumentation is absent from release performance/visual evidence. M0 requires no E2E framework setup.
+Throughout these gates, edit latency means accepted input to the first frame submission containing its applied revision; frame interval means the foreground frame-callback pacing metric in SPEC §18. Neither is a physical input-to-photon claim. Primary graphics measurements identify an actual WebGPU backend in the packaged app. Native automation follows SPEC §17.3: any optional macOS embedded WebDriver route must be Tauri 3-compatible and qualified before use, is distinct from Playwright/browser harnesses, and test-only instrumentation is absent from release performance/visual evidence. M0 requires no E2E framework setup.
 
 ### Minimal evidence format
 
@@ -58,7 +58,7 @@ The integration path is sequential because each capability uses the preceding co
 
 ### Objective
 
-Create the minimum Tauri 2 macOS app that renders through Three.js WebGPURenderer on its confirmed WebGPU backend inside WKWebView, preserves a full-window surface and native controls, and initializes Rapier. Clear the runway for M1.
+Create the minimum Tauri 3 macOS app that renders through Three.js WebGPURenderer on its confirmed WebGPU backend inside WKWebView, preserves a full-window surface and native controls, and initializes Rapier. Clear the runway for M1.
 
 ### Why now
 
@@ -66,7 +66,7 @@ The first real product test needs a proven native runtime. A browser scene canno
 
 ### In scope
 
-- Minimal Tauri 2 application with one WKWebView window, Vite/strict TypeScript frontend, npm/Cargo lockfiles and recorded native/frontend toolchain.
+- Minimal application on an exactly pinned Tauri 3 prerelease family, selecting its WRY runtime with one WKWebView window; Vite/strict TypeScript frontend, npm/Cargo lockfiles and recorded native/frontend toolchain, including the resolved Tauri component versions.
 - SPEC §11.1's full-window presentation: native decorations/traffic lights retained, overlay content, hidden visible title, no reserved titlebar band, local invisible drag region.
 - Pinned Three.js r183+ `WebGPURenderer`, compatible `three/webgpu`, `three/tsl` and addons, asynchronous initialization, camera and simple spatial frame with a normal node material and small visible TSL expression.
 - Temporary TransformControls object sufficient to test real translate/rotate pointer handling, plus resize, Retina/DPR and basic frame pacing.
@@ -76,7 +76,7 @@ The first real product test needs a proven native runtime. A browser scene canno
 
 ### Out of scope
 
-Scene serialization/recovery, native document dialogs, full native menus, recent documents, updater, installer engineering, distribution signing/notarization unless necessary for local execution, settings architecture, native E2E framework setup, platform abstraction, Electron, Windows/Linux support, native Rust simulation, advanced plugins, lifecycle framework, fields, AST, history, workers, GPU compute, raw WGSL/GLSL, a separate WebGLRenderer path, ECS, elaborate CI, server or deployment. Do not create empty extension modules. Default native menu/window behavior is enough; simple node materials do not require a shader framework.
+Scene serialization/recovery, native document dialogs, full native menus, recent documents, updater, installer engineering, distribution signing/notarization unless necessary for local execution, settings architecture, native E2E framework setup, platform abstraction, Electron, Tauri's CEF or any alternate webview runtime, M2-or-later Tauri plugins, Windows/Linux support, native Rust simulation, advanced plugins, lifecycle framework, fields, AST, history, workers, GPU compute, raw WGSL/GLSL, a separate WebGLRenderer path, ECS, elaborate CI, server or deployment. Do not create empty extension modules. Default native menu/window behavior is enough; simple node materials do not require a shader framework.
 
 ### Deliverables
 
@@ -107,11 +107,11 @@ No full numerical benchmark suite yet. Observe basic frame pacing during camera/
 
 ### Evidence required for review
 
-Candidate ID, npm/Cargo resolutions and toolchain, Tauri/WRY/macOS/WebKit identity, dev/package origin and secure-context status, actual backend and available feature diagnostics, install/type-check/build outcomes, offline package launch, native window capture and drag/control checks. Include only a short module list. SPEC §3.3 defines how the backend observation is obtained; a bare capability flag is not evidence of rendered WebGPU frames.
+Candidate ID, npm/Cargo resolutions and toolchain, exact Tauri prerelease family (`tauri`, `tauri-build`, `tauri-runtime`, `tauri-runtime-wry`, CLI, `@tauri-apps/api`) with WRY/macOS/WebKit identity, dev/package origin and secure-context status, actual backend and available feature diagnostics, install/type-check/build outcomes, offline package launch, native window capture and drag/control checks. Include only a short module list. SPEC §3.3 defines how the backend observation is obtained; a bare capability flag is not evidence of rendered WebGPU frames.
 
 ### Failure / rollback conditions
 
-Block acceptance for unproven actual WKWebView/WebGPU rendering, broken packaged loading, lost native controls, a visible replacement titlebar band, stolen pointer input, premature engine use or a required runtime service. For a genuine WebGPU/runtime failure, follow SPEC §3.3's minimal reproduction and bounded investigation, normally at most two focused hours after prerequisites are ready. If unresolved, mark **M0 BLOCKED**, retain valid frontend work, record exact evidence and stop for owner replan. Do not switch to Electron, implement both shells, or accept WebGL fallback. Missing target-Mac access remains pending. Remove incidental shell scaffolding that delays M1; do not reset unrelated user work or rewrite history.
+Block acceptance for unproven actual WKWebView/WebGPU rendering, broken packaged loading, lost native controls, a visible replacement titlebar band, stolen pointer input, premature engine use or a required runtime service. For a genuine WebGPU/runtime failure, follow SPEC §3.3's minimal reproduction and bounded investigation, normally at most two focused hours after prerequisites are ready. If unresolved, mark **M0 BLOCKED**, retain valid frontend work, record exact evidence, state whether the failure is specific to the pinned Tauri 3 prerelease and whether an earlier Tauri 3 prerelease is known to avoid it, and stop for owner replan. Do not switch to Electron, implement both shells, accept WebGL fallback, return to Tauri 2 or pin an earlier Tauri 3 prerelease without owner approval. Missing target-Mac access remains pending. Remove incidental shell scaffolding that delays M1; do not reset unrelated user work or rewrite history.
 
 ### Unlocks
 
@@ -196,7 +196,7 @@ The interaction has earned a document model. Formalizing it now protects the gro
 ### In scope
 
 - SPEC §5/§15 scene schema, canonical serialization, explicit units/seeds/IDs/profile, and semantic/presentation separation.
-- Native Open Scene, Save Scene and Save Scene As through the official Tauri dialog plugin and narrow native document-I/O helper; known-capability validation, bounds, format discriminator and deterministic constructors.
+- Native Open Scene, Save Scene and Save Scene As through the official Tauri dialog plugin from the Tauri 3 line, its exact version resolved against the pinned Tauri family and qualified before acceptance, and a narrow native document-I/O helper; known-capability validation, bounds, format discriminator and deterministic constructors.
 - A tested migration mechanism only as needed for an actual prior schema; no fictional migration collection.
 - Undo/redo for law edits, duplication/deletion, and gestures grouped into one author transaction.
 - Laws list, contextual precision controls, acknowledged-revision save/dirty state, and transactional application-local recovery with one previous valid snapshot.
