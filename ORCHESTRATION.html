@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> at <code>ab61e7e</code>, with M1 accepted</span>
+    <span>Realigned 2026-10-06 against <code>main</code> at <code>1f2fe28</code> and branch <code>m2</code> at <code>2892676</code>, with M2 awaiting review</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Start M2, Portable scenes and recoverable authoring, in a fresh session.</h1>
-    <p class="lede">M1 is accepted, so M2 runs next, and alone. Opus 5.5 authors it and GPT-6.1 Sol runs its independent review gate; if Claude limits bind, M2 waits for Opus rather than falling back to Astra. No open thread belongs to M2. Its 1280×800 check needs More Space.</p>
-    <cite><code>docs/evidence/M1.md</code> Status, Owner native check results; <code>docs/MILESTONES.md</code> M2</cite>
+    <h1>Run GPT-6.1 Sol’s independent review of M2’s candidate.</h1>
+    <p class="lede">M2 is implemented on branch <code>m2</code> with every acceptance criterion passing in the packaged app, and it is not merged. Give GPT-6.1 Sol the read-only review request from M2’s hand-off; an Opus 5.5 session then runs <code>/address</code> on its report. M3 waits until you accept M2.</p>
+    <cite><code>docs/evidence/M2.md</code> Status, Acceptance criteria, Pending; <code>docs/MILESTONES.md</code> M2</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -494,7 +494,7 @@
       </article>
 
       <!-- REALIGN M2 -->
-      <article class="unit" id="m2" data-gate="M2" data-state="not-started" data-tier="scarce" data-stop="Portable V0">
+      <article class="unit" id="m2" data-gate="M2" data-state="implemented" data-tier="scarce" data-stop="Portable V0">
         <div class="gate">M2</div>
         <div>
           <div class="unit-head">
@@ -503,18 +503,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors, and M2 waits for it rather than falling back. GPT-6.1 Sol runs the independent review gate on state ownership and format semantics.</dd>
-              <dt>Graph permits</dt><dd class="soft">Now: M1 is accepted.</dd>
-              <dt>Should run</dt><dd class="run">Now, and alone. It shares <code>src/domain/</code>, <code>src/main.ts</code> and <code>index.html</code> with M1, and files with every later gate. First approved stopping point: portable V0.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored. A read-only pre-review found 2 high, 3 medium and 4 low findings; all were fixed and re-verified. GPT-6.1 Sol’s independent review gate on state ownership and format semantics has not run.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>2892676</code> on branch <code>m2</code>, evidence in the commit after it. Not merged.</dd>
+              <dt>Should run</dt><dd class="run">The GPT-6.1 Sol review of that candidate, then <code>/address</code> on its report in an Opus 5.5 session on the same branch, then your acceptance and the merge. Nothing beside it: every later gate shares its files.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M1 accepted. Contracts C3, C7, C8.</dd>
-              <dt>Destroys</dt><dd>Writes real files through the macOS dialog and a recovery directory. Use disposable files and a separate test recovery directory, never your documents or recovery data. Adds the Tauri dialog plugin, resolved against the pinned family.</dd>
-              <dt>Your part</dt><dd>The 1280×800 visual check needs More Space or an external display.</dd>
+              <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files and per-run recovery directories, and switched the display to More Space only for the 1600×1000 and 1280×800 checks, restoring it after. The dialog plugin is vendored with a one-line fix, by your decision.</dd>
+              <dt>Your part</dt><dd>Run the review, then accept M2 or send it back. Every native check, the 1280×800 one included, ran in QA; none waits for you.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M2; Contract coverage and final scope check; <code>docs/SPEC.md</code> §17.3; <code>docs/evidence/M0.md</code> finding 4</cite>
+          <cite class="src"><code>docs/evidence/M2.md</code> Status, Native QA, Findings, Pending; <code>docs/MILESTONES.md</code> M2</cite>
         </div>
       </article>
 
@@ -1158,9 +1158,39 @@
         </tr>
         <tr id="t-f5" data-owner="m9" data-short="Finding 5">
           <td data-label="Thread" class="lead">Finding 5: startup compile</td>
-          <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails. Moved to M9 by your decision, to measure with the performance envelope; it is not to be optimised opportunistically in M2.</td>
+          <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails. In M2 a new bundle’s first launch took about 4.6 s and later launches about 2 s. Moved to M9 by your decision, to measure with the performance envelope.</td>
           <td data-label="Owner"><a href="#m9">M9</a></td>
-          <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup, Owner decisions</cite></td>
+          <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup, Owner decisions; <code>M2.md</code> finding 7</cite></td>
+        </tr>
+        <tr id="t-m2-review" data-owner="m2" data-short="Duplicate keys">
+          <td data-label="Thread" class="lead">M2 finding 6: duplicate JSON keys</td>
+          <td data-label="What the record says">A scene file that repeats a key is read as <code>JSON.parse</code> reads it, the last value winning, rather than rejected. Deterministic and low risk; left for M2’s review to decide.</td>
+          <td data-label="Owner"><a href="#m2">M2</a> review</td>
+          <td data-label="Source"><cite><code>M2.md</code> finding 6</cite></td>
+        </tr>
+        <tr id="t-m2-emitter" data-owner="m8" data-short="Emitter rotation">
+          <td data-label="Thread" class="lead">M2 finding 5: emitter rotation</td>
+          <td data-label="What the record says">SPEC §5.3 does not say what an emitter’s rotation does, so schema 1 accepts only the identity. It needs a SPEC decision before emitters become authorable, by M8’s examples at the latest.</td>
+          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="Source"><cite><code>M2.md</code> finding 5</cite></td>
+        </tr>
+        <tr id="t-m2-panel" data-owner="m8" data-short="Panel height">
+          <td data-label="Thread" class="lead">M2 finding 8: precise fields scroll</td>
+          <td data-label="What the record says">At 1280×800, Strength and Fade sit below the Scene panel’s visible area; at the built-in display’s height with two or more laws, Rotation and Half extents do too. All stay reachable by scrolling. For M8’s interface pass.</td>
+          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="Source"><cite><code>M2.md</code> finding 8</cite></td>
+        </tr>
+        <tr id="t-m2-tauri" data-owner="deferred" data-short="Tauri update">
+          <td data-label="Thread" class="lead">M2 findings 1 and 2: the next Tauri update</td>
+          <td data-label="What the record says">The dialog plugin is vendored with the upstream one-line <code>Manager</code> import; drop the patch once a fixed official release is qualified. The quit guard adds <code>applicationShouldTerminate:</code> to TAO’s delegate at launch; after any Tauri or TAO change, check that the shell still logs <code>terminateGuard: true</code>.</td>
+          <td data-label="Owner">The next qualified dependency update</td>
+          <td data-label="Source"><cite><code>M2.md</code> findings 1, 2</cite></td>
+        </tr>
+        <tr id="t-m2-policy" data-owner="owner" data-short="Instruction files">
+          <td data-label="Thread" class="lead">Automated-verification policy</td>
+          <td data-label="What the record says">A request to add an automated-verification policy to <code>CLAUDE.md</code> and <code>AGENTS.md</code> arrived as pasted text during M2; the session’s permission check refused editing agent-instruction files on that basis, so neither file changed. Yours to confirm or make.</td>
+          <td data-label="Owner">You</td>
+          <td data-label="Source"><cite><code>M2.md</code> Pending</cite></td>
         </tr>
         <tr id="t-f8" data-owner="deferred" data-short="Finding 8">
           <td data-label="Thread" class="lead">Finding 8: DPR across displays</td>

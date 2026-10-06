@@ -1,0 +1,13 @@
+[lawsmith] {"kind":"native","terminateGuard":true}
+[lawsmith] {"kind":"runtime","mode":"packaged","origin":"tauri://localhost","isSecureContext":true,"navigatorGpu":true,"runtime":{"arch":"aarch64","build":"release","recovery":"override","tauri":"3.0.0-alpha.4","webview":"22625.2.5.11.1"},"userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)","timerResolutionMs":1,"t":125}
+[lawsmith] {"kind":"backend","backend":"WebGPU","coordinateSystemIsWebGPU":true,"compatibilityMode":false,"samples":4,"adapter":{"vendor":"apple","architecture":"apple","device":"apple","description":"apple"},"features":["bgra8unorm-storage","clip-distances","core-features-and-limits","depth-clip-control","depth32float-stencil8","float32-blendable","float32-filterable","indirect-first-instance","rg11b10ufloat-renderable","shader-f16","texture-compression-astc","texture-compression-astc-sliced-3d","texture-compression-bc","texture-compression-bc-sliced-3d","texture-compression-etc2","texture-formats-tier1","texture-formats-tier2","timestamp-query"],"mode":"packaged","t":127}
+[lawsmith] {"kind":"rapier","version":"0.21.0","profile":"lawsmith-m1-rapier-0.21.0","fieldKernel":"directional-box-v1","effectiveProfile":{"dt":0.008333333767950535,"numSolverIterations":4,"numInternalPgsIterations":1,"maxCcdSubsteps":1,"lengthUnit":1,"normalizedAllowedLinearError":0.004999999888241291,"normalizedPredictionDistance":0.019999999552965164,"contactErp":0.0728205069899559},"mode":"packaged","t":146}
+[lawsmith] {"kind":"render-probe","distinctColors":72,"gpuErrors":0,"mode":"packaged","t":2084}
+[lawsmith] {"kind":"digest","reason":"startup","generation":1,"revision":0,"semanticSha256":"ac7733bd9477e6e1a1e867470c0ac624e071a3330e921216c246f1b5240307ac","mode":"packaged","t":2088}
+[lawsmith] {"kind":"recovery","action":"launch","current":"absent","previous":"absent","mode":"packaged","t":2093}
+[lawsmith] {"kind":"ready","rendererInitMs":23,"rapierInitMs":20,"firstFrameMs":2000,"mode":"packaged","t":2104}
+[lawsmith] {"kind":"guard","action":"ready","mode":"packaged","t":2111}
+[lawsmith] {"kind":"guard","request":"quit","tick":0,"revision":0,"dirty":false,"mode":"packaged","t":3445}
+[lawsmith] {"kind":"guard","frozen":true,"tick":0,"mode":"packaged","t":3445}
+[lawsmith] {"kind":"guard","reason":"quit","outcome":"clean","generation":1,"revision":0,"mode":"packaged","t":3446}
+[lawsmith] {"kind":"guard","request":"quit","outcome":"exit","mode":"packaged","t":3446}

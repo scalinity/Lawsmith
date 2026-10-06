@@ -1,0 +1,48 @@
+[qa 07:21:52] segment: guard: cancel, coalesce, discard
+[qa 07:22:05] launched pid 62123, window at 0,21, log guard-a.log
+[qa 07:22:08] PASS {"kind": "recovery", "action": "write", "generation": 1, "revision": 1, "bytes": 2812, "captureMs": 0, "ackMs": 10, "mode": "packaged", "t": 4938}  [recovery] the edit is kept in a recovery snapshot
+[qa 07:22:10] captured guard-01-alert.png
+[qa 07:22:11] PASS {"kind": "guard", "frozen": false, "tick": 0, "mode": "packaged", "t": 8359}  [guard] close then Cancel keeps the app open with edits unfrozen
+[qa 07:22:15] PASS {"kind": "guard", "frozen": false, "tick": 0, "mode": "packaged", "t": 11826}  [guard] quit then Cancel keeps the app open with edits unfrozen
+[qa 07:22:18] PASS {"kind": "guard", "frozen": false, "tick": 0, "mode": "packaged", "t": 14664}  [guard] dock then Cancel keeps the app open with edits unfrozen
+[qa 07:22:18] PASS  recovery eligibility survived three canceled requests
+[qa 07:22:19] PASS {"kind": "history", "action": "undo", "ok": true, "label": "Disable law", "law": "sideways", "reason": null, "revision": 2, "tick": 0, "laws": [{"id": "sideways", "enabled": true, "position": [3, 1, 0], "rotation": [0, 0, 0, 1], "halfExtents": [1.5, 2, 1.5]}], "mode": "packaged", "t": 16628}  [history] undo still works after the canceled guards
+[qa 07:22:21] PASS {"kind": "history", "action": "redo", "ok": true, "label": "Disable law", "law": "sideways", "reason": null, "revision": 3, "tick": 0, "laws": [{"id": "sideways", "enabled": false, "position": [3, 1, 0], "rotation": [0, 0, 0, 1], "halfExtents": [1.5, 2, 1.5]}], "mode": "packaged", "t": 17644}  [history] redo restores the edit
+[qa 07:22:24] PASS  simultaneous Close and Quit coalesced into one guard
+[qa 07:22:24] PASS {"kind": "recovery", "action": "discard", "generation": 1, "mode": "packaged", "t": 22034}  [recovery] Don't Save retired this generation's recovery
+[qa 07:22:27] launched pid 62839, window at 0,21, log guard-b.log
+[qa 07:22:27] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2093}  [recovery] saved or discarded work is not offered after restart
+[qa 07:22:33] segment: guard: save
+[qa 07:22:46] launched pid 63356, window at 0,21, log guard-c.log
+[qa 07:22:55] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "guard-saved.lawsmith.json", "generation": 1, "revision": 1, "laterEdits": 0, "recoveryRetired": true, "bytes": 2504, "captureMs": 0, "writeMs": 7.782, "saveMs": 9, "mode": "packaged", "t": 10929}  [document] Save in the guard saved through Save As before quitting
+[qa 07:22:58] launched pid 63749, window at 0,21, log guard-d.log
+[qa 07:22:58] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2072}  [recovery] saved or discarded work is not offered after restart
+[qa 07:23:04] segment: recovery after a crash
+[qa 07:23:16] launched pid 64116, window at 0,21, log guard-e.log
+[qa 07:23:23] PASS {"kind": "recovery", "action": "write", "generation": 1, "revision": 2, "bytes": 2811, "captureMs": 0, "ackMs": 11, "mode": "packaged", "t": 7836}  [recovery] the latest revision is in recovery before the crash
+[qa 07:23:23] the test instance was killed (simulated crash)
+[qa 07:23:26] launched pid 64368, window at 0,21, log guard-f.log
+[qa 07:23:27] PASS {"kind": "recovery", "action": "launch", "current": {"generation": 1, "revision": 2}, "previous": {"generation": 1, "revision": 1}, "mode": "packaged", "t": 2063}  [recovery] the crashed session's work is found at launch
+[qa 07:23:28] captured guard-02-recovery-offer.png
+[qa 07:23:30] PASS  editing is frozen while the recovery offer waits
+[qa 07:23:31] PASS {"kind": "document", "action": "recover", "outcome": "committed", "file": null, "generation": 2, "title": "Falling stream", "mode": "packaged", "t": 7269}  [document] Recover opens the work unbound, paused at tick 0
+[qa 07:23:33] PASS {"kind": "recovery", "action": "write", "generation": 2, "revision": 0, "bytes": 2811, "captureMs": 0, "ackMs": 11, "mode": "packaged", "t": 7781}  [recovery] recovered work is written as a snapshot of this session
+[qa 07:23:33] captured guard-03-recovered.png
+[qa 07:23:38] launched pid 64773, window at 0,21, log guard-g.log
+[qa 07:23:38] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2091}  [recovery] saved or discarded work is not offered after restart
+[qa 07:23:43] segment: corrupt newest snapshot
+[qa 07:23:56] launched pid 65171, window at 0,21, log guard-h.log
+[qa 07:24:03] the newest snapshot was overwritten with invalid bytes
+[qa 07:24:06] launched pid 65411, window at 0,21, log guard-i.log
+[qa 07:24:07] PASS {"kind": "recovery", "action": "launch", "current": {"invalid": "JSON Parse error: Unexpected identifier \"not\""}, "previous": {"generation": 1, "revision": 1}, "mode": "packaged", "t": 2083}  [recovery] the corrupt newest copy is reported and the previous one found
+[qa 07:24:08] captured guard-04-older-offer.png
+[qa 07:24:10] PASS {"kind": "recovery", "action": "offer-resolved", "outcome": true, "mode": "packaged", "t": 5579}  [recovery] the offer is resolved by Discard
+[qa 07:24:15] launched pid 65691, window at 0,21, log guard-j.log
+[qa 07:24:15] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2089}  [recovery] saved or discarded work is not offered after restart
+[qa 07:24:21] segment: open replaces unsaved work
+[qa 07:24:34] launched pid 66083, window at 0,21, log guard-k.log
+[qa 07:24:44] PASS {"kind": "document", "action": "open", "outcome": "canceled", "stage": "guard", "mode": "packaged", "t": 12147}  [document] a canceled replacement keeps the scene and frees the candidate
+[qa 07:24:53] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "calibration.lawsmith.json", "generation": 2, "title": "Falling stream", "bytes": 2503, "readMs": 0.132, "parseMs": 0, "candidateMs": 0, "commitMs": 1, "openMs": 1.132, "mode": "packaged", "t": 20529}  [document] Don't Save lets the opened scene replace the unsaved one
+[qa 07:24:57] launched pid 66578, window at 0,21, log guard-l.log
+[qa 07:24:57] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2053}  [recovery] saved or discarded work is not offered after restart
+[qa 07:25:00] m2-guard complete
