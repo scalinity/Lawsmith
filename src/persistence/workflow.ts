@@ -59,6 +59,12 @@ export class DocumentWorkflow {
   /** A candidate world not yet committed; disposed if its workflow ends any other way. */
   private uncommitted: SimulationHost | null = null;
   private exitPending = false;
+  /**
+   * Launch recovery is answered once the lookup finds nothing to offer, or the user recovers or
+   * discards what it offered. Until then no explicit file workflow runs and no recovery is written:
+   * a save would retire the earlier session's snapshots, and a write would rotate them, unanswered.
+   */
+  private launchAnswered = false;
   /** The document came from recovery and has not been saved since. */
   recovered = false;
   message: WorkflowMessage | null = null;
@@ -101,19 +107,19 @@ export class DocumentWorkflow {
   }
 
   save(): Promise<boolean | null> {
-    return this.exclusive('save', () => this.saveNow(false));
+    return this.explicit('save', () => this.saveNow(false));
   }
 
   saveAs(): Promise<boolean | null> {
-    return this.exclusive('save-as', () => this.saveNow(true));
+    return this.explicit('save-as', () => this.saveNow(true));
   }
 
   open(): Promise<boolean | null> {
-    return this.exclusive('open', () => this.openNow());
+    return this.explicit('open', () => this.openNow());
   }
 
   newScene(): Promise<boolean | null> {
-    return this.exclusive('new', () => this.replace('new', defaultDocument(), null, 0));
+    return this.explicit('new', () => this.replace('new', defaultDocument(), null, 0));
   }
 
   /**
@@ -151,9 +157,20 @@ export class DocumentWorkflow {
     }
   }
 
-  /** Reads launch recovery: the newest valid unsaved snapshot, or the previous one, clearly marked older. */
+  /**
+   * Reads launch recovery: the newest valid unsaved snapshot, or the previous one, clearly marked
+   * older. Null answers launch recovery; an offer is answered by `recover` or `discardRecovery`.
+   */
   async recoveryOffer(): Promise<RecoveryOffer | null> {
-    const slots = await this.io.recoveryLoad();
+    let slots;
+    try {
+      slots = await this.io.recoveryLoad();
+    } catch (error) {
+      // The lookup itself failed (an unreadable snapshot is a slot state, not this): nothing can be offered.
+      this.app.log('recovery', { action: 'launch', error: String(error) });
+      this.launchAnswered = true;
+      return null;
+    }
     const read = (slot: typeof slots.current) =>
       slot.state === 'present' ? parseRecovery(slot.text) : slot.state === 'unreadable' ? { ok: false as const, reason: slot.reason } : null;
     const current = read(slots.current);
@@ -171,6 +188,7 @@ export class DocumentWorkflow {
     }
     if (previous?.ok) return { envelope: previous.envelope, older: true, newestProblem: current && !current.ok ? current.reason : 'the newest copy is missing' };
     if (current || previous) this.message = { kind: 'error', text: 'Recovery files from an earlier session could not be read; they were left in place.' };
+    this.launchAnswered = true;
     return null;
   }
 
@@ -179,6 +197,7 @@ export class DocumentWorkflow {
     return this.exclusive('recover', async () => {
       const done = await this.replace('recover', offer.envelope.document, null, null);
       if (done) {
+        this.launchAnswered = true;
         this.recovered = true;
         // The recovered work gets a snapshot of this session right away.
         this.recovery.schedule();
@@ -193,6 +212,7 @@ export class DocumentWorkflow {
     return this.exclusive('discard-recovery', async () => {
       try {
         await this.io.recoveryDiscardEarlier();
+        this.launchAnswered = true;
         this.app.log('recovery', { action: 'discard-launch' });
         return true;
       } catch (error) {
@@ -203,6 +223,15 @@ export class DocumentWorkflow {
   }
 
   // ------------------------------------------------------------------ internals
+
+  /** Open, Save, Save As and New: refused until launch recovery is answered. */
+  private explicit<T>(kind: string, work: () => Promise<T>): Promise<T | null> {
+    if (!this.launchAnswered) {
+      this.app.log('document', { action: kind, outcome: 'refused', reason: 'launch recovery unanswered' });
+      return Promise.resolve(null);
+    }
+    return this.exclusive(kind, work);
+  }
 
   private async exclusive<T>(kind: string, work: () => Promise<T>): Promise<T | null> {
     if (this.running) {
@@ -238,6 +267,7 @@ export class DocumentWorkflow {
   }
 
   private captureRecovery(): RecoveryCapture | null {
+    if (!this.launchAnswered) return null;
     if (this.app.gestureActive()) {
       // Only completed gestures become recovery points; try again after this one ends.
       this.recovery.schedule();

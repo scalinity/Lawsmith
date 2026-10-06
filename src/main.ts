@@ -165,16 +165,20 @@ async function start() {
     return result;
   };
 
-  /** Edits are frozen while the guard decides, and while launch recovery waits for an answer. */
+  /**
+   * Edits are frozen while the guard decides, and from launch until launch recovery is answered, so
+   * nothing can save or write recovery over an earlier session's work before the user chooses.
+   */
   let frozen = false;
   let guardFrozen = false;
-  let offerPending = false;
+  let launchPending = true;
   let cameraMoved = false;
   const applyFreeze = () => {
-    frozen = guardFrozen || offerPending;
+    frozen = guardFrozen || launchPending;
     for (const id of ['panel', 'tools', 'transport']) $(id).inert = frozen;
     viewport.gizmo.enabled = !frozen;
   };
+  applyFreeze();
 
   const interaction = new LawInteraction(
     {
@@ -1192,11 +1196,13 @@ async function start() {
   reportDigest('startup');
 
   // Launch recovery (SPEC §15.3): offer the newest valid unsaved snapshot, never silently.
-  const offer = await workflow.recoveryOffer().catch((error: unknown) => {
-    report('recovery', { action: 'launch', error: String(error) });
-    return null;
-  });
-  if (offer) showRecoveryOffer(offer);
+  const offer = await workflow.recoveryOffer();
+  if (offer) {
+    showRecoveryOffer(offer);
+  } else {
+    launchPending = false;
+    applyFreeze();
+  }
 
   // Close and Quit run the shared guard from here on.
   await listen<string>('lawsmith://guard-request', (event) => {
@@ -1207,13 +1213,11 @@ async function start() {
   report('guard', { action: 'ready' });
 
   /**
-   * The launch offer is modal: until the user recovers or discards it, nothing in this session can
-   * edit, save or write recovery, so the earlier work cannot be rotated away or retired unanswered.
+   * The launch offer is modal: until the user recovers or discards it, the launch freeze stays, so
+   * the earlier work cannot be rotated away or retired unanswered.
    */
   function showRecoveryOffer(offer: RecoveryOffer) {
     const panel = $('recovery-offer');
-    offerPending = true;
-    applyFreeze();
     const { envelope } = offer;
     const title = envelope.document.metadata.title;
     $('recovery-text').textContent = offer.older
@@ -1224,7 +1228,7 @@ async function start() {
     const done = (outcome: boolean | null) => {
       report('recovery', { action: 'offer-resolved', outcome });
       if (outcome === true) {
-        offerPending = false;
+        launchPending = false;
         panel.hidden = true;
       }
       applyFreeze();

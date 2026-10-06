@@ -122,8 +122,14 @@ class FakeIo implements DocumentIo {
   }
 }
 
-function setup(document: SceneDocument = defaultDocument()) {
+/** One app session over the recovery store an earlier session left; launch recovery is not looked up yet. */
+function session(earlier: FakeIo['recovery'] | null = null) {
+  const document = defaultDocument();
   const io = new FakeIo();
+  if (earlier) {
+    io.recovery = earlier;
+    for (const slot of ['current', 'previous'] as const) if (earlier[slot]) io.earlier.add(slot);
+  }
   let host = new SimulationHost(document.semantic);
   const controller = new DocumentController(document, host);
   const disposed: SimulationHost[] = [];
@@ -164,12 +170,18 @@ function setup(document: SceneDocument = defaultDocument()) {
   return { io, controller, workflow, disposed, quiesced, logs, edit, host: () => host, frozen: () => frozen, setGesture: (v: boolean) => (gesture = v) };
 }
 
+/** A launched session: launch recovery has been looked up, as main.ts does before enabling edits. */
+async function setup(earlier: FakeIo['recovery'] | null = null) {
+  const t = session(earlier);
+  return { ...t, offer: await t.workflow.recoveryOffer() };
+}
+
 const opened = (io: FakeIo, name: string, text: string): OpenOutcome => ({ outcome: 'opened', token: io.issue(name), name, text, readMs: 0.2 });
 const savedText = (io: FakeIo, name: string) => parseScene(io.disk.get(name)!);
 
 describe('Save and Save As', () => {
   it('Save without a destination is Save As; the destination binds only after the write succeeds', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.chooseQueue.push('a.lawsmith.json');
     expect(await t.workflow.save()).toBe(true);
@@ -184,7 +196,7 @@ describe('Save and Save As', () => {
   });
 
   it('a canceled Save As keeps the prior binding, the scene, the dirty state and writes nothing', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     await t.workflow.saveAs();
@@ -197,7 +209,7 @@ describe('Save and Save As', () => {
   });
 
   it('a failed Save As keeps the prior binding and the existing file; Save As elsewhere still works', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     await t.workflow.saveAs();
@@ -217,7 +229,7 @@ describe('Save and Save As', () => {
   });
 
   it('a failed Save to the bound file keeps it dirty and bound; disk-full is named', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     await t.workflow.save();
@@ -230,7 +242,7 @@ describe('Save and Save As', () => {
   });
 
   it('overlapping Save As requests cannot reorder binding: the second is refused while the first runs', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.holdWrites = true;
     t.io.chooseQueue.push('first.lawsmith.json', 'second.lawsmith.json');
@@ -245,7 +257,7 @@ describe('Save and Save As', () => {
   });
 
   it('an edit made while a save is in flight stays dirty after that older save completes', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     t.io.holdWrites = true;
@@ -264,7 +276,7 @@ describe('Save and Save As', () => {
   });
 
   it('a reply for an older document generation neither binds nor cleans the current document', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.holdWrites = true;
     t.io.chooseQueue.push('old.lawsmith.json');
@@ -281,7 +293,7 @@ describe('Save and Save As', () => {
   });
 
   it('a destination without the .lawsmith.json suffix is refused: nothing is bound or written', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.chooseQueue.push('foo.json');
     expect(await t.workflow.saveAs()).toBe(false);
@@ -299,7 +311,7 @@ describe('Save and Save As', () => {
 
 describe('transactional Open (SPEC §15.2)', () => {
   it('commits a valid file paused at a new generation, bound to its file and clean', async () => {
-    const t = setup();
+    const t = await setup();
     const generation = t.controller.generation;
     t.io.openQueue.push(opened(t.io, 'scene.lawsmith.json', DEFAULT_SCENE_TEXT));
     expect(await t.workflow.open()).toBe(true);
@@ -311,7 +323,7 @@ describe('transactional Open (SPEC §15.2)', () => {
   });
 
   it('an invalid file leaves the current scene, its world and undo history untouched', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     const before = { generation: t.controller.generation, scene: t.controller.scene, host: t.host() };
     const bad = DEFAULT_SCENE_TEXT.replace('"strength": 12', '"strength": 500');
@@ -326,7 +338,7 @@ describe('transactional Open (SPEC §15.2)', () => {
   });
 
   it('canceling the replacement guard disposes the unstepped candidate and keeps everything', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.openQueue.push(opened(t.io, 'scene.lawsmith.json', DEFAULT_SCENE_TEXT));
     t.io.askQueue.push('cancel');
@@ -340,7 +352,7 @@ describe('transactional Open (SPEC §15.2)', () => {
   });
 
   it('a Discard in the replacement guard retires the old generation’s recovery, then commits', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     expect(t.io.recovery.current).not.toBeNull();
@@ -351,7 +363,7 @@ describe('transactional Open (SPEC §15.2)', () => {
   });
 
   it('opening the bound file with Save in the guard commits what the save wrote, not the bytes read before it', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     await t.workflow.saveAs();
     t.edit();
@@ -366,7 +378,7 @@ describe('transactional Open (SPEC §15.2)', () => {
   });
 
   it('New replaces through the same guard and starts an unbound clean document', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     await t.workflow.save();
@@ -383,28 +395,26 @@ describe('transactional Open (SPEC §15.2)', () => {
 
 describe('recovery (SPEC §15.3)', () => {
   it('keeps current and previous, and the previous is offered, marked older, when the current is corrupt', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.edit();
     await t.workflow.recovery.writeNow();
     expect([t.io.recovery.previous!.r, t.io.recovery.current!.r]).toEqual([1, 2]);
-    const restart = setup();
-    restart.io.recovery = { current: { g: 1, r: 2, text: '{"truncated": ' }, previous: t.io.recovery.previous };
-    const offer = await restart.workflow.recoveryOffer();
+    const restart = await setup({ current: { g: 1, r: 2, text: '{"truncated": ' }, previous: t.io.recovery.previous });
+    const offer = restart.offer;
     expect(offer).toMatchObject({ older: true });
     expect(offer!.envelope.revision).toBe(1);
     expect(offer!.newestProblem).toContain('JSON');
   });
 
   it('recovering the previous copy over a corrupt current keeps that copy as the fallback', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     const valid = t.io.recovery.current!;
-    const restart = setup();
-    restart.io.recovery = { current: { g: 1, r: 2, text: '{"truncated": ' }, previous: valid };
-    const offer = await restart.workflow.recoveryOffer();
+    const restart = await setup({ current: { g: 1, r: 2, text: '{"truncated": ' }, previous: valid });
+    const offer = restart.offer;
     expect(offer).toMatchObject({ older: true });
     expect(await restart.workflow.recover(offer!)).toBe(true);
     await restart.workflow.recovery.writeNow();
@@ -413,8 +423,41 @@ describe('recovery (SPEC §15.3)', () => {
     expect(restart.io.recovery.previous).toEqual(valid);
   });
 
+  it('nothing saves, replaces or writes recovery until launch recovery is looked up and answered', async () => {
+    const crashed = await setup();
+    crashed.edit();
+    await crashed.workflow.recovery.writeNow();
+    const earlier = structuredClone(crashed.io.recovery);
+    const t = session(structuredClone(earlier));
+    let finishLookup!: () => void;
+    const load = t.io.recoveryLoad.bind(t.io);
+    t.io.recoveryLoad = () => new Promise((resolve) => (finishLookup = () => resolve(load())));
+    const lookup = t.workflow.recoveryOffer();
+    // The UI is frozen from launch; even an edit that got through could not reach the earlier snapshots.
+    t.edit();
+    t.io.chooseQueue.push('early.lawsmith.json');
+    t.io.openQueue.push(opened(t.io, 'other.lawsmith.json', DEFAULT_SCENE_TEXT));
+    expect(await t.workflow.save()).toBeNull();
+    expect(await t.workflow.open()).toBeNull();
+    expect(await t.workflow.newScene()).toBeNull();
+    await t.workflow.recovery.writeNow();
+    expect(t.io.writes).toEqual([]);
+    expect(t.io.recovery).toEqual(earlier);
+    finishLookup();
+    const offer = await lookup;
+    expect(offer!.envelope.revision).toBe(1);
+    // An offer not yet answered keeps the same protection.
+    expect(await t.workflow.saveAs()).toBeNull();
+    await t.workflow.recovery.writeNow();
+    expect(t.io.recovery).toEqual(earlier);
+    expect(t.logs.filter((l) => l.outcome === 'refused' && l.reason === 'launch recovery unanswered')).toHaveLength(4);
+    expect(await t.workflow.discardRecovery()).toBe(true);
+    expect(await t.workflow.save()).toBe(true);
+    expect(t.io.writes.map((w) => w.name)).toEqual(['early.lawsmith.json']);
+  });
+
   it('a stale queued write is rejected and never replaces newer work', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.edit();
     await t.workflow.recovery.writeNow();
@@ -423,7 +466,7 @@ describe('recovery (SPEC §15.3)', () => {
   });
 
   it('never writes a gesture in progress; the completed gesture is written afterwards', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.setGesture(true);
     await t.workflow.recovery.writeNow();
@@ -434,7 +477,7 @@ describe('recovery (SPEC §15.3)', () => {
   });
 
   it('an explicit save retires only through its captured revision; a later dirty revision stays eligible', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.io.chooseQueue.push('a.lawsmith.json');
@@ -449,13 +492,12 @@ describe('recovery (SPEC §15.3)', () => {
     expect(t.io.recovery.current!.r).toBe(2);
     expect(t.io.recovery.previous).toBeNull();
     // After a restart the later dirty revision is offered; the saved one is not.
-    const restart = setup();
-    restart.io.recovery = t.io.recovery;
-    expect((await restart.workflow.recoveryOffer())!.envelope.revision).toBe(2);
+    const restart = await setup(t.io.recovery);
+    expect(restart.offer!.envelope.revision).toBe(2);
   });
 
   it('saved work is not offered after restart', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.io.chooseQueue.push('a.lawsmith.json');
@@ -466,7 +508,7 @@ describe('recovery (SPEC §15.3)', () => {
   });
 
   it('an accepted Discard prevents resurrection by a queued write', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.io.askQueue.push('discard');
@@ -480,7 +522,7 @@ describe('recovery (SPEC §15.3)', () => {
   });
 
   it('a failed recovery write leaves editing and explicit Save working', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.failRecovery = failure('permission', 'create-temp');
     t.edit();
     await t.workflow.recovery.writeNow();
@@ -491,12 +533,11 @@ describe('recovery (SPEC §15.3)', () => {
   });
 
   it('recovered work opens unbound and dirty, and chooses its destination again on Save', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
-    const restart = setup();
-    restart.io.recovery = t.io.recovery;
-    const offer = await restart.workflow.recoveryOffer();
+    const restart = await setup(t.io.recovery);
+    const offer = restart.offer;
     expect(await restart.workflow.recover(offer!)).toBe(true);
     expect(restart.workflow.fileName).toBeNull();
     expect(restart.workflow.dirty).toBe(true);
@@ -508,9 +549,7 @@ describe('recovery (SPEC §15.3)', () => {
   });
 
   it('the launch Discard removes only the earlier session’s snapshots', async () => {
-    const t = setup();
-    t.io.recovery = { current: null, previous: { g: 9, r: 4, text: 'earlier session' } };
-    t.io.earlier.add('previous');
+    const t = await setup({ current: null, previous: { g: 9, r: 4, text: 'earlier session' } });
     t.edit();
     await t.workflow.recovery.writeNow();
     expect(await t.workflow.discardRecovery()).toBe(true);
@@ -519,12 +558,11 @@ describe('recovery (SPEC §15.3)', () => {
   });
 
   it('recovered work is written as a snapshot of this session soon after recovery', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
-    const restart = setup();
-    restart.io.recovery = structuredClone(t.io.recovery);
-    const offer = await restart.workflow.recoveryOffer();
+    const restart = await setup(structuredClone(t.io.recovery));
+    const offer = restart.offer;
     expect(await restart.workflow.recover(offer!)).toBe(true);
     await new Promise((r) => setTimeout(r, 650));
     await restart.workflow.recovery.settled();
@@ -532,8 +570,8 @@ describe('recovery (SPEC §15.3)', () => {
     expect(restart.io.recovery.previous!.text).toBe(t.io.recovery.current!.text);
   });
 
-  it('the envelope is validated like an imported scene', () => {
-    const t = setup();
+  it('the envelope is validated like an imported scene', async () => {
+    const t = await setup();
     t.edit();
     const capture = JSON.parse(JSON.stringify({ format: 'lawsmith.recovery', version: 1, generation: 1, revision: 1, scene: JSON.parse(DEFAULT_SCENE_TEXT) }));
     expect(parseRecovery(JSON.stringify(capture)).ok).toBe(true);
@@ -546,7 +584,7 @@ describe('recovery (SPEC §15.3)', () => {
 
 describe('unexpected failures', () => {
   it('an exception while committing an Open unfreezes the app and reports it', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.openQueue.push(opened(t.io, 'scene.lawsmith.json', DEFAULT_SCENE_TEXT));
     const commit = (t.workflow as unknown as { app: WorkflowApp }).app.commit;
     (t.workflow as unknown as { app: { commit: WorkflowApp['commit'] } }).app.commit = () => {
@@ -560,7 +598,7 @@ describe('unexpected failures', () => {
   });
 
   it('an exception inside the guard leaves the app open, unfrozen, and able to quit later', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     const app = (t.workflow as unknown as { app: { camera: WorkflowApp['camera'] } }).app;
     const camera = app.camera;
@@ -578,7 +616,7 @@ describe('unexpected failures', () => {
   });
 
   it('a candidate that fails before commit is disposed', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.openQueue.push(opened(t.io, 'scene.lawsmith.json', DEFAULT_SCENE_TEXT));
     t.io.askUnsaved = async () => {
@@ -593,14 +631,14 @@ describe('unexpected failures', () => {
 
 describe('close/quit guard (AC10)', () => {
   it('a clean document closes without asking', async () => {
-    const t = setup();
+    const t = await setup();
     expect(await t.workflow.requestExit('quit')).toBe(true);
     expect(t.io.asked).toEqual([]);
     expect(t.io.exited).toBe(1);
   });
 
   it('Cancel keeps the scene, undo, recovery eligibility and an open, paused, unfrozen app', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.io.askQueue.push('cancel');
@@ -613,7 +651,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('Save in the guard saves through Save As when unbound, then exits', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.askQueue.push('save');
     t.io.chooseQueue.push('kept.lawsmith.json');
@@ -623,7 +661,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('Save in the guard retires recovery before exiting, even with a recovery write in flight', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.holdRecovery = true;
     const writing = t.workflow.recovery.writeNow();
@@ -641,7 +679,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('a recovery copy that cannot be retired keeps the app open after Save, and a later quit retries', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.io.failRetire = failure('permission', 'recovery-retire');
@@ -660,7 +698,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('Command+S then an immediate quit exits only after the save’s retirement', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     await t.workflow.recovery.writeNow();
@@ -673,7 +711,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('a canceled Save As inside the guard aborts the quit and keeps recovery eligible', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.io.askQueue.push('save');
@@ -686,7 +724,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('a failed save inside the guard keeps the work open', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     await t.workflow.save();
@@ -699,7 +737,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('a Discard whose recovery cannot be retired aborts the close, and recovery keeps working', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     await t.workflow.recovery.writeNow();
     t.io.failDiscard = failure('permission', 'recovery-retire');
@@ -716,7 +754,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('a stale reply for an eligible write is reported, not ignored', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.lastWrite = [t.controller.generation, 99];
     await t.workflow.recovery.writeNow();
@@ -724,7 +762,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('simultaneous Close and Quit coalesce into one guard', async () => {
-    const t = setup();
+    const t = await setup();
     t.edit();
     t.io.askQueue.push('discard');
     const [close, quit] = await Promise.all([t.workflow.requestExit('close'), t.workflow.requestExit('quit')]);
@@ -734,7 +772,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('a pending save settles first; the guard then evaluates the latest revision', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     t.io.holdWrites = true;
@@ -751,7 +789,7 @@ describe('close/quit guard (AC10)', () => {
   });
 
   it('a pending save followed by an edit makes the guard ask about the newer revision', async () => {
-    const t = setup();
+    const t = await setup();
     t.io.chooseQueue.push('a.lawsmith.json');
     t.edit();
     t.io.holdWrites = true;
