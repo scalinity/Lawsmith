@@ -48,24 +48,25 @@
         <h2 id="laws-title">Laws</h2>
         <ul id="law-list"></ul>
         <div class="law-shelf" role="group" aria-label="Add a law at the view’s focus point" id="law-shelf"></div>
-        <div class="law-actions">
-          <button type="button" id="law-duplicate">Duplicate</button>
-          <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
-        </div>
-        <div class="legend">
+        <div class="legend" title="Arrows sample the selected law densely and other laws sparsely.">
           <span class="arrow-glyph" aria-hidden="true"></span>
           <span>Drive A, 1 m of arrow = 20 m/s²</span>
           <button type="button" id="arrows-toggle" aria-pressed="true">Arrows</button>
         </div>
-        <div class="legend">
+        <div class="legend" title="Drag has no direction of its own, so it shows dots instead of arrows.">
           <span class="dot-glyph" aria-hidden="true"></span>
           <span>Drag K, dot area ∝ K; 5 cm ≈ 2 s⁻¹</span>
         </div>
-        <p class="note">Arrows sample the selected law densely and other laws sparsely. Drag has no direction, so it shows dots.</p>
       </section>
 
       <section id="details" aria-labelledby="details-title" hidden>
-        <h2 id="details-title">Sideways</h2>
+        <div class="details-head">
+          <h2 id="details-title">Sideways</h2>
+          <div class="law-actions">
+            <button type="button" id="law-duplicate">Duplicate</button>
+            <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
+          </div>
+        </div>
         <div class="field-row">
           <label for="law-label">Name</label>
           <input id="law-label" type="text" maxlength="200" spellcheck="false" autocomplete="off" />

@@ -319,7 +319,23 @@ kbd {
 .law-actions {
   display: flex;
   gap: 6px;
-  margin-top: 8px;
+}
+
+/* The selected law's name with the actions that apply to it. */
+.details-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#panel .details-head h2 {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #law-list:empty::after {
