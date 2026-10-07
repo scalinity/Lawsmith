@@ -49,7 +49,7 @@ describe('M3 example scenes', () => {
   it('together they cover every primitive and region, an overlap and all-body collisions', () => {
     const fields = EXAMPLES.flatMap(({ text }) => load(text).semantic.fields);
     expect(new Set(fields.map((f) => f.expression.kind))).toEqual(new Set(['softRadial', 'vortexY', 'linearDrag']));
-    expect(new Set(fields.map((f) => f.region.kind))).toEqual(new Set(['sphere', 'cylinderY']));
+    expect(new Set(fields.map((f) => f.region.kind))).toEqual(new Set(['box', 'sphere', 'cylinderY']));
     expect(load(EXAMPLES.find((e) => e.name === 'overlap')!.text).semantic.fields).toHaveLength(3);
     expect(load(EXAMPLES.find((e) => e.name === 'collisions')!.text).semantic.emitters[0]!.template.collisionMode).toBe('all');
   });

@@ -30,6 +30,24 @@ law_control() {
   local i=$(logq field $APP_LOG layout laws | python3 -I -c "import json,sys; print([l['id'] for l in json.load(sys.stdin)].index('$1'))")
   local p=(${=$(point laws.$i.$2)}); click $p[1] $p[2]
 }
+# rotate_law_z X Y Z: turns the selected law about world Z by dragging the rotate gizmo's Z ring. As in
+# m2-demo, TransformControls turns a ring by the drag along axis × eye, so the drag follows that
+# direction's projection on screen.
+rotate_law_z() {
+  layout
+  local from=(${=$(handle Z 0)})
+  local camera=$(logq field $APP_LOG layout camera | tr -d '[] ')
+  local direction=(${=$(python3 -I -c "
+c = [$camera]; p = [$1, $2, $3]
+e = [c[i] - p[i] for i in range(3)]; n = sum(v * v for v in e) ** 0.5; e = [v / n for v in e]
+d = [-e[1], e[0], 0]; m = (d[0] ** 2 + d[1] ** 2) ** 0.5
+print(*(round(p[i] + 0.5 * d[i] / m, 6) for i in range(3)))")})
+  local p0=(${=$(world $1 $2 $3)}) p1=(${=$(world $direction)})
+  local to=(${=$(python3 -I -c "
+dx, dy = $p1[1] - $p0[1], $p1[2] - $p0[2]; n = (dx * dx + dy * dy) ** 0.5
+print(round($from[1] + 42 * dx / n), round($from[2] + 42 * dy / n))")})
+  drag $from[1] $from[2] $to[1] $to[2]
+}
 open_example() {
   activate
   keys kd:cmd t:o ku:cmd
@@ -92,7 +110,7 @@ record_stop
 segment "examples: drag pocket"
 activate
 open_example drag-pocket
-record_start m3-drag 34
+record_start m3-drag 50
 press play
 sleep 5
 shot drag-01-pocket
@@ -101,11 +119,15 @@ drag_handle coefficient 0 1.6 0
 expect gesture "the drag gauge raised the coefficient" "e['handle']=='coefficient' and e['field']['expression']['coefficient'] > 3"
 sleep 5
 shot drag-02-stronger
-# Rotating a drag region turns its support only: no drive appears.
+# Rotating a drag region turns its support only (AC6): the gizmo's Z ring turns the box pocket, and
+# still no drive arrow appears.
 keys t:r
-sleep 1
+rotate_law_z -1 2.8 0
+expect gesture "the drag region turned about Z by more than 20 degrees through the rotate gizmo" "e['phase']=='commit' and e['transformMode']=='rotate' and abs(e['field']['rotation'][3]) < 0.985 and e['field']['expression']['kind']=='linearDrag'"
+sleep 3
 layout
-expect layout "the drag law draws no drive arrows, only coefficient dots" "e['arrows']==0"
+expect layout "the rotated drag region draws no drive arrows, only coefficient dots" "e['arrows']==0 and e['selected']=='drag'"
+shot drag-03-rotated-box
 record_stop
 
 segment "examples: overlap"
