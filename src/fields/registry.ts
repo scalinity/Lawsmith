@@ -116,7 +116,10 @@ export interface PrimitiveDescriptor<P extends Primitive = Primitive> {
   validate(primitive: P): Validated<P>;
   compile(primitive: P): LocalEvaluator;
   handles(primitive: P, region: RegionDefinition): readonly HandleRail[];
+  /** The governing value, signed, for the Laws list. */
   summary(primitive: P): string;
+  /** What that value does, in words, for the inspector. */
+  describe(primitive: P): string;
 }
 
 const reject = (path: string, reason: string): { ok: false; reason: string; path: string } => ({ ok: false, reason, path });
@@ -283,6 +286,7 @@ const directional: PrimitiveDescriptor<DirectionalPrimitive> = {
   },
   handles: (p) => [{ control: 'strength', origin: ORIGIN, axis: p.direction, scale: DRIVE_METERS_PER_MS2, offset: 0 }],
   summary: (p) => `${short(p.strength)} m/s²`,
+  describe: () => 'pushes along its arrow, which turns with the law',
 };
 
 const softRadial: PrimitiveDescriptor<SoftRadialPrimitive> = {
@@ -311,7 +315,8 @@ const softRadial: PrimitiveDescriptor<SoftRadialPrimitive> = {
   },
   // Positive strength points the arrow inward (attraction); dragging it through the anchor reverses it.
   handles: (_p, region) => [{ control: 'strength', origin: anchor(region), axis: [-1, 0, 0], scale: DRIVE_METERS_PER_MS2, offset: 0 }, coreRail],
-  summary: (p) => `${short(Math.abs(p.strength))} m/s² ${p.strength < 0 ? 'push' : 'pull'}`,
+  summary: (p) => `${short(p.strength)} m/s²`,
+  describe: (p) => (p.strength < 0 ? 'pushes away from its center' : 'pulls toward its center'),
 };
 
 const vortexY: PrimitiveDescriptor<VortexYPrimitive> = {
@@ -340,7 +345,8 @@ const vortexY: PrimitiveDescriptor<VortexYPrimitive> = {
   },
   // At +X the drive of a positive strength points along −Z: the arrow shows the circulation.
   handles: (_p, region) => [{ control: 'strength', origin: anchor(region), axis: [0, 0, -1], scale: DRIVE_METERS_PER_MS2, offset: 0 }, coreRail],
-  summary: (p) => `${short(Math.abs(p.strength))} m/s² ${p.strength < 0 ? 'clockwise' : 'counterclockwise'} from +Y`,
+  summary: (p) => `${short(p.strength)} m/s²`,
+  describe: (p) => `turns ${p.strength < 0 ? 'clockwise' : 'counterclockwise'} seen from its +Y axis, without holding bodies in orbit`,
 };
 
 const linearDrag: PrimitiveDescriptor<LinearDragPrimitive> = {
@@ -372,6 +378,7 @@ const linearDrag: PrimitiveDescriptor<LinearDragPrimitive> = {
   // A gauge, not an arrow: drag has no direction of its own.
   handles: (_p, region) => [{ control: 'coefficient', origin: anchor(region), axis: [0, 1, 0], scale: DRAG_METERS_PER_S, offset: 0 }],
   summary: (p) => `${short(p.coefficient)} s⁻¹`,
+  describe: () => 'resists motion relative to the world, in no direction of its own',
 };
 
 // ---------------------------------------------------------------- lookup

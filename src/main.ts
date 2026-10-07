@@ -580,6 +580,7 @@ async function start() {
   for (const [kind, d] of Object.entries(PRIMITIVES)) {
     const button = document.createElement('button');
     button.type = 'button';
+    button.id = `add-${kind}`;
     button.dataset.kind = kind;
     button.textContent = d.verb;
     button.title = `Add a ${d.title.toLowerCase()} law at the view’s focus point`;
@@ -589,6 +590,7 @@ async function start() {
   for (const [kind, d] of Object.entries(REGIONS)) {
     const button = document.createElement('button');
     button.type = 'button';
+    button.id = `support-${kind}`;
     button.dataset.kind = kind;
     button.setAttribute('role', 'radio');
     button.textContent = d.title;
@@ -763,7 +765,7 @@ async function start() {
       primitiveParams.dataset.kind = law.expression.kind;
       controlInputs(primitiveParams, 'primitive', primitive.controls as readonly ScalarControl<never>[]);
     }
-    $('law-kind').textContent = `${primitive.title} · ${primitive.summary(law.expression)}`;
+    $('law-kind').textContent = `${primitive.title} · ${primitive.summary(law.expression)}: ${primitive.describe(law.expression)}`;
     for (const input of regionParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(region.controls.find((c) => c.key === input.dataset.control)!.get(law.region), 3));
     for (const input of primitiveParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(primitive.controls.find((c) => c.key === input.dataset.control)!.get(law.expression), 3));
     show(fadeInput, fmt(law.edgeFade, 3));
@@ -1074,6 +1076,7 @@ async function start() {
       inputs,
       swatches,
       selected: law?.id ?? null,
+      arrows: world.arrowCount(),
       transformMode: interaction.mode,
       support,
       handles,
@@ -1328,13 +1331,12 @@ async function start() {
     const canvas = renderer.domElement;
     const captures = workflow.recovery.captureMs;
     overlay.textContent = [
-      `${backend.backend}${backend.compatibilityMode ? ' (compatibility)' : ''} · ${location.origin} · ${window.isSecureContext ? 'secure' : 'NOT secure'} · ${mode}`,
-      `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws ${laws.length} (${laws.filter((f) => f.enabled).length} on) · arrows ${world.arrowCount()}`,
+      `${backend.backend}${backend.compatibilityMode ? ' (compatibility)' : ''} · ${location.origin} · ${window.isSecureContext ? 'secure' : 'NOT secure'} · ${mode} · kernel ${FIELD_KERNEL_VERSION}`,
+      `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws ${laws.length} (${laws.filter((f) => f.enabled).length} on) · arrows ${world.arrowCount()} · fastest ${host.maxSpeed.toFixed(1)} m/s`,
       `steps/frame ${frameSteps[frameSteps.length - 1] ?? 0} · sim/wall ${simWall.toFixed(2)} · debt dropped ${Math.round(scheduler.droppedMs)} ms · skipped ${host.skippedEmissions} · limited ${host.limitedSteps}`,
       `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${e.length ? ms(percentile(e, 0.95)) : '—'} p95 ms`,
       `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls}`,
       `document gen ${authoring.generation} rev ${authoring.revision} (applied ${authoring.appliedRevision}, stored ${workflow.stored ?? '—'}) · recovery capture ${captures.length ? `${ms(Math.max(...captures))} ms max` : '—'}`,
-      `kernel ${FIELD_KERNEL_VERSION} · fastest body ${host.maxSpeed.toFixed(2)} m/s`,
       `DPR ${window.devicePixelRatio} → ${renderer.getPixelRatio()} (cap ${MAX_PIXEL_RATIO}) · ${window.innerWidth}×${window.innerHeight} css · ${canvas.width}×${canvas.height} px · GPU errors ${gpuErrors.length}`,
       p0 ? `P0 run ${p0.run} ${p0.phase} ${Math.floor((performance.now() - p0.phaseStart) / 1000)} s${p0.invalid ? ` · invalid: ${p0.invalid}` : ''}` : '',
     ]
