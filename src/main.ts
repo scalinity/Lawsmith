@@ -69,7 +69,7 @@ function withTimeout<T>(work: Promise<T>, what: string): Promise<T> {
 function showFailure(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   report('failure', { message, facts });
-  for (const id of ['status', 'tools', 'diagnostics', 'panel', 'transport']) $(id).hidden = true;
+  for (const id of ['status', 'tools', 'diagnostics', 'panel', 'transport', 'overlays']) $(id).hidden = true;
   $('failure-summary').textContent = message;
   $('failure-detail').textContent = JSON.stringify(facts, null, 2);
   $('failure').hidden = false;
@@ -200,7 +200,7 @@ async function start() {
   let cameraMoved = false;
   const applyFreeze = () => {
     frozen = guardFrozen || launchPending;
-    for (const id of ['panel', 'tools', 'transport']) $(id).inert = frozen;
+    for (const id of ['panel', 'tools', 'transport', 'overlays']) $(id).inert = frozen;
     viewport.gizmo.enabled = !frozen;
   };
   applyFreeze();
@@ -1070,7 +1070,7 @@ async function start() {
       return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
     };
     const controls: Record<string, number[] | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, button[id], input[id]')) {
+    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, button[id], input[id]')) {
       controls[element.id] = box(element);
     }
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
@@ -1631,9 +1631,8 @@ async function start() {
       `${backend.backend}${backend.compatibilityMode ? ' (compatibility)' : ''} · ${location.origin} · ${window.isSecureContext ? 'secure' : 'NOT secure'} · ${mode} · kernel ${FIELD_KERNEL_VERSION}`,
       `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws ${laws.length} (${laws.filter((f) => f.enabled).length} on) · arrows ${world.arrowCount()} · fastest ${host.maxSpeed.toFixed(1)} m/s`,
       `steps/frame ${frameSteps[frameSteps.length - 1] ?? 0} · sim/wall ${simWall.toFixed(2)} · debt dropped ${Math.round(scheduler.droppedMs)} ms · skipped ${host.skippedEmissions} · limited ${host.limitedSteps}`,
-      `probes ${probes.settings.enabled ? `${probes.live}/${probes.settings.count}` : 'off'} · trails ${trails.mode === 'off' ? 'off' : `${trails.count} (${trails.mode})`} · explained ${explained ?? '—'}`,
       `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${e.length ? ms(percentile(e, 0.95)) : '—'} p95 ms`,
-      `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls}`,
+      `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls} · probes ${probes.settings.enabled ? probes.live : 'off'} · trails ${trails.mode === 'off' ? 'off' : trails.count}`,
       `document gen ${authoring.generation} rev ${authoring.revision} (applied ${authoring.appliedRevision}, stored ${workflow.stored ?? '—'}) · recovery capture ${captures.length ? `${ms(Math.max(...captures))} ms max` : '—'}`,
       `DPR ${window.devicePixelRatio} → ${renderer.getPixelRatio()} (cap ${MAX_PIXEL_RATIO}) · ${window.innerWidth}×${window.innerHeight} css · ${canvas.width}×${canvas.height} px · GPU errors ${gpuErrors.length}`,
       p0 ? `P0 run ${p0.run} ${p0.phase} ${Math.floor((performance.now() - p0.phaseStart) / 1000)} s${p0.invalid ? ` · invalid: ${p0.invalid}` : ''}` : '',
@@ -1663,7 +1662,7 @@ async function start() {
   }, 500);
 
   $('status').hidden = true;
-  for (const id of ['tools', 'panel', 'transport']) $(id).hidden = false;
+  for (const id of ['tools', 'panel', 'transport', 'overlays']) $(id).hidden = false;
   overlay.hidden = false;
   renderPanel();
   reportDigest('startup');

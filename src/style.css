@@ -730,12 +730,21 @@ button.primary {
   margin-left: auto;
 }
 
-/* Probes and trails sit in the transport cluster: always reachable, never scrolled away. */
-.overlay-switches {
+/* Probes and trails: a cluster of their own above the transport, always reachable, never scrolled away. */
+#overlays {
+  position: fixed;
+  right: 12px;
+  bottom: 64px;
   display: flex;
   gap: 6px;
-  padding-left: 8px;
-  border-left: 1px solid var(--hairline);
+  padding: 6px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: rgb(33 31 28 / 0.88);
+}
+
+#overlays[hidden] {
+  display: none;
 }
 
 #probes-toggle[aria-pressed="true"] {
@@ -776,8 +785,8 @@ button.primary {
   position: fixed;
   top: 52px;
   right: 12px;
-  width: 296px;
-  max-height: calc(100vh - 52px - 76px);
+  width: 312px;
+  max-height: calc(100vh - 52px - 124px);
   overflow-y: auto;
   box-sizing: border-box;
   padding: 10px 12px 12px;
@@ -982,8 +991,12 @@ button.primary {
 }
 
 .cap-glyph {
-  font: 12px var(--mono);
-  color: var(--text);
+  flex: none;
+  display: inline-block;
+  width: 3px;
+  height: 10px;
+  border-left: 1.5px solid var(--text);
+  border-right: 1.5px solid var(--text);
 }
 
 /* Viewport labels at vector tips; never a pointer target. */

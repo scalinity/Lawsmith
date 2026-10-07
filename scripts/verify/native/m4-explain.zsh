@@ -26,11 +26,11 @@ explain_body() {
 import json, sys
 e = json.load(sys.stdin)
 # Only a body over the bare canvas can be clicked: never one under a panel, the tools or the transport.
-covers = [r for r in (e['controls'].get(k) for k in ('panel', 'explain', 'tools', 'transport')) if r]
+covers = [r for r in (e['controls'].get(k) for k in ('panel', 'explain', 'tools', 'transport', 'overlays')) if r]
 inside = lambda p, r: r[0] - 6 <= p[0] <= r[0] + r[2] + 6 and r[1] - 6 <= p[1] <= r[1] + r[3] + 6
 for b in e['bodies']:
     w = b['world']
-    if ($1) and b['point'][2] < 1 and not any(inside(b['point'], r) for r in covers):
+    if ($1) and not any(inside(b['point'], r) for r in covers):
         print(b['id'], round($WIN_X + b['point'][0]), round($WIN_Y + b['point'][1])); break")})
   [[ -n $p[1] ]] || fail "no body satisfies $1"
   local n=$(count explain-select)
@@ -57,8 +57,19 @@ step_until() {
   fail "no step satisfied $1 within $(( $2 * $3 )) ticks"
 }
 pause() { [[ $(field sim-control action) == '"play"' ]] && press play; sleep 0.3 }
-# type_into FIELD VALUE: as m2-authoring: type, Tab to commit, then release focus on the panel's top padding.
-type_into() { local p=(${=$(point $1)}); click $p[1] $p[2]; keys kd:cmd t:a ku:cmd; keys t:"$2"; key_code 48; sleep 0.4; click $(( WIN_X + 18 )) $(( WIN_Y + 58 )) }
+lawhandle() { logq lawhandle $APP_LOG $WIN_X $WIN_Y $1 }
+# drag_handle NAME DX DY DZ: as m3-demo: drags the selected law's handle toward a world offset, at least 90 px.
+drag_handle() {
+  layout
+  local from=(${=$(lawhandle $1)}) to=(${=$(world ${=$(logq lawhandleworld $APP_LOG $1 $2 $3 $4)})})
+  to=(${=$(python3 -I -c "
+import math
+dx, dy = $to[1] - $from[1], $to[2] - $from[2]
+n = math.hypot(dx, dy) or 1
+k = max(1, 90 / n)
+print(round($from[1] + dx * k), round($from[2] + dy * k))")})
+  drag $from[1] $from[2] $to[1] $to[2]
+}
 
 seed_folder $QA_STATE/scenes
 segment "a body entering and leaving a drag pocket"
@@ -78,9 +89,9 @@ shot drag-01-inside
 # A paused edit changes the next-step preview, never the step that already happened (AC2).
 press explain-preview
 check consistent "the readout shows a next-step preview"
-layout
-type_into inputs.Coefficient 9
-check preview-edit "after a paused edit of the coefficient the preview changed and the last step did not"
+drag_handle coefficient 0 1.6 0
+expect gesture "a paused drag of the coefficient gauge raised the drag" "e['phase']=='commit' and e['handle']=='coefficient' and e['field']['expression']['coefficient'] > 3"
+check preview-edit "after the paused edit the next-step preview changed and the last step did not"
 shot drag-02-preview-after-edit
 press explain-applied
 press play
@@ -120,13 +131,11 @@ press play
 sleep 7
 pause
 explain_body "w[0] < -3.4 and w[1] > 3.6"
-record_start m4-collision 55
-since=$(count explanation)
-press play
-for i in {1..10}; do sleep 0.35; explanation; done
-pause
-check any-overlap "on the way the pull and the drag pocket both acted in one step" $since
-step_until contact 40 4
+record_start m4-collision 70
+step_until overlap 70 3
+check overlap "on the way the pull and the drag pocket act in one step: two shares under one β and λ"
+shot collision-00-overlap
+step_until contact 60 6
 check contact "the landed body names its contact, and the law acceleration alone misses its velocity after the step"
 shot collision-01-contact
 press play
@@ -208,6 +217,8 @@ wait_log fixtures 1 240
 expect fixtures "quiet and busy views, and a reset across a view change, agree exactly; trails and shares check out" "e['allEqual'] is True and e['t08'] is True and e['trails']['mismatches']==0 and e['contributions']['pass'] is True"
 activate
 keys kd:cmd t:q ku:cmd
-alert "Don't Save"
+# Opening the overlap scene left nothing unsaved, so Quit asks only if an earlier edit remains.
+sleep 1
+[[ $(depth) == 1 ]] && alert "Don't Save"
 wait_exit
 say "m4-explain complete"

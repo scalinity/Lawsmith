@@ -9,6 +9,8 @@
   </head>
   <body>
     <div id="viewport"></div>
+    <!-- Labels at the explained body's vector tips: viewport content, beneath every panel. -->
+    <div id="explain-labels" aria-hidden="true"></div>
 
     <!-- Top area of the continuous surface. Only #drag-region moves the window, and it steps
          aside wherever a law or its handles lie beneath it; the canvas is a separate hit target. -->
@@ -166,23 +168,23 @@
           <div class="readout-row" role="row" id="explain-after"></div>
         </div>
         <p class="note">Each law’s share uses this step’s β and λ. It is not what removing that law would leave: removing a drag also changes β, λ and every later step.</p>
-        <p class="scale-key"><span class="velocity-glyph" aria-hidden="true"></span>1 m = 5 m/s <span class="acceleration-glyph" aria-hidden="true"></span>1 m = 20 m/s² <span class="cap-glyph" aria-hidden="true">∥</span>drawn arrow capped at 2 m; numbers never are</p>
+        <p class="scale-key"><span class="velocity-glyph" aria-hidden="true"></span>1 m = 5 m/s <span class="acceleration-glyph" aria-hidden="true"></span>1 m = 20 m/s² <span class="cap-glyph" aria-hidden="true"></span>drawn arrow capped at 2 m; numbers never are</p>
       </div>
     </aside>
-    <div id="explain-labels" aria-hidden="true"></div>
 
     <div id="transport" role="group" aria-label="Simulation" hidden>
       <button type="button" id="play">Play <kbd>Space</kbd></button>
       <button type="button" id="step">Step <kbd>.</kbd></button>
       <button type="button" id="reset">Reset <kbd>⇧R</kbd></button>
       <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
-      <div class="overlay-switches" role="group" aria-label="Probes and trails">
-        <button type="button" id="probes-toggle" aria-pressed="false" title="Massless probes moved by the laws; they never touch bodies">Probes</button>
-        <div class="segmented" id="trail-mode" role="radiogroup" aria-label="Trails">
-          <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="No trails">No trail</button>
-          <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true" title="The explained body’s trail">Body</button>
-          <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false" title="Trails of up to 32 bodies">32</button>
-        </div>
+    </div>
+
+    <div id="overlays" role="group" aria-label="Probes and trails" hidden>
+      <button type="button" id="probes-toggle" aria-pressed="false" title="Massless probes moved by the laws; they never touch bodies">Probes</button>
+      <div class="segmented" id="trail-mode" role="radiogroup" aria-label="Trails">
+        <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="No trails">No trail</button>
+        <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true" title="The explained body’s trail">Body</button>
+        <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false" title="Trails of up to 32 bodies">32</button>
       </div>
     </div>
 

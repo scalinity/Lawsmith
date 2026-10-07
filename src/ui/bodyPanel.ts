@@ -22,9 +22,10 @@ export interface BodyPanelState {
 
 const BURST = '<svg class="contact-glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1v3M7 10v3M1 7h3M10 7h3M2.8 2.8l2.1 2.1M9.1 9.1l2.1 2.1M2.8 11.2l2.1-2.1M9.1 4.9l2.1-2.1"/></svg>';
 
-/** Fixed decimals without a negative zero. */
+/** Fixed decimals without a negative zero; fewer for large values, so every column keeps its width. */
 function num(value: number, digits = 2): string {
-  const text = value.toFixed(Math.abs(value) >= 1000 ? 0 : digits);
+  const magnitude = Math.abs(value);
+  const text = value.toFixed(magnitude >= 1000 ? 0 : magnitude >= 100 ? Math.min(digits, 1) : digits);
   return /^-0\.?0*$/.test(text) ? text.slice(1) : text;
 }
 
@@ -105,9 +106,7 @@ export function createBodyPanel() {
     }
 
     transition.textContent =
-      o.kind === 'applied'
-        ? `Step from tick ${o.fromTick} to ${o.toTick}, laws as of command ${o.cursor}`
-        : `Next step, tick ${o.fromTick} to ${o.toTick}, if nothing changes first`;
+      `${o.kind === 'applied' ? 'Step' : 'Next step'} from tick ${o.fromTick} to ${o.toTick}, ${o.cursor === 0 ? 'laws as loaded' : `laws after ${o.cursor} applied edit${o.cursor === 1 ? '' : 's'}`}${o.kind === 'preview' ? ', if nothing changes first' : ''}`;
     fill(center, glyph('none'), 'Center, m', o.center, false);
     fill(velocity, glyph('velocity'), 'Velocity, m/s', o.velocity, true);
 
