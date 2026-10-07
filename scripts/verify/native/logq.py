@@ -7,6 +7,9 @@
   logq.py center LOG OX OY DOTTED.PATH       screen point at the center of a rect [x, y, w, h]
                                              in the last `layout` event, offset by the window origin
   logq.py handle LOG OX OY NAME [INDEX]      screen point of a gizmo handle sample in the last `layout`
+  logq.py lawhandle LOG OX OY NAME           screen point of the selected law's spatial handle NAME
+                                             (strength, coreRadius, edgeFade, radius, …) in the last `layout`
+  logq.py lawhandleworld LOG NAME DX DY DZ   that handle's world point plus a world offset
   logq.py project LOG OX OY X Y Z            screen point of a world point, by the last `layout` camera
 """
 import json
@@ -53,6 +56,17 @@ def main(argv):
         handles = [h for h in events(log, 'layout')[-1]['handles'] if h['name'] == name]
         px, py = handles[0]['points'][index] if len(handles[0]['points']) > index else handles[0]['points'][0]
         print(round(float(argv[3]) + px), round(float(argv[4]) + py))
+    elif command == 'lawhandle':
+        handles = [h for h in events(log, 'layout')[-1]['lawHandles'] if h['name'] == argv[5]]
+        if not handles:
+            raise SystemExit(f'no law handle {argv[5]} in the last layout')
+        px, py = handles[0]['point'][:2]
+        print(round(float(argv[3]) + px), round(float(argv[4]) + py))
+    elif command == 'lawhandleworld':
+        handles = [h for h in events(log, 'layout')[-1]['lawHandles'] if h['name'] == argv[3]]
+        if not handles:
+            raise SystemExit(f'no law handle {argv[3]} in the last layout')
+        print(*(round(c + float(d), 6) for c, d in zip(handles[0]['world'], argv[4:7])))
     elif command == 'project':
         layout = events(log, 'layout')[-1]
         m = layout['viewProjection']  # column-major 4×4
