@@ -61,6 +61,8 @@ interface Gesture {
   readonly handle: LawHandle | null;
   /** Rail offset between the grabbed handle and the pointer's first projection, so a grab never jumps. */
   readonly grab: number;
+  /** A handle drag's first and latest pointer positions (CSS px), for the log. */
+  pointer: number[] | null;
   /** The applied value when the gesture began; a cancel restores it. */
   readonly start: FieldDefinition;
   latest: FieldDefinition | null;
@@ -231,10 +233,13 @@ export class LawInteraction {
   }
 
   /** Where each shown handle appears on screen (CSS px), for the layout readback. */
-  handlesOnScreen(): { name: string; role: string; point: number[] }[] {
+  handlesOnScreen(): { name: string; role: string; point: number[]; world: Vec3 }[] {
     const shown = this.handles();
     if (!shown) return [];
-    return shown.handles.map((h) => ({ name: h.name, role: h.role, point: this.toScreen(worldPoint(shown.field, handlePoint(h))) }));
+    return shown.handles.map((h) => {
+      const world = worldPoint(shown.field, handlePoint(h));
+      return { name: h.name, role: h.role, point: this.toScreen(world), world };
+    });
   }
 
   /**
@@ -297,7 +302,7 @@ export class LawInteraction {
     const start = this.selectedId === null ? undefined : this.o.appliedField(this.selectedId);
     if (!start) return;
     const mode = this.o.gizmo.mode as TransformMode;
-    this.gesture = { mode, label: TRANSFORM_LABEL[mode], handle: null, grab: 0, start, latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
+    this.gesture = { mode, label: TRANSFORM_LABEL[mode], handle: null, grab: 0, pointer: null, start, latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
     this.o.log('gesture', { phase: 'begin', transformMode: mode, field: summary(start), camera: this.cameraPosition() });
   }
 
@@ -310,7 +315,7 @@ export class LawInteraction {
     canvas.setPointerCapture(event.pointerId);
     this.pointerId = event.pointerId;
     const first = this.railAt(start, handle, event.clientX, event.clientY);
-    this.gesture = { mode: 'scale', label: handle.label, handle, grab: first === null ? 0 : handle.t - first, start, latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
+    this.gesture = { mode: 'scale', label: handle.label, handle, grab: first === null ? 0 : handle.t - first, pointer: [event.clientX, event.clientY, event.clientX, event.clientY], start, latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
     canvas.style.cursor = 'grabbing';
     this.refreshDragRegion();
     this.o.log('gesture', { phase: 'begin', transformMode: 'scale', handle: handle.name, role: handle.role, field: summary(start), camera: this.cameraPosition() });
@@ -333,6 +338,8 @@ export class LawInteraction {
   private previewHandle(clientX: number, clientY: number): void {
     const g = this.gesture;
     if (!g?.handle || g.cancelReason) return;
+    g.pointer![2] = clientX;
+    g.pointer![3] = clientY;
     const t = this.railAt(g.start, g.handle, clientX, clientY);
     if (t === null) return;
     this.accept(g, g.handle.at(t + g.grab));
@@ -374,6 +381,7 @@ export class LawInteraction {
       handle,
       samples: g.samples,
       rejected: g.rejected,
+      pointer: g.pointer,
       firstRevision: g.firstRevision,
       lastRevision: g.lastRevision,
       field: summary(g.latest ?? g.start),

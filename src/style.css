@@ -104,7 +104,8 @@ button:focus-visible {
   border-left: 1px solid var(--hairline);
 }
 
-.segmented button[aria-pressed="true"] {
+.segmented button[aria-pressed="true"],
+.segmented button[aria-checked="true"] {
   background: var(--raised);
   color: var(--teal);
 }
