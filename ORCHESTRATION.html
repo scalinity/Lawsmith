@@ -416,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-07 against <code>main</code> at <code>5618b3e</code> and branch <code>m3</code> with M3’s review remediated (code <code>1812374</code>) and its follow-up review pending</span>
+    <span>Realigned 2026-10-07 against <code>main</code> at <code>5618b3e</code> and branch <code>m3</code> with M3’s remediation verified (code <code>1812374</code>) and your acceptance pending</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Run M3’s follow-up review with GPT-6.1 Sol.</h1>
-    <p class="lede">M3 is remediated on branch <code>m3</code> (code <code>1812374</code>). Sol’s review of <code>06429c9</code> returned three findings, and all are resolved: AC2 passes under your amended f32 drag bound, every acknowledgment is now accounted, and the drag rotation is shown natively. Every native scenario, M2’s included, passed again on the new packaged app. Next comes Sol’s read-only follow-up review of <code>06429c9..m3</code>, then your acceptance and the merge. M4 waits for that acceptance.</p>
+    <h1>Accept M3, or send it back.</h1>
+    <p class="lede">M3 is remediated on branch <code>m3</code> (code <code>1812374</code>). Sol’s review of <code>06429c9</code> returned three findings, and all are resolved: AC2 passes under your amended f32 drag bound, every acknowledgment is now accounted, and the drag rotation is shown natively. Every native scenario, M2’s included, passed again on the new packaged app. Sol’s follow-up review of <code>2750b12</code> returned REMEDIATION VERIFIED with no new findings. What remains is your acceptance and the merge to <code>main</code>. M4 waits for that acceptance.</p>
     <cite><code>docs/evidence/M3.md</code> Status, Acceptance criteria, Findings, Review; <code>docs/MILESTONES.md</code> M3</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -528,14 +528,14 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m3</code>. GPT-6.1 Sol reviewed <code>06429c9</code> and found 2 medium findings and 1 low, with AC2 failing its literal no-reversal requirement. Every finding was resolved and re-verified, and every native scenario was re-run on the new build. Sol’s follow-up review has not run.</dd>
-              <dt>Graph permits</dt><dd class="soft">Done: remediated on <code>m3</code>, code at <code>1812374</code>; follow-up review pending, not merged.</dd>
-              <dt>Should run</dt><dd class="run">Sol’s read-only follow-up review of <code>06429c9..m3</code>. If it finds anything, run <code>/address</code> on its report in an Opus 5.5 session on <code>m3</code>. Then your acceptance and the merge. Nothing beside it: M4 shares <code>simulation</code>, <code>rendering</code> and <code>ui</code>.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m3</code>. GPT-6.1 Sol reviewed <code>06429c9</code> and found 2 medium findings and 1 low, with AC2 failing its literal no-reversal requirement. Every finding was resolved and re-verified, and every native scenario was re-run on the new build. Sol’s follow-up review of <code>2750b12</code> returned REMEDIATION VERIFIED with no new findings.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>1812374</code>, reviews complete; awaiting your acceptance, not merged.</dd>
+              <dt>Should run</dt><dd class="run">Your acceptance, then the merge of <code>m3</code> into <code>main</code>. Nothing beside it: M4 shares <code>simulation</code>, <code>rendering</code> and <code>ui</code>.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M2, accepted on 2026-10-06. Contracts C1, C2, C4, C5.</dd>
               <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for the P0, P1 and 1280×800 checks and restored it, and removed the panel preferences it created.</dd>
-              <dt>Your part</dt><dd>Done: you decided finding 1 by amending SPEC §9.1 and AC2. Next, run the follow-up review with the prompt from the remediation session. Optionally feel the handles on the real trackpad. Then accept M3 or send it back.</dd>
+              <dt>Your part</dt><dd>Done: you decided finding 1 by amending SPEC §9.1 and AC2, and ran the follow-up review. Optionally feel the handles on the real trackpad. Then accept M3 or send it back.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
