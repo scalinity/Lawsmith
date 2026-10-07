@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> at <code>1f2fe28</code> and branch <code>m2</code> at <code>86cee4e</code>, with M2’s last review finding fixed and a final micro-review pending</span>
+    <span>Realigned 2026-10-06 against <code>main</code> with M2 accepted and merged (code <code>86cee4e</code>), and M3 eligible but not started</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Run the final micro-review of M2’s one remaining fix.</h1>
-    <p class="lede">The follow-up review of <code>6de6134</code> closed six of the seven findings from the independent review of <code>c693550</code> and left one partial: an unbounded emitter could pass the safe-integer limit. <code>86cee4e</code> fixes it with exact next-birth and clock bounds, and its boundary fixtures pass. M2 is not merged. A read-only reviewer checks only that fix (<code>6de6134..m2</code>); an Opus 5.5 session runs <code>/address</code> on anything it finds. M3 waits until you accept M2.</p>
-    <cite><code>docs/evidence/M2.md</code> Status, Independent review, Follow-up review, Pending; <code>docs/MILESTONES.md</code> M2</cite>
+    <h1>Start M3 in a fresh Opus 5.5 session.</h1>
+    <p class="lede">You accepted M2 on 2026-10-06, after its final micro-review returned FINAL M2 REMEDIATION VERIFIED; all ten acceptance criteria pass, and M2 is merged to <code>main</code>. M3, a small tactile law vocabulary, is now the only eligible unit and is not started. Opus 5.5 authors it on branch <code>m3</code> from <code>main</code>; GPT-6.1 Sol runs the bounded independent math review MILESTONES encourages.</p>
+    <cite><code>docs/evidence/M2.md</code> Status, Final micro-review; <code>docs/MILESTONES.md</code> M3</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -494,7 +494,7 @@
       </article>
 
       <!-- REALIGN M2 -->
-      <article class="unit" id="m2" data-gate="M2" data-state="implemented" data-tier="scarce" data-stop="Portable V0">
+      <article class="unit" id="m2" data-gate="M2" data-state="accepted" data-tier="scarce" data-stop="Portable V0">
         <div class="gate">M2</div>
         <div>
           <div class="unit-head">
@@ -503,18 +503,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored. A read-only pre-review found 2 high, 3 medium and 4 low findings, all fixed. The independent review of <code>c693550</code> found 1 critical, 2 high, 2 medium and 2 low findings in recovery, launch protection, termination, load commit and emitter bounds; all were fixed and re-verified, and every native scenario was re-run on the new build. The follow-up review of <code>6de6134</code> closed six and left the emitter bound partial for unbounded schedules; <code>86cee4e</code> closes it.</dd>
-              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>86cee4e</code> on branch <code>m2</code>, evidence in the commit after it. Not merged.</dd>
-              <dt>Should run</dt><dd class="run">A final micro-review of that one fix (<code>6de6134..m2</code>), then <code>/address</code> on anything it finds in an Opus 5.5 session on the same branch, then your acceptance and the merge. Nothing beside it: every later gate shares its files.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored. A read-only pre-review found 2 high, 3 medium and 4 low findings, all fixed. The independent review of <code>c693550</code> found 1 critical, 2 high, 2 medium and 2 low findings in recovery, launch protection, termination, load commit and emitter bounds; all were fixed and re-verified, and every native scenario was re-run on the new build. The follow-up review of <code>6de6134</code> closed six and left the emitter bound partial for unbounded schedules; <code>86cee4e</code> closed it, and GPT-6.1 Sol’s final micro-review of <code>6de6134..52a7f0c</code> returned FINAL M2 REMEDIATION VERIFIED.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>86cee4e</code>, accepted by you on 2026-10-06.</dd>
+              <dt>Should run</dt><dd class="run">Nothing. M2 is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M1 accepted. Contracts C3, C7, C8.</dd>
               <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, and switched the display to More Space only for the 1600×1000 and 1280×800 checks, restoring it after. The dialog plugin is vendored with a one-line fix, by your decision.</dd>
-              <dt>Your part</dt><dd>Run the micro-review, then accept M2 or send it back. Every native check, the 1280×800 one included, ran in QA on the build of code <code>83f944c</code>; the fix reaches no native path, and none waits for you. One choice is yours whenever you like: how Dock Quit and logout treat a clean session (thread below).</dd>
+              <dt>Your part</dt><dd>Done: the final micro-review passed and you accepted M2 on 2026-10-06. One choice is yours whenever you like: how Dock Quit and logout treat a clean session (thread below).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/evidence/M2.md</code> Status, Native QA, Follow-up review, Findings, Pending; <code>docs/MILESTONES.md</code> M2</cite>
+          <cite class="src"><code>docs/evidence/M2.md</code> Status, Native QA, Follow-up review, Final micro-review, Findings, Pending; <code>docs/MILESTONES.md</code> M2</cite>
         </div>
       </article>
 
@@ -529,11 +529,11 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the bounded independent math review MILESTONES encourages here. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once M2 is ACCEPTED.</dd>
-              <dt>Should run</dt><dd class="run">Not before. It shares <code>persistence</code> and <code>ui</code> with M2. First gate where kernel/tests and UI/visuals can split under one integrator.</dd>
+              <dt>Graph permits</dt><dd class="soft">Now: M2 is ACCEPTED (2026-10-06).</dd>
+              <dt>Should run</dt><dd class="run">Next, and alone: the next implementation unit, in a fresh session from <code>main</code> on branch <code>m3</code>. It shares <code>persistence</code> and <code>ui</code> with M2. First gate where kernel/tests and UI/visuals can split under one integrator.</dd>
             </dl>
             <dl class="facts">
-              <dt>Needs</dt><dd>M2 accepted. Contracts C1, C2, C4, C5.</dd>
+              <dt>Needs</dt><dd>M2, accepted on 2026-10-06. Contracts C1, C2, C4, C5.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
               <dt>Your part</dt><dd>Hands-off windows for the handle recordings.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
