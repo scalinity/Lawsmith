@@ -1,0 +1,61 @@
+[qa 00:44:04] segment: examples: radial catch, release and repulsion
+[qa 00:44:22] launched pid 28251, window at 0,21, log demo3.log
+[qa 00:44:31] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "catch-and-release.lawsmith.json", "generation": 2, "title": "Catch and Release", "bytes": 2504, "readMs": 0.067, "parseMs": 1, "candidateMs": 1, "commitMs": 2, "openMs": 4.067, "mode": "packaged", "t": 10162}  [document] catch-and-release opened transactionally
+[qa 00:44:31] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 1, "laws": [{"id": "pull", "enabled": true, "position": [1, 2.8, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 1.6}, "edgeFade": 0.25, "expression": {"kind": "softRadial", "strength": 12, "coreRadius  [sim-control] catch-and-release starts paused at tick 0
+[qa 00:44:33] recording m3-radial for 55 s (overlay windows skipped by the hit test: 18884)
+[qa 00:44:39] PASS {"kind": "pacing", "intervalMs": [17, 17, 18], "maxIntervalMs": 23, "workP95Ms": 2, "stallsOver50ms": 2, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 346, "playing": true, "bodies": 44, "stepMs": [0, 1, 1], "editMs": null, "editSamples": 0, "simWallRatio": 0.721, "droppedMs": 0, "mode": "packag  [pacing] the stream runs through the pull without limiting
+[qa 00:44:39] captured radial-01-catch.png
+[qa 00:44:48] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "translate", "handle": null, "samples": 25, "rejected": 0, "pointer": null, "firstRevision": 1, "lastRevision": 25, "field": {"enabled": true, "position": [3.5724076435994716, 2.8, 0], "rotation": [0, 0, 0, 1], "regio  [gesture] the pull moved out of the stream
+[qa 00:44:53] captured radial-02-release.png
+[qa 00:45:12] the synthetic release was lost; sending it again
+[qa 00:45:12] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "strength", "samples": 27, "rejected": 0, "pointer": [643, 281, 720, 298.3359375], "firstRevision": 52, "lastRevision": 78, "field": {"enabled": true, "position": [1.0147646540271946, 2.8, 0], "rota  [gesture] the strength handle made the pull a push
+[qa 00:45:18] captured radial-03-repel.png
+[qa 00:45:18] waiting for m3-radial to finish
+[qa 00:45:29] recording m3-radial.mp4 written
+[qa 00:45:49] segment: examples: vortex and its axis
+[qa 00:45:59] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "swirl.lawsmith.json", "generation": 3, "title": "Swirl", "bytes": 2533, "readMs": 0.111, "parseMs": 0, "candidateMs": 1, "commitMs": 3, "openMs": 4.111, "mode": "packaged", "t": 99078}  [document] swirl opened transactionally
+[qa 00:45:59] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 2, "laws": [{"id": "swirl", "enabled": true, "position": [0.5, 2.5, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "cylinderY", "radius": 1.2, "halfHeight": 1.5}, "edgeFade": 0.25, "expression": {"kind": "vortexY", "stre  [sim-control] swirl starts paused at tick 0
+[qa 00:46:00] recording m3-vortex for 42 s (overlay windows skipped by the hit test: 18894)
+[qa 00:46:02] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the swirl's cylinder support spans its radius and half-height
+[qa 00:46:09] captured vortex-01-counterclockwise.png
+[qa 00:46:17] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "strength", "samples": 26, "rejected": 0, "pointer": [655, 290, 582.640625, 320.359375], "firstRevision": 1, "lastRevision": 26, "field": {"enabled": true, "position": [0.5, 2.5, 0], "rotation": [0,  [gesture] the strength handle reversed the circulation
+[qa 00:46:22] captured vortex-02-clockwise.png
+[qa 00:46:31] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "radius", "samples": 26, "rejected": 0, "pointer": [553, 277, 629.0078125, 295.1484375], "firstRevision": 27, "lastRevision": 52, "field": {"enabled": true, "position": [0.5, 2.5, 0], "rotation": [0  [gesture] the cylinder radius handle resized the support
+[qa 00:46:34] captured vortex-03-narrower.png
+[qa 00:46:34] waiting for m3-vortex to finish
+[qa 00:46:43] recording m3-vortex.mp4 written
+[qa 00:46:43] segment: examples: drag pocket
+[qa 00:46:58] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "drag-pocket.lawsmith.json", "generation": 4, "title": "Drag Pocket", "bytes": 2496, "readMs": 0.14, "parseMs": 4, "candidateMs": 1, "commitMs": 2, "openMs": 7.14, "mode": "packaged", "t": 158253}  [document] drag-pocket opened transactionally
+[qa 00:46:58] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 3, "laws": [{"id": "drag", "enabled": true, "position": [-1, 2.8, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 1.2}, "edgeFade": 0.25, "expression": {"kind": "linearDrag", "coefficient": 3}}], "mode  [sim-control] drag-pocket starts paused at tick 0
+[qa 00:47:00] recording m3-drag for 34 s (overlay windows skipped by the hit test: 18900)
+[qa 00:47:06] captured drag-01-pocket.png
+[qa 00:47:15] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "coefficient", "samples": 29, "rejected": 0, "pointer": [565, 228, 565, 139.3046875], "firstRevision": 1, "lastRevision": 29, "field": {"enabled": true, "position": [-1, 2.8, 0], "rotation": [0, 0,   [gesture] the drag gauge raised the coefficient
+[qa 00:47:21] captured drag-02-stronger.png
+[qa 00:47:23] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the drag law draws no drive arrows, only coefficient dots
+[qa 00:47:23] waiting for m3-drag to finish
+[qa 00:47:34] recording m3-drag.mp4 written
+[qa 00:47:34] segment: examples: overlap
+[qa 00:47:49] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "overlap.lawsmith.json", "generation": 5, "title": "Overlap", "bytes": 3556, "readMs": 0.12, "parseMs": 6, "candidateMs": 1, "commitMs": 1, "openMs": 8.12, "mode": "packaged", "t": 209223}  [document] overlap opened transactionally
+[qa 00:47:49] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 4, "laws": [{"id": "drag", "enabled": true, "position": [0, 2.5, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 2.2}, "edgeFade": 0.25, "expression": {"kind": "linearDrag", "coefficient": 1.2}}, {"id"  [sim-control] overlap starts paused at tick 0
+[qa 00:47:50] recording m3-overlap for 46 s (overlay windows skipped by the hit test: 18906)
+[qa 00:47:58] captured overlap-01-three-laws.png
+[qa 00:48:00] PASS {"kind": "control", "law": "pull", "enabled": false, "revision": 1, "mode": "packaged", "t": 220104}  [control] the pull is disabled: the swirl and drag still act
+[qa 00:48:04] captured overlap-02-without-pull.png
+[qa 00:48:06] PASS {"kind": "control", "law": "pull", "enabled": true, "revision": 2, "mode": "packaged", "t": 226030}  [control] the pull is enabled again
+[qa 00:48:09] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the overlap's drag law is selected, with its handles
+[qa 00:48:17] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "coefficient", "samples": 27, "rejected": 0, "pointer": [637, 283, 638.46875, 204.53125], "firstRevision": 3, "lastRevision": 29, "field": {"enabled": true, "position": [0, 2.5, 0], "rotation": [0,   [gesture] the overlap's drag gauge changed its coefficient
+[qa 00:48:21] captured overlap-03-drag-tuned.png
+[qa 00:48:21] waiting for m3-overlap to finish
+[qa 00:48:37] recording m3-overlap.mp4 written
+[qa 00:48:57] segment: examples: collisions
+[qa 00:49:07] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "collisions.lawsmith.json", "generation": 6, "title": "Collisions", "bytes": 3016, "readMs": 0.127, "parseMs": 0, "candidateMs": 1, "commitMs": 1, "openMs": 2.127, "mode": "packaged", "t": 287364}  [document] collisions opened transactionally
+[qa 00:49:07] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 5, "laws": [{"id": "drag", "enabled": true, "position": [0, 2, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 1.8}, "edgeFade": 0.25, "expression": {"kind": "linearDrag", "coefficient": 3}}, {"id": "p  [sim-control] collisions starts paused at tick 0
+[qa 00:49:09] recording m3-collisions for 42 s (overlay windows skipped by the hit test: 18912)
+[qa 00:49:18] captured collisions-01-clump.png
+[qa 00:49:23] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the collision scene's pull is selected, with its handles
+[qa 00:49:31] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "strength", "samples": 27, "rejected": 0, "pointer": [589, 314, 665.0078125, 335], "firstRevision": 1, "lastRevision": 27, "field": {"enabled": true, "position": [0, 2, 0], "rotation": [0, 0, 0, 1],  [gesture] the pull's strength handle loosened the clump
+[qa 00:49:36] captured collisions-02-loosened.png
+[qa 00:49:38] PASS {"kind": "fixtures", "elapsedMs": 1205, "root": [{"id": "drag", "enabled": true, "position": [0, 2, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 1.8}, "edgeFade": 0.25, "expression": {"kind": "linearDrag", "coefficient": 3}}, {"id": "pull", "enabled": true, "position": [0, 2,  [fixtures] reset and cadence fixtures agree exactly on the collision scene
+[qa 00:49:38] waiting for m3-collisions to finish
+[qa 00:49:51] recording m3-collisions.mp4 written
+[qa 00:49:53] m3-demo complete

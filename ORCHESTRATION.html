@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> with M2 accepted and merged (code <code>86cee4e</code>), and M3 eligible but not started</span>
+    <span>Realigned 2026-10-07 against <code>main</code> at <code>5618b3e</code> and branch <code>m3</code> with M3 implemented (code <code>04e0b75</code>) and its review pending</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Start M3 in a fresh Opus 5.5 session.</h1>
-    <p class="lede">You accepted M2 on 2026-10-06, after its final micro-review returned FINAL M2 REMEDIATION VERIFIED; all ten acceptance criteria pass, and M2 is merged to <code>main</code>. M3, a small tactile law vocabulary, is now the only eligible unit and is not started. Opus 5.5 authors it on branch <code>m3</code> from <code>main</code>; GPT-6.1 Sol runs the bounded independent math review MILESTONES encourages.</p>
-    <cite><code>docs/evidence/M2.md</code> Status, Final micro-review; <code>docs/MILESTONES.md</code> M3</cite>
+    <h1>Run M3’s math review with GPT-6.1 Sol.</h1>
+    <p class="lede">M3 is implemented on branch <code>m3</code> (code <code>04e0b75</code>): four primitives and three regions through one registry, kernel and drag adapter, with every acceptance criterion evidenced and every native scenario, M2’s included, passing on its packaged app. Next comes Sol’s read-only review of <code>5618b3e..m3</code>, then <code>/address</code> on its report in an Opus 5.5 session on <code>m3</code>, then your acceptance and the merge. M4 waits for that acceptance.</p>
+    <cite><code>docs/evidence/M3.md</code> Status, Acceptance criteria, Findings; <code>docs/MILESTONES.md</code> M3</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -519,7 +519,7 @@
       </article>
 
       <!-- REALIGN M3 -->
-      <article class="unit" id="m3" data-gate="M3" data-state="not-started" data-tier="near">
+      <article class="unit" id="m3" data-gate="M3" data-state="implemented" data-tier="near">
         <div class="gate">M3</div>
         <div>
           <div class="unit-head">
@@ -528,18 +528,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the bounded independent math review MILESTONES encourages here. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">Now: M2 is ACCEPTED (2026-10-06).</dd>
-              <dt>Should run</dt><dd class="run">Next, and alone: the next implementation unit, in a fresh session from <code>main</code> on branch <code>m3</code>. It shares <code>persistence</code> and <code>ui</code> with M2. First gate where kernel/tests and UI/visuals can split under one integrator.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m3</code>. GPT-6.1 Sol runs the bounded independent math review MILESTONES encourages here; it has not run yet.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: implemented on <code>m3</code>, code at <code>04e0b75</code>; review pending, not merged.</dd>
+              <dt>Should run</dt><dd class="run">Sol’s read-only review of <code>5618b3e..m3</code>, then <code>/address</code> on its report in an Opus 5.5 session on <code>m3</code>, re-running whatever each fix affects, then your acceptance and the merge. Nothing beside it: M4 shares <code>simulation</code>, <code>rendering</code> and <code>ui</code>.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M2, accepted on 2026-10-06. Contracts C1, C2, C4, C5.</dd>
-              <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
-              <dt>Your part</dt><dd>Hands-off windows for the handle recordings.</dd>
+              <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for the P0, P1 and 1280×800 checks and restored it, and removed the panel preferences it created.</dd>
+              <dt>Your part</dt><dd>Run the Sol review with the prompt from the M3 session. Decide finding 1, pure drag at the engine’s f32 floor (thread below). Optionally feel the handles on the real trackpad. Then accept M3 or send it back.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M3 Evidence required for review, Visual QA; Delegation rule</cite>
+          <cite class="src"><code>docs/evidence/M3.md</code> Status, Spatial handles, Performance, Acceptance criteria, Findings, Owner checks; <code>docs/MILESTONES.md</code> M3</cite>
         </div>
       </article>
 
@@ -1185,6 +1185,18 @@
           <td data-label="What the record says">The dialog plugin is vendored with the upstream one-line <code>Manager</code> import; drop the patch once a fixed official release is qualified. The quit guard adds <code>applicationShouldTerminate:</code> to TAO’s delegate at launch; after any Tauri or TAO change, check that the shell still logs <code>terminateGuard: true</code>.</td>
           <td data-label="Owner">The next qualified dependency update</td>
           <td data-label="Source"><cite><code>M2.md</code> findings 1, 2</cite></td>
+        </tr>
+        <tr id="t-m3-drag" data-owner="owner" data-short="Drag floor">
+          <td data-label="Thread" class="lead">M3 finding 1: pure drag at the engine’s f32 floor</td>
+          <td data-label="What the record says">The adapter never reverses a velocity for any supported drag. Rapier integrates in f32, so past about 19 fully overlapping 100 s⁻¹ laws (K ≳ 1900 s⁻¹) a decaying velocity can end about one f32 ulp on the far side of zero; speed never grows. Accept it as the engine’s precision floor, or bound how much drag a scene may stack (a SPEC change). Yours to decide; a fixture pins the bound.</td>
+          <td data-label="Owner">You</td>
+          <td data-label="Source"><cite><code>M3.md</code> finding 1</cite></td>
+        </tr>
+        <tr id="t-m3-edits" data-owner="m3" data-short="Edit count">
+          <td data-label="Thread" class="lead">M3 finding 2: <code>editsSinceReset</code> undercounts</td>
+          <td data-label="What the record says">An edit whose acknowledgment the document controller adopts inside <code>settle()</code> is not counted, so a run digest can report no edits after one. Diagnostic only and pre-existing since M1; the host’s applied-command count is exact. For M3’s review remediation.</td>
+          <td data-label="Owner"><a href="#m3">M3</a></td>
+          <td data-label="Source"><cite><code>M3.md</code> finding 2</cite></td>
         </tr>
         <tr id="t-m2-policy" data-owner="owner" data-short="Instruction files">
           <td data-label="Thread" class="lead">Automated-verification policy</td>

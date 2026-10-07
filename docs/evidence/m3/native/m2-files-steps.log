@@ -1,0 +1,30 @@
+[qa 01:05:05] segment: invalid imports, canceled and refused saves
+[qa 01:05:08] launched pid 52439, window at 0,21, log files-a.log
+[qa 01:05:16] PASS {"kind": "document", "outcome": "rejected", "action": "open", "file": "bad-unknown-capability.lawsmith.json", "path": "requiredCapabilities[3]", "reason": "this scene requires \"primitive.unknown.v9\", which this build does not support", "mode": "packaged", "t": 10541}  [document] bad-unknown-capability is rejected before replacing anything
+[qa 01:05:24] PASS {"kind": "document", "outcome": "rejected", "action": "open", "file": "bad-zero-rotation.lawsmith.json", "path": "semantic.fields[0].pose.rotation", "reason": "rotation must be a finite nonzero quaternion", "mode": "packaged", "t": 18084}  [document] bad-zero-rotation is rejected before replacing anything
+[qa 01:05:31] PASS {"kind": "document", "outcome": "rejected", "action": "open", "file": "bad-not-json.lawsmith.json", "path": "", "reason": "the file is not valid JSON (JSON Parse error: Property name must be a string literal)", "mode": "packaged", "t": 25340}  [document] bad-not-json is rejected before replacing anything
+[qa 01:05:38] PASS {"kind": "document", "outcome": "failed", "action": "open", "failure": "not-utf8", "stage": "decode", "message": "the file is not UTF-8 (invalid utf-8 sequence of 1 bytes from index 155)", "mode": "packaged", "t": 32689}  [document] bad-latin1 is rejected before replacing anything
+[qa 01:05:45] PASS {"kind": "document", "outcome": "failed", "action": "open", "failure": "too-large", "stage": "open", "message": "the file is larger than 5242880 bytes", "mode": "packaged", "t": 40040}  [document] bad-oversized is rejected before replacing anything
+[qa 01:05:46] PASS {"kind": "digest", "reason": "startup", "generation": 1, "revision": 0, "semanticSha256": "ac7733bd9477e6e1a1e867470c0ac624e071a3330e921216c246f1b5240307ac", "mode": "packaged", "t": 2228}  [digest] the current scene's semantics never changed
+[qa 01:05:47] captured files-01-rejected-import.png
+[qa 01:05:49] PASS {"kind": "document", "action": "save-as", "outcome": "canceled", "file": null, "mode": "packaged", "t": 44060}  [document] a canceled Save As writes nothing
+[qa 01:05:55] PASS {"kind": "document", "action": "save-as", "outcome": "refused-name", "name": "refused-name.json", "mode": "packaged", "t": 48615}  [document] a name without .lawsmith.json is refused
+[qa 01:05:55] PASS  no file was written for the refused name
+[qa 01:05:55] captured files-02-refused-name.png
+[qa 01:06:00] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "bundled-roundtrip.lawsmith.json", "generation": 1, "revision": 0, "laterEdits": 0, "recoveryRetired": true, "bytes": 2503, "captureMs": 5, "writeMs": 8.658, "saveMs": 16, "mode": "packaged", "t": 54006}  [document] the untouched bundled scene saves
+[qa 01:06:00] PASS  the saved bundled scene is byte-identical to the bundled file
+[qa 01:06:03] segment: full disk
+[qa 01:06:21] launched pid 86488, window at 0,21, log files-b.log
+[qa 01:06:29] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "on-full-disk.lawsmith.json", "generation": 2, "title": "Falling stream", "bytes": 2503, "readMs": 0.272, "parseMs": 1, "candidateMs": 1, "commitMs": 1, "openMs": 3.272, "mode": "packaged", "t": 10129}  [document] the file on the full disk opened, through a symlink, and bound
+[qa 01:06:32] PASS {"kind": "document", "outcome": "failed", "action": "save", "file": "on-full-disk.lawsmith.json", "revision": 1, "failure": "disk-full", "stage": "create-temp", "message": "No space left on device (os error 28)", "mode": "packaged", "t": 13093}  [document] Save to the symlinked file on a full disk fails and says so
+[qa 01:06:32] PASS  the existing file is byte-identical after the failed save
+[qa 01:06:32] PASS  no temporary file was left on the full disk
+[qa 01:06:32] captured files-03-disk-full.png
+[qa 01:06:34] PASS {"kind": "control", "law": "sideways", "enabled": true, "revision": 2, "mode": "packaged", "t": 15351}  [control] editing still works after the failed save
+[qa 01:06:39] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "after-disk-full.lawsmith.json", "generation": 2, "revision": 2, "laterEdits": 0, "recoveryRetired": true, "bytes": 2503, "captureMs": 0, "writeMs": 7.677, "saveMs": 10, "mode": "packaged", "t": 20240}  [document] Save As to another writable location works after the failure
+[qa 01:06:42] segment: read-only recovery directory
+[qa 01:07:00] launched pid 2996, window at 0,21, log files-c.log
+[qa 01:07:04] PASS {"kind": "recovery", "action": "write", "outcome": "failed", "generation": 1, "revision": 1, "failure": "permission", "stage": "create-temp", "message": "Permission denied (os error 13)", "mode": "packaged", "t": 5309}  [recovery] a recovery write that is denied is reported
+[qa 01:07:05] captured files-04-recovery-unavailable.png
+[qa 01:07:10] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "after-recovery-failure.lawsmith.json", "generation": 1, "revision": 1, "laterEdits": 0, "recoveryRetired": true, "bytes": 2504, "captureMs": 0, "writeMs": 8.764, "saveMs": 11, "mode": "packaged", "t": 11598}  [document] explicit Save As works while recovery is unavailable
+[qa 01:07:12] m2-files complete

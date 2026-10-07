@@ -1,0 +1,177 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "The starting recipe: a seeded stream of spheres falling past one directional law.",
+    "title": "Falling stream"
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [9, 7, 11],
+      "target": [0, 1, 0]
+    },
+    "laws": [
+      {
+        "color": "#7aa7d9",
+        "id": "drag",
+        "label": "Drag",
+        "visible": true
+      },
+      {
+        "color": "#d9a35b",
+        "id": "pull",
+        "label": "Pull",
+        "visible": true
+      },
+      {
+        "color": "#55aaa4",
+        "id": "sideways",
+        "label": "Sideways",
+        "visible": true
+      },
+      {
+        "color": "#c58ae5",
+        "id": "swirl",
+        "label": "Swirl",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["emitter.xorshift32.v1", "primitive.directional.v1", "primitive.linearDrag.v1", "primitive.softRadial.v1", "primitive.vortexY.v1", "region.box.v1", "region.cylinderY.v1", "region.sphere.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [
+      {
+        "id": "stream",
+        "intervalTicks": 8,
+        "jitter": [0.25, 0, 0.25],
+        "lifetimeTicks": 512,
+        "pose": {
+          "position": [0, 6, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "seed": 1279350577,
+        "startTick": 0,
+        "template": {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.08
+          },
+          "collisionMode": "fixedOnly",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [0, -0.5, 0],
+          "massKg": 1,
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          }
+        }
+      }
+    ],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 8.83762423433551,
+          "kind": "linearDrag"
+        },
+        "id": "drag",
+        "pose": {
+          "position": [0, 1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 1.5
+        }
+      },
+      {
+        "edgeFade": 1,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 1.9955338410338384,
+          "kind": "softRadial",
+          "strength": -22.316942494289307
+        },
+        "id": "pull",
+        "pose": {
+          "position": [0, 1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 3.2919262461200804
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "direction": [1, 0, 0],
+          "kind": "directional",
+          "strength": 35.84968922399072
+        },
+        "id": "sideways",
+        "pose": {
+          "position": [3, 1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [3.095205936860835, 2, 1.5],
+          "kind": "box"
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 1.9955338410338384,
+          "kind": "vortexY",
+          "strength": -28.98066968692196
+        },
+        "id": "swirl",
+        "pose": {
+          "position": [0, 1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfHeight": 3.2919262461200804,
+          "kind": "cylinderY",
+          "radius": 4.094444400972103
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

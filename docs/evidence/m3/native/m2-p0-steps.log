@@ -1,0 +1,20 @@
+[qa 01:11:55] segment: P0 at 1600×1000 under More Space (about 7 minutes)
+[qa 01:12:06] display → 1728×1117: set 1728x1117@120
+[qa 01:12:09] display is 1728x1117@120
+[qa 01:12:11] launched pid 29110, window at 224,104, log p0.log
+[qa 01:12:15] PASS {"kind": "layout", "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "redo": [1103.8, 5, 81.1, 28], "frame-view": [1418.3, 5, 74.3, 28], "reset-view": [1500.7, 5, 87.3, 28], "panel": [12, 52, 284,   [layout] the content viewport is 1600×1000 CSS at DPR 2
+[qa 01:12:36] PASS {"kind": "pacing", "intervalMs": [17, 18, 18], "maxIntervalMs": 18, "workP95Ms": 3, "stallsOver50ms": 2, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 1830, "playing": true, "bodies": 64, "stepMs": [0, 1, 1], "editMs": [3, 15, 17], "editSamples": 24, "simWallRatio": 1.002, "droppedMs": 0, "mode"  [pacing] the stream is at full strength with the law inside it
+[qa 01:12:36] captured p0-1600x1000.png
+[qa 01:12:47] P0 run 1 measuring
+[qa 01:13:47] PASS {"kind": "p0-run", "run": 1, "invalid": null, "incomplete": null, "wallMs": 60016, "ticks": 7200, "simWallRatio": 1, "droppedMs": 11, "bodies": 64, "arrows": 125, "workload": {"title": "Falling stream", "laws": 1, "lawKinds": ["box", "directional"], "fixedColliders": 1, "authoredDynamic": 0, "allBod  [p0-run] run 1 is valid and meets every P0 gate
+[qa 01:13:57] P0 run 2 measuring
+[qa 01:14:57] PASS {"kind": "p0-run", "run": 2, "invalid": null, "incomplete": null, "wallMs": 60000, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 64, "arrows": 125, "workload": {"title": "Falling stream", "laws": 1, "lawKinds": ["box", "directional"], "fixedColliders": 1, "authoredDynamic": 0, "allBody  [p0-run] run 2 is valid and meets every P0 gate
+[qa 01:15:08] P0 run 3 measuring
+[qa 01:15:16] the synthetic release was lost; sending it again
+[qa 01:16:08] PASS {"kind": "p0-run", "run": 3, "invalid": null, "incomplete": null, "wallMs": 60000, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 64, "arrows": 125, "workload": {"title": "Falling stream", "laws": 1, "lawKinds": ["box", "directional"], "fixedColliders": 1, "authoredDynamic": 0, "allBody  [p0-run] run 3 is valid and meets every P0 gate
+[qa 01:16:13] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] 1280×800: the selected law's support is clear of the panel, tools and transport; controls fit; no full-width band
+[qa 01:16:13] captured p0-1280x800.png
+[qa 01:16:16] display → 1168×755: set 1168x755@120
+[qa 01:16:19] display restored to 1168x755@120
+[qa 01:16:19] m2-p0 complete
+[qa 01:16:19] display restored to 1168x755@120
