@@ -6,7 +6,8 @@ import { DocumentController } from '../src/domain/document';
 import { cloneFrozen, type FieldDefinition } from '../src/domain/scene';
 import { defaultDocument } from '../src/persistence/defaultScene';
 import { createDocument, parseScene, serializeScene } from '../src/persistence/sceneFile';
-import { SimulationHost, initSimulation } from '../src/simulation/host';
+import { EditLatency } from '../src/measurement';
+import { SimulationHost, initSimulation, type CommandAck } from '../src/simulation/host';
 
 beforeAll(async () => {
   await initSimulation();
@@ -230,5 +231,35 @@ describe('load', () => {
     expect(controller.scene.fields[0]!.pose.position).toEqual([3, 1, 0]);
     host.dispose();
     nextHost.dispose();
+  });
+});
+
+describe('acknowledgment accounting (M3 review finding 2)', () => {
+  it('every acknowledgment reaches the observer exactly once, whichever call adopts it', () => {
+    const { host, controller } = setup();
+    const seen: number[] = [];
+    controller.onAcks = (acks: readonly CommandAck[]) => seen.push(...acks.map((a) => a.documentRevision));
+    const toggled = controller.editField('sideways', 'Disable law', (f) => ({ ...f, enabled: false }));
+    if (!toggled.ok) throw new Error(toggled.reason);
+    controller.snapshot(undefined); // a digest report or a save settles here, not the frame loop
+    controller.sync();
+    expect(seen).toEqual([toggled.value.revision]);
+    controller.undo(); // undo settles first, then queues its restore
+    controller.settle();
+    expect(seen).toEqual([toggled.value.revision, toggled.value.revision + 1]);
+    host.dispose();
+  });
+
+  it('an edit adopted outside the frame loop is timed, not counted as superseded', () => {
+    const { host, controller } = setup();
+    const latency = new EditLatency();
+    controller.onAcks = (acks) => acks.forEach((a) => latency.acknowledge(a.documentRevision));
+    const toggled = controller.editField('sideways', 'Disable law', (f) => ({ ...f, enabled: false }));
+    if (!toggled.ok) throw new Error(toggled.reason);
+    latency.accept(toggled.value.revision, 100);
+    controller.snapshot(undefined);
+    expect(latency.frameSubmitted(controller.appliedRevision, 116)).toEqual([16]);
+    expect(latency.superseded).toBe(0);
+    host.dispose();
   });
 });

@@ -55,6 +55,12 @@ export class DocumentController {
   revision = 0;
   /** Revision of the last semantic edit the host acknowledged, i.e. the one its laws now include. */
   appliedRevision = 0;
+  /**
+   * Observes every batch of acknowledgments as the document adopts it, whichever call settled it
+   * (an edit, undo, a digest or a save settles too), so accounting such as edit latency sees each
+   * applied command exactly once.
+   */
+  onAcks: ((acks: readonly CommandAck[]) => void) | null = null;
 
   constructor(
     document: SceneDocument,
@@ -155,6 +161,7 @@ export class DocumentController {
     }
     fields.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     this.authored = Object.freeze({ ...this.authored, fields: Object.freeze(fields) });
+    this.onAcks?.(acks);
     return acks;
   }
 

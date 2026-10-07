@@ -226,9 +226,10 @@ async function start() {
   /** The P0 capture in progress, if any (see startP0). */
   let p0: P0Capture | null = null;
   let p0Runs = 0;
-  /** Adopts acknowledged edits into the authored scene and reports the ones that end a change. */
-  const absorb = () => {
-    for (const ack of authoring.sync()) {
+  // Every acknowledgment is accounted here, whichever call adopted it: the frame loop, an edit, undo,
+  // a digest report or a save all settle, and a revision missed here would read as superseded.
+  authoring.onAcks = (acks) => {
+    for (const ack of acks) {
       editsSinceReset += 1;
       editLatency.acknowledge(ack.documentRevision);
       for (const revision of awaited) {
@@ -243,6 +244,10 @@ async function start() {
         });
       }
     }
+  };
+  /** Adopts acknowledged edits into the authored scene; `onAcks` accounts for them. */
+  const absorb = () => {
+    authoring.sync();
   };
   /** Applies queued commands at the current boundary now (SPEC §10.2), as the next step would. */
   const settleNow = () => {
