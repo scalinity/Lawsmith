@@ -68,32 +68,6 @@
         </div>
       </section>
 
-      <section id="motion" aria-labelledby="motion-title">
-        <div class="laws-head">
-          <h2 id="motion-title">Motion</h2>
-          <button type="button" id="explain-nearest" title="Explain the body nearest the view’s focus point (B)">Explain a body <kbd>B</kbd></button>
-        </div>
-        <p class="note first">Click a body to see what the laws did to it in the last step.</p>
-        <div class="legend">
-          <span class="probe-glyph" aria-hidden="true"></span>
-          <span>Probes: massless, no collisions, moved by the laws</span>
-          <button type="button" id="probes-toggle" aria-pressed="false">Probes</button>
-        </div>
-        <div class="pair-fields" id="probe-settings">
-          <label>Count <input id="probe-count" type="number" min="0" max="2000" step="100" aria-label="Probe count" /></label>
-          <label>Seed <input id="probe-seed" type="number" min="1" max="4294967295" step="1" aria-label="Probe seed" /></label>
-        </div>
-        <div class="legend">
-          <span class="trail-glyph" aria-hidden="true"></span>
-          <span id="trail-mode-label">Trails: where bodies were, every 4 ticks, 10 s</span>
-        </div>
-        <div class="segmented compact spread" id="trail-mode" role="radiogroup" aria-labelledby="trail-mode-label">
-          <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false">Off</button>
-          <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true">Explained body</button>
-          <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false">32 bodies</button>
-        </div>
-        <p id="motion-error" role="alert" hidden></p>
-      </section>
 
       <section id="details" aria-labelledby="details-title" hidden>
         <div class="details-head">
@@ -135,6 +109,27 @@
         </div>
         <p id="details-error" role="alert" hidden></p>
         <p class="note" id="law-sampling"></p>
+      </section>
+
+      <section id="motion" aria-labelledby="motion-title">
+        <div class="laws-head">
+          <h2 id="motion-title">Motion</h2>
+          <button type="button" id="explain-nearest" title="Explain the body nearest the view’s focus point (B)">Explain a body <kbd>B</kbd></button>
+        </div>
+        <p class="note first">Click a body to see what the laws did to it in the last step.</p>
+        <div class="legend">
+          <span class="probe-glyph" aria-hidden="true"></span>
+          <span>Probes: massless, no collisions, moved by the laws</span>
+        </div>
+        <div class="pair-fields" id="probe-settings">
+          <label>Probes <input id="probe-count" type="number" min="0" max="2000" step="100" aria-label="Probe count" /></label>
+          <label>Seed <input id="probe-seed" type="number" min="1" max="4294967295" step="1" aria-label="Probe seed" /></label>
+        </div>
+        <div class="legend">
+          <span class="trail-glyph" aria-hidden="true"></span>
+          <span>Trails: where bodies were, every 4 ticks, for 10 s</span>
+        </div>
+        <p id="motion-error" role="alert" hidden></p>
       </section>
 
     </aside>
@@ -181,6 +176,14 @@
       <button type="button" id="step">Step <kbd>.</kbd></button>
       <button type="button" id="reset">Reset <kbd>⇧R</kbd></button>
       <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
+      <div class="overlay-switches" role="group" aria-label="Probes and trails">
+        <button type="button" id="probes-toggle" aria-pressed="false" title="Massless probes moved by the laws; they never touch bodies">Probes</button>
+        <div class="segmented" id="trail-mode" role="radiogroup" aria-label="Trails">
+          <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="No trails">No trail</button>
+          <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true" title="The explained body’s trail">Body</button>
+          <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false" title="Trails of up to 32 bodies">32</button>
+        </div>
+      </div>
     </div>
 
     <section id="recovery-offer" role="alertdialog" aria-labelledby="recovery-title" aria-describedby="recovery-text" hidden>

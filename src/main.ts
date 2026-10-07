@@ -1070,7 +1070,7 @@ async function start() {
       return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
     };
     const controls: Record<string, number[] | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #drag-region, #recovery-offer, #details, #motion, #explain, button[id], input[id]')) {
+    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, button[id], input[id]')) {
       controls[element.id] = box(element);
     }
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
@@ -1151,6 +1151,11 @@ async function start() {
       camera: viewport.camera.position.toArray(),
       // World → clip space, so a harness can find where any world point appears.
       viewProjection: viewport.camera.projectionMatrix.clone().multiply(viewport.camera.matrixWorldInverse).elements,
+      // Where bodies are, so a harness can click one it chose by position (up to 128, in host order).
+      bodies: Array.from({ length: Math.min(host.count, 128) }, (_, i) => {
+        const world = [host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!];
+        return { id: host.ids[i]!, world, point: toScreen(new Vector3(world[0], world[1], world[2])) };
+      }),
     });
   };
 
@@ -1432,7 +1437,6 @@ async function start() {
   const renderMotion = () => {
     const s = probes.settings;
     $('probes-toggle').setAttribute('aria-pressed', String(s.enabled));
-    $('probe-settings').hidden = !s.enabled;
     if (document.activeElement !== probeCount) probeCount.value = String(s.count);
     if (document.activeElement !== probeSeed) probeSeed.value = String(s.seed);
     for (const b of document.querySelectorAll<HTMLButtonElement>('#trail-mode button')) b.setAttribute('aria-checked', String(b.dataset.trails === trails.mode));

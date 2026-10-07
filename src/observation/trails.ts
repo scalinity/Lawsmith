@@ -66,6 +66,8 @@ export class TrailRecorder {
     }
     const tick = host.tick;
     if (tick % TRAIL_INTERVAL_TICKS !== 0 || tick === this.lastTick) return;
+    // Nothing explained and nothing held: no work at all.
+    if (this.current === 'selected' && selected === null && this.slotOf.size === 0) return;
     this.lastTick = tick;
 
     const index = new Map<string, number>();

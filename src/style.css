@@ -722,12 +722,25 @@ button.primary {
   flex: 1;
 }
 
+#trail-mode button {
+  padding: 0 9px;
+}
+
 #arrows-scope {
   margin-left: auto;
 }
 
-#probe-settings[hidden] {
-  display: none;
+/* Probes and trails sit in the transport cluster: always reachable, never scrolled away. */
+.overlay-switches {
+  display: flex;
+  gap: 6px;
+  padding-left: 8px;
+  border-left: 1px solid var(--hairline);
+}
+
+#probes-toggle[aria-pressed="true"] {
+  color: var(--text);
+  background: var(--raised);
 }
 
 #motion-error {
