@@ -78,7 +78,7 @@
         "edgeFade": 0.25,
         "enabled": true,
         "expression": {
-          "coefficient": 1,
+          "coefficient": 3,
           "kind": "linearDrag"
         },
         "id": "drag",
@@ -97,7 +97,7 @@
         "expression": {
           "coreRadius": 0.3,
           "kind": "softRadial",
-          "strength": 14
+          "strength": 16
         },
         "id": "pull",
         "pose": {
