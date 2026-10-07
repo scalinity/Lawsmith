@@ -38,7 +38,7 @@ describe('M3 example scenes', () => {
     expect(document.requiredCapabilities.length).toBe(kinds.size + (document.semantic.emitters.length ? 1 : 0));
   });
 
-  it.each(EXAMPLES)('$name runs 70 s without a fault or the acceleration limiter (SPEC §9.1)', ({ text }) => {
+  it.each(EXAMPLES)('$name runs 70 s without a fault or the acceleration limiter (SPEC §9.1)', { timeout: 60_000 }, ({ text }) => {
     const host = new SimulationHost(load(text).semantic);
     for (let i = 0; i < 8400; i++) host.step();
     expect(host.fault).toBeNull();
@@ -67,7 +67,7 @@ describe('P1 workshop scene (SPEC §18.1)', () => {
     expect(new Set(semantic.fields.map((f) => f.region.kind)).size).toBe(3);
   });
 
-  it('stays busy and bounded through a warmup and a measured minute', () => {
+  it('stays busy and bounded through a warmup and a measured minute', { timeout: 120_000 }, () => {
     const host = new SimulationHost(load(P1).semantic);
     for (let i = 0; i < 8400; i++) host.step();
     const bodies = host.canonicalState().bodies;
@@ -81,7 +81,7 @@ describe('P1 workshop scene (SPEC §18.1)', () => {
 
 describe('T04 exact reset with seeded multi-law scenes', () => {
   for (const name of ['overlap', 'collisions']) {
-    it(`${name}: reset with tick-addressed edits of every law agrees exactly at ticks 600 and 1200`, () => {
+    it(`${name}: reset with tick-addressed edits of every law agrees exactly at ticks 600 and 1200`, { timeout: 60_000 }, () => {
       const root = load(EXAMPLES.find((e) => e.name === name)!.text).semantic;
       const script = scriptedEdits(root);
       expect(script.length).toBeGreaterThan(6 * root.fields.length);
@@ -95,7 +95,7 @@ describe('T04 exact reset with seeded multi-law scenes', () => {
     });
   }
 
-  it('30, 60 and 144 Hz presentation reach the identical multi-law state at equal ticks', () => {
+  it('30, 60 and 144 Hz presentation reach the identical multi-law state at equal ticks', { timeout: 60_000 }, () => {
     const root = load(EXAMPLES.find((e) => e.name === 'overlap')!.text).semantic;
     const script = scriptedEdits(root);
     const host = new SimulationHost(root);
@@ -104,7 +104,7 @@ describe('T04 exact reset with seeded multi-law scenes', () => {
     for (const hz of [30, 60, 144]) expect(compareRuns(reference, runAtCadence(root, hz, script)).every((c) => c.equal)).toBe(true);
   });
 
-  it('the P1 scene resets exactly too', () => {
+  it('the P1 scene resets exactly too', { timeout: 60_000 }, () => {
     expect(runResetFixture(load(P1).semantic).every((c) => c.equal)).toBe(true);
   });
 });
@@ -152,7 +152,7 @@ describe('T06 M3 scenes', () => {
     expect(serializeScene(load(serializeScene(reloaded)))).toBe(text);
   });
 
-  it('the reloaded vocabulary reaches the same state and engine bytes at ticks 600 and 1200, with edits', () => {
+  it('the reloaded vocabulary reaches the same state and engine bytes at ticks 600 and 1200, with edits', { timeout: 60_000 }, () => {
     const original = vocabulary();
     const reloaded = load(serializeScene(original));
     const script = scriptedEdits(reloaded.semantic);

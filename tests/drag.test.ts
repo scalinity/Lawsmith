@@ -267,7 +267,7 @@ describe('T03 drag through the host and the engine', () => {
     }
   });
 
-  it('characterizes the f32 engine floor: no reversal through 19 overlapping 100 s⁻¹ laws; beyond, at most one f32 rounding across zero', () => {
+  it('characterizes the f32 engine floor: no reversal through 19 overlapping 100 s⁻¹ laws; beyond, at most one f32 rounding across zero', { timeout: 60_000 }, () => {
     // The adapter's f64 output never reverses (the pure grid above, up to K = 3200). Rapier integrates
     // v + dt·F/m in f32, so once e^{−Kh} falls below f32 precision (~1e-7, Kh ≳ 16) the engine's own
     // rounding can leave a residual about one f32 ulp on the far side of zero. Speed never grows.

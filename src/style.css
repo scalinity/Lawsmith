@@ -469,15 +469,28 @@ kbd {
 }
 
 /* The tool shelf: one button per primitive, each creating a law at the view's focus point. */
+/* The Laws heading shares its row with the tool shelf: one button per primitive, each creating a law
+   at the view's focus point. */
+.laws-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#panel .laws-head h2 {
+  margin: 0;
+}
+
 .law-shelf {
   display: flex;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 4px;
 }
 
 .law-shelf button {
-  flex: 1;
-  padding: 0 6px;
+  height: 24px;
+  padding: 0 7px;
   border-top: 2px solid var(--law-color, var(--hairline));
 }
 
