@@ -239,10 +239,10 @@ describe('T06 transactional rejection (AC6)', () => {
 
   it('rejects a law kind this build lacks and names the capability, never dropping the law', () => {
     const value = json();
-    value.semantic.fields[0].expression = { kind: 'vortexY', strength: 8, coreRadius: 0.25 };
+    value.semantic.fields[0].expression = { kind: 'sum', terms: [{ kind: 'directional', direction: [1, 0, 0], strength: 12 }] };
     const error = rejection(value)!;
     expect(error.path).toBe('semantic.fields[0].expression.kind');
-    expect(error.reason).toContain('primitive.vortexY.v1');
+    expect(error.reason).toContain('operator.sum.v1');
   });
 
   it('rejects a scene that uses a capability it does not declare', () => {

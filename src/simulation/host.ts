@@ -10,8 +10,8 @@ import {
   type SceneDefinition,
   type Vec3,
 } from '../domain/scene';
-import { compileField, sampleField, type CompiledField } from '../fields/directional';
-import { limitAcceleration } from './adapter';
+import { compileField, sampleField, type CompiledField } from '../fields/kernel';
+import { adaptAcceleration } from './adapter';
 
 /** Fixed simulation step h (SPEC §2.2). */
 export const STEP_SECONDS = 1 / 120;
@@ -241,10 +241,16 @@ export class SimulationHost {
   /** Diagnostic timing of the last step's field sampling and engine step, in ms. */
   lastFieldMs = 0;
   lastEngineMs = 0;
+  /** Fastest live body after the last step, m/s: the one-step travel the narrow-support diagnostic compares (SPEC §7). */
+  maxSpeed = 0;
+  /** Body-steps since reset whose external acceleration the global limiter scaled (λ < 1, SPEC §9.1, §16). */
+  limitedSteps = 0;
 
   private forces = new Float64Array(0);
-  private readonly sample = [0, 0, 0];
-  private readonly accel = [0, 0, 0];
+  /** A field sample: world drive A in [0..2] and drag rate K in [3]. */
+  private readonly sample = [0, 0, 0, 0];
+  /** The adapter's result: λ·a* in [0..2], β in [3], λ in [4]. */
+  private readonly accel = [0, 0, 0, 0, 0];
   private readonly force = { x: 0, y: 0, z: 0 };
 
   constructor(root: SceneDefinition) {
@@ -269,6 +275,8 @@ export class SimulationHost {
     this.lastAppliedSequence = 0;
     this.skippedEmissions = 0;
     this.fault = null;
+    this.maxSpeed = 0;
+    this.limitedSteps = 0;
     this.pending = [];
     this.acks = [];
     this.fieldDefs = [...root.fields].sort(byId);
@@ -340,6 +348,7 @@ export class SimulationHost {
     this.runLifecycle();
 
     // Every force comes from the same start-of-step state; nothing is applied until all exist.
+    // Laws add in stable ID order: A = g + ΣA_i and K = ΣK_i, then one adapter call per body.
     const fieldStart = performance.now();
     const { ambientAcceleration: g, maxAppliedAcceleration } = this.root.simulation;
     const { bodies, compiled, sample, accel, forces } = this;
@@ -349,16 +358,24 @@ export class SimulationHost {
       let ax = g[0];
       let ay = g[1];
       let az = g[2];
+      let k = 0;
       for (const field of compiled) {
         sampleField(field, p.x, p.y, p.z, sample);
-        if (!finite3(sample[0]!, sample[1]!, sample[2]!)) {
+        if (!finite3(sample[0]!, sample[1]!, sample[2]!) || !Number.isFinite(sample[3]!)) {
           throw (this.fault = new SimulationFault(this.tick, `${field.id} → ${live.id}`, 'Nonfinite field output'));
         }
         ax += sample[0]!;
         ay += sample[1]!;
         az += sample[2]!;
+        k += sample[3]!;
       }
-      limitAcceleration(ax, ay, az, maxAppliedAcceleration, accel);
+      // Drag needs the start-of-step velocity; without it the adapter's K = 0 path is the drive total.
+      if (k === 0) adaptAcceleration(ax, ay, az, 0, 0, 0, 0, STEP_SECONDS, maxAppliedAcceleration, accel);
+      else {
+        const v = live.body.linvel();
+        adaptAcceleration(ax, ay, az, k, v.x, v.y, v.z, STEP_SECONDS, maxAppliedAcceleration, accel);
+      }
+      if (accel[4]! < 1) this.limitedSteps += 1;
       // Acceleration → force with the engine-reported mass, so the law is mass-independent.
       const mass = live.body.mass();
       forces[3 * i] = mass * accel[0]!;
@@ -380,15 +397,19 @@ export class SimulationHost {
     this.lastFieldMs = engineStart - fieldStart;
     this.lastEngineMs = engineEnd - engineStart;
 
+    let maxSpeed = 0;
     for (const live of bodies) {
       const p = live.body.translation();
       const v = live.body.linvel();
+      const speed = Math.hypot(v.x, v.y, v.z);
       let reason: string | null = null;
       if (!finite3(p.x, p.y, p.z) || !finite3(v.x, v.y, v.z)) reason = 'Invalid engine state';
       else if (Math.max(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z)) > MAX_POSITION) reason = `Position outside the supported ±${MAX_POSITION} m`;
-      else if (Math.hypot(v.x, v.y, v.z) > MAX_SUPPORTED_SPEED) reason = `Speed above the supported ${MAX_SUPPORTED_SPEED} m/s`;
+      else if (speed > MAX_SUPPORTED_SPEED) reason = `Speed above the supported ${MAX_SUPPORTED_SPEED} m/s`;
       if (reason) throw (this.fault = new SimulationFault(this.tick + 1, live.id, reason));
+      maxSpeed = Math.max(maxSpeed, speed);
     }
+    this.maxSpeed = maxSpeed;
     this.tick += 1;
     this.publish();
   }
@@ -541,7 +562,7 @@ export class SimulationHost {
   }
 }
 
-/** M1 renders dynamic bodies as spheres, so a dynamic body must be one (dynamic boxes arrive with M3's collision example). */
+/** Dynamic bodies render as spheres, so a dynamic body must be one. */
 function radiusOf(collider: ColliderShape): number {
   if (collider.kind !== 'sphere') throw new Error('M1 supports only spherical dynamic bodies.');
   return collider.radius;

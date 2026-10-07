@@ -1,5 +1,9 @@
 // The semantic scene and document model (SPEC §5). No engine handles, no Three.js objects:
 // the semantic block is what the simulation consumes; presentation never reaches physics.
+import { primitiveDescriptor, regionDescriptor, isPrimitiveKind, isRegionKind } from '../fields/registry';
+import { canonicalQuat, finite, unsign, vec, within } from './numbers';
+
+export { canonicalDirection, canonicalQuat } from './numbers';
 
 export type Vec3 = readonly [number, number, number];
 /** Quaternion, component order x, y, z, w. */
@@ -11,22 +15,58 @@ export interface Pose {
   readonly rotation: Quat;
 }
 
+/** Support shapes (SPEC §5.4): dimensions in meters, never an ambiguous scale. */
+export interface BoxRegion {
+  readonly kind: 'box';
+  readonly halfExtents: Vec3;
+}
+export interface SphereRegion {
+  readonly kind: 'sphere';
+  readonly radius: number;
+}
+/** Axis along the law's local Y. */
+export interface CylinderYRegion {
+  readonly kind: 'cylinderY';
+  readonly radius: number;
+  readonly halfHeight: number;
+}
+export type RegionDefinition = BoxRegion | SphereRegion | CylinderYRegion;
+
 export interface DirectionalPrimitive {
   readonly kind: 'directional';
   /** Unit vector in the field's local frame; normalized on acceptance. */
   readonly direction: Vec3;
-  /** m/s². */
+  /** m/s², 0–200. */
   readonly strength: number;
 }
+/** Positive strength attracts, negative repels (m/s², −200–200). */
+export interface SoftRadialPrimitive {
+  readonly kind: 'softRadial';
+  readonly strength: number;
+  readonly coreRadius: number;
+}
+/** Signed strength sets the circulation about the local Y axis (m/s², −200–200). */
+export interface VortexYPrimitive {
+  readonly kind: 'vortexY';
+  readonly strength: number;
+  readonly coreRadius: number;
+}
+/** s⁻¹, 0–100; relative to the stationary world. */
+export interface LinearDragPrimitive {
+  readonly kind: 'linearDrag';
+  readonly coefficient: number;
+}
+/** The primitive leaves of SPEC §6.3; a scene's law is one leaf until M5's operators. */
+export type Primitive = DirectionalPrimitive | SoftRadialPrimitive | VortexYPrimitive | LinearDragPrimitive;
 
 export interface FieldDefinition {
   readonly id: EntityId;
   readonly enabled: boolean;
   readonly pose: Pose;
-  readonly region: { readonly kind: 'box'; readonly halfExtents: Vec3 };
+  readonly region: RegionDefinition;
   /** Inner fade fraction in [0,1] (SPEC §7). */
   readonly edgeFade: number;
-  readonly expression: DirectionalPrimitive;
+  readonly expression: Primitive;
 }
 
 export type ColliderShape =
@@ -260,55 +300,17 @@ export function checkId(id: string): string | null {
   return null;
 }
 
-const finite = (values: readonly number[]) => values.every(Number.isFinite);
-const within = (value: number, min: number, max: number) => Number.isFinite(value) && value >= min && value <= max;
-/** Negative zero becomes positive zero, so equal values serialize and compare identically. */
-const unsign = (value: number) => (value === 0 ? 0 : value);
-const vec = (v: Vec3): Vec3 => [unsign(v[0]), unsign(v[1]), unsign(v[2])];
 const isSafeCount = (value: number, min: number) => Number.isSafeInteger(value) && value >= min;
 const isSeed = (value: number) => Number.isInteger(value) && value >= 1 && value <= 0xffffffff;
 
-/** A stored unit value is kept as is when its norm is within this of 1 (SPEC §15.1), so save/load never drifts. */
-const UNIT_RETAIN = 1e-12;
-
-/**
- * Unit vector by scaled normalization: dividing by the largest magnitude first keeps the length
- * in [1, 2], so no finite nonzero input overflows or underflows. An input already within 1e-12
- * of unit length is retained unchanged. Null for zero or nonfinite input.
- */
-function unit(values: readonly number[]): number[] | null {
-  if (!finite(values)) return null;
-  const scale = Math.max(...values.map(Math.abs));
-  if (!(scale > 0)) return null;
-  const scaled = values.map((c) => c / scale);
-  const length = Math.hypot(...scaled);
-  if (Math.abs(scale * length - 1) <= UNIT_RETAIN) return values.map(unsign);
-  return scaled.map((c) => unsign(c / length));
-}
-
-/**
- * SPEC §15.1 canonical quaternion: a unit quaternion whose first nonzero component in the order
- * w, x, y, z is positive. Null for a zero or nonfinite quaternion.
- */
-export function canonicalQuat(q: readonly number[]): Quat | null {
-  const u = unit(q);
-  if (!u) return null;
-  const [x, y, z, w] = u as [number, number, number, number];
-  const first = [w, x, y, z].find((c) => c !== 0)!;
-  const sign = first < 0 ? -1 : 1;
-  return [unsign(sign * x), unsign(sign * y), unsign(sign * z), unsign(sign * w)];
-}
-
-/** A canonical unit direction (no sign rule: a direction's sign is meaningful). */
-export function canonicalDirection(v: readonly number[]): Vec3 | null {
-  const u = unit(v);
-  return u ? (u as unknown as Vec3) : null;
-}
+/** The edge fade's bounds and undo label (SPEC §7); every region kind shares it. */
+export const EDGE_FADE = Object.freeze({ key: 'edgeFade', label: 'Fade', unit: '', min: 0, max: 1, step: 0.05, edit: 'Change fade' });
 
 /**
  * Validates a complete field put against SPEC §9.3's supported domain and resolves it: the
- * quaternion and direction take their canonical forms. Invalid input is rejected before any
- * host mutation; nothing is clamped silently.
+ * quaternion and direction take their canonical forms. The region and primitive are checked by
+ * their registry entries. Invalid input is rejected before any host mutation; nothing is clamped
+ * silently.
  */
 export function validateField(field: FieldDefinition): Validated<FieldDefinition> {
   const idError = checkId(field.id);
@@ -318,14 +320,13 @@ export function validateField(field: FieldDefinition): Validated<FieldDefinition
   if (!position.every((c) => within(c, -1000, 1000))) return reject('pose.position', 'position components must be within ±1000 m');
   const q = canonicalQuat(rotation);
   if (!q) return reject('pose.rotation', 'rotation must be a finite nonzero quaternion');
-  if (field.region.kind !== 'box') return reject('region.kind', 'only box support exists in this build');
-  if (!field.region.halfExtents.every((h) => within(h, 0.01, 100))) return reject('region.halfExtents', 'box half-extents must be within 0.01–100 m');
-  if (!within(field.edgeFade, 0, 1)) return reject('edgeFade', 'edge fade must be within 0–1');
-  const { expression } = field;
-  if (expression.kind !== 'directional') return reject('expression.kind', 'only the directional primitive exists in this build');
-  if (!within(expression.strength, 0, 200)) return reject('expression.strength', 'directional strength must be within 0–200 m/s²');
-  const d = canonicalDirection(expression.direction);
-  if (!d) return reject('expression.direction', 'direction must be finite and nonzero');
+  if (!isRegionKind(field.region.kind)) return reject('region.kind', `unknown region kind ${JSON.stringify(field.region.kind)}`);
+  const region = regionDescriptor(field.region.kind).validate(field.region);
+  if (!region.ok) return { ...region, path: at('region', region.path) };
+  if (!within(field.edgeFade, EDGE_FADE.min, EDGE_FADE.max)) return reject('edgeFade', 'edge fade must be within 0–1');
+  if (!isPrimitiveKind(field.expression.kind)) return reject('expression.kind', `unknown primitive kind ${JSON.stringify(field.expression.kind)}`);
+  const expression = primitiveDescriptor(field.expression.kind).validate(field.expression);
+  if (!expression.ok) return { ...expression, path: at('expression', expression.path) };
 
   return {
     ok: true,
@@ -333,9 +334,9 @@ export function validateField(field: FieldDefinition): Validated<FieldDefinition
       id: field.id,
       enabled: field.enabled,
       pose: { position: vec(position), rotation: q },
-      region: { kind: 'box', halfExtents: vec(field.region.halfExtents) },
+      region: region.value,
       edgeFade: unsign(field.edgeFade),
-      expression: { kind: 'directional', direction: d, strength: unsign(expression.strength) },
+      expression: expression.value,
     } satisfies FieldDefinition),
   };
 }
@@ -362,7 +363,7 @@ function validateMotion(linear: Vec3, angular: Vec3, path: { linear: string; ang
   return null;
 }
 
-/** Dynamic bodies render and simulate as spheres in this build (boxes arrive with M3's collision example). */
+/** Dynamic bodies render and simulate as spheres in this build. */
 const SPHERES_ONLY = 'dynamic bodies must be spheres in this build';
 
 export function validateBody(body: BodyDefinition): Validated<BodyDefinition> {

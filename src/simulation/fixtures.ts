@@ -1,7 +1,8 @@
 // Same-environment determinism fixtures (SPEC §13.4, T04). Shared by the Vitest harness and
 // the app's diagnostic run, so the qualified WKWebView runtime executes the same code.
 import { STARTING_RECIPE, validateField, type FieldDefinition, type SceneDefinition } from '../domain/scene';
-import { sampleField } from '../fields/directional';
+import { sampleField } from '../fields/kernel';
+import { primitiveDescriptor, regionDescriptor } from '../fields/registry';
 import { SimulationHost, type CanonicalState, type CommandPayload } from './host';
 import { FixedStepScheduler } from './scheduler';
 
@@ -105,7 +106,7 @@ export function runAtCadence(root: SceneDefinition, hz: number, script: readonly
   const revision = { value: 0 };
   const captured: Checkpoint[] = [];
   const last = FIXTURE_TICKS[FIXTURE_TICKS.length - 1]!;
-  const arrow = [0, 0, 0];
+  const arrow = [0, 0, 0, 0];
   scheduler.play();
   try {
     for (let frame = 0; host.tick < last; frame++) {
@@ -128,6 +129,40 @@ export function runAtCadence(root: SceneDefinition, hz: number, script: readonly
   } finally {
     host.dispose();
   }
+}
+
+/**
+ * A tick-addressed edit script for every law of a root, whatever its kinds: each law is moved,
+ * rotated, resized through its region controls, retuned through its primitive controls, disabled
+ * and enabled; the last law is removed and put back. Values are resolved through validation, as a
+ * live edit would be, and laws are staggered by ID order.
+ */
+export function scriptedEdits(root: SceneDefinition): ScriptedCommand[] {
+  const script: ScriptedCommand[] = [];
+  const put = (atTick: number, candidate: FieldDefinition): FieldDefinition => {
+    const result = validateField(candidate);
+    if (!result.ok) throw new Error(`${result.path}: ${result.reason}`);
+    script.push({ atTick, payload: { kind: 'putField', field: result.value } });
+    return result.value;
+  };
+  const s = Math.sin(Math.PI / 8);
+  root.fields.forEach((base, i) => {
+    const region = regionDescriptor(base.region.kind);
+    const primitive = primitiveDescriptor(base.expression.kind);
+    const [x, y, z] = base.pose.position;
+    let f = put(120 + i, { ...base, pose: { ...base.pose, position: [x - 0.5, y + 0.2, z + 0.1] } });
+    f = put(300 + i, { ...f, pose: { ...f.pose, rotation: [0, 0, s, Math.cos(Math.PI / 8)] } });
+    f = put(480 + i, { ...f, region: region.controls.reduce((r, c) => c.set(r, Math.min(c.max, c.get(r) * 1.2)), f.region) });
+    f = put(560 + i, { ...f, edgeFade: Math.min(1, f.edgeFade + 0.1), expression: primitive.controls.reduce((p, c) => c.set(p, c.get(p) * 0.75), f.expression) });
+    f = put(700 + i, { ...f, enabled: false });
+    put(840 + i, { ...f, enabled: true });
+  });
+  const last = root.fields[root.fields.length - 1];
+  if (last) {
+    script.push({ atTick: 900, payload: { kind: 'removeField', id: last.id } });
+    put(960, last);
+  }
+  return script.sort((a, b) => a.atTick - b.atTick);
 }
 
 /** A scripted law edit sequence on the recipe: move into the stream, rotate, resize, disable, enable. */

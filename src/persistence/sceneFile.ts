@@ -26,26 +26,25 @@ import {
   checkCamera,
   checkLawPresentation,
 } from '../domain/scene';
+import { LAW_CAPABILITIES, isPrimitiveKind, isRegionKind, primitiveDescriptor, regionDescriptor, type ValueKind } from '../fields/registry';
+
+/** The emitter capability; region and primitive capabilities come from the law registry. */
+export const EMITTER_CAPABILITY = 'emitter.xorshift32.v1';
 
 /**
  * Semantic capabilities this build implements (SPEC §15.1). A scene lists the ones it needs;
  * an unknown one is rejected, never ignored.
  */
-export const CAPABILITY = Object.freeze({
-  regionBox: 'region.box.v1',
-  directional: 'primitive.directional.v1',
-  emitter: 'emitter.xorshift32.v1',
-});
-const KNOWN_CAPABILITIES: ReadonlySet<string> = new Set(Object.values(CAPABILITY));
+const KNOWN_CAPABILITIES: ReadonlySet<string> = new Set([...LAW_CAPABILITIES, EMITTER_CAPABILITY]);
 
 /** The capabilities a semantic block uses, sorted. */
 export function requiredCapabilities(scene: SceneDefinition): string[] {
   const used = new Set<string>();
   for (const field of scene.fields) {
-    if (field.region.kind === 'box') used.add(CAPABILITY.regionBox);
-    if (field.expression.kind === 'directional') used.add(CAPABILITY.directional);
+    used.add(regionDescriptor(field.region.kind).capability);
+    used.add(primitiveDescriptor(field.expression.kind).capability);
   }
-  if (scene.emitters.length) used.add(CAPABILITY.emitter);
+  if (scene.emitters.length) used.add(EMITTER_CAPABILITY);
   return [...used].sort();
 }
 
@@ -240,12 +239,8 @@ function emitter(value: unknown, path: string): EmitterDefinition {
   };
 }
 
-/** Region and primitive kinds the SPEC defines but this build does not implement, with their capabilities. */
-const LATER_REGIONS: Readonly<Record<string, string>> = { sphere: 'region.sphere.v1', cylinderY: 'region.cylinderY.v1' };
+/** Operators the SPEC defines for later builds (M5), with their capabilities. */
 const LATER_EXPRESSIONS: Readonly<Record<string, string>> = {
-  softRadial: 'primitive.softRadial.v1',
-  vortexY: 'primitive.vortexY.v1',
-  linearDrag: 'primitive.linearDrag.v1',
   sum: 'operator.sum.v1',
   gain: 'operator.gain.v1',
   mask: 'operator.mask.v1',
@@ -256,28 +251,37 @@ function unsupportedKind(kind: unknown, path: string, later: Readonly<Record<str
   throw new ImportError(path, capability ? `kind ${JSON.stringify(kind)} needs capability ${capability}, which this build does not support` : `unknown kind ${JSON.stringify(kind)}`);
 }
 
+/** Reads `{ kind, ...keys }` with exactly the keys a registry entry declares, each a number or a 3-vector. */
+function tagged(value: unknown, path: string, kind: string, keys: Readonly<Record<string, ValueKind>>): Record<string, unknown> {
+  const o = object(value, path, ['kind', ...Object.keys(keys)]);
+  const read: Record<string, unknown> = { kind };
+  for (const [key, type] of Object.entries(keys)) read[key] = type === 'vec3' ? vec3(o[key], at(path, key)) : number(o[key], at(path, key));
+  return read;
+}
+
 function field(value: unknown, path: string): FieldDefinition {
   const o = object(value, path, ['id', 'enabled', 'pose', 'region', 'edgeFade', 'expression']);
   const regionPath = at(path, 'region');
-  const regionKind = object(o.region, regionPath, ['kind'], ['halfExtents', 'radius', 'halfHeight']).kind;
-  if (regionKind !== 'box') unsupportedKind(regionKind, at(regionPath, 'kind'), LATER_REGIONS);
-  const region = object(o.region, regionPath, ['kind', 'halfExtents']);
+  const regionKind = kindOf(o.region, regionPath);
+  if (!isRegionKind(regionKind)) unsupportedKind(regionKind, at(regionPath, 'kind'), {});
   const expressionPath = at(path, 'expression');
-  const expressionKind = object(o.expression, expressionPath, ['kind'], ['direction', 'strength', 'coreRadius', 'coefficient', 'terms', 'gain', 'child', 'pose', 'region', 'edgeFade']).kind;
-  if (expressionKind !== 'directional') unsupportedKind(expressionKind, at(expressionPath, 'kind'), LATER_EXPRESSIONS);
-  const expression = object(o.expression, expressionPath, ['kind', 'direction', 'strength']);
+  const expressionKind = kindOf(o.expression, expressionPath);
+  if (!isPrimitiveKind(expressionKind)) unsupportedKind(expressionKind, at(expressionPath, 'kind'), LATER_EXPRESSIONS);
   return {
     id: string(o.id, at(path, 'id'), SCENE_LIMITS.idLength),
     enabled: boolean(o.enabled, at(path, 'enabled')),
     pose: pose(o.pose, at(path, 'pose')),
-    region: { kind: 'box', halfExtents: vec3(region.halfExtents, at(regionPath, 'halfExtents')) },
+    region: tagged(o.region, regionPath, regionKind, regionDescriptor(regionKind).keys) as unknown as FieldDefinition['region'],
     edgeFade: number(o.edgeFade, at(path, 'edgeFade')),
-    expression: {
-      kind: 'directional',
-      direction: vec3(expression.direction, at(expressionPath, 'direction')),
-      strength: number(expression.strength, at(expressionPath, 'strength')),
-    },
+    expression: tagged(o.expression, expressionPath, expressionKind, primitiveDescriptor(expressionKind).keys) as unknown as FieldDefinition['expression'],
   };
+}
+
+/** The `kind` of a tagged object, read before its other keys are known. */
+function kindOf(value: unknown, path: string): unknown {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new ImportError(path, 'must be an object');
+  if (!Object.hasOwn(value, 'kind')) throw new ImportError(at(path, 'kind'), 'is required');
+  return (value as Obj).kind;
 }
 
 function settings(value: unknown, path: string): SimulationSettings {

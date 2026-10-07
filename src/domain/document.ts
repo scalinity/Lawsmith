@@ -1,6 +1,7 @@
 // The document controller (SPEC §4): owns the authored scene, its presentation and author undo.
 // Semantic edits become validated commands for the host and enter the authored scene only when
 // the host acknowledges them, so a later reset, save or recovery uses exactly what was applied.
+import { primitiveDescriptor, type PrimitiveKind } from '../fields/registry';
 import { commandTarget, type CommandAck, type SimulationHost } from '../simulation/host';
 import {
   SCENE_LIMITS,
@@ -16,7 +17,11 @@ import {
   type SceneMetadata,
   type ScenePresentation,
   type Validated,
+  type Vec3,
 } from './scene';
+
+/** The boundary fade a created law starts with (SPEC §2.2). */
+const CREATED_FADE = 0.25;
 
 /** One law's complete authored state; null in a transaction means the law is absent. */
 export interface LawState {
@@ -233,6 +238,31 @@ export class DocumentController {
     return { ok: true, value: { id: newId, revision: this.revision } };
   }
 
+  /**
+   * Creates a law of one primitive kind at `position` (the tool shelf, SPEC §11.1): a new stable ID
+   * from the kind's verb, identity rotation, the registry's default region and parameters, and a
+   * presentation entry. One undo entry; undo removes it, redo restores it with the same ID.
+   */
+  create(kind: PrimitiveKind, position: Vec3): Validated<{ id: string; revision: number }> {
+    this.settle();
+    if (this.authored.fields.length >= SCENE_LIMITS.fields) return failure(`a scene holds at most ${SCENE_LIMITS.fields} laws`);
+    const descriptor = primitiveDescriptor(kind);
+    const { newId, suffix } = this.freshId(descriptor.verb.toLowerCase(), true);
+    const result = this.putField({
+      id: newId,
+      enabled: true,
+      pose: { position, rotation: [0, 0, 0, 1] },
+      region: descriptor.defaultRegion,
+      edgeFade: CREATED_FADE,
+      expression: descriptor.defaults,
+    });
+    if (!result.ok) return result;
+    const presentation = { id: newId, label: suffix ? `${descriptor.verb} ${suffix}` : descriptor.verb, color: descriptor.color, visible: true };
+    this.lawPresentation.set(newId, presentation);
+    this.record({ label: 'Add law', id: newId, before: null, after: { field: result.value.field, presentation } });
+    return { ok: true, value: { id: newId, revision: this.revision } };
+  }
+
   /** Deletes a law through the command path; undo restores it with its original ID. */
   remove(id: string): Validated<{ revision: number }> {
     this.settle();
@@ -302,9 +332,10 @@ export class DocumentController {
     return s.fields.some((f) => f.id === id) || s.bodies.some((b) => b.id === id) || s.emitters.some((e) => e.id === id);
   }
 
-  /** `base-2`, `base-3`, …: the first free ID, deterministic and never random. */
-  private freshId(id: string): { newId: string; suffix: number } {
+  /** `base-2`, `base-3`, …: the first free ID, deterministic and never random; `base` itself first when `bare` (suffix 0). */
+  private freshId(id: string, bare = false): { newId: string; suffix: number } {
     const base = id.replace(/-\d+$/, '');
+    if (bare && !checkId(base) && !this.idInUse(base)) return { newId: base, suffix: 0 };
     for (let suffix = 2; ; suffix++) {
       const tail = `-${suffix}`;
       const newId = `${base.slice(0, SCENE_LIMITS.idLength - tail.length)}${tail}`;

@@ -1,8 +1,11 @@
 // T01 (box support/fade) and T02 (directional primitive), M1 cases. Expected values are
 // derived by hand from SPEC §6.2/§7, not captured from the implementation.
 import { describe, expect, it } from 'vitest';
-import { STARTING_RECIPE, validateField, type FieldDefinition, type Quat } from '../src/domain/scene';
-import { boxGauge, compileField, fadeWeight, rotationMatrix, sampleField } from '../src/fields/directional';
+import { STARTING_RECIPE, validateField, type DirectionalPrimitive, type FieldDefinition, type Quat } from '../src/domain/scene';
+import { compileField, fadeWeight, rotationMatrix, sampleField } from '../src/fields/kernel';
+import { REGIONS } from '../src/fields/registry';
+
+const boxGauge = (rx: number, ry: number, rz: number, bx: number, by: number, bz: number) => REGIONS.box.compile({ kind: 'box', halfExtents: [bx, by, bz] })(rx, ry, rz);
 
 /** SPEC §17.1 component tolerance for pure CPU fixtures. */
 const tol = (expected: number) => 1e-9 + 1e-8 * Math.abs(expected);
@@ -14,7 +17,7 @@ const law = STARTING_RECIPE.fields[0]!;
 const QZ90: Quat = [0, 0, Math.sin(Math.PI / 4), Math.cos(Math.PI / 4)];
 const withChanges = (changes: Partial<FieldDefinition>): FieldDefinition => ({ ...law, ...changes });
 const sample = (field: FieldDefinition, x: number, y: number, z: number) => {
-  const out = [NaN, NaN, NaN];
+  const out = [NaN, NaN, NaN, NaN];
   const weight = sampleField(compileField(field), x, y, z, out);
   return { weight, out };
 };
@@ -131,7 +134,7 @@ describe('field validation (SPEC §9.3)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.pose.rotation).toEqual([0, 0, 0, 1]);
-    expectVec(result.value.expression.direction, [0.6, 0, 0.8]);
+    expectVec((result.value.expression as DirectionalPrimitive).direction, [0.6, 0, 0.8]);
     expect(Object.isFrozen(result.value.pose.position)).toBe(true);
   });
 
@@ -147,9 +150,9 @@ describe('field validation (SPEC §9.3)', () => {
     if (!result.ok) return;
     const unit = (v: readonly number[]) => Math.sqrt(v.reduce((sum, c) => sum + c * c, 0));
     expectVec(result.value.pose.rotation, [0.5, 0.5, 0.5, 0.5]);
-    expectVec(result.value.expression.direction, [1 / Math.sqrt(3), 1 / Math.sqrt(3), 1 / Math.sqrt(3)]);
+    expectVec((result.value.expression as DirectionalPrimitive).direction, [1 / Math.sqrt(3), 1 / Math.sqrt(3), 1 / Math.sqrt(3)]);
     expect(Math.abs(unit(result.value.pose.rotation) - 1)).toBeLessThanOrEqual(1e-8);
-    expect(Math.abs(unit(result.value.expression.direction) - 1)).toBeLessThanOrEqual(1e-8);
+    expect(Math.abs(unit((result.value.expression as DirectionalPrimitive).direction) - 1)).toBeLessThanOrEqual(1e-8);
   });
 
   it('normalizes very small nonzero rotations and directions without underflow', () => {
@@ -162,7 +165,7 @@ describe('field validation (SPEC §9.3)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.pose.rotation).toEqual([0, 0, 0, 1]);
-    expect(result.value.expression.direction).toEqual([0, 1, 0]);
+    expect((result.value.expression as DirectionalPrimitive).direction).toEqual([0, 1, 0]);
   });
 
   it.each([
