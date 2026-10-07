@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> at <code>1f2fe28</code> and branch <code>m2</code> at <code>83f944c</code>, with M2’s review findings fixed and a follow-up review pending</span>
+    <span>Realigned 2026-10-06 against <code>main</code> at <code>1f2fe28</code> and branch <code>m2</code> at <code>86cee4e</code>, with M2’s last review finding fixed and a final micro-review pending</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Run the follow-up review of M2’s remediated candidate.</h1>
-    <p class="lede">The independent review of <code>c693550</code> found one critical, two high, two medium and two low findings. All are fixed on branch <code>m2</code>, and every acceptance criterion passes again, with all five native scenarios re-run on the new build. M2 is not merged. A read-only reviewer checks the remediation (<code>c693550..m2</code>); an Opus 5.5 session runs <code>/address</code> on anything it finds. M3 waits until you accept M2.</p>
-    <cite><code>docs/evidence/M2.md</code> Status, Independent review, Acceptance criteria, Pending; <code>docs/MILESTONES.md</code> M2</cite>
+    <h1>Run the final micro-review of M2’s one remaining fix.</h1>
+    <p class="lede">The follow-up review of <code>6de6134</code> closed six of the seven findings from the independent review of <code>c693550</code> and left one partial: an unbounded emitter could pass the safe-integer limit. <code>86cee4e</code> fixes it with exact next-birth and clock bounds, and its boundary fixtures pass. M2 is not merged. A read-only reviewer checks only that fix (<code>6de6134..m2</code>); an Opus 5.5 session runs <code>/address</code> on anything it finds. M3 waits until you accept M2.</p>
+    <cite><code>docs/evidence/M2.md</code> Status, Independent review, Follow-up review, Pending; <code>docs/MILESTONES.md</code> M2</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -503,18 +503,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored. A read-only pre-review found 2 high, 3 medium and 4 low findings, all fixed. The independent review of <code>c693550</code> found 1 critical, 2 high, 2 medium and 2 low findings in recovery, launch protection, termination, load commit and emitter bounds; all were fixed and re-verified, and every native scenario was re-run on the new build.</dd>
-              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>83f944c</code> on branch <code>m2</code>, evidence in the commit after it. Not merged.</dd>
-              <dt>Should run</dt><dd class="run">A follow-up independent review of the remediation (<code>c693550..m2</code>), then <code>/address</code> on anything it finds in an Opus 5.5 session on the same branch, then your acceptance and the merge. Nothing beside it: every later gate shares its files.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored. A read-only pre-review found 2 high, 3 medium and 4 low findings, all fixed. The independent review of <code>c693550</code> found 1 critical, 2 high, 2 medium and 2 low findings in recovery, launch protection, termination, load commit and emitter bounds; all were fixed and re-verified, and every native scenario was re-run on the new build. The follow-up review of <code>6de6134</code> closed six and left the emitter bound partial for unbounded schedules; <code>86cee4e</code> closes it.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>86cee4e</code> on branch <code>m2</code>, evidence in the commit after it. Not merged.</dd>
+              <dt>Should run</dt><dd class="run">A final micro-review of that one fix (<code>6de6134..m2</code>), then <code>/address</code> on anything it finds in an Opus 5.5 session on the same branch, then your acceptance and the merge. Nothing beside it: every later gate shares its files.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M1 accepted. Contracts C3, C7, C8.</dd>
               <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, and switched the display to More Space only for the 1600×1000 and 1280×800 checks, restoring it after. The dialog plugin is vendored with a one-line fix, by your decision.</dd>
-              <dt>Your part</dt><dd>Run the follow-up review, then accept M2 or send it back. Every native check, the 1280×800 one included, ran in QA on the new build; none waits for you. One choice is yours whenever you like: how Dock Quit and logout treat a clean session (thread below).</dd>
+              <dt>Your part</dt><dd>Run the micro-review, then accept M2 or send it back. Every native check, the 1280×800 one included, ran in QA on the build of code <code>83f944c</code>; the fix reaches no native path, and none waits for you. One choice is yours whenever you like: how Dock Quit and logout treat a clean session (thread below).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/evidence/M2.md</code> Status, Native QA, Findings, Pending; <code>docs/MILESTONES.md</code> M2</cite>
+          <cite class="src"><code>docs/evidence/M2.md</code> Status, Native QA, Follow-up review, Findings, Pending; <code>docs/MILESTONES.md</code> M2</cite>
         </div>
       </article>
 
