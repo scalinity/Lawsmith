@@ -1203,6 +1203,7 @@ async function start() {
         preview: interaction.previewField(),
         throttle: interaction.gesture !== null,
         arrows: authoring.arrows,
+        onlySelectedArrows: false,
         handles: (() => {
           const shown = interaction.handles();
           return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;

@@ -28,22 +28,15 @@ import {
 } from 'three/webgpu';
 import { abs, float, max, mix, normalView, smoothstep, uniform, uv } from 'three/tsl';
 import type { FieldDefinition, LawPresentation, RegionDefinition, SceneDefinition, Vec3 } from '../domain/scene';
-import { sampleField, type CompiledField } from '../fields/kernel';
+import type { CompiledField } from '../fields/kernel';
 import { DRIVE_METERS_PER_MS2, primitiveDescriptor, regionDescriptor, type RegionKind } from '../fields/registry';
 import { handlePoint, type LawHandle } from '../interaction/handles';
 import type { SimulationHost } from '../simulation/host';
+import { ARROW_STRIDE, DOT_STRIDE, MAX_SAMPLES, OTHER_LATTICE, SELECTED_LATTICE, sampleLattice } from './samples';
 import { tokenColor } from './viewport';
 
-/** Drive below this magnitude is not drawn (SPEC §12 near-zero display threshold), in m/s². */
-export const ARROW_MIN_MS2 = 0.05;
-/** Drag below this rate is not drawn, in s⁻¹. */
-export const DOT_MIN_PER_S = 0.01;
 /** A drag dot's radius is this times √K: its area is proportional to K (2 s⁻¹ draws about 5 cm). */
 export const DOT_METERS_PER_SQRT_K = 0.035;
-/** Sample lattices as fractions of each local bounding half-extent. The selected law's outer layer sits at d = 0.875, where f = 0.25 gives weight 0.5. */
-const SELECTED_LATTICE = [-0.875, -0.4375, 0, 0.4375, 0.875];
-const OTHER_LATTICE = [-0.5, 0.5];
-const MAX_SAMPLES = SELECTED_LATTICE.length ** 3; // 125, SPEC §12's per-law cap
 /** Every law's sparse arrows together stay within P1's 250 (SPEC §18.1). */
 export const ARROW_BUDGET = 250;
 /** Sparse samples refresh at most at 30 Hz while a gesture streams edits (SPEC §12). */
@@ -69,6 +62,8 @@ export interface LawsViewState {
   throttle: boolean;
   /** Presentation default: draw drive arrows and drag dots. */
   arrows: boolean;
+  /** Draw only the selected law's arrows and dots. A view filter: every law still acts (SPEC §10.2). */
+  onlySelectedArrows: boolean;
   /** The selected law's spatial handles, in handle mode. */
   handles: { field: FieldDefinition; handles: readonly LawHandle[]; hover: string | null; active: string | null } | null;
   camera: Vector3;
@@ -312,48 +307,37 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const rotation = new Quaternion();
   const up = new Vector3(0, 1, 0);
   const direction = new Vector3();
-  const sample = [0, 0, 0, 0];
+  const arrowSamples = new Float64Array(ARROW_STRIDE * MAX_SAMPLES);
+  const dotSamples = new Float64Array(DOT_STRIDE * MAX_SAMPLES);
 
   /**
-   * Samples the host's compiled evaluator on a local lattice over the region's bounds: an arrow for
-   * each nonzero drive A and a dot for each nonzero drag rate K, which has no direction of its own.
+   * Draws the host's compiled evaluator on a local lattice over the region's bounds (samples.ts): an
+   * arrow along each nonzero drive A and a dot for each nonzero drag rate K, which has no direction.
    */
   function refreshSamples(visual: LawVisual, c: CompiledField, bounds: Vec3, lattice: readonly number[]): number {
-    const { m } = c;
     const { shafts, heads, dots } = visual;
-    let n = 0;
-    let d = 0;
-    for (const fx of lattice) {
-      for (const fy of lattice) {
-        for (const fz of lattice) {
-          const rx = fx * bounds[0];
-          const ry = fy * bounds[1];
-          const rz = fz * bounds[2];
-          const wx = c.px + m[0]! * rx + m[1]! * ry + m[2]! * rz;
-          const wy = c.py + m[3]! * rx + m[4]! * ry + m[5]! * rz;
-          const wz = c.pz + m[6]! * rx + m[7]! * ry + m[8]! * rz;
-          sampleField(c, wx, wy, wz, sample);
-          if (sample[3]! >= DOT_MIN_PER_S) {
-            const r = DOT_METERS_PER_SQRT_K * Math.sqrt(sample[3]!);
-            dots.setMatrixAt(d++, matrix.makeScale(r, r, r).setPosition(wx, wy, wz));
-          }
-          const magnitude = Math.hypot(sample[0]!, sample[1]!, sample[2]!);
-          if (magnitude < ARROW_MIN_MS2) continue;
-          const length = magnitude * DRIVE_METERS_PER_MS2;
-          const head = Math.min(HEAD_LENGTH, 0.45 * length);
-          direction.set(sample[0]! / magnitude, sample[1]! / magnitude, sample[2]! / magnitude);
-          rotation.setFromUnitVectors(up, direction);
-          // Each arrow is centered on its sample point.
-          position.set(wx, wy, wz).addScaledVector(direction, -length / 2);
-          shafts.setMatrixAt(n, matrix.compose(position, rotation, scale.set(SHAFT_RADIUS, length - head, SHAFT_RADIUS)));
-          position.addScaledVector(direction, length - head);
-          heads.setMatrixAt(n, matrix.compose(position, rotation, scale.set(HEAD_RADIUS, head, HEAD_RADIUS)));
-          n += 1;
-        }
-      }
+    const counts = sampleLattice(c, bounds, lattice, arrowSamples, dotSamples);
+    for (let d = 0; d < counts.dots; d++) {
+      const [wx, wy, wz, k] = dotSamples.subarray(DOT_STRIDE * d, DOT_STRIDE * d + DOT_STRIDE);
+      const r = DOT_METERS_PER_SQRT_K * Math.sqrt(k!);
+      dots.setMatrixAt(d, matrix.makeScale(r, r, r).setPosition(wx!, wy!, wz!));
     }
+    for (let a = 0; a < counts.arrows; a++) {
+      const [wx, wy, wz, ax, ay, az] = arrowSamples.subarray(ARROW_STRIDE * a, ARROW_STRIDE * a + ARROW_STRIDE);
+      const magnitude = Math.hypot(ax!, ay!, az!);
+      const length = magnitude * DRIVE_METERS_PER_MS2;
+      const head = Math.min(HEAD_LENGTH, 0.45 * length);
+      direction.set(ax! / magnitude, ay! / magnitude, az! / magnitude);
+      rotation.setFromUnitVectors(up, direction);
+      // Each arrow is centered on its sample point.
+      position.set(wx!, wy!, wz!).addScaledVector(direction, -length / 2);
+      shafts.setMatrixAt(a, matrix.compose(position, rotation, scale.set(SHAFT_RADIUS, length - head, SHAFT_RADIUS)));
+      position.addScaledVector(direction, length - head);
+      heads.setMatrixAt(a, matrix.compose(position, rotation, scale.set(HEAD_RADIUS, head, HEAD_RADIUS)));
+    }
+    const n = counts.arrows;
     shafts.count = heads.count = n;
-    dots.count = d;
+    dots.count = counts.dots;
     shafts.instanceMatrix.needsUpdate = heads.instanceMatrix.needsUpdate = dots.instanceMatrix.needsUpdate = true;
     return n;
   }
@@ -495,9 +479,10 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
         visual.outerMaterial.color.copy(field.enabled ? visual.color : tertiary);
         visual.outerMaterial.opacity = !field.enabled ? 0.6 : selected ? 1 : 0.5;
 
-        // Hiding a law hides its samples too; its effect is unchanged (SPEC §5.4).
+        // Hiding a law hides its samples too, and so does the selected-law filter; neither changes
+        // what any law does (SPEC §5.4, §10.2).
         let lattice: readonly number[] | null = null;
-        if (state.arrows && presentation.visible) {
+        if (state.arrows && presentation.visible && (!state.onlySelectedArrows || selected)) {
           if (selected) lattice = SELECTED_LATTICE;
           else if (budget >= OTHER_LATTICE.length ** 3) {
             lattice = OTHER_LATTICE;

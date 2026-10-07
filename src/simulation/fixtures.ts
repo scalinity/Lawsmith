@@ -3,6 +3,9 @@
 import { STARTING_RECIPE, validateField, type FieldDefinition, type SceneDefinition } from '../domain/scene';
 import { sampleField } from '../fields/kernel';
 import { primitiveDescriptor, regionDescriptor } from '../fields/registry';
+import { MAX_PROBES, ProbeField, type ProbeSettings } from '../observation/probes';
+import { TRAIL_INTERVAL_TICKS, TrailRecorder, type TrailMode } from '../observation/trails';
+import { ARROW_STRIDE, DOT_STRIDE, MAX_SAMPLES, OTHER_LATTICE, SELECTED_LATTICE, sampleLattice } from '../rendering/samples';
 import { SimulationHost, type CanonicalState, type CommandPayload } from './host';
 import { FixedStepScheduler } from './scheduler';
 
@@ -126,6 +129,130 @@ export function runAtCadence(root: SceneDefinition, hz: number, script: readonly
       if (Number.isNaN(readback)) throw new Error('nonfinite render observation');
     }
     return captured;
+  } finally {
+    host.dispose();
+  }
+}
+
+/**
+ * Visualization state (SPEC §4 render and UI state): which body is explained, what probes and trails
+ * record, which laws draw arrows, whether a preview is taken. None of it may reach the simulation.
+ */
+export interface ObservedView {
+  readonly label: string;
+  readonly probes: ProbeSettings;
+  readonly trails: TrailMode;
+  /** The body explained before the step from the host's current boundary, or null. */
+  explain(host: SimulationHost): string | null;
+  /** Sparse arrows for this law only, or for every law. */
+  readonly arrowsFor: string | 'all';
+  /** A next-step preview every this many ticks; 0 for none. */
+  readonly previewEvery: number;
+}
+
+/** Nothing optional: no probes, no trails, nothing explained, every law's arrows. */
+export const QUIET_VIEW: ObservedView = {
+  label: 'quiet',
+  probes: { enabled: false, count: MAX_PROBES, seed: 1 },
+  trails: 'off',
+  explain: () => null,
+  arrowsFor: 'all',
+  previewEvery: 0,
+};
+
+/** Everything at once: 2,000 probes, 32 trails, a changing explained body, one law's arrows, previews. */
+export function busyView(root: SceneDefinition, seed: number, stride: number): ObservedView {
+  return {
+    label: `busy seed ${seed}`,
+    probes: { enabled: true, count: MAX_PROBES, seed },
+    trails: 'all',
+    explain: (host) => (host.count ? host.ids[Math.floor(host.tick / stride) % host.count]! : null),
+    arrowsFor: root.fields[0]?.id ?? 'all',
+    previewEvery: 13,
+  };
+}
+
+/**
+ * Steps a host through the checkpoint ticks while a view observes it the way the app does: probes and
+ * trails after every step, arrow samples every fourth tick, previews and explained bodies as the view says.
+ */
+/** What a view did during a run, so an invariance check can show it was not vacuous. */
+export interface ObservedActivity {
+  probeSteps: number;
+  maxLiveProbes: number;
+  maxTrails: number;
+  explainedSteps: number;
+  previews: number;
+  arrowSamples: number;
+}
+
+export function runObserved(
+  host: SimulationHost,
+  script: readonly ScriptedCommand[],
+  view: ObservedView,
+  ticks: readonly number[] = FIXTURE_TICKS,
+  activity: ObservedActivity = { probeSteps: 0, maxLiveProbes: 0, maxTrails: 0, explainedSteps: 0, previews: 0, arrowSamples: 0 },
+): Checkpoint[] {
+  const probes = new ProbeField();
+  probes.configure(view.probes);
+  const trails = new TrailRecorder(view.trails);
+  const arrows = new Float64Array(ARROW_STRIDE * MAX_SAMPLES);
+  const dots = new Float64Array(DOT_STRIDE * MAX_SAMPLES);
+  const revision = { value: 0 };
+  const captured: Checkpoint[] = [];
+  const last = ticks[ticks.length - 1]!;
+  while (host.tick < last) {
+    deliver(host, script, revision);
+    const explained = view.explain(host);
+    host.explain(explained);
+    probes.sync(host);
+    if (view.previewEvery && host.tick % view.previewEvery === 0 && host.previewTransition()) activity.previews += 1;
+    host.step();
+    probes.advance(host);
+    trails.record(host, explained);
+    if (host.explanation?.toTick === host.tick) activity.explainedSteps += 1;
+    if (probes.live) activity.probeSteps += 1;
+    activity.maxLiveProbes = Math.max(activity.maxLiveProbes, probes.live);
+    activity.maxTrails = Math.max(activity.maxTrails, trails.count);
+    if (host.tick % TRAIL_INTERVAL_TICKS === 0) {
+      for (const field of host.appliedFields()) {
+        if (view.arrowsFor !== 'all' && view.arrowsFor !== field.id) continue;
+        const lattice = view.arrowsFor === field.id ? SELECTED_LATTICE : OTHER_LATTICE;
+        const drawn = sampleLattice(host.compiledField(field.id)!, regionDescriptor(field.region.kind).bounds(field.region), lattice, arrows, dots);
+        activity.arrowSamples += drawn.arrows + drawn.dots;
+      }
+    }
+    if (ticks.includes(host.tick)) captured.push(capture(host));
+  }
+  host.explain(null);
+  return captured;
+}
+
+/**
+ * AC6 and T11: the same root and commands observed quietly and by two busy views with different probe
+ * seeds and explained bodies reach identical authority (state, engine bytes, emitter PRNG) at each checkpoint.
+ */
+export function visualizationInvariance(root: SceneDefinition, script: readonly ScriptedCommand[] = []): { view: string; activity: ObservedActivity; comparison: CheckpointComparison[] }[] {
+  const views = [QUIET_VIEW, busyView(root, 7, 97), busyView(root, 0x9e3779b9, 41)];
+  const runs = views.map((view) => {
+    const host = new SimulationHost(root);
+    const activity: ObservedActivity = { probeSteps: 0, maxLiveProbes: 0, maxTrails: 0, explainedSteps: 0, previews: 0, arrowSamples: 0 };
+    try {
+      return { checkpoints: runObserved(host, script, view, FIXTURE_TICKS, activity), activity };
+    } finally {
+      host.dispose();
+    }
+  });
+  return views.slice(1).map((view, i) => ({ view: view.label, activity: runs[i + 1]!.activity, comparison: compareRuns(runs[0]!.checkpoints, runs[i + 1]!.checkpoints) }));
+}
+
+/** T04 with the view changed across the reset: quiet before, busy after, the same world both times. */
+export function observedResetFixture(root: SceneDefinition, script: readonly ScriptedCommand[] = []): CheckpointComparison[] {
+  const host = new SimulationHost(root);
+  try {
+    const first = runObserved(host, script, QUIET_VIEW);
+    host.reset(root);
+    return compareRuns(first, runObserved(host, script, busyView(root, 11, 61)));
   } finally {
     host.dispose();
   }
