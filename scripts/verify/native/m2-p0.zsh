@@ -20,7 +20,9 @@ window_size() {
   sleep 1.2
   window_origin
 }
-restore_display() { [[ $(screen_size) == $LARGER_TEXT ]] || display_mode ${=${${LARGER_TEXT%@*}/x/ }}; say "display restored to $(screen_size)" }
+# A mode change can leave the pointer clamped to a screen corner, where it reveals the auto-hiding
+# Dock over every app; it is parked mid-screen so later segments find the app under test on top.
+restore_display() { [[ $(screen_size) == $LARGER_TEXT ]] || display_mode ${=${${LARGER_TEXT%@*}/x/ }}; cliclick m:584,300; touched; say "display restored to $(screen_size)" }
 
 seed_folder $QA_STATE/scenes
 segment "P0 at 1600×1000 under More Space (about 7 minutes)"

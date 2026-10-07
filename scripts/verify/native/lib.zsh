@@ -69,7 +69,7 @@ segment() {
 }
 
 say() { print -r -- "[qa $(strftime %H:%M:%S $EPOCHSECONDS)] $*" | tee -a $QA_OUT/qa-steps.log }
-fail() { say "FAIL: $*"; exit ${2:-1} }
+fail() { say "FAIL: $*"; [[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; exit ${2:-1} }
 idle_seconds() { ioreg -c IOHIDSystem | awk '/HIDIdleTime/ {print $NF/1e9; exit}' }
 logq() { python3 -I $NATIVE/logq.py "$@" }
 
@@ -141,12 +141,12 @@ activate() {
 }
 
 guard_point() {
-  local hit=$(osascript -l JavaScript $NATIVE/windows.js hit $1 $2)
+  local hit=$(osascript -l JavaScript $NATIVE/windows.js hit $1 $2 $RECORDING_OVERLAYS)
   local pid=$(print -r -- $hit | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["pid"])')
   if [[ $pid != $APP_PID && -n $LOCK_HOLDER && $pid != None ]]; then
     say "a window of pid $pid covers ($1,$2) during this segment; bringing the app under test back"
     activate
-    hit=$(osascript -l JavaScript $NATIVE/windows.js hit $1 $2)
+    hit=$(osascript -l JavaScript $NATIVE/windows.js hit $1 $2 $RECORDING_OVERLAYS)
     pid=$(print -r -- $hit | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["pid"])')
   fi
   [[ $pid == $APP_PID ]] || fail "refused input at ($1,$2): topmost is $hit" 3
@@ -332,26 +332,35 @@ drag_law_to() {
   drag $h[1] $h[2] $(( h[1] + to[1] - from[1] )) $(( h[2] + to[2] - from[2] ))
 }
 
-# record_start NAME / record_stop: an H.264 recording of the app window (screen recording on).
+# record_start NAME [SECONDS] / record_stop: a recording of the app window (screen recording on).
+# ffmpeg's avfoundation screen input delivers no frames on macOS 27.2, so screencapture records a
+# fixed length of the window's rectangle (it cannot be stopped early and still write its file);
+# record_stop waits for it, then ffmpeg transcodes it to 1168-wide H.264 and the raw file is removed.
+# While it records, macOS shows a full-screen overlay above every app; the hit test skips exactly the
+# overlay windows that appeared when the recording began, and only until it ends.
+RECORDING_OVERLAYS=
 record_start() {
-  local device=$(ffmpeg -hide_banner -f avfoundation -list_devices true -i "" 2>&1 | sed -n 's/.*\[\([0-9]*\)\] Capture screen 0.*/\1/p')
   window_origin
-  ffmpeg -hide_banner -loglevel error -f avfoundation -capture_cursor 1 -framerate 30 -i "$device:none" \
-    -vf "crop=$(( WIN_W * 2 )):$(( WIN_H * 2 )):$(( WIN_X * 2 )):$(( WIN_Y * 2 )),scale=1168:-2" \
-    -r 30 -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p -y $QA_OUT/$1.mp4 < /dev/null > $QA_OUT/$1.ffmpeg.log 2>&1 &
+  RECORDING=$1
+  local before=$(osascript -l JavaScript $NATIVE/windows.js overlays)
+  screencapture -x -v -V ${2:-100} -R $WIN_X,$WIN_Y,$WIN_W,$WIN_H $QA_OUT/$1.mov > $QA_OUT/$1.record.log 2>&1 &
   RECORDER=$!
-  sleep 1
-  say "recording $1.mp4"
+  sleep 1.5
+  RECORDING_OVERLAYS=$(python3 -I -c "
+before = set('$before'.split(',')) - {''}
+print(','.join(i for i in '$(osascript -l JavaScript $NATIVE/windows.js overlays)'.split(',') if i and i not in before))")
+  say "recording $1 for ${2:-100} s (overlay windows skipped by the hit test: ${RECORDING_OVERLAYS:-none})"
 }
-# Stops the recorder so it finalizes the file; one that does not exit within 10 s is killed.
 record_stop() {
   [[ -n $RECORDER ]] || return 0
-  kill -INT $RECORDER
-  local i
-  for i in {1..50}; do kill -0 $RECORDER 2>/dev/null || break; sleep 0.2; done
-  kill -0 $RECORDER 2>/dev/null && { kill -9 $RECORDER; say "recorder did not finalize; killed" }
+  say "waiting for $RECORDING to finish"
+  wait $RECORDER
   RECORDER=
-  say "recording stopped"
+  RECORDING_OVERLAYS=
+  [[ -s $QA_OUT/$RECORDING.mov ]] || fail "the recording $RECORDING.mov was not written"
+  ffmpeg -hide_banner -loglevel error -i $QA_OUT/$RECORDING.mov -vf scale=1168:-2 -r 30 -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p -an -y $QA_OUT/$RECORDING.mp4 < /dev/null \
+    && rm -f $QA_OUT/$RECORDING.mov $QA_OUT/$RECORDING.record.log
+  say "recording $RECORDING.mp4 written"
 }
 
 # expect DESCRIPTION PYTHON-EXPRESSION over the last event `e` of KIND: records PASS or fails.

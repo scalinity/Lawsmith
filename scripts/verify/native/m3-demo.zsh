@@ -48,7 +48,7 @@ segment "examples: radial catch, release and repulsion"
 launch demo3 $RECOVERY
 activate
 open_example catch-and-release
-record_start m3-radial
+record_start m3-radial 55
 press play
 sleep 5
 expect pacing "the stream runs through the pull without limiting" "e['bodies'] > 20 and e['playing'] is True"
@@ -72,7 +72,7 @@ record_stop
 segment "examples: vortex and its axis"
 activate
 open_example swirl
-record_start m3-vortex
+record_start m3-vortex 42
 keys t:s
 layout
 expect layout "the swirl's cylinder support spans its radius and half-height" "e['selected']=='swirl'"
@@ -92,7 +92,7 @@ record_stop
 segment "examples: drag pocket"
 activate
 open_example drag-pocket
-record_start m3-drag
+record_start m3-drag 34
 press play
 sleep 5
 shot drag-01-pocket
@@ -111,7 +111,7 @@ record_stop
 segment "examples: overlap"
 activate
 open_example overlap
-record_start m3-overlap
+record_start m3-overlap 46
 press play
 sleep 6
 shot overlap-01-three-laws
@@ -135,7 +135,7 @@ record_stop
 segment "examples: collisions"
 activate
 open_example collisions
-record_start m3-collisions
+record_start m3-collisions 42
 press play
 sleep 8
 shot collisions-01-clump
