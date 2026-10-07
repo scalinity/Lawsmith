@@ -1,14 +1,13 @@
-# M4 performance and legibility in the packaged app (MILESTONES M4 performance gate, AC7; SPEC §18):
+# M4 performance in the packaged app (MILESTONES M4 performance gate; SPEC §18):
 #   P0 with every M4 overlay off (no probes, no trails, nothing explained), three runs at 1600×1000;
-#   P2 (100 bodies, four laws, 2,000 probes, 32 trails, default arrows), three runs at 1600×1000;
-#   1280×800 with the defaults: the selected law, its support and an explained body stay clear of every
-#   panel, nothing scrolls sideways, and probes and trails turn off without touching a law.
+#   P2 (100 bodies, four laws, 2,000 probes, 32 trails, default arrows), three runs at 1600×1000.
+# The 1280×800 legibility check (AC7) is m4-legible.
 # Protocol as m2-p0 and m3-p1: 10 s warmup, 60 s measured, real handle drags feeding edit latency, the
 # built-in display at More Space for this login session only and restored on exit. Recording stays off.
 # Usage: QA_STATE=… QA_OUT=… scripts/verify/verify.sh native m4-perf
 source ${0:A:h}/lib.zsh
 mkdir -p $QA_STATE/scenes
-cp ${NATIVE:h}/scenes/p2-probes.lawsmith.json ${NATIVE:h:h:h}/examples/why-it-moves.lawsmith.json $QA_STATE/scenes/
+cp ${NATIVE:h}/scenes/p2-probes.lawsmith.json $QA_STATE/scenes/
 
 screen_size() { osascript -l JavaScript $NATIVE/display.js get }
 display_mode() {
@@ -89,27 +88,6 @@ expect pacing "100 bodies are live" "e['bodies']==100 and e['playing'] is True"
 shot p2-1600x1000
 capture P2 "e['bodies']==100 and e['workload']['laws']==4 and e['visualization']['probes']['live']==2000 and e['visualization']['trails']['count']==32 and e['arrows'] > 0 and e['stepMs'][1] <= 3 and e['stepMs'][2] <= 5 and e['workMs'][1] <= 14 and e['intervalMs'][1] <= 20 and e['intervalMs'][2] <= 34 and e['editMs'][1] <= 50 and e['simWallRatio'] >= 0.98" 0 -0.5 0 0.4 -0.5 0
 
-segment "1280×800 legibility with the defaults (AC7)"
-activate
-open_scene why-it-moves
-window_size 40 50 1280 800
-press probes-toggle
-press trails-all
-press play
-sleep 5
-press play
-n=$(count explain-select)
-keys t:b
-wait_log explain-select $(( n + 1 ))
-keys t:.
-layout
-expect layout "1280×800: the selected law's support and the explained body are clear of the panels, tools and transport; nothing scrolls sideways; the probe and trail switches are in view" "e['viewport']==[1280, 800] and e['selected'] is not None and e['explained']['point'] is not None and all(not (a[0] < e['support'][2] and a[0] + a[2] > e['support'][0] and a[1] < e['support'][3] and a[1] + a[3] > e['support'][1]) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and all(not (a[0] - 6 <= e['explained']['point'][0] <= a[0] + a[2] + 6 and a[1] - 6 <= e['explained']['point'][1] <= a[1] + a[3] + 6) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and 0 < e['explained']['point'][0] < 1280 and 0 < e['explained']['point'][1] < 800 and all(s['scrollWidth'] <= s['clientWidth'] for s in e['scroll'].values()) and all(0 <= e['controls'][k][0] and e['controls'][k][0] + e['controls'][k][2] <= 1280 and e['controls'][k][1] + e['controls'][k][3] <= 800 for k in ('probes-toggle', 'trails-off', 'trails-all', 'play', 'reset', 'file-save'))"
-shot m4-1280x800
-press probes-toggle
-press trails-off
-expect visualization "probes and trails are off again, every law untouched: no revision, nothing dirty" "e['probes']['enabled'] is False and e['trails']['mode']=='off' and e['revision']==0 and e['dirty'] is False"
-layout
-shot m4-1280x800-overlays-off
 activate
 keys kd:cmd t:q ku:cmd
 sleep 1

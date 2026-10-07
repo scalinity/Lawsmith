@@ -726,11 +726,11 @@ button.primary {
   padding: 0 9px;
 }
 
-#arrows-scope {
-  margin-left: auto;
+#arrows-scope button {
+  padding: 0 9px;
 }
 
-/* Probes and trails: a cluster of their own above the transport, always reachable, never scrolled away. */
+/* What to draw (arrows, probes, trails): a cluster above the transport, always reachable, never scrolled away. */
 #overlays {
   position: fixed;
   right: 12px;

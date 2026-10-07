@@ -61,13 +61,6 @@
           <span class="dot-glyph" aria-hidden="true"></span>
           <span>Drag K, dot area ∝ K; 5 cm ≈ 2 s⁻¹</span>
         </div>
-        <div class="legend" title="Only what is drawn changes. Every law keeps acting.">
-          <span id="arrows-scope-label">Arrows for</span>
-          <div class="segmented compact" id="arrows-scope" role="radiogroup" aria-labelledby="arrows-scope-label">
-            <button type="button" role="radio" id="arrows-every" data-scope="all" aria-checked="true">Every law</button>
-            <button type="button" role="radio" id="arrows-selected" data-scope="selected" aria-checked="false">Selected law</button>
-          </div>
-        </div>
       </section>
 
 
@@ -179,7 +172,11 @@
       <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
     </div>
 
-    <div id="overlays" role="group" aria-label="Probes and trails" hidden>
+    <div id="overlays" role="group" aria-label="What to draw" hidden>
+      <div class="segmented" id="arrows-scope" role="radiogroup" aria-label="Arrows for" title="Only what is drawn changes. Every law keeps acting.">
+        <button type="button" role="radio" id="arrows-every" data-scope="all" aria-checked="true">All arrows</button>
+        <button type="button" role="radio" id="arrows-selected" data-scope="selected" aria-checked="false">Selected law</button>
+      </div>
       <button type="button" id="probes-toggle" aria-pressed="false" title="Massless probes moved by the laws; they never touch bodies">Probes</button>
       <div class="segmented" id="trail-mode" role="radiogroup" aria-label="Trails">
         <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="No trails">No trail</button>
