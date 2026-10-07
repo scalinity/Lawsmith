@@ -3,8 +3,9 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Euler, Quaternion, Vector3, type Mesh, type Object3D } from 'three/webgpu';
 import { DocumentController } from './domain/document';
-import { LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type SceneDocument, type Vec3 } from './domain/scene';
-import { FIELD_KERNEL_VERSION } from './fields/directional';
+import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type SceneDocument, type Vec3 } from './domain/scene';
+import { FIELD_KERNEL_VERSION, fadeBand } from './fields/kernel';
+import { PRIMITIVES, REGIONS, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from './fields/registry';
 import { LawInteraction, type GestureEnd, type TransformMode } from './interaction/lawGesture';
 import { EditLatency, percentile, percentiles } from './measurement';
 import { defaultDocument } from './persistence/defaultScene';
@@ -14,7 +15,7 @@ import { DocumentWorkflow, type RecoveryOffer } from './persistence/workflow';
 import { identifyBackend, isQualifiedWebGPU, probeRenderedPixels, watchGPUErrors } from './rendering/backend';
 import { createRenderer, createViewport, MAX_PIXEL_RATIO } from './rendering/viewport';
 import { createWorldView, type PreparedScene } from './rendering/worldView';
-import { compareRuns, runAtCadence, runFixedSteps, runResetFixture, scriptedRecipeEdits } from './simulation/fixtures';
+import { compareRuns, runAtCadence, runFixedSteps, runResetFixture, scriptedEdits } from './simulation/fixtures';
 import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation } from './simulation/host';
 import { FixedStepScheduler } from './simulation/scheduler';
 
@@ -92,10 +93,10 @@ const lawSummary = (f: FieldDefinition) => ({
   enabled: f.enabled,
   position: f.pose.position,
   rotation: f.pose.rotation,
-  halfExtents: f.region.halfExtents,
+  region: f.region,
+  edgeFade: f.edgeFade,
+  expression: f.expression,
 });
-
-const GESTURE_LABEL: Record<TransformMode, string> = { translate: 'Move law', rotate: 'Rotate law', scale: 'Resize law' };
 const BUSY_TEXT: Record<string, string> = {
   save: 'Saving…',
   'save-as': 'Saving…',
@@ -193,6 +194,8 @@ async function start() {
       submit,
       onGestureEnd: (end) => gestureEnded(end),
       onSelectionChange: () => renderPanel(),
+      haltCamera: () => viewport.haltInertia(),
+      editable: () => !frozen,
       log: report,
     },
     initial.semantic.fields[0]?.id ?? null,
@@ -203,7 +206,7 @@ async function start() {
     awaitApplied(end.revision);
     if (!end.cancelled && end.latest) {
       const presentation = authoring.presentationOf(end.start.id);
-      authoring.record({ label: GESTURE_LABEL[end.mode], id: end.start.id, before: { field: end.start, presentation }, after: { field: end.latest, presentation } });
+      authoring.record({ label: end.label, id: end.start.id, before: { field: end.start, presentation }, after: { field: end.latest, presentation } });
     }
     edited();
   };
@@ -515,6 +518,37 @@ async function start() {
     report('control', { delete: law.id, ok: result.ok, laws: host.appliedFields().length });
   };
 
+  /** The tool shelf (SPEC §11.1): a law of one kind at the view's focus point, selected, as one undo entry. */
+  const createLaw = (kind: PrimitiveKind) => {
+    if (blocked()) return;
+    const t = viewport.orbit.target;
+    const place = (v: number) => Math.round(Math.min(1000, Math.max(-1000, v)) * 100) / 100;
+    const result = authoring.create(kind, [place(t.x), place(t.y), place(t.z)]);
+    if (result.ok) {
+      editLatency.accept(result.value.revision, performance.now());
+      awaitApplied(result.value.revision);
+      settleNow();
+      interaction.select(result.value.id);
+      edited();
+      reportDigest('create');
+    } else showDetailsError(result.reason);
+    report('control', { create: kind, id: result.ok ? result.value.id : null, reason: result.ok ? null : result.reason, laws: host.appliedFields().length });
+  };
+
+  /** Changes the selected law's support shape, keeping its bounding size: one validated edit. */
+  const setSupport = (kind: RegionKind) => {
+    const law = selectedLaw();
+    if (!law || blocked() || law.region.kind === kind) return;
+    const result = authoring.editField(law.id, 'Change support shape', (f) => ({ ...f, region: REGIONS[kind].fromBounds(regionDescriptor(f.region.kind).bounds(f.region)) }));
+    if (result.ok) {
+      editLatency.accept(result.value.revision, performance.now());
+      awaitApplied(result.value.revision);
+      settleNow();
+      edited();
+    }
+    report('control', { law: law.id, support: kind, revision: result.ok ? result.value.revision : null, field: result.ok ? lawSummary(result.value.field) : null });
+  };
+
   const setArrows = () => {
     if (blocked()) return;
     authoring.setArrows(!authoring.arrows);
@@ -530,14 +564,62 @@ async function start() {
   const detailsError = $('details-error');
   const colorGroup = $('law-colors');
   const labelInput = $<HTMLInputElement>('law-label');
-  const strengthInput = $<HTMLInputElement>('law-strength');
   const fadeInput = $<HTMLInputElement>('law-fade');
+  const supportGroup = $('law-support');
+  const regionParams = $('law-region-params');
+  const primitiveParams = $('law-params');
+  const samplingNote = $('law-sampling');
+  const shelf = $('law-shelf');
   const triples = new Map(
     [...details.querySelectorAll<HTMLFieldSetElement>('fieldset.triple')].map((set) => [set.dataset.property!, [...set.querySelectorAll('input')]] as const),
   );
 
   const EYE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>';
   const EYE_OFF = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z"/><path d="M2.5 13.5l11-11"/></svg>';
+
+  for (const [kind, d] of Object.entries(PRIMITIVES)) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.kind = kind;
+    button.textContent = d.verb;
+    button.title = `Add a ${d.title.toLowerCase()} law at the view’s focus point`;
+    button.style.setProperty('--law-color', d.color);
+    shelf.append(button);
+  }
+  for (const [kind, d] of Object.entries(REGIONS)) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.kind = kind;
+    button.setAttribute('role', 'radio');
+    button.textContent = d.title;
+    supportGroup.append(button);
+  }
+
+  /** Numeric equivalents of a registry entry's controls (SPEC §11.3): labeled, bounded, one edit each. */
+  function controlInputs(container: HTMLElement, target: 'region' | 'primitive', controls: readonly ScalarControl<never>[]) {
+    container.replaceChildren(
+      ...controls.map((c) => {
+        const label = document.createElement('label');
+        label.append(`${c.label} `);
+        if (c.unit) {
+          const unit = document.createElement('span');
+          unit.className = 'unit';
+          unit.textContent = c.unit;
+          label.append(unit);
+        }
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = String(c.step);
+        input.min = String(c.min);
+        input.max = String(c.max);
+        input.dataset.control = c.key;
+        input.dataset.target = target;
+        input.setAttribute('aria-label', c.label);
+        label.append(input);
+        return label;
+      }),
+    );
+  }
 
   for (const color of LAW_COLORS) {
     const swatch = document.createElement('button');
@@ -604,7 +686,7 @@ async function start() {
     // Laws list, rebuilt only when something it shows changed.
     const laws = host.appliedFields();
     const selectedId = interaction.selectedId;
-    const signature = JSON.stringify([selectedId, laws.map((f) => [f.id, f.enabled, f.expression.strength, authoring.presentationOf(f.id)])]);
+    const signature = JSON.stringify([selectedId, laws.map((f) => [f.id, f.enabled, f.expression, authoring.presentationOf(f.id)])]);
     if (signature !== listSignature) {
       listSignature = signature;
       lawList.replaceChildren(
@@ -624,7 +706,8 @@ async function start() {
           name.textContent = p.label; // text, never markup (SPEC §15.2)
           const meta = document.createElement('span');
           meta.className = 'law-meta';
-          meta.textContent = `directional, ${fmt(f.expression.strength, 2)} m/s²`;
+          const primitive = primitiveDescriptor(f.expression.kind);
+          meta.textContent = `${primitive.title.toLowerCase()}, ${primitive.summary(f.expression)}`;
           select.append(name, meta);
           const visible = document.createElement('button');
           visible.type = 'button';
@@ -669,9 +752,43 @@ async function start() {
     triples.get('position')!.forEach((input, i) => show(input, fmt(law.pose.position[i]!, 3)));
     const euler = new Euler().setFromQuaternion(new Quaternion(...law.pose.rotation), 'XYZ');
     triples.get('rotation')!.forEach((input, i) => show(input, fmt([euler.x, euler.y, euler.z][i]! * DEGREES, 1)));
-    triples.get('extent')!.forEach((input, i) => show(input, fmt(law.region.halfExtents[i]!, 3)));
-    show(strengthInput, fmt(law.expression.strength, 3));
+    for (const button of supportGroup.querySelectorAll<HTMLButtonElement>('button')) button.setAttribute('aria-checked', String(button.dataset.kind === law.region.kind));
+    const region = regionDescriptor(law.region.kind);
+    const primitive = primitiveDescriptor(law.expression.kind);
+    if (regionParams.dataset.kind !== law.region.kind) {
+      regionParams.dataset.kind = law.region.kind;
+      controlInputs(regionParams, 'region', region.controls as readonly ScalarControl<never>[]);
+    }
+    if (primitiveParams.dataset.kind !== law.expression.kind) {
+      primitiveParams.dataset.kind = law.expression.kind;
+      controlInputs(primitiveParams, 'primitive', primitive.controls as readonly ScalarControl<never>[]);
+    }
+    $('law-kind').textContent = `${primitive.title} · ${primitive.summary(law.expression)}`;
+    for (const input of regionParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(region.controls.find((c) => c.key === input.dataset.control)!.get(law.region), 3));
+    for (const input of primitiveParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(primitive.controls.find((c) => c.key === input.dataset.control)!.get(law.expression), 3));
     show(fadeInput, fmt(law.edgeFade, 3));
+    renderSampling();
+  }
+
+  /**
+   * SPEC §7's narrow/fast heuristic for the selected law: fields act on each body's center once per
+   * step, so a center moving farther than the fade band in one step can skip it. A heuristic under
+   * normalized gauges, not a continuous-crossing guarantee.
+   */
+  let samplingShown = '';
+  function renderSampling() {
+    const law = selectedLaw();
+    if (!law) return;
+    const band = fadeBand(law);
+    const travel = host.maxSpeed * STEP_SECONDS;
+    const text =
+      band === null
+        ? `Laws act on each body’s center, once per step. Hard boundary (fade 0): a center can cross the edge between samples. Fastest body ${fmt(travel, 3)} m per step.`
+        : `Laws act on each body’s center, once per step. Fade band ${fmt(band, 3)} m; fastest body ${fmt(travel, 3)} m per step${travel > band ? ', so it can skip the band.' : '.'}`;
+    if (text === samplingShown) return;
+    samplingShown = text;
+    samplingNote.textContent = text;
+    samplingNote.dataset.skips = String(band !== null && travel > band);
   }
 
   /** A precise value typed into the details: one complete validated edit and one undo entry. */
@@ -708,11 +825,29 @@ async function start() {
       }),
     ),
   );
-  triples.get('extent')!.forEach((input, axis) =>
-    input.addEventListener('change', () => editSelected('Resize law', input, (f, v) => ({ ...f, region: { kind: 'box', halfExtents: withAxis(f.region.halfExtents, axis, v) } }))),
-  );
-  strengthInput.addEventListener('change', () => editSelected('Change strength', strengthInput, (f, v) => ({ ...f, expression: { ...f.expression, strength: v } })));
-  fadeInput.addEventListener('change', () => editSelected('Change fade', fadeInput, (f, v) => ({ ...f, edgeFade: v })));
+  for (const container of [regionParams, primitiveParams]) {
+    container.addEventListener('change', (event) => {
+      const input = event.target as HTMLInputElement;
+      const law = selectedLaw();
+      if (!law || !input.dataset.control) return;
+      if (input.dataset.target === 'region') {
+        const control = regionDescriptor(law.region.kind).controls.find((c) => c.key === input.dataset.control)!;
+        editSelected(control.edit, input, (f, v) => ({ ...f, region: control.set(f.region, v) }));
+      } else {
+        const control = primitiveDescriptor(law.expression.kind).controls.find((c) => c.key === input.dataset.control)!;
+        editSelected(control.edit, input, (f, v) => ({ ...f, expression: control.set(f.expression, v) }));
+      }
+    });
+  }
+  fadeInput.addEventListener('change', () => editSelected(EDGE_FADE.edit, fadeInput, (f, v) => ({ ...f, edgeFade: v })));
+  shelf.addEventListener('click', (event) => {
+    const kind = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-kind]')?.dataset.kind;
+    if (kind) createLaw(kind as PrimitiveKind);
+  });
+  supportGroup.addEventListener('click', (event) => {
+    const kind = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-kind]')?.dataset.kind;
+    if (kind) setSupport(kind as RegionKind);
+  });
   labelInput.addEventListener('change', () => {
     const law = selectedLaw();
     if (!law || blocked()) return;
@@ -778,7 +913,7 @@ async function start() {
   const frameLaw = () => {
     if (interaction.gesture) return;
     const law = selectedLaw();
-    if (law) viewport.frame(law.pose.position, Math.hypot(...law.region.halfExtents));
+    if (law) viewport.frame(law.pose.position, Math.hypot(...regionDescriptor(law.region.kind).bounds(law.region)));
     else viewport.resetView();
     cameraMoved = true;
     report('control', { frame: law ? law.id : 'default' });
@@ -832,6 +967,16 @@ async function start() {
       droppedMs: round3(scheduler.droppedMs - capture.droppedStart),
       bodies: host.count,
       arrows: world.arrowCount(),
+      // The measured workload (SPEC §18.1): the protocol is P0's; the scene decides P0 or P1.
+      workload: {
+        title: authoring.metadata.title,
+        laws: host.appliedFields().length,
+        lawKinds: [...new Set(host.appliedFields().flatMap((f) => [f.expression.kind, f.region.kind]))].sort(),
+        fixedColliders: authoring.scene.bodies.filter((b) => b.type === 'fixed').length,
+        authoredDynamic: authoring.scene.bodies.filter((b) => b.type === 'dynamic').length,
+        allBodyContacts: authoring.scene.bodies.some((b) => b.type === 'dynamic' && b.collisionMode === 'all') || authoring.scene.emitters.some((e) => e.template.collisionMode === 'all'),
+        limitedSteps: host.limitedSteps,
+      },
       viewport: { css: [window.innerWidth, window.innerHeight], devicePixelRatio: window.devicePixelRatio, pixelRatio: renderer.getPixelRatio(), canvas: [canvas.width, canvas.height] },
       timerResolutionMs: timerMs,
       percentiles: 'p50, p95, p99, max',
@@ -880,7 +1025,7 @@ async function start() {
     const law = selectedLaw();
     let support: number[] | null = null;
     if (law) {
-      const [hx, hy, hz] = law.region.halfExtents;
+      const [hx, hy, hz] = regionDescriptor(law.region.kind).bounds(law.region);
       const q = new Quaternion(...law.pose.rotation);
       const points = [-1, 1].flatMap((sx) => [-1, 1].flatMap((sy) => [-1, 1].map((sz) => toScreen(new Vector3(sx * hx, sy * hy, sz * hz).applyQuaternion(q).add(new Vector3(...law.pose.position))))));
       const xs = points.map((p) => p[0]!);
@@ -929,9 +1074,11 @@ async function start() {
       inputs,
       swatches,
       selected: law?.id ?? null,
-      transformMode: viewport.gizmo.mode,
+      transformMode: interaction.mode,
       support,
       handles,
+      // Spatial handles of the selected law in handle mode, at their projected centers.
+      lawHandles: interaction.handlesOnScreen(),
       camera: viewport.camera.position.toArray(),
       // World → clip space, so a harness can find where any world point appears.
       viewProjection: viewport.camera.projectionMatrix.clone().multiply(viewport.camera.matrixWorldInverse).elements,
@@ -945,7 +1092,7 @@ async function start() {
     const root = cloneFrozen(authoring.scene);
     const t0 = performance.now();
     const reset = runResetFixture(root);
-    const script = root.fields[0] ? scriptedRecipeEdits(root.fields[0]) : [];
+    const script = scriptedEdits(root);
     const referenceHost = new SimulationHost(root);
     const reference = runFixedSteps(referenceHost, script);
     referenceHost.dispose();
@@ -1048,6 +1195,11 @@ async function start() {
         preview: interaction.previewField(),
         throttle: interaction.gesture !== null,
         arrows: authoring.arrows,
+        handles: (() => {
+          const shown = interaction.handles();
+          return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;
+        })(),
+        camera: viewport.camera.position,
       },
     );
 
@@ -1178,15 +1330,17 @@ async function start() {
     overlay.textContent = [
       `${backend.backend}${backend.compatibilityMode ? ' (compatibility)' : ''} · ${location.origin} · ${window.isSecureContext ? 'secure' : 'NOT secure'} · ${mode}`,
       `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws ${laws.length} (${laws.filter((f) => f.enabled).length} on) · arrows ${world.arrowCount()}`,
-      `steps/frame ${frameSteps[frameSteps.length - 1] ?? 0} · sim/wall ${simWall.toFixed(2)} · debt dropped ${Math.round(scheduler.droppedMs)} ms · skipped ${host.skippedEmissions}`,
+      `steps/frame ${frameSteps[frameSteps.length - 1] ?? 0} · sim/wall ${simWall.toFixed(2)} · debt dropped ${Math.round(scheduler.droppedMs)} ms · skipped ${host.skippedEmissions} · limited ${host.limitedSteps}`,
       `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${e.length ? ms(percentile(e, 0.95)) : '—'} p95 ms`,
       `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls}`,
       `document gen ${authoring.generation} rev ${authoring.revision} (applied ${authoring.appliedRevision}, stored ${workflow.stored ?? '—'}) · recovery capture ${captures.length ? `${ms(Math.max(...captures))} ms max` : '—'}`,
+      `kernel ${FIELD_KERNEL_VERSION} · fastest body ${host.maxSpeed.toFixed(2)} m/s`,
       `DPR ${window.devicePixelRatio} → ${renderer.getPixelRatio()} (cap ${MAX_PIXEL_RATIO}) · ${window.innerWidth}×${window.innerHeight} css · ${canvas.width}×${canvas.height} px · GPU errors ${gpuErrors.length}`,
       p0 ? `P0 run ${p0.run} ${p0.phase} ${Math.floor((performance.now() - p0.phaseStart) / 1000)} s${p0.invalid ? ` · invalid: ${p0.invalid}` : ''}` : '',
     ]
       .filter(Boolean)
       .join('\n');
+    renderSampling();
     if (performance.now() - lastPacingReport > 5000 && i.length) {
       lastPacingReport = performance.now();
       report('pacing', {

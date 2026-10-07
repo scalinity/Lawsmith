@@ -22,7 +22,7 @@
         <div class="segmented" role="group" aria-label="Transform mode">
           <button type="button" data-mode="translate" aria-pressed="true">Move <kbd>T</kbd></button>
           <button type="button" data-mode="rotate" aria-pressed="false">Rotate <kbd>R</kbd></button>
-          <button type="button" data-mode="scale" aria-pressed="false">Extent <kbd>S</kbd></button>
+          <button type="button" data-mode="scale" aria-pressed="false" title="Handles for extent, fade, strength and core radius">Adjust <kbd>S</kbd></button>
         </div>
         <button type="button" id="frame-view">Frame <kbd>F</kbd></button>
         <button type="button" id="reset-view">Reset view</button>
@@ -47,6 +47,7 @@
       <section id="laws" aria-labelledby="laws-title">
         <h2 id="laws-title">Laws</h2>
         <ul id="law-list"></ul>
+        <div class="law-shelf" role="group" aria-label="Add a law at the view’s focus point" id="law-shelf"></div>
         <div class="law-actions">
           <button type="button" id="law-duplicate">Duplicate</button>
           <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
@@ -56,6 +57,11 @@
           <span>Drive A, 1 m of arrow = 20 m/s²</span>
           <button type="button" id="arrows-toggle" aria-pressed="true">Arrows</button>
         </div>
+        <div class="legend">
+          <span class="dot-glyph" aria-hidden="true"></span>
+          <span>Drag K, dot area ∝ K; 5 cm ≈ 2 s⁻¹</span>
+        </div>
+        <p class="note">Arrows sample the selected law densely and other laws sparsely. Drag has no direction, so it shows dots.</p>
       </section>
 
       <section id="details" aria-labelledby="details-title" hidden>
@@ -80,17 +86,18 @@
           <input type="number" step="5" aria-label="Rotation about y" data-axis="1" />
           <input type="number" step="5" aria-label="Rotation about z" data-axis="2" />
         </fieldset>
-        <fieldset class="triple" data-property="extent">
-          <legend>Half extents <span class="unit">m</span></legend>
-          <input type="number" step="0.1" min="0.01" max="100" aria-label="Half extent x" data-axis="0" />
-          <input type="number" step="0.1" min="0.01" max="100" aria-label="Half extent y" data-axis="1" />
-          <input type="number" step="0.1" min="0.01" max="100" aria-label="Half extent z" data-axis="2" />
-        </fieldset>
-        <div class="pair-fields">
-          <label>Strength <span class="unit">m/s²</span> <input id="law-strength" type="number" step="1" min="0" max="200" /></label>
+        <div class="field-row">
+          <span class="label" id="support-label">Support</span>
+          <div class="segmented compact" id="law-support" role="radiogroup" aria-labelledby="support-label"></div>
+        </div>
+        <div class="param-fields" id="law-region-params"></div>
+        <p class="kind" id="law-kind"></p>
+        <div class="param-fields" id="law-params"></div>
+        <div class="param-fields">
           <label>Fade <input id="law-fade" type="number" step="0.05" min="0" max="1" /></label>
         </div>
         <p id="details-error" role="alert" hidden></p>
+        <p class="note" id="law-sampling"></p>
       </section>
 
     </aside>
