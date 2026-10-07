@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-07 against <code>main</code> at <code>5618b3e</code> and branch <code>m3</code> with M3’s remediation verified (code <code>1812374</code>) and your acceptance pending</span>
+    <span>Realigned 2026-10-07 against <code>main</code> with M3 accepted and merged (code <code>1812374</code>), and M4 eligible but not started</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Accept M3, or send it back.</h1>
-    <p class="lede">M3 is remediated on branch <code>m3</code> (code <code>1812374</code>). Sol’s review of <code>06429c9</code> returned three findings, and all are resolved: AC2 passes under your amended f32 drag bound, every acknowledgment is now accounted, and the drag rotation is shown natively. Every native scenario, M2’s included, passed again on the new packaged app. Sol’s follow-up review of <code>2750b12</code> returned REMEDIATION VERIFIED with no new findings. What remains is your acceptance and the merge to <code>main</code>. M4 waits for that acceptance.</p>
-    <cite><code>docs/evidence/M3.md</code> Status, Acceptance criteria, Findings, Review; <code>docs/MILESTONES.md</code> M3</cite>
+    <h1>Start M4 in a fresh Opus 5.5 session.</h1>
+    <p class="lede">You accepted M3 on 2026-10-07, after Sol’s follow-up review returned M3 FOLLOW-UP: REMEDIATION VERIFIED. All eight acceptance criteria pass, AC2 under your amended f32 drag bound, and M3 is merged to <code>main</code>. M4, which makes motion legible through selected-body contributions, faithful trails and lightweight field probes, is now the only eligible unit and is not started. Opus 5.5 authors it on branch <code>m4</code> from <code>main</code>, and GPT-6.1 Sol reviews.</p>
+    <cite><code>docs/evidence/M3.md</code> Status, Review; <code>docs/MILESTONES.md</code> M4</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -519,7 +519,7 @@
       </article>
 
       <!-- REALIGN M3 -->
-      <article class="unit" id="m3" data-gate="M3" data-state="implemented" data-tier="near">
+      <article class="unit" id="m3" data-gate="M3" data-state="accepted" data-tier="near">
         <div class="gate">M3</div>
         <div>
           <div class="unit-head">
@@ -529,13 +529,13 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m3</code>. GPT-6.1 Sol reviewed <code>06429c9</code> and found 2 medium findings and 1 low, with AC2 failing its literal no-reversal requirement. Every finding was resolved and re-verified, and every native scenario was re-run on the new build. Sol’s follow-up review of <code>2750b12</code> returned REMEDIATION VERIFIED with no new findings.</dd>
-              <dt>Graph permits</dt><dd class="soft">Done: code at <code>1812374</code>, reviews complete; awaiting your acceptance, not merged.</dd>
-              <dt>Should run</dt><dd class="run">Your acceptance, then the merge of <code>m3</code> into <code>main</code>. Nothing beside it: M4 shares <code>simulation</code>, <code>rendering</code> and <code>ui</code>.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>1812374</code>, accepted by you on 2026-10-07.</dd>
+              <dt>Should run</dt><dd class="run">Nothing. M3 is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M2, accepted on 2026-10-06. Contracts C1, C2, C4, C5.</dd>
               <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for the P0, P1 and 1280×800 checks and restored it, and removed the panel preferences it created.</dd>
-              <dt>Your part</dt><dd>Done: you decided finding 1 by amending SPEC §9.1 and AC2, and ran the follow-up review. Optionally feel the handles on the real trackpad. Then accept M3 or send it back.</dd>
+              <dt>Your part</dt><dd>Done: you decided finding 1 by amending SPEC §9.1 and AC2, ran the follow-up review and accepted M3 on 2026-10-07. The real-trackpad handle feel stays an optional check, not a gate (<code>M3.md</code> Owner checks).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
@@ -554,11 +554,11 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews. If Claude limits bind, GPT-6 Astra authors.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once M3 is ACCEPTED.</dd>
-              <dt>Should run</dt><dd class="run">Not before. It shares <code>simulation</code>, <code>rendering</code> and <code>ui</code> with M3.</dd>
+              <dt>Graph permits</dt><dd class="soft">Now: M3 is ACCEPTED (2026-10-07).</dd>
+              <dt>Should run</dt><dd class="run">Next, and alone: the next implementation unit, in a fresh session from <code>main</code> on branch <code>m4</code>. It shares <code>simulation</code>, <code>rendering</code> and <code>ui</code> with M3, and <code>ui</code> with M5, which waits for it.</dd>
             </dl>
             <dl class="facts">
-              <dt>Needs</dt><dd>M3 accepted. Contracts C4, C5.</dd>
+              <dt>Needs</dt><dd>M3, accepted on 2026-10-07. Contracts C4, C5.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
               <dt>Your part</dt><dd>The 1280×800 legibility check (AC7) needs More Space or an external display.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
