@@ -291,6 +291,25 @@ describe('T03 drag through the host and the engine', () => {
     }
   });
 
+  it('moving a drag region imparts no velocity: drag is relative to the stationary world, not a moving medium (AC6)', () => {
+    // The region sweeps past at 6 m/s (0.05 m per step) with the body inside it; without gravity the body
+    // stays exactly at rest, and a moving body's decay does not depend on the region's motion.
+    const resting = new SimulationHost(scene([sphere('a', ZERO, ZERO)], [drag('d', 5)], ZERO));
+    const moving = new SimulationHost(scene([sphere('a', ZERO, [3, 0, 0])], [drag('d', 5)], ZERO));
+    const still = new SimulationHost(scene([sphere('a', ZERO, [3, 0, 0])], [drag('d', 5)], ZERO));
+    for (let i = 1; i <= 60; i++) {
+      const swept = cloneFrozen(drag('d', 5, [0.05 * i, 0, 0]));
+      resting.submit({ kind: 'putField', field: swept }, i);
+      moving.submit({ kind: 'putField', field: swept }, i);
+      resting.step();
+      moving.step();
+      still.step();
+    }
+    expect(velocity(resting)).toEqual([0, 0, 0]);
+    expect(velocity(moving)).toEqual(velocity(still)); // the same decay whether the region moves or not
+    for (const host of [resting, moving, still]) host.dispose();
+  });
+
   it('engine gravity and built-in damping stay zero; laws add no colliders', () => {
     const host = new SimulationHost(scene([sphere('a', ZERO, [1, 0, 0])], [drag('d', 2), push('p', 12)]));
     host.step();
