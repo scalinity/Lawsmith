@@ -1,0 +1,128 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "A QA scene, not an example: a 60 m/s² push whose explanation arrow is drawn capped while the limiter stays idle, above a 100 s⁻¹ drag where the global acceleration limiter scales every share (SPEC §9.1).",
+    "title": "M4 Limiter"
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [7, 5.5, 9],
+      "target": [1, 2, 0]
+    },
+    "laws": [
+      {
+        "color": "#c58ae5",
+        "id": "push",
+        "label": "Strong push",
+        "visible": true
+      },
+      {
+        "color": "#7aa7d9",
+        "id": "thick",
+        "label": "Thick drag",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["emitter.xorshift32.v1", "primitive.directional.v1", "primitive.linearDrag.v1", "region.box.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [
+      {
+        "id": "stream",
+        "intervalTicks": 8,
+        "jitter": [0.25, 0, 0.25],
+        "lifetimeTicks": 512,
+        "pose": {
+          "position": [0, 6, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "seed": 1279350577,
+        "startTick": 0,
+        "template": {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.08
+          },
+          "collisionMode": "fixedOnly",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [0, -0.5, 0],
+          "massKg": 1,
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          }
+        }
+      }
+    ],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "direction": [1, 0, 0],
+          "kind": "directional",
+          "strength": 60
+        },
+        "id": "push",
+        "pose": {
+          "position": [0, 3, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [1, 0.8, 1],
+          "kind": "box"
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 100,
+          "kind": "linearDrag"
+        },
+        "id": "thick",
+        "pose": {
+          "position": [1.5, 0.4, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [2.5, 0.6, 1.5],
+          "kind": "box"
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

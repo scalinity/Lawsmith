@@ -1,0 +1,147 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "Thrown bodies pass a pull, then a drag pocket that overlaps it, and land in a heap against a bumper. Click a body to see each law’s share of what moved it, its velocity, and when a collision also acted.",
+    "title": "Why It Moves"
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [5.5, 5, 11],
+      "target": [0, 1.2, 0]
+    },
+    "laws": [
+      {
+        "color": "#7aa7d9",
+        "id": "pocket",
+        "label": "Drag pocket",
+        "visible": true
+      },
+      {
+        "color": "#d9a35b",
+        "id": "pull",
+        "label": "Pull",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["emitter.xorshift32.v1", "primitive.linearDrag.v1", "primitive.softRadial.v1", "region.box.v1", "region.sphere.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "halfExtents": [0.2, 0.4, 2],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "bumper",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.4, -1.6, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [
+      {
+        "id": "stream",
+        "intervalTicks": 10,
+        "jitter": [0, 0, 0.2],
+        "lifetimeTicks": 900,
+        "pose": {
+          "position": [-4, 4.5, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "seed": 1279350577,
+        "startTick": 0,
+        "template": {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.1
+          },
+          "collisionMode": "all",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [3.5, 1.5, 0],
+          "massKg": 1,
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          }
+        }
+      }
+    ],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 2.5,
+          "kind": "linearDrag"
+        },
+        "id": "pocket",
+        "pose": {
+          "position": [0.6, 1.8, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [1.2, 1.2, 1.2],
+          "kind": "box"
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.3,
+          "kind": "softRadial",
+          "strength": 9
+        },
+        "id": "pull",
+        "pose": {
+          "position": [-1.2, 3, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 1.8
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

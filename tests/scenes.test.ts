@@ -8,6 +8,7 @@ import collisions from '../examples/collisions.lawsmith.json?raw';
 import dragPocket from '../examples/drag-pocket.lawsmith.json?raw';
 import overlap from '../examples/overlap.lawsmith.json?raw';
 import swirl from '../examples/swirl.lawsmith.json?raw';
+import whyItMoves from '../examples/why-it-moves.lawsmith.json?raw';
 import m2Demo from '../docs/evidence/m2/m2-demo.lawsmith.json?raw';
 import p1Workshop from '../scripts/verify/scenes/p1-workshop.lawsmith.json?raw';
 import { DocumentController } from '../src/domain/document';
@@ -27,7 +28,7 @@ function load(text: string): SceneDocument {
   return result.document;
 }
 
-const EXAMPLES = Object.entries({ 'catch-and-release': catchAndRelease, swirl, 'drag-pocket': dragPocket, overlap, collisions }).map(([name, text]) => ({ name, text }));
+const EXAMPLES = Object.entries({ 'catch-and-release': catchAndRelease, swirl, 'drag-pocket': dragPocket, overlap, collisions, 'why-it-moves': whyItMoves }).map(([name, text]) => ({ name, text }));
 const P1 = p1Workshop;
 
 describe('M3 example scenes', () => {
