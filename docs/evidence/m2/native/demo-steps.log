@@ -1,30 +1,31 @@
-[qa 07:17:53] segment: defining demonstration (about 90 s)
-[qa 07:17:56] launched pid 54679, window at 0,21, log demo-a.log
-[qa 07:17:56] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2119}  [recovery] launch finds no unsaved work in isolated recovery
-[qa 07:17:58] recording m2-demo.mp4
-[qa 07:18:00] captured demo-01-start.png
-[qa 07:18:07] PASS {"kind": "pacing", "intervalMs": [17, 17, 18], "maxIntervalMs": 18, "workP95Ms": 3, "stallsOver50ms": 0, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 624, "playing": true, "bodies": 64, "stepMs": [0, 1, 1], "editMs": null, "editSamples": 0, "simWallRatio": 1, "droppedMs": 0, "mode": "packaged",  [pacing] a stream of 20–100 bodies is live
-[qa 07:18:07] captured demo-02-stream.png
-[qa 07:18:16] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "translate", "samples": 24, "rejected": 0, "firstRevision": 1, "lastRevision": 24, "field": {"enabled": true, "position": [0.2444313838133252, 1, 0], "rotation": [0, 0, 0, 1], "halfExtents": [1.5, 2, 1.5]}, "lawId": "  [gesture] one move gesture committed through the command path
-[qa 07:18:20] captured demo-03-bent.png
-[qa 07:18:29] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "rotate", "samples": 24, "rejected": 0, "firstRevision": 25, "lastRevision": 48, "field": {"enabled": true, "position": [0.2444313838133252, 1, 0], "rotation": [0, 0, 0.3501024195942671, 0.9367114261042404], "halfExte  [gesture] one rotate gesture turned the law by more than 20 degrees
-[qa 07:18:35] captured demo-04-rotated.png
-[qa 07:18:38] PASS {"kind": "control", "law": "sideways", "enabled": false, "revision": 49, "mode": "packaged", "t": 44083}  [control] the law is disabled through a semantic command
-[qa 07:18:42] captured demo-05-disabled.png
-[qa 07:18:42] PASS {"kind": "control", "law": "sideways", "enabled": true, "revision": 50, "mode": "packaged", "t": 47786}  [control] the law is enabled again
-[qa 07:18:46] PASS {"kind": "sim-control", "action": "reset", "tick": 0, "run": 1, "laws": [{"id": "sideways", "enabled": true, "position": [0.2444313838133252, 1, 0], "rotation": [0, 0, 0.3501024195942671, 0.9367114261042404], "halfExtents": [1.5, 2, 1.5]}], "mode": "packaged", "t": 51447}  [sim-control] reset pauses at tick 0 with the authored configuration
-[qa 07:18:57] run A digests: {"kind": "run-digest", "run": 1, "tick": 600, "editsSinceReset": 0, "bodies": 64, "stateSha256": "d83b316f8c078c5e4b3df44d2a3cf05c6156551873239c20dd17aed2feac5f89", "engineSha256": "77db130cf5834ae74a {"kind": "run-digest", "run": 1, "tick": 1200, "editsSinceReset": 0, "bodies": 64, "stateSha256": "6889ccc225865c4d2f8128863930970575ec0447f2f863a53959c5eec775312f", "engineSha256": "8282b12715faddc1e 
-[qa 07:19:02] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "m2-demo.lawsmith.json", "generation": 1, "revision": 50, "laterEdits": 0, "recoveryRetired": true, "bytes": 2554, "captureMs": 1, "writeMs": 12.713, "saveMs": 22, "mode": "packaged", "t": 66979}  [document] Save As wrote the captured revision and bound the file
-[qa 07:19:02] captured demo-06-saved.png
-[qa 07:19:04] quit with nothing unsaved: no alert was needed
-[qa 07:19:07] launched pid 56665, window at 0,21, log demo-b.log
-[qa 07:19:07] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2090}  [recovery] saved work is not offered as unsaved after restart
-[qa 07:19:14] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "m2-demo.lawsmith.json", "generation": 2, "title": "Falling stream", "bytes": 2554, "readMs": 0.115, "parseMs": 1, "candidateMs": 0, "commitMs": 3, "openMs": 4.115, "mode": "packaged", "t": 9460}  [document] the saved file opened transactionally within the 500 ms gate
-[qa 07:19:14] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 1, "laws": [{"id": "sideways", "enabled": true, "position": [0.2444313838133252, 1, 0], "rotation": [0, 0, 0.3501024195942671, 0.9367114261042404], "halfExtents": [1.5, 2, 1.5]}], "mode": "packaged", "t": 9459}  [sim-control] an opened scene starts paused at tick 0
-[qa 07:19:15] captured demo-07-reopened.png
-PASS equal-tick after native reopen at tick 600: state d83b316f/d83b316f, engine 77db130c/77db130c
-PASS equal-tick after native reopen at tick 1200: state 6889ccc2/6889ccc2, engine 8282b127/8282b127
-[qa 07:19:27] captured demo-08-reopened-running.png
-[qa 07:19:30] PASS {"kind": "fixtures", "elapsedMs": 791, "root": [{"id": "sideways", "enabled": true, "position": [0.2444313838133252, 1, 0], "rotation": [0, 0, 0.3501024195942671, 0.9367114261042404], "halfExtents": [1.5, 2, 1.5]}], "reset": [{"tick": 600, "equal": true, "engineBytesEqual": true, "bodies": 64, "dive  [fixtures] reset and 30/60/144 Hz cadence fixtures agree exactly on the reopened scene
-[qa 07:19:30] recording stopped
-[qa 07:19:32] m2-demo complete
+[qa 20:06:49] segment: defining demonstration (about 90 s)
+[qa 20:07:02] launched pid 27420, window at 0,21, log demo-a.log
+[qa 20:07:02] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2029}  [recovery] launch finds no unsaved work in isolated recovery
+[qa 20:07:04] recording m2-demo.mp4
+[qa 20:07:05] captured demo-01-start.png
+[qa 20:07:13] PASS {"kind": "pacing", "intervalMs": [17, 18, 18], "maxIntervalMs": 18, "workP95Ms": 3, "stallsOver50ms": 0, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 632, "playing": true, "bodies": 64, "stepMs": [0, 1, 1], "editMs": null, "editSamples": 0, "simWallRatio": 1, "droppedMs": 0, "mode": "packaged",  [pacing] a stream of 20–100 bodies is live
+[qa 20:07:13] captured demo-02-stream.png
+[qa 20:07:21] the synthetic release was lost; sending it again
+[qa 20:07:22] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "translate", "samples": 26, "rejected": 0, "firstRevision": 1, "lastRevision": 26, "field": {"enabled": true, "position": [0.2444313838133274, 1, 0], "rotation": [0, 0, 0, 1], "halfExtents": [1.5, 2, 1.5]}, "lawId": "  [gesture] one move gesture committed through the command path
+[qa 20:07:26] captured demo-03-bent.png
+[qa 20:07:35] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "rotate", "samples": 24, "rejected": 0, "firstRevision": 27, "lastRevision": 50, "field": {"enabled": true, "position": [0.2444313838133274, 1, 0], "rotation": [0, 0, 0.35010241959426697, 0.9367114261042404], "halfExt  [gesture] one rotate gesture turned the law by more than 20 degrees
+[qa 20:07:41] captured demo-04-rotated.png
+[qa 20:07:44] PASS {"kind": "control", "law": "sideways", "enabled": false, "revision": 51, "mode": "packaged", "t": 44241}  [control] the law is disabled through a semantic command
+[qa 20:07:47] captured demo-05-disabled.png
+[qa 20:07:48] PASS {"kind": "control", "law": "sideways", "enabled": true, "revision": 52, "mode": "packaged", "t": 47905}  [control] the law is enabled again
+[qa 20:07:52] PASS {"kind": "sim-control", "action": "reset", "tick": 0, "run": 1, "laws": [{"id": "sideways", "enabled": true, "position": [0.2444313838133274, 1, 0], "rotation": [0, 0, 0.35010241959426697, 0.9367114261042404], "halfExtents": [1.5, 2, 1.5]}], "mode": "packaged", "t": 51572}  [sim-control] reset pauses at tick 0 with the authored configuration
+[qa 20:08:03] run A digests: {"kind": "run-digest", "run": 1, "tick": 600, "editsSinceReset": 0, "bodies": 64, "stateSha256": "ae73831aae4fbdf54410d03731e2c0ef83d0679a71582e47a5a49cd04f20b708", "engineSha256": "77db130cf5834ae74a {"kind": "run-digest", "run": 1, "tick": 1200, "editsSinceReset": 0, "bodies": 64, "stateSha256": "daf0b675608ff1e95b5c6e7b2de7e1fa9fecb11d0a6abe861629baf032ce6f09", "engineSha256": "8282b12715faddc1e 
+[qa 20:08:07] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "m2-demo.lawsmith.json", "generation": 1, "revision": 52, "laterEdits": 0, "recoveryRetired": true, "bytes": 2555, "captureMs": 0, "writeMs": 8.973, "saveMs": 13, "mode": "packaged", "t": 66837}  [document] Save As wrote the captured revision and bound the file
+[qa 20:08:08] captured demo-06-saved.png
+[qa 20:08:10] quit with nothing unsaved: no alert was needed
+[qa 20:08:12] launched pid 29023, window at 0,21, log demo-b.log
+[qa 20:08:12] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 2050}  [recovery] saved work is not offered as unsaved after restart
+[qa 20:08:20] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "m2-demo.lawsmith.json", "generation": 2, "title": "Falling stream", "bytes": 2555, "readMs": 0.067, "parseMs": 1, "candidateMs": 1, "commitMs": 2, "openMs": 4.067, "mode": "packaged", "t": 10155}  [document] the saved file opened transactionally within the 500 ms gate
+[qa 20:08:20] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 1, "laws": [{"id": "sideways", "enabled": true, "position": [0.2444313838133274, 1, 0], "rotation": [0, 0, 0.35010241959426697, 0.9367114261042404], "halfExtents": [1.5, 2, 1.5]}], "mode": "packaged", "t": 10154}  [sim-control] an opened scene starts paused at tick 0
+[qa 20:08:22] captured demo-07-reopened.png
+PASS equal-tick after native reopen at tick 600: state ae73831a/ae73831a, engine 77db130c/77db130c
+PASS equal-tick after native reopen at tick 1200: state daf0b675/daf0b675, engine 8282b127/8282b127
+[qa 20:08:33] captured demo-08-reopened-running.png
+[qa 20:08:36] PASS {"kind": "fixtures", "elapsedMs": 741, "root": [{"id": "sideways", "enabled": true, "position": [0.2444313838133274, 1, 0], "rotation": [0, 0, 0.35010241959426697, 0.9367114261042404], "halfExtents": [1.5, 2, 1.5]}], "reset": [{"tick": 600, "equal": true, "engineBytesEqual": true, "bodies": 64, "div  [fixtures] reset and 30/60/144 Hz cadence fixtures agree exactly on the reopened scene
+[qa 20:08:36] recording stopped
+[qa 20:08:38] m2-demo complete

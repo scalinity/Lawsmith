@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-06 against <code>main</code> at <code>1f2fe28</code> and branch <code>m2</code> at <code>2892676</code>, with M2 awaiting review</span>
+    <span>Realigned 2026-10-06 against <code>main</code> at <code>1f2fe28</code> and branch <code>m2</code> at <code>83f944c</code>, with M2’s review findings fixed and a follow-up review pending</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Run GPT-6.1 Sol’s independent review of M2’s candidate.</h1>
-    <p class="lede">M2 is implemented on branch <code>m2</code> with every acceptance criterion passing in the packaged app, and it is not merged. Give GPT-6.1 Sol the read-only review request from M2’s hand-off; an Opus 5.5 session then runs <code>/address</code> on its report. M3 waits until you accept M2.</p>
-    <cite><code>docs/evidence/M2.md</code> Status, Acceptance criteria, Pending; <code>docs/MILESTONES.md</code> M2</cite>
+    <h1>Run the follow-up review of M2’s remediated candidate.</h1>
+    <p class="lede">The independent review of <code>c693550</code> found one critical, two high, two medium and two low findings. All are fixed on branch <code>m2</code>, and every acceptance criterion passes again, with all five native scenarios re-run on the new build. M2 is not merged. A read-only reviewer checks the remediation (<code>c693550..m2</code>); an Opus 5.5 session runs <code>/address</code> on anything it finds. M3 waits until you accept M2.</p>
+    <cite><code>docs/evidence/M2.md</code> Status, Independent review, Acceptance criteria, Pending; <code>docs/MILESTONES.md</code> M2</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -503,14 +503,14 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored. A read-only pre-review found 2 high, 3 medium and 4 low findings; all were fixed and re-verified. GPT-6.1 Sol’s independent review gate on state ownership and format semantics has not run.</dd>
-              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>2892676</code> on branch <code>m2</code>, evidence in the commit after it. Not merged.</dd>
-              <dt>Should run</dt><dd class="run">The GPT-6.1 Sol review of that candidate, then <code>/address</code> on its report in an Opus 5.5 session on the same branch, then your acceptance and the merge. Nothing beside it: every later gate shares its files.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored. A read-only pre-review found 2 high, 3 medium and 4 low findings, all fixed. The independent review of <code>c693550</code> found 1 critical, 2 high, 2 medium and 2 low findings in recovery, launch protection, termination, load commit and emitter bounds; all were fixed and re-verified, and every native scenario was re-run on the new build.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>83f944c</code> on branch <code>m2</code>, evidence in the commit after it. Not merged.</dd>
+              <dt>Should run</dt><dd class="run">A follow-up independent review of the remediation (<code>c693550..m2</code>), then <code>/address</code> on anything it finds in an Opus 5.5 session on the same branch, then your acceptance and the merge. Nothing beside it: every later gate shares its files.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M1 accepted. Contracts C3, C7, C8.</dd>
-              <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files and per-run recovery directories, and switched the display to More Space only for the 1600×1000 and 1280×800 checks, restoring it after. The dialog plugin is vendored with a one-line fix, by your decision.</dd>
-              <dt>Your part</dt><dd>Run the review, then accept M2 or send it back. Every native check, the 1280×800 one included, ran in QA; none waits for you.</dd>
+              <dt>Destroys</dt><dd>Nothing further. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, and switched the display to More Space only for the 1600×1000 and 1280×800 checks, restoring it after. The dialog plugin is vendored with a one-line fix, by your decision.</dd>
+              <dt>Your part</dt><dd>Run the follow-up review, then accept M2 or send it back. Every native check, the 1280×800 one included, ran in QA on the new build; none waits for you. One choice is yours whenever you like: how Dock Quit and logout treat a clean session (thread below).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
@@ -1162,15 +1162,15 @@
           <td data-label="Owner"><a href="#m9">M9</a></td>
           <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup, Owner decisions; <code>M2.md</code> finding 7</cite></td>
         </tr>
-        <tr id="t-m2-review" data-owner="m2" data-short="Duplicate keys">
-          <td data-label="Thread" class="lead">M2 finding 6: duplicate JSON keys</td>
-          <td data-label="What the record says">A scene file that repeats a key is read as <code>JSON.parse</code> reads it, the last value winning, rather than rejected. Deterministic and low risk; left for M2’s review to decide.</td>
-          <td data-label="Owner"><a href="#m2">M2</a> review</td>
-          <td data-label="Source"><cite><code>M2.md</code> finding 6</cite></td>
+        <tr id="t-m2-quit" data-owner="owner" data-short="Clean quit">
+          <td data-label="Thread" class="lead">M2 findings 9 and 10: Dock Quit and logout of a clean session</td>
+          <td data-label="What the record says"><code>terminate:</code> proceeds at once only when the document is clean and recovery holds nothing, so a clean Lawsmith never interrupts a logout. The cost is a window of one IPC round trip in which a just-made edit can be lost, and invalid earlier-session recovery files that are left in place make each such quit run the guard. Routing every <code>terminate:</code> through the guard closes the window but interrupts every logout. Informational; yours to choose.</td>
+          <td data-label="Owner">You</td>
+          <td data-label="Source"><cite><code>M2.md</code> findings 9, 10</cite></td>
         </tr>
         <tr id="t-m2-emitter" data-owner="m8" data-short="Emitter rotation">
           <td data-label="Thread" class="lead">M2 finding 5: emitter rotation</td>
-          <td data-label="What the record says">SPEC §5.3 does not say what an emitter’s rotation does, so schema 1 accepts only the identity. It needs a SPEC decision before emitters become authorable, by M8’s examples at the latest.</td>
+          <td data-label="What the record says">SPEC §5.3 does not say what an emitter’s rotation does, so schema 1 accepts only the identity, in any representation whose vector part is zero, stored exactly. It needs a SPEC decision before emitters become authorable, by M8’s examples at the latest.</td>
           <td data-label="Owner"><a href="#m8">M8</a></td>
           <td data-label="Source"><cite><code>M2.md</code> finding 5</cite></td>
         </tr>
