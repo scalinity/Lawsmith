@@ -63,6 +63,8 @@ export interface Viewport {
   resetView(): void;
   /** Places the camera exactly, as a scene's saved framing; no inertia carries over. */
   setView(position: readonly [number, number, number], target: readonly [number, number, number]): void;
+  /** Stops residual orbit motion, as a law gesture taking the pointer must. */
+  haltInertia(): void;
   start(hooks: FrameHooks): void;
 }
 
@@ -174,6 +176,7 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
     frame,
     resetView,
     setView,
+    haltInertia: () => haltOrbitInertia(orbit),
     start(hooks) {
       let last: number | undefined;
       renderer.setAnimationLoop((time: number) => {

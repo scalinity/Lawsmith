@@ -26,24 +26,33 @@ import {
   type Object3D,
   type Scene,
 } from 'three/webgpu';
-import { abs, float, max, mix, smoothstep, uniform, uv } from 'three/tsl';
-import type { FieldDefinition, LawPresentation, SceneDefinition } from '../domain/scene';
-import { sampleField, type CompiledField } from '../fields/directional';
+import { abs, float, max, mix, normalView, smoothstep, uniform, uv } from 'three/tsl';
+import type { FieldDefinition, LawPresentation, RegionDefinition, SceneDefinition, Vec3 } from '../domain/scene';
+import { sampleField, type CompiledField } from '../fields/kernel';
+import { DRIVE_METERS_PER_MS2, primitiveDescriptor, regionDescriptor, type RegionKind } from '../fields/registry';
+import { handlePoint, type LawHandle } from '../interaction/handles';
 import type { SimulationHost } from '../simulation/host';
 import { tokenColor } from './viewport';
 
-/** Stable arrow scale: 0.05 m of arrow per m/s² of drive (12 m/s² draws 0.6 m). Arrows are never normalized. */
-export const ARROW_METERS_PER_MS2 = 0.05;
 /** Drive below this magnitude is not drawn (SPEC §12 near-zero display threshold), in m/s². */
 export const ARROW_MIN_MS2 = 0.05;
-/** Sample lattice as fractions of each local half-extent. The outer layer sits at d = 0.875, where f = 0.25 gives weight 0.5. */
-const LATTICE = [-0.875, -0.4375, 0, 0.4375, 0.875];
-const MAX_ARROWS = LATTICE.length ** 3; // 125, SPEC §12's per-law cap
+/** Drag below this rate is not drawn, in s⁻¹. */
+export const DOT_MIN_PER_S = 0.01;
+/** A drag dot's radius is this times √K: its area is proportional to K (2 s⁻¹ draws about 5 cm). */
+export const DOT_METERS_PER_SQRT_K = 0.035;
+/** Sample lattices as fractions of each local bounding half-extent. The selected law's outer layer sits at d = 0.875, where f = 0.25 gives weight 0.5. */
+const SELECTED_LATTICE = [-0.875, -0.4375, 0, 0.4375, 0.875];
+const OTHER_LATTICE = [-0.5, 0.5];
+const MAX_SAMPLES = SELECTED_LATTICE.length ** 3; // 125, SPEC §12's per-law cap
+/** Every law's sparse arrows together stay within P1's 250 (SPEC §18.1). */
+export const ARROW_BUDGET = 250;
 /** Sparse samples refresh at most at 30 Hz while a gesture streams edits (SPEC §12). */
 const ARROW_REFRESH_MS = 1000 / 30;
 const SHAFT_RADIUS = 0.012;
 const HEAD_RADIUS = 0.045;
 const HEAD_LENGTH = 0.12;
+/** Handles keep a steady on-screen size: this fraction of their distance from the camera. */
+const HANDLE_SIZE = 0.011;
 
 /** One applied law as the view needs it: its definition, the host's evaluator for it, its display state. */
 export interface LawView {
@@ -58,8 +67,11 @@ export interface LawsViewState {
   preview: FieldDefinition | null;
   /** Throttle the selected law's arrow refreshes to 30 Hz (during a gesture). */
   throttle: boolean;
-  /** Presentation default: draw drive arrows. */
+  /** Presentation default: draw drive arrows and drag dots. */
   arrows: boolean;
+  /** The selected law's spatial handles, in handle mode. */
+  handles: { field: FieldDefinition; handles: readonly LawHandle[]; hover: string | null; active: string | null } | null;
+  camera: Vector3;
 }
 
 /** A scene's fixed geometry, emitter outlines and body capacity, built beside the displayed scene. */
@@ -77,9 +89,9 @@ export interface WorldView {
   /** Releases a prepared scene that will not be shown. */
   discardScene(prepared: PreparedScene): void;
   updateBodies(host: SimulationHost): void;
-  /** Draws the applied laws. Arrows sample each law's compiled evaluator directly. */
+  /** Draws the applied laws. Arrows and dots sample each law's compiled evaluator directly. */
   updateLaws(laws: readonly LawView[], state: LawsViewState): void;
-  /** Number of arrows currently drawn. */
+  /** Number of drive arrows currently drawn. */
   arrowCount(): number;
 }
 
@@ -88,17 +100,22 @@ interface LawVisual {
   shell: Mesh;
   outer: LineSegments;
   inner: LineSegments;
+  axis: LineSegments;
   shellIntensity: { value: number };
-  shellMaterial: MeshBasicNodeMaterial;
+  /** Face-border cue for a box; a silhouette cue for round shapes. */
+  boxShell: MeshBasicNodeMaterial;
+  roundShell: MeshBasicNodeMaterial;
   outerMaterial: LineBasicNodeMaterial;
   innerMaterial: LineBasicNodeMaterial;
   shafts: InstancedMesh;
   heads: InstancedMesh;
+  dots: InstancedMesh;
   color: Color;
-  /** What the drawn arrows were sampled from; a new compiled field or a toggle redraws them. */
-  arrowSource: CompiledField | null;
-  arrowsShown: boolean;
-  arrowRefreshedAt: number;
+  /** What the drawn samples came from; a new compiled field, a density change or a toggle redraws them. */
+  sampleSource: CompiledField | null;
+  sampleLattice: readonly number[] | null;
+  samplesShown: boolean;
+  sampledAt: number;
 }
 
 /** Releases the GPU resources a subtree owns; shared geometries survive. */
@@ -111,18 +128,63 @@ function disposeTree(object: Object3D, shared: ReadonlySet<BufferGeometry>): voi
   });
 }
 
+/** Line segments around unit circles: `planes` lists which two axes each circle spans, at an optional offset on the third. */
+function circles(planes: readonly [number, number, number, number][], segments = 64): BufferGeometry {
+  const points: number[] = [];
+  for (const [a, b, c, offset] of planes) {
+    for (let i = 0; i < segments; i++) {
+      for (const k of [i, i + 1]) {
+        const p = [0, 0, 0];
+        const angle = (2 * Math.PI * k) / segments;
+        p[a] = Math.cos(angle);
+        p[b] = Math.sin(angle);
+        p[c] = offset;
+        points.push(...p);
+      }
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
+  return geometry;
+}
+
+function segments(points: readonly number[]): BufferGeometry {
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute([...points], 3));
+  return geometry;
+}
+
 export function createWorldView(scene: Scene, root: SceneDefinition): WorldView {
   const teal = tokenColor('--teal');
   const lavender = tokenColor('--lavender');
   const tertiary = tokenColor('--text-tertiary');
 
+  // Unit shapes, scaled by each region's bounding half-extents: a sphere's three equal radii and a
+  // cylinder's radius in X and Z keep both round, so the drawn support is the analytic one.
   const unitBox = new BoxGeometry(2, 2, 2);
-  const unitEdges = new EdgesGeometry(unitBox);
+  const unitSphere = new SphereGeometry(1, 40, 20);
+  const unitCylinder = new CylinderGeometry(1, 1, 2, 48, 1);
+  const shapes: Record<RegionKind, { shell: BufferGeometry; edges: BufferGeometry; round: boolean }> = {
+    box: { shell: unitBox, edges: new EdgesGeometry(unitBox), round: false },
+    sphere: { shell: unitSphere, edges: circles([[0, 1, 2, 0], [1, 2, 0, 0], [0, 2, 1, 0]]), round: true },
+    cylinderY: {
+      shell: unitCylinder,
+      edges: (() => {
+        const rims = circles([[0, 2, 1, 1], [0, 2, 1, -1]]).getAttribute('position').array;
+        return segments([...rims, 1, -1, 0, 1, 1, 0, -1, -1, 0, -1, 1, 0, 0, -1, 1, 0, 1, 1, 0, -1, -1, 0, 1, -1]);
+      })(),
+      round: true,
+    },
+  };
+  const axisLine = segments([0, -1, 0, 0, 1, 0]);
+  const ring = circles([[0, 2, 1, 0]]);
   const shaftGeometry = new CylinderGeometry(1, 1, 1, 6).translate(0, 0.5, 0);
   const headGeometry = new ConeGeometry(1, 1, 12).translate(0, 0.5, 0);
   const sphereGeometry = new SphereGeometry(1, 20, 14);
-  const shared = new Set<BufferGeometry>([unitBox, unitEdges, shaftGeometry, headGeometry, sphereGeometry]);
+  const dotGeometry = new SphereGeometry(1, 10, 8);
+  const shared = new Set<BufferGeometry>([unitBox, unitSphere, unitCylinder, ...Object.values(shapes).map((s) => s.edges), axisLine, ring, shaftGeometry, headGeometry, sphereGeometry, dotGeometry]);
   const arrowMaterial = new MeshBasicNodeMaterial({ color: lavender });
+  const dotMaterial = new MeshBasicNodeMaterial({ color: tokenColor('--text-secondary'), transparent: true, opacity: 0.75 });
 
   let fixed = new Group();
   let bodies: InstancedMesh | null = null;
@@ -140,11 +202,13 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
         const mesh = new Mesh(new BoxGeometry(2 * hx, 2 * hy, 2 * hz), material);
         mesh.receiveShadow = true;
         block.add(mesh);
-        // A grid on the top face, so entry into a law's support can be judged against the floor.
+        // A grid on the top face of a broad block, so entry into a law's support can be judged against the floor.
         const size = 2 * Math.min(hx, hz);
-        const grid = new GridHelper(size, Math.max(1, Math.round(size)), tokenColor('--divider'), tokenColor('--grid-minor'));
-        grid.position.y = hy + 0.002;
-        block.add(grid);
+        if (size >= 4) {
+          const grid = new GridHelper(size, Math.max(1, Math.round(size)), tokenColor('--divider'), tokenColor('--grid-minor'));
+          grid.position.y = hy + 0.002;
+          block.add(grid);
+        }
       } else {
         const mesh = new Mesh(sphereGeometry, material);
         mesh.scale.setScalar(body.collider.radius);
@@ -160,9 +224,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       const corners = [-jx, -jz, jx, -jz, jx, -jz, jx, jz, jx, jz, -jx, jz, -jx, jz, -jx, -jz];
       const points: number[] = [];
       for (let i = 0; i < corners.length; i += 2) points.push(corners[i]!, 0, corners[i + 1]!);
-      const geometry = new BufferGeometry();
-      geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
-      const outline = new LineSegments(geometry, new LineBasicNodeMaterial({ color: tertiary }));
+      const outline = new LineSegments(segments(points), new LineBasicNodeMaterial({ color: tertiary }));
       outline.position.set(...emitter.pose.position);
       built.add(outline);
     }
@@ -197,57 +259,50 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   }
 
   // Each law: a translucent support shell, its outer edges and, when selected, the inner
-  // full-strength surface at d = 1 − f. The TSL cue raises opacity toward each face's border, so
-  // the box reads through its own translucency; it computes no field values.
+  // full-strength surface at d = 1 − f, which for these normalized gauges is the shape scaled by
+  // 1 − f. The TSL cues raise opacity toward a box's face borders or a round shape's silhouette, so
+  // the volume reads through its own translucency; they compute no field values.
   const border = max(abs(uv().x.sub(0.5)), abs(uv().y.sub(0.5))).mul(2);
+  const silhouette = float(1).sub(abs(normalView.z));
   const visuals = new Map<string, LawVisual>();
 
   function createVisual(): LawVisual {
     const shellIntensity = uniform(1);
-    const shellMaterial = new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide });
-    shellMaterial.opacityNode = mix(float(0.035), float(0.15), smoothstep(0.86, 1, border)).mul(shellIntensity);
-    const shell = new Mesh(unitBox, shellMaterial);
+    const boxShell = new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide });
+    boxShell.opacityNode = mix(float(0.035), float(0.15), smoothstep(0.86, 1, border)).mul(shellIntensity);
+    const roundShell = new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide });
+    roundShell.opacityNode = mix(float(0.03), float(0.13), smoothstep(0.55, 1, silhouette)).mul(shellIntensity);
+    const shell = new Mesh(unitBox, boxShell);
     shell.renderOrder = 1;
     const outerMaterial = new LineBasicNodeMaterial({ color: teal, transparent: true });
     const innerMaterial = new LineBasicNodeMaterial({ color: teal, transparent: true, opacity: 0.35 });
-    const outer = new LineSegments(unitEdges, outerMaterial);
-    const inner = new LineSegments(unitEdges, innerMaterial);
+    const outer = new LineSegments(shapes.box.edges, outerMaterial);
+    const inner = new LineSegments(shapes.box.edges, innerMaterial);
+    const axis = new LineSegments(axisLine, innerMaterial);
     const group = new Group();
-    group.add(shell, outer, inner);
-    const shafts = new InstancedMesh(shaftGeometry, arrowMaterial, MAX_ARROWS);
-    const heads = new InstancedMesh(headGeometry, arrowMaterial, MAX_ARROWS);
-    for (const mesh of [shafts, heads]) {
+    group.add(shell, outer, inner, axis);
+    const shafts = new InstancedMesh(shaftGeometry, arrowMaterial, MAX_SAMPLES);
+    const heads = new InstancedMesh(headGeometry, arrowMaterial, MAX_SAMPLES);
+    const dots = new InstancedMesh(dotGeometry, dotMaterial, MAX_SAMPLES);
+    for (const mesh of [shafts, heads, dots]) {
       mesh.count = 0;
       mesh.frustumCulled = false;
       scene.add(mesh);
     }
     scene.add(group);
-    return {
-      group,
-      shell,
-      outer,
-      inner,
-      shellIntensity,
-      shellMaterial,
-      outerMaterial,
-      innerMaterial,
-      shafts,
-      heads,
-      color: new Color(),
-      arrowSource: null,
-      arrowsShown: false,
-      arrowRefreshedAt: -Infinity,
-    };
+    return { group, shell, outer, inner, axis, shellIntensity, boxShell, roundShell, outerMaterial, innerMaterial, shafts, heads, dots, color: new Color(), sampleSource: null, sampleLattice: null, samplesShown: false, sampledAt: -Infinity };
   }
 
   function removeVisual(visual: LawVisual): void {
-    scene.remove(visual.group, visual.shafts, visual.heads);
-    for (const m of [visual.shellMaterial, visual.outerMaterial, visual.innerMaterial]) m.dispose();
+    scene.remove(visual.group, visual.shafts, visual.heads, visual.dots);
+    for (const m of [visual.boxShell, visual.roundShell, visual.outerMaterial, visual.innerMaterial]) m.dispose();
     visual.shafts.dispose();
     visual.heads.dispose();
+    visual.dots.dispose();
   }
 
-  const preview = new LineSegments(unitEdges, new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.8 }));
+  const previewMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.8 });
+  const preview = new LineSegments(shapes.box.edges, previewMaterial);
   preview.visible = false;
   scene.add(preview);
 
@@ -257,28 +312,36 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const rotation = new Quaternion();
   const up = new Vector3(0, 1, 0);
   const direction = new Vector3();
-  const drive = [0, 0, 0];
+  const sample = [0, 0, 0, 0];
 
-  /** Samples the host's compiled evaluator on the local lattice and draws one arrow per nonzero drive. */
-  function refreshArrows(visual: LawVisual, c: CompiledField) {
+  /**
+   * Samples the host's compiled evaluator on a local lattice over the region's bounds: an arrow for
+   * each nonzero drive A and a dot for each nonzero drag rate K, which has no direction of its own.
+   */
+  function refreshSamples(visual: LawVisual, c: CompiledField, bounds: Vec3, lattice: readonly number[]): number {
     const { m } = c;
-    const { shafts, heads } = visual;
+    const { shafts, heads, dots } = visual;
     let n = 0;
-    for (const fx of LATTICE) {
-      for (const fy of LATTICE) {
-        for (const fz of LATTICE) {
-          const rx = fx * c.bx;
-          const ry = fy * c.by;
-          const rz = fz * c.bz;
+    let d = 0;
+    for (const fx of lattice) {
+      for (const fy of lattice) {
+        for (const fz of lattice) {
+          const rx = fx * bounds[0];
+          const ry = fy * bounds[1];
+          const rz = fz * bounds[2];
           const wx = c.px + m[0]! * rx + m[1]! * ry + m[2]! * rz;
           const wy = c.py + m[3]! * rx + m[4]! * ry + m[5]! * rz;
           const wz = c.pz + m[6]! * rx + m[7]! * ry + m[8]! * rz;
-          sampleField(c, wx, wy, wz, drive);
-          const magnitude = Math.hypot(drive[0]!, drive[1]!, drive[2]!);
+          sampleField(c, wx, wy, wz, sample);
+          if (sample[3]! >= DOT_MIN_PER_S) {
+            const r = DOT_METERS_PER_SQRT_K * Math.sqrt(sample[3]!);
+            dots.setMatrixAt(d++, matrix.makeScale(r, r, r).setPosition(wx, wy, wz));
+          }
+          const magnitude = Math.hypot(sample[0]!, sample[1]!, sample[2]!);
           if (magnitude < ARROW_MIN_MS2) continue;
-          const length = magnitude * ARROW_METERS_PER_MS2;
+          const length = magnitude * DRIVE_METERS_PER_MS2;
           const head = Math.min(HEAD_LENGTH, 0.45 * length);
-          direction.set(drive[0]! / magnitude, drive[1]! / magnitude, drive[2]! / magnitude);
+          direction.set(sample[0]! / magnitude, sample[1]! / magnitude, sample[2]! / magnitude);
           rotation.setFromUnitVectors(up, direction);
           // Each arrow is centered on its sample point.
           position.set(wx, wy, wz).addScaledVector(direction, -length / 2);
@@ -290,7 +353,9 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       }
     }
     shafts.count = heads.count = n;
-    shafts.instanceMatrix.needsUpdate = heads.instanceMatrix.needsUpdate = true;
+    dots.count = d;
+    shafts.instanceMatrix.needsUpdate = heads.instanceMatrix.needsUpdate = dots.instanceMatrix.needsUpdate = true;
+    return n;
   }
 
   function place(object: { position: Vector3; quaternion: Quaternion }, field: FieldDefinition) {
@@ -298,8 +363,90 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     object.quaternion.set(...field.pose.rotation);
   }
 
+  function setShape(visual: LawVisual, region: RegionDefinition) {
+    const shape = shapes[region.kind];
+    visual.shell.geometry = shape.shell;
+    visual.shell.material = shape.round ? visual.roundShell : visual.boxShell;
+    visual.outer.geometry = shape.edges;
+    visual.inner.geometry = shape.edges;
+  }
+
+  // ---- spatial handles of the selected law (handle mode), drawn over every volume
+  const handleGroup = new Group();
+  handleGroup.renderOrder = 20;
+  const overlay = (color: Color) => new MeshBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true });
+  const lineOverlay = (color: Color, opacity = 1) => new LineBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true, opacity });
+  const roleMaterial = { extent: overlay(tokenColor('--text')), fade: overlay(teal), strength: overlay(lavender), core: overlay(tokenColor('--text-secondary')) };
+  const knobs = Array.from({ length: 8 }, () => {
+    const mesh = new Mesh(sphereGeometry, roleMaterial.extent);
+    mesh.renderOrder = 22;
+    handleGroup.add(mesh);
+    return mesh;
+  });
+  const strengthShaft = new Mesh(shaftGeometry, roleMaterial.strength);
+  const strengthHead = new Mesh(headGeometry, roleMaterial.strength);
+  const gauge = new LineSegments(segments([0, 0, 0, 0, 1, 0]), lineOverlay(lavender));
+  const fadeRail = new LineSegments(segments([0, 0, 0, 1, 1, 1]), lineOverlay(teal, 0.5));
+  const coreRing = new LineSegments(ring, lineOverlay(tokenColor('--text-secondary')));
+  for (const object of [strengthShaft, strengthHead, gauge, fadeRail, coreRing]) {
+    object.renderOrder = 21;
+    handleGroup.add(object);
+  }
+  scene.add(handleGroup);
+  const local = new Vector3();
+  const world = new Vector3();
+
+  function updateHandles(state: LawsViewState) {
+    const shown = state.handles;
+    handleGroup.visible = shown !== null;
+    if (!shown) return;
+    const { field, handles } = shown;
+    place(handleGroup, field);
+    handleGroup.updateMatrixWorld(true);
+    knobs.forEach((knob, i) => {
+      const h = handles[i];
+      knob.visible = h !== undefined;
+      if (!h) return;
+      knob.position.set(...handlePoint(h));
+      knob.material = roleMaterial[h.role];
+      world.copy(knob.position).applyMatrix4(handleGroup.matrixWorld);
+      const emphasis = h.name === shown.active || h.name === shown.hover ? 1.4 : 1;
+      knob.scale.setScalar(HANDLE_SIZE * emphasis * world.distanceTo(state.camera));
+    });
+    // The strength handle is an arrow tip (directional, radial, vortex) or a gauge (drag, which has no direction).
+    const strength = handles.find((h) => h.role === 'strength');
+    const glyph = primitiveDescriptor(field.expression.kind).glyph;
+    strengthShaft.visible = strengthHead.visible = strength !== undefined && glyph !== 'drag' && Math.abs(strength.t) > 1e-6;
+    gauge.visible = strength !== undefined && glyph === 'drag';
+    if (strength) {
+      const length = Math.abs(strength.t);
+      const sign = Math.sign(strength.t) || 1;
+      direction.set(...strength.axis).multiplyScalar(sign);
+      if (glyph === 'drag') {
+        gauge.position.set(...strength.origin);
+        gauge.quaternion.setFromUnitVectors(up, direction);
+        gauge.scale.set(1, Math.max(length, 1e-6), 1);
+      } else if (strengthShaft.visible) {
+        const head = Math.min(HEAD_LENGTH * 1.3, 0.45 * length);
+        rotation.setFromUnitVectors(up, direction);
+        strengthShaft.position.set(...strength.origin);
+        strengthShaft.quaternion.copy(rotation);
+        strengthShaft.scale.set(SHAFT_RADIUS * 1.6, length - head, SHAFT_RADIUS * 1.6);
+        strengthHead.position.copy(local.set(...strength.origin).addScaledVector(direction, length - head));
+        strengthHead.quaternion.copy(rotation);
+        strengthHead.scale.set(HEAD_RADIUS * 1.3, head, HEAD_RADIUS * 1.3);
+      }
+    }
+    // The fade handle slides on the line from the center to an outer-surface corner.
+    fadeRail.scale.set(...regionDescriptor(field.region.kind).fadeCorner(field.region));
+    const core = handles.find((h) => h.role === 'core');
+    coreRing.visible = core !== undefined;
+    if (core) coreRing.scale.setScalar(Math.max(core.t, 1e-6));
+  }
+
   showScene(prepareScene(root));
 
+  let drawnArrows = 0;
   return {
     prepareScene,
     showScene,
@@ -320,36 +467,54 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     updateLaws(laws, state) {
       const now = performance.now();
       const present = new Set<string>();
+      // The selected law samples densely; every other law takes a sparse lattice while the budget lasts.
+      let budget = ARROW_BUDGET - (laws.some((l) => l.field.id === state.selectedId && l.presentation.visible) ? MAX_SAMPLES : 0);
+      drawnArrows = 0;
       for (const { field, compiled, presentation } of laws) {
         present.add(field.id);
         let visual = visuals.get(field.id);
         if (!visual) visuals.set(field.id, (visual = createVisual()));
         const selected = field.id === state.selectedId;
-        const [hx, hy, hz] = field.region.halfExtents;
+        const bounds = regionDescriptor(field.region.kind).bounds(field.region);
+        setShape(visual, field.region);
         visual.group.visible = presentation.visible;
         place(visual.group, field);
-        visual.shell.scale.set(hx, hy, hz);
-        visual.outer.scale.set(hx, hy, hz);
+        visual.shell.scale.set(...bounds);
+        visual.outer.scale.set(...bounds);
         const core = 1 - field.edgeFade;
-        visual.inner.scale.set(core * hx, core * hy, core * hz);
+        visual.inner.scale.set(core * bounds[0], core * bounds[1], core * bounds[2]);
         visual.inner.visible = selected && field.edgeFade > 0 && field.enabled;
+        // A vortex's axis is its local Y: drawn through the support when selected, so the swirl's frame is visible.
+        visual.axis.visible = selected && primitiveDescriptor(field.expression.kind).glyph === 'axis';
+        visual.axis.scale.set(1, bounds[1], 1);
         visual.color.set(presentation.color);
         visual.shellIntensity.value = !field.enabled ? 0.35 : selected ? 1 : 0.7;
-        visual.shellMaterial.color.copy(visual.color);
+        visual.boxShell.color.copy(visual.color);
+        visual.roundShell.color.copy(visual.color);
         visual.innerMaterial.color.copy(visual.color);
         visual.outerMaterial.color.copy(field.enabled ? visual.color : tertiary);
         visual.outerMaterial.opacity = !field.enabled ? 0.6 : selected ? 1 : 0.5;
 
-        // Hiding a law hides its arrows too; its effect is unchanged (SPEC §5.4).
-        const show = state.arrows && presentation.visible;
-        const due = !state.throttle || !selected || now - visual.arrowRefreshedAt >= ARROW_REFRESH_MS;
-        if (show && (compiled !== visual.arrowSource || !visual.arrowsShown) && due) {
-          refreshArrows(visual, compiled);
-          visual.arrowSource = compiled;
-          visual.arrowRefreshedAt = now;
+        // Hiding a law hides its samples too; its effect is unchanged (SPEC §5.4).
+        let lattice: readonly number[] | null = null;
+        if (state.arrows && presentation.visible) {
+          if (selected) lattice = SELECTED_LATTICE;
+          else if (budget >= OTHER_LATTICE.length ** 3) {
+            lattice = OTHER_LATTICE;
+            budget -= OTHER_LATTICE.length ** 3;
+          }
         }
-        visual.arrowsShown = show;
-        visual.shafts.visible = visual.heads.visible = show;
+        const show = lattice !== null;
+        const due = !state.throttle || !selected || now - visual.sampledAt >= ARROW_REFRESH_MS;
+        if (show && (compiled !== visual.sampleSource || lattice !== visual.sampleLattice || !visual.samplesShown) && due) {
+          refreshSamples(visual, compiled, bounds, lattice!);
+          visual.sampleSource = compiled;
+          visual.sampleLattice = lattice;
+          visual.sampledAt = now;
+        }
+        visual.samplesShown = show;
+        visual.shafts.visible = visual.heads.visible = visual.dots.visible = show;
+        if (show) drawnArrows += visual.shafts.count;
       }
       for (const [id, visual] of visuals) {
         if (present.has(id)) continue;
@@ -360,14 +525,12 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       preview.visible = state.preview !== null;
       if (state.preview) {
         place(preview, state.preview);
-        preview.scale.set(...state.preview.region.halfExtents);
+        preview.geometry = shapes[state.preview.region.kind].edges;
+        preview.scale.set(...regionDescriptor(state.preview.region.kind).bounds(state.preview.region));
       }
+      updateHandles(state);
     },
 
-    arrowCount: () => {
-      let n = 0;
-      for (const visual of visuals.values()) if (visual.arrowsShown) n += visual.shafts.count;
-      return n;
-    },
+    arrowCount: () => drawnArrows,
   };
 }
