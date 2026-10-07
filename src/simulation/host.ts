@@ -12,6 +12,8 @@ import {
 } from '../domain/scene';
 import { compileField, sampleField, type CompiledField } from '../fields/kernel';
 import { adaptAcceleration } from './adapter';
+import { observeTransition, type TransitionObservation } from './observation';
+import type { SimulationSettings } from '../domain/scene';
 
 /** Fixed simulation step h (SPEC §2.2). */
 export const STEP_SECONDS = 1 / 120;
@@ -182,6 +184,7 @@ const MAX_POSITION = 10000;
 interface LiveBody {
   readonly id: string;
   readonly body: RAPIER.RigidBody;
+  readonly collider: RAPIER.Collider;
   readonly radius: number;
   /** Infinity for authored bodies, which have no implicit lifetime. */
   readonly deathTick: number;
@@ -211,6 +214,10 @@ interface PendingCommand {
 const byId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 const IDENTITY: Quat = [0, 0, 0, 1];
 const finite3 = (x: number, y: number, z: number) => Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z);
+/** Laws per scene at most (SPEC §15.2), so one body's per-law samples fit a fixed buffer. */
+const MAX_LAWS = 32;
+/** Worlds built in this process; each reset takes the next, so observers can tell one world from another. */
+let worldsBuilt = 0;
 
 /**
  * The only owner of a Rapier world (SPEC §4, C5). UI and rendering submit validated commands
@@ -236,7 +243,27 @@ export class SimulationHost {
   /** Read-only observation of the last completed boundary, for rendering. */
   positions = new Float32Array(0);
   radii = new Float32Array(0);
+  /** Stable ID of the body at each published index. */
+  readonly ids: string[] = [];
   count = 0;
+  /**
+   * Identity of the world: a new value on every reset, unique in this process, so trails and probes
+   * never carry a sample from one world into another. Not simulation state.
+   */
+  generation = 0;
+
+  /**
+   * The body whose transitions are retained for explanation (SPEC §12): UI state handed to the host.
+   * Choosing it changes what is recorded about a step, never what the step computes.
+   */
+  private explainId: string | null = null;
+  /** The explained body's last completed transition; null until one completes in this world. */
+  explanation: TransitionObservation | null = null;
+  private explainSamples = new Float64Array(4 * MAX_LAWS);
+  /** Center [0..2] and velocity [3..5] at the boundary, then the adapter's output [6..10]. */
+  private readonly explainState = new Float64Array(11);
+  /** Stable ID of every live collider's body, fixed ones included, for naming contact partners. */
+  private colliderIds = new Map<number, string>();
 
   /** Diagnostic timing of the last step's field sampling and engine step, in ms. */
   lastFieldMs = 0;
@@ -270,6 +297,9 @@ export class SimulationHost {
     for (const def of root.emitters) radiusOf(def.template.collider);
     this.world?.free();
     this.world = createWorld();
+    this.generation = ++worldsBuilt;
+    this.explanation = null;
+    this.colliderIds = new Map();
     this.root = root;
     this.tick = 0;
     this.lastAppliedSequence = 0;
@@ -290,8 +320,8 @@ export class SimulationHost {
     for (const def of [...root.bodies].sort(byId)) {
       const mass = def.type === 'dynamic' ? def.massKg : null;
       const { position, rotation } = def.initialPose;
-      const body = this.createBody(position, rotation, def.initialLinearVelocity, def.initialAngularVelocity, def.collider, def.material, def.collisionMode, mass);
-      if (mass !== null) this.bodies.push({ id: def.id, body, radius: radiusOf(def.collider), deathTick: Infinity });
+      const { body, collider } = this.createBody(def.id, position, rotation, def.initialLinearVelocity, def.initialAngularVelocity, def.collider, def.material, def.collisionMode, mass);
+      if (mass !== null) this.bodies.push({ id: def.id, body, collider, radius: radiusOf(def.collider), deathTick: Infinity });
     }
     this.publish();
   }
@@ -352,6 +382,11 @@ export class SimulationHost {
     const fieldStart = performance.now();
     const { ambientAcceleration: g, maxAppliedAcceleration } = this.root.simulation;
     const { bodies, compiled, sample, accel, forces } = this;
+    // The explained body's samples are copied as they are summed (SPEC §12): its explanation is this
+    // transition's arithmetic, not a later re-evaluation. Every other body takes the plain path.
+    const explained = this.explainId === null ? -1 : bodies.findIndex((b) => b.id === this.explainId);
+    if (explained >= 0 && this.explainSamples.length < 4 * compiled.length) this.explainSamples = new Float64Array(4 * compiled.length);
+    const record = this.explainSamples;
     for (let i = 0; i < bodies.length; i++) {
       const live = bodies[i]!;
       const p = live.body.translation();
@@ -359,11 +394,13 @@ export class SimulationHost {
       let ay = g[1];
       let az = g[2];
       let k = 0;
-      for (const field of compiled) {
+      for (let f = 0; f < compiled.length; f++) {
+        const field = compiled[f]!;
         sampleField(field, p.x, p.y, p.z, sample);
         if (!finite3(sample[0]!, sample[1]!, sample[2]!) || !Number.isFinite(sample[3]!)) {
           throw (this.fault = new SimulationFault(this.tick, `${field.id} → ${live.id}`, 'Nonfinite field output'));
         }
+        if (i === explained) record.set(sample, 4 * f);
         ax += sample[0]!;
         ay += sample[1]!;
         az += sample[2]!;
@@ -381,6 +418,11 @@ export class SimulationHost {
       forces[3 * i] = mass * accel[0]!;
       forces[3 * i + 1] = mass * accel[1]!;
       forces[3 * i + 2] = mass * accel[2]!;
+      if (i === explained) {
+        // The velocity read is a getter; on the K ≠ 0 path it repeats the read the adapter used.
+        const v = live.body.linvel();
+        this.explainState.set([p.x, p.y, p.z, v.x, v.y, v.z, accel[0]!, accel[1]!, accel[2]!, accel[3]!, accel[4]!]);
+      }
     }
     // Rapier keeps added forces until cleared: clear each body's prior total, then add the new one once.
     for (let i = 0; i < bodies.length; i++) {
@@ -410,8 +452,98 @@ export class SimulationHost {
       maxSpeed = Math.max(maxSpeed, speed);
     }
     this.maxSpeed = maxSpeed;
+    if (explained >= 0) this.explanation = this.retain(bodies[explained]!, 3 * explained);
     this.tick += 1;
     this.publish();
+  }
+
+  /**
+   * Chooses the body whose transitions are retained for explanation; null retains none. The current
+   * explanation stays as it is: it names its own body, so it never reads as another body's.
+   */
+  explain(id: string | null): void {
+    this.explainId = id;
+  }
+
+  /** The explained body's completed transition, from the values the step just used (SPEC §12). */
+  private retain(live: LiveBody, at: number): TransitionObservation {
+    const world = this.world!;
+    const t = live.body.translation();
+    const v = live.body.linvel();
+    // SPEC §9.2 step 6, after the step and outside the solver: the colliders whose contact carried a
+    // normal impulse during it, named by stable ID and sorted. Read-only narrow-phase queries.
+    const partners = new Set<string>();
+    world.contactPairsWith(live.collider, (other) => {
+      let impulse = 0;
+      world.contactPair(live.collider, other, (manifold) => {
+        for (let c = 0; c < manifold.numContacts(); c++) impulse += manifold.contactImpulse(c);
+      });
+      if (impulse > 0) partners.add(this.colliderIds.get(other.handle) ?? `collider ${other.handle}`);
+    });
+    const s = this.explainState;
+    return observeTransition({
+      kind: 'applied',
+      bodyId: live.id,
+      fromTick: this.tick,
+      cursor: this.lastAppliedSequence,
+      laws: [...this.fieldDefs],
+      gravity: this.root.simulation.ambientAcceleration,
+      maxApplied: this.root.simulation.maxAppliedAcceleration,
+      state: s,
+      samples: this.explainSamples,
+      adapted: s.subarray(6),
+      mass: live.body.mass(),
+      force: [this.forces[at]!, this.forces[at + 1]!, this.forces[at + 2]!],
+      after: { center: [t.x, t.y, t.z], velocity: [v.x, v.y, v.z] },
+      contacts: [...partners].sort(),
+    });
+  }
+
+  /**
+   * SPEC §12's paused "next-step preview": what the next transition would submit for the explained
+   * body from its current center and velocity under the applied laws, by the same kernel and
+   * adapter. It writes nothing: the retained explanation, the world and the clock are untouched.
+   */
+  previewTransition(): TransitionObservation | null {
+    const live = this.explainId === null || this.fault ? undefined : this.bodies.find((b) => b.id === this.explainId);
+    if (!live) return null;
+    const { ambientAcceleration: g, maxAppliedAcceleration } = this.root.simulation;
+    const p = live.body.translation();
+    const v = live.body.linvel();
+    const samples = new Float64Array(4 * this.compiled.length);
+    const sample = [0, 0, 0, 0];
+    let ax = g[0];
+    let ay = g[1];
+    let az = g[2];
+    let k = 0;
+    for (let f = 0; f < this.compiled.length; f++) {
+      sampleField(this.compiled[f]!, p.x, p.y, p.z, sample);
+      samples.set(sample, 4 * f);
+      ax += sample[0]!;
+      ay += sample[1]!;
+      az += sample[2]!;
+      k += sample[3]!;
+    }
+    const adapted = [0, 0, 0, 0, 0];
+    if (k === 0) adaptAcceleration(ax, ay, az, 0, 0, 0, 0, STEP_SECONDS, maxAppliedAcceleration, adapted);
+    else adaptAcceleration(ax, ay, az, k, v.x, v.y, v.z, STEP_SECONDS, maxAppliedAcceleration, adapted);
+    const mass = live.body.mass();
+    return observeTransition({
+      kind: 'preview',
+      bodyId: live.id,
+      fromTick: this.tick,
+      cursor: this.lastAppliedSequence,
+      laws: [...this.fieldDefs],
+      gravity: g,
+      maxApplied: maxAppliedAcceleration,
+      state: [p.x, p.y, p.z, v.x, v.y, v.z],
+      samples,
+      adapted,
+      mass,
+      force: [mass * adapted[0]!, mass * adapted[1]!, mass * adapted[2]!],
+      after: null,
+      contacts: null,
+    });
   }
 
   /** Applied laws, in stable ID order. */
@@ -422,6 +554,16 @@ export class SimulationHost {
   /** The compiled form of an applied law: the exact evaluator the simulation samples. */
   compiledField(id: string): CompiledField | undefined {
     return this.compiled.find((f) => f.id === id);
+  }
+
+  /** Every applied law's evaluator, in the stable order the step samples them. Read-only. */
+  compiledFields(): readonly CompiledField[] {
+    return this.compiled;
+  }
+
+  /** The run root's simulation settings: gravity, the acceleration limit and the body limit. */
+  get settings(): SimulationSettings {
+    return this.root.simulation;
   }
 
   canonicalState(): CanonicalState {
@@ -476,7 +618,10 @@ export class SimulationHost {
     }
     const expiring = this.bodies.filter((b) => b.deathTick <= n);
     if (expiring.length) {
-      for (const live of expiring.sort(byId)) this.world!.removeRigidBody(live.body);
+      for (const live of expiring.sort(byId)) {
+        this.colliderIds.delete(live.collider.handle);
+        this.world!.removeRigidBody(live.body);
+      }
       this.bodies = this.bodies.filter((b) => b.deathTick > n);
     }
     for (const emitter of this.emitters) {
@@ -494,7 +639,9 @@ export class SimulationHost {
       const { template } = def;
       const origin = def.pose.position;
       const position: Vec3 = [origin[0] + ox, origin[1] + oy, origin[2] + oz];
-      const body = this.createBody(
+      const id = `${def.id}:${ordinal}`;
+      const { body, collider } = this.createBody(
+        id,
         position,
         IDENTITY,
         template.initialLinearVelocity,
@@ -504,7 +651,7 @@ export class SimulationHost {
         template.collisionMode,
         template.massKg,
       );
-      this.bodies.push({ id: `${def.id}:${ordinal}`, body, radius: radiusOf(template.collider), deathTick: n + def.lifetimeTicks });
+      this.bodies.push({ id, body, collider, radius: radiusOf(template.collider), deathTick: n + def.lifetimeTicks });
     }
   }
 
@@ -515,6 +662,7 @@ export class SimulationHost {
 
   /** Creates one body with one centered collider; a dynamic collider carries the full authored mass (SPEC §5.2). */
   private createBody(
+    id: string,
     position: Vec3,
     rotation: Quat,
     velocity: Vec3,
@@ -523,7 +671,7 @@ export class SimulationHost {
     material: BodyMaterial,
     mode: CollisionMode,
     massKg: number | null,
-  ): RAPIER.RigidBody {
+  ): { body: RAPIER.RigidBody; collider: RAPIER.Collider } {
     const desc =
       massKg === null
         ? RAPIER.RigidBodyDesc.fixed()
@@ -544,12 +692,13 @@ export class SimulationHost {
     const groups = massKg === null ? GROUPS.fixed : GROUPS[mode];
     shape.setFriction(material.friction).setRestitution(material.restitution).setCollisionGroups(groups).setSolverGroups(groups);
     if (massKg !== null) shape.setMass(massKg);
-    this.world!.createCollider(shape, body);
-    return body;
+    const created = this.world!.createCollider(shape, body);
+    this.colliderIds.set(created.handle, id);
+    return { body, collider: created };
   }
 
   private publish(): void {
-    const { bodies, positions, radii } = this;
+    const { bodies, positions, radii, ids } = this;
     for (let i = 0; i < bodies.length; i++) {
       const live = bodies[i]!;
       const p = live.body.translation();
@@ -557,7 +706,9 @@ export class SimulationHost {
       positions[3 * i + 1] = p.y;
       positions[3 * i + 2] = p.z;
       radii[i] = live.radius;
+      ids[i] = live.id;
     }
+    ids.length = bodies.length;
     this.count = bodies.length;
   }
 }
