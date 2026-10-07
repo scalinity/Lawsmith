@@ -15,9 +15,24 @@ import { DocumentWorkflow, type RecoveryOffer } from './persistence/workflow';
 import { identifyBackend, isQualifiedWebGPU, probeRenderedPixels, watchGPUErrors } from './rendering/backend';
 import { createRenderer, createViewport, MAX_PIXEL_RATIO } from './rendering/viewport';
 import { createWorldView, type PreparedScene } from './rendering/worldView';
-import { compareRuns, runAtCadence, runFixedSteps, runResetFixture, scriptedEdits } from './simulation/fixtures';
+import { checkProbeSettings, ProbeField, type ProbeSettings } from './observation/probes';
+import { TrailRecorder, type TrailMode } from './observation/trails';
+import { createExplainView, type ExplainLabel } from './rendering/explainView';
+import {
+  compareRuns,
+  explanationFixture,
+  observedResetFixture,
+  runAtCadence,
+  runFixedSteps,
+  runResetFixture,
+  scriptedEdits,
+  trailFidelity,
+  visualizationInvariance,
+} from './simulation/fixtures';
 import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation } from './simulation/host';
+import type { TransitionObservation } from './simulation/observation';
 import { FixedStepScheduler } from './simulation/scheduler';
+import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
 
 const mode = import.meta.env.DEV ? 'dev' : 'packaged';
 // Dev-only fault injection for the controlled-failure check; compiled out of production builds.
@@ -156,6 +171,15 @@ async function start() {
   const viewport = createViewport(renderer, report);
   const world = createWorldView(viewport.scene, initial.semantic);
 
+  // Explanation (SPEC §12) is visualization state: the explained body, probes, trails and which laws
+  // draw arrows. None of it enters the document, the run root or the host's computation.
+  const explainView = createExplainView(viewport.scene);
+  const probes = new ProbeField();
+  const trails = new TrailRecorder('selected');
+  let explained: string | null = null;
+  let explainMode: ExplainViewMode = 'applied';
+  let arrowScope: 'all' | 'selected' = 'all';
+
   // Edit latency (SPEC §18): accepted edit → first frame submitted with its applied revision.
   let editLatency = new EditLatency();
   /** Final revisions of gestures and toggles, reported once the host applies them. */
@@ -194,6 +218,12 @@ async function start() {
       submit,
       onGestureEnd: (end) => gestureEnded(end),
       onSelectionChange: () => renderPanel(),
+      clickBody: (x, y) => {
+        const id = bodyAt(x, y);
+        if (id === null) return false;
+        setExplained(id, 'click');
+        return true;
+      },
       haltCamera: () => viewport.haltInertia(),
       editable: () => !frozen,
       log: report,
@@ -286,8 +316,11 @@ async function start() {
   const setPlaying = (playing: boolean, reason: string) => {
     if (playing === scheduler.playing) return;
     if (playing && (host.fault || frozen)) return;
-    if (playing) scheduler.play();
-    else scheduler.pause();
+    if (playing) {
+      scheduler.play();
+      // A next-step preview is a paused view; motion shows each completed step instead.
+      explainMode = 'applied';
+    } else scheduler.pause();
     notePlaying(playing, reason);
   };
   /** Records a play-state change, including the scheduler's own pause on a gap. */
@@ -314,9 +347,20 @@ async function start() {
   const timedStep = () => {
     const t0 = performance.now();
     host.step();
-    const elapsed = performance.now() - t0;
+    const t1 = performance.now();
+    // Observers of the completed step: probes take the same transition, trails sample every fourth tick.
+    probes.advance(host);
+    const t2 = performance.now();
+    trails.record(host, explained);
+    const t3 = performance.now();
+    const elapsed = t1 - t0;
     pushBounded(stepTimes, elapsed, 480);
-    if (p0?.phase === 'measure') p0.steps.push(elapsed);
+    if (p0?.phase === 'measure') {
+      p0.steps.push(elapsed);
+      if (probes.settings.enabled && probes.settings.count > 0) p0.probes.push(t2 - t1);
+      if (trails.mode !== 'off') p0.trails.push(t3 - t2);
+      p0.ticks.push(t3 - t0);
+    }
     if (host.tick === 600 || host.tick === 1200) captureDigest();
   };
 
@@ -415,6 +459,7 @@ async function start() {
       world.showScene(candidate.view);
       applyCamera(document.presentation.camera);
       interaction.select(document.semantic.fields[0]?.id ?? null);
+      setExplained(null, 'load');
       editLatency = new EditLatency();
       awaited.clear();
       runIndex += 1;
@@ -952,12 +997,16 @@ async function start() {
     work: number[];
     steps: number[];
     edits: number[];
+    /** Per completed step: the probe step, the trail sample, and the step with both (observed, not summed percentiles). */
+    probes: number[];
+    trails: number[];
+    ticks: number[];
     invalid: string | null;
   }
   const startP0 = () => {
     if (p0 || frozen) return;
     setPlaying(true, 'p0');
-    p0 = { run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], invalid: null };
+    p0 = { run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], probes: [], trails: [], ticks: [], invalid: null };
     report('p0', { phase: 'warmup', run: p0.run });
   };
   const finishP0 = (capture: P0Capture, now: number) => {
@@ -984,6 +1033,8 @@ async function start() {
         allBodyContacts: authoring.scene.bodies.some((b) => b.type === 'dynamic' && b.collisionMode === 'all') || authoring.scene.emitters.some((e) => e.template.collisionMode === 'all'),
         limitedSteps: host.limitedSteps,
       },
+      // The optional visualization during the capture (M4): P0 runs with all of it off, P2 with it on.
+      visualization: visualizationState(),
       viewport: { css: [window.innerWidth, window.innerHeight], devicePixelRatio: window.devicePixelRatio, pixelRatio: renderer.getPixelRatio(), canvas: [canvas.width, canvas.height] },
       timerResolutionMs: timerMs,
       percentiles: 'p50, p95, p99, max',
@@ -991,13 +1042,19 @@ async function start() {
       editMs: percentiles(capture.edits),
       intervalMs: percentiles(capture.intervals),
       workMs: percentiles(capture.work),
-      samples: { steps: capture.steps.length, edits: capture.edits.length, frames: capture.intervals.length },
+      probeMs: percentiles(capture.probes),
+      trailMs: percentiles(capture.trails),
+      tickMs: percentiles(capture.ticks),
+      samples: { steps: capture.steps.length, edits: capture.edits.length, frames: capture.intervals.length, probeSteps: capture.probes.length, trailSteps: capture.trails.length },
       editsSuperseded: editLatency.superseded - capture.supersededStart,
       raw: {
         stepMs: capture.steps.map(round3),
         editMs: capture.edits.map(round3),
         intervalMs: capture.intervals.map(round3),
         workMs: capture.work.map(round3),
+        probeMs: capture.probes.map(round3),
+        trailMs: capture.trails.map(round3),
+        tickMs: capture.ticks.map(round3),
       },
     });
   };
@@ -1013,7 +1070,7 @@ async function start() {
       return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
     };
     const controls: Record<string, number[] | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #drag-region, #recovery-offer, #details, button[id], input[id]')) {
+    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #drag-region, #recovery-offer, #details, #motion, #explain, button[id], input[id]')) {
       controls[element.id] = box(element);
     }
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
@@ -1087,6 +1144,10 @@ async function start() {
       handles,
       // Spatial handles of the selected law in handle mode, at their projected centers.
       lawHandles: interaction.handlesOnScreen(),
+      // The explained body's center now, and the panel's scroll extent (it must not scroll sideways).
+      explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
+      scroll: Object.fromEntries(['panel', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight }]; })),
+      visualization: visualizationState(),
       camera: viewport.camera.position.toArray(),
       // World → clip space, so a harness can find where any world point appears.
       viewProjection: viewport.camera.projectionMatrix.clone().multiply(viewport.camera.matrixWorldInverse).elements,
@@ -1106,13 +1167,24 @@ async function start() {
     referenceHost.dispose();
     const cadence = [30, 60, 144].map((hz) => ({ hz, comparison: compareRuns(reference, runAtCadence(root, hz, script)) }));
     const scriptedReset = runResetFixture(root, script);
+    // M4: visualization cannot alter authority (AC6), a reset with the view changed (T04), and T08's
+    // trail and contribution checks, all in this runtime.
+    const visualization = visualizationInvariance(root, script);
+    const observedReset = observedResetFixture(root, script);
+    const trailCheck = trailFidelity(root);
+    const contributions = explanationFixture(root, script);
     report('fixtures', {
       elapsedMs: Math.round(performance.now() - t0),
       root: root.fields.map(lawSummary),
       reset,
       scriptedReset,
       cadence,
-      allEqual: [...reset, ...scriptedReset, ...cadence.flatMap((c) => c.comparison)].every((c) => c.equal),
+      visualization,
+      observedReset,
+      trails: trailCheck,
+      contributions,
+      allEqual: [...reset, ...scriptedReset, ...cadence.flatMap((c) => c.comparison), ...visualization.flatMap((v) => v.comparison), ...observedReset].every((c) => c.equal),
+      t08: trailCheck.mismatches === 0 && trailCheck.samples > 0 && contributions.pass,
     });
   };
 
@@ -1153,8 +1225,14 @@ async function start() {
       case 'Delete':
         return deleteSelected();
       case 'Escape':
-        if (!interaction.cancel('escape')) interaction.select(null);
+        // A gesture first, then the explained body, then the law selection.
+        if (interaction.cancel('escape')) return;
+        if (explained !== null) setExplained(null, 'escape');
+        else interaction.select(null);
         return;
+      case 'b': return explainNearest();
+      case 'E': return reportExplanation();
+      case 'V': return report('visual-resources', visualizationState());
       case 'P': return startP0();
       case 'D':
         runFixtures().catch((error: unknown) => report('fixtures', { error: String(error) }));
@@ -1195,6 +1273,214 @@ async function start() {
     showSimError('The graphics device was lost. Save your scene, then quit and reopen Lawsmith.', false);
   };
 
+  // ------------------------------------------------------------------ explanation, probes and trails
+
+  const bodyPanel = createBodyPanel();
+  const labelsHost = $('explain-labels');
+  const labelSpans = new Map<string, HTMLSpanElement>();
+  const projected = new Vector3();
+  const lawLabel = (id: string) => authoring.presentationOf(id).label;
+  const lawColor = (id: string) => authoring.presentationOf(id).color;
+
+  /** A click picks the body whose projected center is nearest, within its drawn radius or 10 px. */
+  const BODY_PICK_PX = 10;
+  const bodyAt = (clientX: number, clientY: number): string | null => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const pixelsPerMeterAtUnit = rect.height / 2 / Math.tan((viewport.camera.fov * Math.PI) / 360);
+    let best: string | null = null;
+    let bestPx = Infinity;
+    for (let i = 0; i < host.count; i++) {
+      projected.set(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!);
+      const distance = projected.distanceTo(viewport.camera.position);
+      projected.project(viewport.camera);
+      if (projected.z > 1) continue;
+      const px = Math.hypot(rect.left + ((projected.x + 1) / 2) * rect.width - clientX, rect.top + ((1 - projected.y) / 2) * rect.height - clientY);
+      const reach = Math.max(BODY_PICK_PX, (host.radii[i]! * pixelsPerMeterAtUnit) / distance + 3);
+      if (px <= reach && px < bestPx) {
+        best = host.ids[i]!;
+        bestPx = px;
+      }
+    }
+    return best;
+  };
+
+  /** The explained body is UI state handed to the host, which then retains that body's steps. */
+  const setExplained = (id: string | null, reason: string) => {
+    if (id === explained) return;
+    explained = id;
+    host.explain(id);
+    report('explain-select', { body: id, reason, tick: host.tick, playing: scheduler.playing, trails: trails.mode });
+  };
+
+  /** The keyboard route (B): the body nearest the view's focus point. */
+  const explainNearest = () => {
+    const t = viewport.orbit.target;
+    let best: string | null = null;
+    let bestDistance = Infinity;
+    for (let i = 0; i < host.count; i++) {
+      const d = Math.hypot(host.positions[3 * i]! - t.x, host.positions[3 * i + 1]! - t.y, host.positions[3 * i + 2]! - t.z);
+      if (d < bestDistance) {
+        best = host.ids[i]!;
+        bestDistance = d;
+      }
+    }
+    if (best !== null) setExplained(best, 'nearest');
+  };
+
+  let previewKey = '';
+  let previewCache: TransitionObservation | null = null;
+  /** The retained last step of the explained body, or, while paused, the next-step preview. */
+  const shownObservation = (): TransitionObservation | null => {
+    if (explained === null) return null;
+    if (explainMode === 'preview') {
+      if (scheduler.playing) return null;
+      // A preview changes only with the world, the tick, the applied laws or the body.
+      const key = `${host.generation}:${host.tick}:${host.lastAppliedSequence}:${explained}`;
+      if (key !== previewKey) {
+        previewKey = key;
+        previewCache = host.previewTransition();
+      }
+      return previewCache;
+    }
+    const o = host.explanation;
+    return o && o.bodyId === explained ? o : null;
+  };
+
+  const placeLabels = (labels: readonly ExplainLabel[]) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const shown = new Set<string>();
+    for (const label of labels) {
+      shown.add(label.key);
+      let span = labelSpans.get(label.key);
+      if (!span) {
+        span = document.createElement('span');
+        span.dataset.key = label.key;
+        labelsHost.append(span);
+        labelSpans.set(label.key, span);
+      }
+      projected.set(...label.at).project(viewport.camera);
+      span.hidden = projected.z > 1;
+      if (span.textContent !== label.text) span.textContent = label.text;
+      span.style.left = `${rect.left + ((projected.x + 1) / 2) * rect.width}px`;
+      span.style.top = `${rect.top + ((1 - projected.y) / 2) * rect.height}px`;
+    }
+    for (const [key, span] of labelSpans) if (!shown.has(key)) span.hidden = true;
+  };
+
+  /** Each frame: probes catch up with a paused world, then the vectors, labels and readout follow the host. */
+  const updateExplanation = () => {
+    probes.sync(host);
+    const observation = shownObservation();
+    const i = explained === null ? -1 : host.ids.indexOf(explained);
+    const labels = explainView.update(
+      {
+        observation,
+        body: i < 0 ? null : [host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!],
+        bodyRadius: i < 0 ? 0.08 : host.radii[i]!,
+        lawColor,
+        camera: viewport.camera,
+      },
+      probes,
+      trails,
+      explained,
+    );
+    placeLabels(labels);
+    bodyPanel.render(explained === null ? null : { explained, view: explainMode, playing: scheduler.playing, present: i >= 0, tick: host.tick, observation, lawLabel, lawColor });
+  };
+
+  /** What is drawn and recorded, with the bytes of every buffer it owns (SPEC §18.2 resource accounting). */
+  const visualizationState = () => {
+    const bytes = { ...probes.bytes(), ...trails.bytes(), ...explainView.bytes() };
+    return {
+      probes: { ...probes.settings, live: probes.live },
+      trails: { mode: trails.mode, count: trails.count },
+      explained,
+      explainMode,
+      arrowScope,
+      bytes,
+      totalBytes: Object.values(bytes).reduce((a, b) => a + b, 0),
+    };
+  };
+
+  /** Shift+E: the explained body's retained step and, while paused, its preview, for the log. */
+  const reportExplanation = () => {
+    const retained = host.explanation;
+    const slot = explained === null ? undefined : trails.slot(explained);
+    const trail = slot === undefined ? null : Array.from({ length: trails.lengths[slot]! }, (_, k) => {
+      const at = trails.at(slot, k);
+      return [trails.ticks[at]!, trails.positions[3 * at]!, trails.positions[3 * at + 1]!, trails.positions[3 * at + 2]!];
+    });
+    const i = explained === null ? -1 : host.ids.indexOf(explained);
+    report('explanation', {
+      explained,
+      tick: host.tick,
+      playing: scheduler.playing,
+      view: explainMode,
+      retained: retained && retained.bodyId === explained ? retained : null,
+      preview: scheduler.playing ? null : host.previewTransition(),
+      now: i < 0 ? null : [host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!],
+      trail: trail?.slice(-8) ?? null,
+      trailSamples: trail?.length ?? 0,
+      visualization: visualizationState(),
+    });
+  };
+
+  // The Motion section: visualization controls, never document edits (no revision, no dirty state).
+  const probeCount = $<HTMLInputElement>('probe-count');
+  const probeSeed = $<HTMLInputElement>('probe-seed');
+  const motionError = $('motion-error');
+  const renderMotion = () => {
+    const s = probes.settings;
+    $('probes-toggle').setAttribute('aria-pressed', String(s.enabled));
+    $('probe-settings').hidden = !s.enabled;
+    if (document.activeElement !== probeCount) probeCount.value = String(s.count);
+    if (document.activeElement !== probeSeed) probeSeed.value = String(s.seed);
+    for (const b of document.querySelectorAll<HTMLButtonElement>('#trail-mode button')) b.setAttribute('aria-checked', String(b.dataset.trails === trails.mode));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('#arrows-scope button')) b.setAttribute('aria-checked', String(b.dataset.scope === arrowScope));
+  };
+  const visualizationChanged = (change: string) => {
+    renderMotion();
+    report('visualization', { change, ...visualizationState(), tick: host.tick, revision: authoring.revision, dirty: workflow.dirty });
+  };
+  const setProbes = (patch: Partial<ProbeSettings>, input?: HTMLInputElement) => {
+    const next = { ...probes.settings, ...patch };
+    const problem = checkProbeSettings(next);
+    motionError.hidden = problem === null;
+    motionError.textContent = problem ? `The ${problem}. The last valid value is kept.` : '';
+    input?.toggleAttribute('aria-invalid', problem !== null);
+    if (problem) {
+      renderMotion();
+      return;
+    }
+    probes.configure(next);
+    probes.sync(host);
+    visualizationChanged('probes');
+  };
+  $('probes-toggle').addEventListener('click', () => setProbes({ enabled: !probes.settings.enabled }));
+  probeCount.addEventListener('change', () => setProbes({ count: probeCount.value.trim() === '' ? NaN : Number(probeCount.value) }, probeCount));
+  probeSeed.addEventListener('change', () => setProbes({ seed: probeSeed.value.trim() === '' ? NaN : Number(probeSeed.value) }, probeSeed));
+  $('trail-mode').addEventListener('click', (event) => {
+    const mode = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-trails]')?.dataset.trails as TrailMode | undefined;
+    if (!mode || mode === trails.mode) return;
+    trails.mode = mode;
+    visualizationChanged('trails');
+  });
+  $('arrows-scope').addEventListener('click', (event) => {
+    const scope = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-scope]')?.dataset.scope as 'all' | 'selected' | undefined;
+    if (!scope || scope === arrowScope) return;
+    arrowScope = scope;
+    visualizationChanged('arrows');
+  });
+  $('explain-nearest').addEventListener('click', explainNearest);
+  $('explain-close').addEventListener('click', () => setExplained(null, 'close'));
+  $('explain-mode').addEventListener('click', (event) => {
+    const view = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-view]')?.dataset.view as ExplainViewMode | undefined;
+    if (!view || view === explainMode || (view === 'preview' && scheduler.playing)) return;
+    explainMode = view;
+    report('explain-view', { view, tick: host.tick, body: explained });
+  });
+  renderMotion();
+
   const drawLaws = () =>
     world.updateLaws(
       host.appliedFields().map((field) => ({ field, compiled: host.compiledField(field.id)!, presentation: authoring.presentationOf(field.id) })),
@@ -1203,7 +1489,7 @@ async function start() {
         preview: interaction.previewField(),
         throttle: interaction.gesture !== null,
         arrows: authoring.arrows,
-        onlySelectedArrows: false,
+        onlySelectedArrows: arrowScope === 'selected',
         handles: (() => {
           const shown = interaction.handles();
           return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;
@@ -1262,6 +1548,7 @@ async function start() {
       world.updateBodies(host);
       interaction.syncProxy();
       drawLaws();
+      updateExplanation();
       syncControls();
       if (host.tick !== clockTick) {
         clockTick = host.tick;
@@ -1340,6 +1627,7 @@ async function start() {
       `${backend.backend}${backend.compatibilityMode ? ' (compatibility)' : ''} · ${location.origin} · ${window.isSecureContext ? 'secure' : 'NOT secure'} · ${mode} · kernel ${FIELD_KERNEL_VERSION}`,
       `tick ${host.tick} · ${scheduler.playing ? 'playing' : 'paused'} · bodies ${host.count} · laws ${laws.length} (${laws.filter((f) => f.enabled).length} on) · arrows ${world.arrowCount()} · fastest ${host.maxSpeed.toFixed(1)} m/s`,
       `steps/frame ${frameSteps[frameSteps.length - 1] ?? 0} · sim/wall ${simWall.toFixed(2)} · debt dropped ${Math.round(scheduler.droppedMs)} ms · skipped ${host.skippedEmissions} · limited ${host.limitedSteps}`,
+      `probes ${probes.settings.enabled ? `${probes.live}/${probes.settings.count}` : 'off'} · trails ${trails.mode === 'off' ? 'off' : `${trails.count} (${trails.mode})`} · explained ${explained ?? '—'}`,
       `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${e.length ? ms(percentile(e, 0.95)) : '—'} p95 ms`,
       `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls}`,
       `document gen ${authoring.generation} rev ${authoring.revision} (applied ${authoring.appliedRevision}, stored ${workflow.stored ?? '—'}) · recovery capture ${captures.length ? `${ms(Math.max(...captures))} ms max` : '—'}`,

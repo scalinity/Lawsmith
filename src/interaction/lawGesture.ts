@@ -34,6 +34,8 @@ export interface LawInteractionOptions {
   /** A gesture ended: a commit carries its accepted endpoints (one undo entry); a cancel restored `start`. */
   onGestureEnd(end: GestureEnd): void;
   onSelectionChange(id: string | null): void;
+  /** A click on a body explains it instead of changing the law selection; true when it took the click. */
+  clickBody(clientX: number, clientY: number): boolean;
   /** Stops residual camera motion when a handle takes the pointer. */
   haltCamera(): void;
   /** False while edits are frozen (the close guard, launch recovery). */
@@ -165,6 +167,7 @@ export class LawInteraction {
       this.press = null;
       if (!press || press.onGizmo || event.button !== 0) return;
       if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > CLICK_SLOP_PX) return;
+      if (o.clickBody(event.clientX, event.clientY)) return;
       this.select(this.pickLaw(event.clientX, event.clientY)?.id ?? null);
     });
     canvas.addEventListener('pointercancel', () => this.cancel('pointercancel'));

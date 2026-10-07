@@ -14,6 +14,12 @@
   --grid-minor: #2c2925;
   --body: #efebe3;
   --danger: #e0806b;
+  /* Probes are dim dust beside the lit bodies; trails fade into the shell. */
+  --probe: #908b83;
+  --trail: #6f6a62;
+  --trail-selected: #d8d3ca;
+  /* The physical acceleration limiter, when it scales a step. */
+  --caution: #d9a35b;
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --serif: ui-serif, "New York", Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
@@ -696,4 +702,296 @@ button.primary {
   font: 11px/1.5 var(--mono);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* Motion: explain a body, probes and trails. */
+#motion .laws-head button {
+  height: 24px;
+  padding: 0 8px;
+}
+
+.note.first {
+  margin-top: 0;
+}
+
+.segmented.spread {
+  margin-top: 6px;
+}
+
+.segmented.spread button {
+  flex: 1;
+}
+
+#arrows-scope {
+  margin-left: auto;
+}
+
+#probe-settings[hidden] {
+  display: none;
+}
+
+#motion-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+#motion-error[hidden] {
+  display: none;
+}
+
+/* Probe: a small diamond, never a sphere. */
+.probe-glyph {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 6px;
+  rotate: 45deg;
+  background: var(--probe);
+}
+
+/* Trail: a line fading into the shell. */
+.trail-glyph {
+  flex: none;
+  width: 18px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--shell), var(--trail-selected));
+}
+
+/* The explained body, on the right (SPEC §11.1). It scrolls rather than reaching the transport. */
+#explain {
+  position: fixed;
+  top: 52px;
+  right: 12px;
+  width: 296px;
+  max-height: calc(100vh - 52px - 76px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: rgb(33 31 28 / 0.9);
+}
+
+#explain[hidden],
+#explain-empty[hidden],
+#explain-detail[hidden] {
+  display: none;
+}
+
+.explain-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#explain h2 {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 12px/1.4 var(--sans);
+  color: var(--text-secondary);
+}
+
+.ident {
+  font: 12px var(--mono);
+  color: var(--text);
+}
+
+#explain-close {
+  height: 24px;
+  padding: 0 8px;
+}
+
+#explain h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0 4px;
+  font: 600 12px/1.4 var(--sans);
+  color: var(--text);
+}
+
+.transition {
+  margin: 8px 0 0;
+  font: 11.5px var(--mono);
+  color: var(--text-secondary);
+}
+
+/* Vector readouts: a glyph, a name, the magnitude and the three components, all tabular. */
+.readout {
+  margin-top: 6px;
+}
+
+.readout-row {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) repeat(4, 42px);
+  align-items: baseline;
+  column-gap: 4px;
+  padding: 2px 0;
+  font: 11px/1.4 var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.readout-row > span:nth-child(n + 3) {
+  text-align: right;
+}
+
+.readout-row > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 11.5px var(--sans);
+}
+
+.readout-row.head {
+  padding-bottom: 0;
+  font-size: 10.5px;
+  color: var(--text-tertiary);
+}
+
+.readout-row.head > span:nth-child(2) {
+  font-size: 10.5px;
+}
+
+.readout-row.total {
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px solid var(--hairline);
+  color: var(--text);
+}
+
+.readout-row.muted {
+  color: var(--text-tertiary);
+}
+
+.readout-row:empty {
+  display: none;
+}
+
+.readout-row .sub {
+  grid-column: 2 / -1;
+  font: 10.5px var(--sans);
+  color: var(--text-tertiary);
+  text-align: left;
+}
+
+.factors,
+.limiter,
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.limiter[data-active="true"] {
+  color: var(--caution);
+}
+
+.contact[data-contact="true"] {
+  color: var(--text);
+}
+
+.scale-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 7px;
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* Glyphs: one shape per quantity, as drawn in the viewport. */
+.velocity-glyph,
+.acceleration-glyph,
+.share-glyph {
+  position: relative;
+  flex: none;
+  display: inline-block;
+  width: 14px;
+  height: 0;
+  vertical-align: middle;
+}
+
+/* Velocity: a thin shaft with an open chevron. */
+.velocity-glyph {
+  border-top: 1px solid var(--text-secondary);
+}
+
+.velocity-glyph::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -4px;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid var(--text-secondary);
+  border-right: 1px solid var(--text-secondary);
+  rotate: 45deg;
+}
+
+/* External acceleration: a solid shaft and a filled head. */
+.acceleration-glyph {
+  border-top: 2px solid var(--text);
+}
+
+.acceleration-glyph::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: -5px;
+  border-left: 6px solid var(--text);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* A law's share: a thin line in that law's color. */
+.share-glyph {
+  border-top: 1px solid var(--law-color, var(--text-tertiary));
+}
+
+.contact-glyph {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  fill: none;
+}
+
+.cap-glyph {
+  font: 12px var(--mono);
+  color: var(--text);
+}
+
+/* Viewport labels at vector tips; never a pointer target. */
+#explain-labels {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#explain-labels span {
+  position: absolute;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgb(20 19 17 / 0.72);
+  font: 11px var(--mono);
+  white-space: nowrap;
+  color: var(--text);
+  translate: 8px -50%;
+}
+
+#explain-labels span[data-key="velocity"] {
+  color: var(--text-secondary);
 }

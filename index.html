@@ -59,6 +59,40 @@
           <span class="dot-glyph" aria-hidden="true"></span>
           <span>Drag K, dot area ∝ K; 5 cm ≈ 2 s⁻¹</span>
         </div>
+        <div class="legend" title="Only what is drawn changes. Every law keeps acting.">
+          <span id="arrows-scope-label">Arrows for</span>
+          <div class="segmented compact" id="arrows-scope" role="radiogroup" aria-labelledby="arrows-scope-label">
+            <button type="button" role="radio" id="arrows-every" data-scope="all" aria-checked="true">Every law</button>
+            <button type="button" role="radio" id="arrows-selected" data-scope="selected" aria-checked="false">Selected law</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="motion" aria-labelledby="motion-title">
+        <div class="laws-head">
+          <h2 id="motion-title">Motion</h2>
+          <button type="button" id="explain-nearest" title="Explain the body nearest the view’s focus point (B)">Explain a body <kbd>B</kbd></button>
+        </div>
+        <p class="note first">Click a body to see what the laws did to it in the last step.</p>
+        <div class="legend">
+          <span class="probe-glyph" aria-hidden="true"></span>
+          <span>Probes: massless, no collisions, moved by the laws</span>
+          <button type="button" id="probes-toggle" aria-pressed="false">Probes</button>
+        </div>
+        <div class="pair-fields" id="probe-settings">
+          <label>Count <input id="probe-count" type="number" min="0" max="2000" step="100" aria-label="Probe count" /></label>
+          <label>Seed <input id="probe-seed" type="number" min="1" max="4294967295" step="1" aria-label="Probe seed" /></label>
+        </div>
+        <div class="legend">
+          <span class="trail-glyph" aria-hidden="true"></span>
+          <span id="trail-mode-label">Trails: where bodies were, every 4 ticks, 10 s</span>
+        </div>
+        <div class="segmented compact spread" id="trail-mode" role="radiogroup" aria-labelledby="trail-mode-label">
+          <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false">Off</button>
+          <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true">Explained body</button>
+          <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false">32 bodies</button>
+        </div>
+        <p id="motion-error" role="alert" hidden></p>
       </section>
 
       <section id="details" aria-labelledby="details-title" hidden>
@@ -104,6 +138,43 @@
       </section>
 
     </aside>
+
+    <!-- The explained body (SPEC §11.1, §12): what the laws submitted for it, kept apart from its
+         velocity and from contacts. Shown only while a body is explained. -->
+    <aside id="explain" aria-labelledby="explain-title" hidden>
+      <div class="explain-head">
+        <h2 id="explain-title">Body <span id="explain-id" class="ident"></span></h2>
+        <button type="button" id="explain-close" aria-label="Stop explaining this body" title="Stop explaining (Esc)">Close</button>
+      </div>
+      <div class="segmented compact spread" id="explain-mode" role="radiogroup" aria-label="Which step">
+        <button type="button" role="radio" id="explain-applied" data-view="applied" aria-checked="true">Last step</button>
+        <button type="button" role="radio" id="explain-preview" data-view="preview" aria-checked="false" title="While paused: what the next step would submit now">Next step</button>
+      </div>
+      <p id="explain-transition" class="transition"></p>
+      <p id="explain-empty" class="note" hidden></p>
+      <div id="explain-detail">
+        <div class="readout" role="table" aria-label="Sampled state">
+          <div class="readout-row head" role="row"><span role="columnheader"></span><span role="columnheader">Sampled</span><span role="columnheader">size</span><span role="columnheader">x</span><span role="columnheader">y</span><span role="columnheader">z</span></div>
+          <div class="readout-row" role="row" id="explain-center"></div>
+          <div class="readout-row" role="row" id="explain-velocity"></div>
+        </div>
+        <h3><span class="acceleration-glyph" aria-hidden="true"></span>External law acceleration <span class="unit">m/s²</span></h3>
+        <div class="readout" role="table" aria-label="External law acceleration">
+          <div id="explain-shares" role="rowgroup"></div>
+          <div class="readout-row total" role="row" id="explain-submitted"></div>
+          <div class="readout-row muted" role="row" id="explain-instantaneous"></div>
+        </div>
+        <p id="explain-factors" class="factors"></p>
+        <p id="explain-limiter" class="limiter"></p>
+        <p id="explain-contact" class="contact"></p>
+        <div class="readout" role="table" aria-label="After the step">
+          <div class="readout-row" role="row" id="explain-after"></div>
+        </div>
+        <p class="note">Each law’s share uses this step’s β and λ. It is not what removing that law would leave: removing a drag also changes β, λ and every later step.</p>
+        <p class="scale-key"><span class="velocity-glyph" aria-hidden="true"></span>1 m = 5 m/s <span class="acceleration-glyph" aria-hidden="true"></span>1 m = 20 m/s² <span class="cap-glyph" aria-hidden="true">∥</span>drawn arrow capped at 2 m; numbers never are</p>
+      </div>
+    </aside>
+    <div id="explain-labels" aria-hidden="true"></div>
 
     <div id="transport" role="group" aria-label="Simulation" hidden>
       <button type="button" id="play">Play <kbd>Space</kbd></button>

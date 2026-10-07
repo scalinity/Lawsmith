@@ -7,7 +7,7 @@ import { STARTING_RECIPE, cloneFrozen, type SceneDefinition } from '../src/domai
 import { MAX_PROBES, ProbeField } from '../src/observation/probes';
 import { MAX_TRAILS, TrailRecorder } from '../src/observation/trails';
 import { parseScene } from '../src/persistence/sceneFile';
-import { QUIET_VIEW, busyView, observedResetFixture, runObserved, scriptedEdits, scriptedRecipeEdits, visualizationInvariance } from '../src/simulation/fixtures';
+import { QUIET_VIEW, busyView, explanationFixture, observedResetFixture, runObserved, scriptedEdits, scriptedRecipeEdits, trailFidelity, visualizationInvariance } from '../src/simulation/fixtures';
 import { SimulationHost, initSimulation } from '../src/simulation/host';
 import collisions from '../examples/collisions.lawsmith.json?raw';
 import dragPocket from '../examples/drag-pocket.lawsmith.json?raw';
@@ -74,6 +74,21 @@ describe('AC6 visualization cannot alter authority', () => {
     expect(checkpoint!.state.emitters[0]!.ordinal).toBeGreaterThan(0);
     expect(checkpoint!.state).toHaveProperty('skippedEmissions');
   });
+});
+
+describe('the in-app T08 fixtures (Shift+D) pass here too', () => {
+  for (const [name, root, scripted] of CASES) {
+    it(`${name}: trails match the canonical state; shares sum to the submitted force/mass; previews match the next step`, () => {
+      const trails = trailFidelity(root);
+      expect(trails.samples).toBeGreaterThan(500);
+      expect(trails.mismatches).toBe(0);
+      const contributions = explanationFixture(root, scripted ? scriptedEdits(root) : scriptedRecipeEdits());
+      console.info(JSON.stringify({ fixture: 't08', scene: name, trails, contributions }));
+      expect(contributions.pass).toBe(true);
+      expect(contributions.steps).toBeGreaterThan(550);
+      expect(contributions.previews).toBeGreaterThan(5);
+    });
+  }
 });
 
 describe('T04 reset with the view changed across it', () => {

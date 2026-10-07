@@ -259,6 +259,86 @@ export function observedResetFixture(root: SceneDefinition, script: readonly Scr
 }
 
 /**
+ * T08 in whichever runtime runs it: 32 trails in `all` mode against the canonical state at every
+ * fourth tick. Counts samples, mismatched positions and samples off the four-tick sequence.
+ */
+export function trailFidelity(root: SceneDefinition, ticks = 1200): { samples: number; trails: number; mismatches: number; first: string | null } {
+  const host = new SimulationHost(root);
+  const trails = new TrailRecorder('all');
+  const observed = new Map<number, Map<string, number[]>>();
+  try {
+    while (host.tick < ticks) {
+      host.step();
+      trails.record(host, null);
+      if (host.tick % TRAIL_INTERVAL_TICKS === 0) observed.set(host.tick, new Map(host.canonicalState().bodies.map((b) => [b.id, b.translation])));
+    }
+    const latest = host.tick - (host.tick % TRAIL_INTERVAL_TICKS);
+    let samples = 0;
+    let mismatches = 0;
+    let first: string | null = null;
+    trails.owners.forEach((owner, s) => {
+      if (owner === null) return;
+      const n = trails.lengths[s]!;
+      for (let k = 0; k < n; k++) {
+        const at = trails.at(s, k);
+        const tick = trails.ticks[at]!;
+        const expected = observed.get(tick)?.get(owner);
+        const stored = [trails.positions[3 * at]!, trails.positions[3 * at + 1]!, trails.positions[3 * at + 2]!];
+        samples += 1;
+        if (tick !== latest - TRAIL_INTERVAL_TICKS * (n - 1 - k) || !expected || stored.some((c, i) => c !== expected[i])) {
+          mismatches += 1;
+          first ??= `${owner} at tick ${tick}`;
+        }
+      }
+    });
+    return { samples, trails: trails.count, mismatches, first };
+  } finally {
+    host.dispose();
+  }
+}
+
+/**
+ * T08 in whichever runtime runs it: the oldest living body is explained at every step; each retained
+ * transition's shares plus gravity are compared with its submitted total and its force/mass under the
+ * T03 tolerance, and every 50 ticks the paused-style preview is compared with the step that follows.
+ */
+export function explanationFixture(root: SceneDefinition, script: readonly ScriptedCommand[] = [], ticks = 600) {
+  const host = new SimulationHost(root);
+  const revision = { value: 0 };
+  const result = { steps: 0, worstSumRatio: 0, worstForceRatio: 0, limitedSteps: 0, contactSteps: 0, previews: 0, previewMismatches: 0 };
+  const ratio = (actual: number, expected: number) => Math.abs(actual - expected) / (1e-9 + 1e-8 * Math.abs(expected));
+  try {
+    while (host.tick < ticks) {
+      deliver(host, script, revision);
+      host.settleBoundary();
+      host.takeAcks();
+      const explained = host.ids[0] ?? null;
+      host.explain(explained);
+      const preview = host.tick % 50 === 0 ? host.previewTransition() : null;
+      host.step();
+      const o = host.explanation;
+      if (!o || o.toTick !== host.tick) continue;
+      result.steps += 1;
+      const sum = [...o.gravityApplied];
+      for (const c of o.contributions) for (let i = 0; i < 3; i++) sum[i]! += c.applied[i]!;
+      for (let i = 0; i < 3; i++) {
+        result.worstSumRatio = Math.max(result.worstSumRatio, ratio(sum[i]!, o.submitted[i]!));
+        result.worstForceRatio = Math.max(result.worstForceRatio, ratio(o.force[i]! / o.mass, o.submitted[i]!));
+      }
+      if (o.lambda < 1) result.limitedSteps += 1;
+      if (o.contacts?.length) result.contactSteps += 1;
+      if (preview && preview.bodyId === o.bodyId) {
+        result.previews += 1;
+        if (JSON.stringify([preview.submitted, preview.contributions, preview.beta, preview.lambda]) !== JSON.stringify([o.submitted, o.contributions, o.beta, o.lambda])) result.previewMismatches += 1;
+      }
+    }
+    return { ...result, pass: result.steps > 0 && result.worstSumRatio <= 1 && result.worstForceRatio <= 1 && result.previewMismatches === 0 };
+  } finally {
+    host.dispose();
+  }
+}
+
+/**
  * A tick-addressed edit script for every law of a root, whatever its kinds: each law is moved,
  * rotated, resized through its region controls, retuned through its primitive controls, disabled
  * and enabled; the last law is removed and put back. Values are resolved through validation, as a
