@@ -267,13 +267,13 @@ describe('T03 drag through the host and the engine', () => {
     }
   });
 
-  // Open AC2 gap (M3 finding 1, an owner decision): the adapter's f64 output never reverses pure drag
-  // (the grid above), but Rapier stores velocities in f32 and integrates v + dt·F/m with an f32 dt
-  // slightly longer than h. Reversals then appear in two regimes: from a normal f32 velocity once the
-  // aggregate K is very large, by at most a rounding of the previous speed, and from a subnormal one
-  // (below 1.18e-38 m/s, where f32's resolution is absolute) at ordinary aggregate K. Speed never grows.
-  // This test asserts those bounds, and that the gap is still present, so a repair has to revisit AC2.
-  it('characterizes the open AC2 gap: f32 reversals bounded by one rounding or below f32 normal range; speed never grows', { timeout: 120_000 }, () => {
+  // SPEC §9.1 and AC2: the adapter's f64 output never reverses pure drag (the grid above), but Rapier
+  // stores velocities in f32 and integrates v + dt·F/m with an f32 dt slightly longer than h. A
+  // component may then cross zero by one f32 rounding, in two regimes: from a normal f32 velocity once
+  // the aggregate K is very large, and from a subnormal one (below 2^-126 m/s, where f32's resolution is
+  // absolute) at ordinary aggregate K. Speed never grows. The test asserts those bounds and that both
+  // regimes occur, so a change in the engine's arithmetic is noticed and re-characterized.
+  it('pure drag in the engine never grows speed and crosses zero by at most the f32 resolution of SPEC §9.1', { timeout: 120_000 }, () => {
     const F32_MIN_NORMAL = 2 ** -126;
     const ROUNDING = 2 ** -22;
     let normal = 0;

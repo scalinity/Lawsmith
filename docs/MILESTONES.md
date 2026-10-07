@@ -279,7 +279,7 @@ Four primitive descriptors/evaluators, three region kinds, spatial parameter han
 ### Acceptance criteria
 
 1. Each primitive matches T02 numerical fixtures with finite output at its center/axis; disabled primitives return zero.
-2. Overlapping drag rates add before integration. Pure drag neither reverses velocity nor increases its speed, including high supported coefficients and active limiting. It matches the specified exponential free-space update when the acceleration limiter is inactive; capped cases match the documented limited update instead.
+2. Overlapping drag rates add before integration. Pure drag never increases speed and never reverses velocity beyond the engine's f32 resolution (SPEC §9.1), including high supported coefficients and active limiting. It matches the specified exponential free-space update when the acceleration limiter is inactive; capped cases match the documented limited update instead.
 3. Ambient gravity, drive and drag are combined once; built-in engine gravity/damping are not applied a second time.
 4. Translating/rotating laws changes their documented support/frame behavior. Resizing each region changes only its dimensions, with no sphere deformation or cylinder elliptical cross-section.
 5. A user changes strength and fade through spatial handles, not exclusively through inspector sliders. Each accepted value survives export/reload and undo.
