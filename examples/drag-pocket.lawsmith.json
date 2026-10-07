@@ -1,0 +1,100 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "A drag pocket in the path of thrown bodies. Inside it their motion dissipates; they leave with the slower velocity they kept. Drag has no direction of its own, so it draws dots for its strength instead of arrows.",
+    "title": "Drag Pocket"
+  },
+  "presentation": {
+    "arrows": true,
+    "laws": [
+      {
+        "color": "#7aa7d9",
+        "id": "drag",
+        "label": "Drag",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["emitter.xorshift32.v1", "primitive.linearDrag.v1", "region.sphere.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [
+      {
+        "id": "stream",
+        "intervalTicks": 8,
+        "jitter": [0, 0, 0.2],
+        "lifetimeTicks": 512,
+        "pose": {
+          "position": [-3.5, 5, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "seed": 1279350577,
+        "startTick": 0,
+        "template": {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.08
+          },
+          "collisionMode": "fixedOnly",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [3, 1, 0],
+          "massKg": 1,
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          }
+        }
+      }
+    ],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 3,
+          "kind": "linearDrag"
+        },
+        "id": "drag",
+        "pose": {
+          "position": [-1, 2.8, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 1.2
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "Three separate laws over the same space: a pull, a swirl and drag. Each body feels their sum; no law has priority. Disable one at a time to see its share.",
+    "title": "Overlap"
+  },
+  "presentation": {
+    "arrows": true,
+    "laws": [
+      {
+        "color": "#7aa7d9",
+        "id": "drag",
+        "label": "Drag",
+        "visible": true
+      },
+      {
+        "color": "#d9a35b",
+        "id": "pull",
+        "label": "Pull",
+        "visible": true
+      },
+      {
+        "color": "#c58ae5",
+        "id": "swirl",
+        "label": "Swirl",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["emitter.xorshift32.v1", "primitive.linearDrag.v1", "primitive.softRadial.v1", "primitive.vortexY.v1", "region.cylinderY.v1", "region.sphere.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [
+      {
+        "id": "stream",
+        "intervalTicks": 8,
+        "jitter": [0.25, 0, 0.25],
+        "lifetimeTicks": 512,
+        "pose": {
+          "position": [0.8, 6, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "seed": 1279350577,
+        "startTick": 0,
+        "template": {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.08
+          },
+          "collisionMode": "fixedOnly",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [0, -0.5, 0],
+          "massKg": 1,
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          }
+        }
+      }
+    ],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 1.2,
+          "kind": "linearDrag"
+        },
+        "id": "drag",
+        "pose": {
+          "position": [0, 2.5, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 2.2
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.3,
+          "kind": "softRadial",
+          "strength": 11
+        },
+        "id": "pull",
+        "pose": {
+          "position": [0, 2.5, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 2
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.3,
+          "kind": "vortexY",
+          "strength": 9
+        },
+        "id": "swirl",
+        "pose": {
+          "position": [0, 2.5, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfHeight": 2,
+          "kind": "cylinderY",
+          "radius": 2
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

@@ -1,0 +1,4723 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "SPEC §18.1 P1: 200 colliding spheres, 16 one-leaf laws (four of each primitive over all three regions) and 16 fixed colliders, with sleeping disabled. A qualification workload, not an example.",
+    "title": "P1 Workshop"
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [11, 9, 13],
+      "target": [0, 0.5, 0]
+    },
+    "laws": [
+      {
+        "color": "#7aa7d9",
+        "id": "drag-0",
+        "label": "Drag 0",
+        "visible": true
+      },
+      {
+        "color": "#7aa7d9",
+        "id": "drag-1",
+        "label": "Drag 1",
+        "visible": true
+      },
+      {
+        "color": "#7aa7d9",
+        "id": "drag-2",
+        "label": "Drag 2",
+        "visible": true
+      },
+      {
+        "color": "#7aa7d9",
+        "id": "drag-3",
+        "label": "Drag 3",
+        "visible": true
+      },
+      {
+        "color": "#55aaa4",
+        "id": "fountain-0",
+        "label": "Fountain 0",
+        "visible": true
+      },
+      {
+        "color": "#55aaa4",
+        "id": "fountain-1",
+        "label": "Fountain 1",
+        "visible": true
+      },
+      {
+        "color": "#55aaa4",
+        "id": "fountain-2",
+        "label": "Fountain 2",
+        "visible": true
+      },
+      {
+        "color": "#55aaa4",
+        "id": "fountain-3",
+        "label": "Fountain 3",
+        "visible": true
+      },
+      {
+        "color": "#d9a35b",
+        "id": "pull-0",
+        "label": "Pull 0",
+        "visible": true
+      },
+      {
+        "color": "#d9a35b",
+        "id": "pull-1",
+        "label": "Pull 1",
+        "visible": true
+      },
+      {
+        "color": "#d9a35b",
+        "id": "pull-2",
+        "label": "Pull 2",
+        "visible": true
+      },
+      {
+        "color": "#d9a35b",
+        "id": "pull-3",
+        "label": "Pull 3",
+        "visible": true
+      },
+      {
+        "color": "#c58ae5",
+        "id": "swirl-0",
+        "label": "Swirl 0",
+        "visible": true
+      },
+      {
+        "color": "#c58ae5",
+        "id": "swirl-1",
+        "label": "Swirl 1",
+        "visible": true
+      },
+      {
+        "color": "#c58ae5",
+        "id": "swirl-2",
+        "label": "Swirl 2",
+        "visible": true
+      },
+      {
+        "color": "#c58ae5",
+        "id": "swirl-3",
+        "label": "Swirl 3",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["primitive.directional.v1", "primitive.linearDrag.v1", "primitive.softRadial.v1", "primitive.vortexY.v1", "region.box.v1", "region.cylinderY.v1", "region.sphere.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-000",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-001",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-002",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-003",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-004",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-005",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-006",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-007",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-008",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-009",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-010",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-011",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-012",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-013",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-014",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-015",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-016",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-017",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-018",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-019",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-020",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-021",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-022",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-023",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-024",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-025",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-026",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-027",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-028",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-029",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-030",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-031",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-032",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-033",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-034",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-035",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-036",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-037",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-038",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-039",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-040",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-041",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-042",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-043",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-044",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-045",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-046",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-047",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-048",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-049",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-050",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-051",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-052",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-053",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-054",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-055",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-056",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-057",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-058",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-059",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-060",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-061",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-062",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-063",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-064",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-065",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-066",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-067",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-068",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-069",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-070",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-071",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-072",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-073",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-074",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-075",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-076",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-077",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-078",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-079",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-080",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-081",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-082",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-083",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-084",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-085",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-086",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-087",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-088",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-089",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-090",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-091",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-092",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-093",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-094",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-095",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-096",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-097",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-098",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-099",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 0.5, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-100",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-101",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-102",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-103",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-104",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-105",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-106",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-107",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-108",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-109",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, -4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-110",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-111",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-112",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-113",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-114",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-115",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-116",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-117",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-118",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-119",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, -3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-120",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-121",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-122",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-123",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-124",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-125",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-126",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-127",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-128",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-129",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, -2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-130",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-131",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-132",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-133",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-134",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-135",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-136",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-137",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-138",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-139",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, -1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-140",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-141",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-142",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-143",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-144",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-145",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-146",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-147",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-148",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-149",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, -0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-150",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-151",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-152",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-153",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-154",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-155",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-156",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-157",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-158",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-159",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, 0.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-160",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-161",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-162",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-163",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-164",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-165",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-166",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-167",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-168",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-169",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, 1.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-170",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-171",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-172",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-173",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-174",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-175",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-176",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-177",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-178",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-179",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, 2.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-180",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-181",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-182",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-183",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-184",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-185",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-186",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-187",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-188",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-189",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, 3.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-190",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-191",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-3.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-192",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-2.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-193",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-194",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-0.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-195",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-196",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-197",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [2.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-198",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [3.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.12
+        },
+        "collisionMode": "all",
+        "id": "ball-199",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.5, 1.1, 4.5],
+          "rotation": [0, 0, 0, 1]
+        },
+        "massKg": 1,
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "dynamic"
+      },
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-00",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -1.4, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-01",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.6, -1.4, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-02",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.6, -1.4, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-03",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -1.4, 1.6],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-04",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -1.4, -1.6],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-05",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.4, -1.4, 1.2],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-06",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.4, -1.4, -1.2],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-07",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [1.2, -1.4, -4.4],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-08",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-1.2, -1.4, 4.4],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-09",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [4.2, -1.4, -4.2],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.25, 0.6, 0.25],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "post-10",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-4.2, -1.4, 4.2],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.2, 3, 6.4],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "wall-e",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [6.2, 1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [6.4, 3, 0.2],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "wall-n",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, 1, -6.2],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [6.4, 3, 0.2],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "wall-s",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, 1, 6.2],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      },
+      {
+        "collider": {
+          "halfExtents": [0.2, 3, 6.4],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "wall-w",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [-6.2, 1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 0.8,
+          "kind": "linearDrag"
+        },
+        "id": "drag-0",
+        "pose": {
+          "position": [-3, -0.5, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 3.2
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 0.8,
+          "kind": "linearDrag"
+        },
+        "id": "drag-1",
+        "pose": {
+          "position": [3, -0.5, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 3.2
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 0.8,
+          "kind": "linearDrag"
+        },
+        "id": "drag-2",
+        "pose": {
+          "position": [-3, -0.5, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 3.2
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coefficient": 0.8,
+          "kind": "linearDrag"
+        },
+        "id": "drag-3",
+        "pose": {
+          "position": [3, -0.5, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 3.2
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "direction": [0, 1, 0],
+          "kind": "directional",
+          "strength": 30
+        },
+        "id": "fountain-0",
+        "pose": {
+          "position": [-3, -1.5, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [0.7, 0.5, 0.7],
+          "kind": "box"
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "direction": [0, 1, 0],
+          "kind": "directional",
+          "strength": 30
+        },
+        "id": "fountain-1",
+        "pose": {
+          "position": [3, -1.5, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [0.7, 0.5, 0.7],
+          "kind": "box"
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "direction": [0, 1, 0],
+          "kind": "directional",
+          "strength": 30
+        },
+        "id": "fountain-2",
+        "pose": {
+          "position": [-3, -1.5, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [0.7, 0.5, 0.7],
+          "kind": "box"
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "direction": [0, 1, 0],
+          "kind": "directional",
+          "strength": 30
+        },
+        "id": "fountain-3",
+        "pose": {
+          "position": [3, -1.5, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfExtents": [0.7, 0.5, 0.7],
+          "kind": "box"
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.5,
+          "kind": "softRadial",
+          "strength": 5
+        },
+        "id": "pull-0",
+        "pose": {
+          "position": [-3, -1.5, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 4.6
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.5,
+          "kind": "softRadial",
+          "strength": 5
+        },
+        "id": "pull-1",
+        "pose": {
+          "position": [3, -1.5, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 4.6
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.5,
+          "kind": "softRadial",
+          "strength": 5
+        },
+        "id": "pull-2",
+        "pose": {
+          "position": [-3, -1.5, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 4.6
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.5,
+          "kind": "softRadial",
+          "strength": 5
+        },
+        "id": "pull-3",
+        "pose": {
+          "position": [3, -1.5, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "kind": "sphere",
+          "radius": 4.6
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.4,
+          "kind": "vortexY",
+          "strength": 6
+        },
+        "id": "swirl-0",
+        "pose": {
+          "position": [-3, -1, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfHeight": 1,
+          "kind": "cylinderY",
+          "radius": 2.4
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.4,
+          "kind": "vortexY",
+          "strength": -6
+        },
+        "id": "swirl-1",
+        "pose": {
+          "position": [3, -1, -3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfHeight": 1,
+          "kind": "cylinderY",
+          "radius": 2.4
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.4,
+          "kind": "vortexY",
+          "strength": -6
+        },
+        "id": "swirl-2",
+        "pose": {
+          "position": [-3, -1, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfHeight": 1,
+          "kind": "cylinderY",
+          "radius": 2.4
+        }
+      },
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "coreRadius": 0.4,
+          "kind": "vortexY",
+          "strength": 6
+        },
+        "id": "swirl-3",
+        "pose": {
+          "position": [3, -1, 3],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfHeight": 1,
+          "kind": "cylinderY",
+          "radius": 2.4
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}
