@@ -141,7 +141,14 @@ activate() {
 }
 
 guard_point() {
-  local hit=$(osascript -l JavaScript $NATIVE/windows.js hit $1 $2 $RECORDING_OVERLAYS)
+  local hit=$(osascript -l JavaScript $NATIVE/windows.js hit $1 $2 $RECORDING_OVERLAYS) i
+  # A notification banner briefly puts Notification Center's window over the whole screen; it clears
+  # by itself, so it is waited out (up to 10 s). Anything else on top is handled below.
+  for i in {1..20}; do
+    [[ $hit == *'"owner":"Notification Center"'* ]] || break
+    sleep 0.5
+    hit=$(osascript -l JavaScript $NATIVE/windows.js hit $1 $2 $RECORDING_OVERLAYS)
+  done
   local pid=$(print -r -- $hit | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["pid"])')
   if [[ $pid != $APP_PID && -n $LOCK_HOLDER && $pid != None ]]; then
     say "a window of pid $pid covers ($1,$2) during this segment; bringing the app under test back"
