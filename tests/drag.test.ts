@@ -267,28 +267,59 @@ describe('T03 drag through the host and the engine', () => {
     }
   });
 
-  it('characterizes the f32 engine floor: no reversal through 19 overlapping 100 s⁻¹ laws; beyond, at most one f32 rounding across zero', { timeout: 60_000 }, () => {
-    // The adapter's f64 output never reverses (the pure grid above, up to K = 3200). Rapier integrates
-    // v + dt·F/m in f32, so once e^{−Kh} falls below f32 precision (~1e-7, Kh ≳ 16) the engine's own
-    // rounding can leave a residual about one f32 ulp on the far side of zero. Speed never grows.
-    const F32_EPSILON = 2 ** -23;
-    for (const n of [1, 5, 10, 16, 19, 21, 24, 32]) {
+  // Open AC2 gap (M3 finding 1, an owner decision): the adapter's f64 output never reverses pure drag
+  // (the grid above), but Rapier stores velocities in f32 and integrates v + dt·F/m with an f32 dt
+  // slightly longer than h. Reversals then appear in two regimes: from a normal f32 velocity once the
+  // aggregate K is very large, by at most a rounding of the previous speed, and from a subnormal one
+  // (below 1.18e-38 m/s, where f32's resolution is absolute) at ordinary aggregate K. Speed never grows.
+  // This test asserts those bounds, and that the gap is still present, so a repair has to revisit AC2.
+  it('characterizes the open AC2 gap: f32 reversals bounded by one rounding or below f32 normal range; speed never grows', { timeout: 120_000 }, () => {
+    const F32_MIN_NORMAL = 2 ** -126;
+    const ROUNDING = 2 ** -22;
+    let normal = 0;
+    let subnormal = 0;
+    for (const n of [1, 2, 3, 5, 10, 16, 20, 24, 32]) {
       const fields = Array.from({ length: n }, (_, i) => law(`d${String(i).padStart(2, '0')}`, { kind: 'linearDrag', coefficient: 100 }, ZERO, true, { kind: 'sphere', radius: 50 }));
-      for (const v0 of [[10, 0, 0], [1, 0, 0], [0.5, -0.2, 0.1]] as Vec3[]) {
-        const host = new SimulationHost(scene([sphere('a', ZERO, v0)], fields, ZERO));
-        let previous: readonly number[] = v0;
-        for (let i = 0; i < 12; i++) {
-          host.step();
-          const v = velocity(host);
-          const dot = v[0]! * previous[0]! + v[1]! * previous[1]! + v[2]! * previous[2]!;
-          expect(Math.hypot(...v)).toBeLessThanOrEqual(Math.hypot(...previous));
-          if (n <= 19) expect(dot, `K ${n * 100} v0 ${v0} step ${i}`).toBeGreaterThanOrEqual(0);
-          else v.forEach((c, j) => { if (c * previous[j]! < 0) expect(Math.abs(c)).toBeLessThanOrEqual(F32_EPSILON * Math.hypot(...previous)); });
-          previous = v;
+      for (const massKg of [1, 0.37, 13]) {
+        for (const speed of [1e-6, 0.5, 10]) {
+          const v0: Vec3 = [0.912 * speed, -0.365 * speed, 0.183 * speed];
+          const host = new SimulationHost(scene([sphere('a', ZERO, v0, massKg)], fields, ZERO));
+          let previous: readonly number[] = velocity(host);
+          for (let i = 0; i < 400 && previous.some((c) => c !== 0); i++) {
+            host.step();
+            const v = velocity(host);
+            expect(Math.hypot(...v), `speed grew: K ${n * 100}, mass ${massKg}, step ${i}`).toBeLessThanOrEqual(Math.hypot(...previous));
+            v.forEach((c, j) => {
+              if (c * previous[j]! >= 0) return;
+              if (Math.abs(previous[j]!) >= F32_MIN_NORMAL) {
+                normal += 1;
+                expect(Math.abs(c), `K ${n * 100} mass ${massKg}: ${previous[j]} → ${c}`).toBeLessThanOrEqual(ROUNDING * Math.abs(previous[j]!));
+              } else {
+                subnormal += 1;
+                expect(Math.abs(c)).toBeLessThan(F32_MIN_NORMAL);
+              }
+            });
+            previous = v;
+          }
+          host.dispose();
         }
-        host.dispose();
       }
     }
+    expect(normal, 'reversals from a normal f32 velocity').toBeGreaterThan(0);
+    expect(subnormal, 'reversals from a subnormal f32 velocity').toBeGreaterThan(0);
+  });
+
+  it('the h/dt mismatch alone predicts a sign flip at large K before any engine rounding (the review’s arithmetic)', () => {
+    // The adapter uses h = 1/120; the engine holds the force for its f32 dt. One step then multiplies
+    // a pure-drag velocity by 1 − (dt/h)(1 − e^{−Kh}) instead of e^{−Kh}.
+    const dt = 0.008333333767950535;
+    expect(dt * 120 - 1).toBeCloseTo(5.2154e-8, 11);
+    const K = 2100;
+    const exact = Math.exp(-K * H);
+    const realized = 1 - (dt / H) * -Math.expm1(-K * H);
+    expect(exact).toBeCloseTo(2.511e-8, 10);
+    expect(realized).toBeLessThan(0);
+    expect(realized).toBeCloseTo(-2.704e-8, 10);
   });
 
   it('moving a drag region imparts no velocity: drag is relative to the stationary world, not a moving medium (AC6)', () => {
