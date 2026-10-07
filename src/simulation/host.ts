@@ -130,7 +130,10 @@ export interface CommandAck {
   readonly payload: CommandPayload;
 }
 
-/** Nonfinite field output or invalid engine state; the host refuses to step until reset (SPEC §9.3, §16). */
+/**
+ * Nonfinite field output, invalid engine state, or a tick or schedule leaving the safe-integer
+ * range; the host refuses to step until reset (SPEC §5.3, §9.3, §10.1, §16).
+ */
 export class SimulationFault extends Error {
   constructor(
     readonly tick: number,
@@ -187,6 +190,12 @@ interface LiveBody {
 /** A scheduled birth falls at boundary n: on the emitter's interval, and within its count. */
 const due = ({ def, ordinal }: EmitterState, n: number) =>
   n >= def.startTick && (n - def.startTick) % def.intervalTicks === 0 && (def.emissionCount === undefined || ordinal < def.emissionCount);
+
+/**
+ * n + ticks is a safe integer (SPEC §5.3), decided exactly: for a safe n ≥ 0 the headroom
+ * MAX_SAFE_INTEGER − n is itself a safe integer, so neither it nor the comparison rounds.
+ */
+const fitsSafe = (n: number, ticks: number) => ticks <= Number.MAX_SAFE_INTEGER - n;
 
 interface EmitterState {
   readonly def: EmitterDefinition;
@@ -325,6 +334,9 @@ export class SimulationHost {
     if (this.fault) throw this.fault;
     const world = this.world!;
     this.settleBoundary();
+    // SPEC §10.1: the completed-step count stays a safe integer. At the largest one the transition
+    // faults at the settled boundary, before lifecycle, engine or clock change.
+    if (!fitsSafe(this.tick, 1)) throw (this.fault = new SimulationFault(this.tick, 'simulation clock', 'Tick leaves the safe-integer range'));
     this.runLifecycle();
 
     // Every force comes from the same start-of-step state; nothing is applied until all exist.
@@ -430,10 +442,14 @@ export class SimulationHost {
   /** Boundary n: expire bodies with deathTick ≤ n in stable ID order, then spawn due bodies by emitter ID (SPEC §5.3). */
   private runLifecycle(): void {
     const n = this.tick;
-    // SPEC §5.3: a birth whose death tick or ordinal would leave the safe-integer range faults before
-    // this boundary changes anything. Import bounds a finite schedule; this guards an unbounded one.
+    // SPEC §5.3: a birth whose death tick, ordinal or next scheduled birth would leave the safe-integer
+    // range faults before this boundary changes anything. Import bounds a finite schedule; this guards
+    // an unbounded one, whose next birth always exists.
     for (const emitter of this.emitters) {
-      if (due(emitter, n) && !(Number.isSafeInteger(n + emitter.def.lifetimeTicks) && Number.isSafeInteger(emitter.ordinal + 1))) {
+      if (!due(emitter, n)) continue;
+      const { lifetimeTicks, intervalTicks, emissionCount } = emitter.def;
+      const another = emissionCount === undefined || emitter.ordinal + 1 < emissionCount;
+      if (!fitsSafe(n, lifetimeTicks) || !fitsSafe(emitter.ordinal, 1) || (another && !fitsSafe(n, intervalTicks))) {
         throw (this.fault = new SimulationFault(n, emitter.def.id, 'Emitter schedule leaves the safe-integer range'));
       }
     }

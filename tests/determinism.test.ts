@@ -2,7 +2,7 @@
 // 30/60/144 Hz, scheduler limits and gap pauses, and reset of the authored configuration.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { DocumentController } from '../src/domain/document';
-import { STARTING_RECIPE, cloneFrozen } from '../src/domain/scene';
+import { STARTING_RECIPE, cloneFrozen, validateEmitter, type EmitterDefinition } from '../src/domain/scene';
 import { createDocument } from '../src/persistence/sceneFile';
 import {
   FIXTURE_TICKS,
@@ -102,6 +102,119 @@ describe('T04 exact reset', () => {
     // Hand-derived from x ^= x<<13; x ^= x>>>17; x ^= x<<5 on uint32 1.
     expect(xorshift32(1)).toBe(270369);
     expect(xorshift32(270369)).toBe(67634689);
+  });
+});
+
+// SPEC §5.3 (safe tick/ordinal/count values) and §10.1 (integer completed-step clock), at the
+// limit itself. No test can step to 2^53, so each host is placed at its boundary tick directly and
+// then driven through the real step(). Every premise is proved in BigInt, independently of the host.
+describe('safe-integer boundary', () => {
+  const S = Number.MAX_SAFE_INTEGER;
+  const big = BigInt(S);
+  const stream = STARTING_RECIPE.emitters[0]!;
+  const emitter = (id: string, schedule: Pick<EmitterDefinition, 'startTick' | 'intervalTicks' | 'lifetimeTicks' | 'emissionCount'>): EmitterDefinition => ({ ...stream, id, ...schedule });
+  const hostAt = (tick: number, emitters: EmitterDefinition[]) => {
+    const host = new SimulationHost(cloneFrozen({ ...STARTING_RECIPE, emitters }));
+    host.tick = tick;
+    return host;
+  };
+  /** Everything that can affect the future or the frame, compared exactly. */
+  const observe = (host: SimulationHost) => ({ state: host.canonicalState(), engine: host.engineSnapshot(), positions: host.positions.slice(), count: host.count });
+
+  it('a finite schedule whose last birth sits at the limit runs to the largest safe tick', () => {
+    // Last birth S − 1, death S; a next birth would be S + 2, but a count of one leaves none.
+    const last = emitter('last', { startTick: S - 1, intervalTicks: 3, lifetimeTicks: 1, emissionCount: 1 });
+    expect(BigInt(S - 1) + 1n).toBe(big);
+    expect(validateEmitter(last).ok).toBe(true);
+    const host = hostAt(S - 1, [last]);
+    host.step();
+    expect(host.fault).toBeNull();
+    expect(host.tick).toBe(S);
+    const state = host.canonicalState();
+    expect(state.emitters).toEqual([{ id: 'last', prngState: xorshift32(xorshift32(xorshift32(stream.seed))), ordinal: 1 }]);
+    expect(state.bodies.map((b) => [b.id, b.deathTick])).toEqual([['last:0', S]]);
+    host.dispose();
+  });
+
+  it('an unbounded emitter faults at a birth whose next scheduled birth would leave the range', () => {
+    // The reviewer's case: birth S − 1 and its death S are safe; the next birth S + 2 is not.
+    const edge = emitter('edge', { startTick: S - 1, intervalTicks: 3, lifetimeTicks: 1, emissionCount: undefined });
+    expect(BigInt(S - 1) + 1n <= big && BigInt(S - 1) + 3n > big).toBe(true);
+    const host = hostAt(S - 1, [edge]);
+    const before = observe(host);
+    expect(() => host.step()).toThrow(SimulationFault);
+    expect(host.fault).toMatchObject({ tick: S - 1, entity: 'edge', reason: 'Emitter schedule leaves the safe-integer range' });
+    expect(Number.isSafeInteger(host.tick)).toBe(true);
+    expect(observe(host)).toEqual(before);
+    // The host refuses to step until reset, and still changes nothing.
+    expect(() => host.step()).toThrow(SimulationFault);
+    expect(observe(host)).toEqual(before);
+    host.dispose();
+  });
+
+  it('a next unbounded birth exactly at the limit is accepted', () => {
+    // Birth S − 3, next birth exactly S: legal, so the bound is inclusive.
+    const edge = emitter('edge', { startTick: S - 3, intervalTicks: 3, lifetimeTicks: 1, emissionCount: undefined });
+    expect(BigInt(S - 3) + 3n).toBe(big);
+    const host = hostAt(S - 3, [edge]);
+    host.step();
+    expect(host.fault).toBeNull();
+    expect(host.tick).toBe(S - 2);
+    expect(host.canonicalState().emitters[0]!.ordinal).toBe(1);
+    host.dispose();
+  });
+
+  it('the clock faults rather than advance past the largest safe tick', () => {
+    const last = emitter('last', { startTick: S - 1, intervalTicks: 3, lifetimeTicks: 1, emissionCount: 1 });
+    const host = hostAt(S - 1, [last]);
+    host.step(); // S − 1 → S, the last legal transition
+    expect(Number.isSafeInteger(S + 1)).toBe(false);
+    const before = observe(host);
+    expect(() => host.step()).toThrow(SimulationFault);
+    expect(host.fault).toMatchObject({ tick: S, entity: 'simulation clock', reason: 'Tick leaves the safe-integer range' });
+    expect(host.tick).toBe(S);
+    expect(Number.isSafeInteger(host.tick)).toBe(true);
+    // Body last:0 dies at S, so this boundary's expiry was due; the fault came first.
+    expect(observe(host)).toEqual(before);
+    expect(observe(host).state.bodies.map((b) => b.id)).toEqual(['last:0']);
+    host.dispose();
+  });
+
+  it('a schedule fault changes no tick, PRNG, ordinal, body, engine or law state', () => {
+    // A moving body due to expire at S − 1 beside the reviewer's emitter: the fault at S − 1 must
+    // precede that boundary's expiry, any draw or ordinal, the engine step and the clock.
+    const early = emitter('early', { startTick: S - 3, intervalTicks: 1, lifetimeTicks: 2, emissionCount: 1 });
+    const edge = emitter('edge', { startTick: S - 1, intervalTicks: 3, lifetimeTicks: 1, emissionCount: undefined });
+    expect(validateEmitter(early).ok).toBe(true);
+    const host = hostAt(S - 3, [early, edge]);
+    host.step(); // S − 3: early:0 born, deathTick S − 1
+    host.step(); // S − 2
+    const before = observe(host);
+    expect(before.state.tick).toBe(S - 1);
+    expect(before.state.bodies.map((b) => [b.id, b.deathTick])).toEqual([['early:0', S - 1]]);
+    expect(before.state.emitters).toEqual([
+      { id: 'early', prngState: xorshift32(xorshift32(xorshift32(stream.seed))), ordinal: 1 },
+      { id: 'edge', prngState: stream.seed, ordinal: 0 },
+    ]);
+    expect(() => host.step()).toThrow(SimulationFault);
+    expect(host.fault).toMatchObject({ tick: S - 1, entity: 'edge' });
+    expect(observe(host)).toEqual(before);
+    expect(host.appliedFields()).toEqual(STARTING_RECIPE.fields);
+    host.dispose();
+  });
+
+  it('an ordinary unbounded emitter still emits at every interval', () => {
+    // Births at boundaries 0…239 (240 births, 720 draws); lifetime 1 leaves only the newest alive.
+    const host = new SimulationHost(cloneFrozen({ ...STARTING_RECIPE, emitters: [emitter('stream', { startTick: 0, intervalTicks: 1, lifetimeTicks: 1, emissionCount: undefined })] }));
+    for (let i = 0; i < 240; i++) host.step();
+    const state = host.canonicalState();
+    host.dispose();
+    let prng = stream.seed;
+    for (let i = 0; i < 720; i++) prng = xorshift32(prng);
+    expect(host.fault).toBeNull();
+    expect(state.tick).toBe(240);
+    expect(state.emitters).toEqual([{ id: 'stream', prngState: prng, ordinal: 240 }]);
+    expect(state.bodies.map((b) => [b.id, b.deathTick])).toEqual([['stream:239', 240]]);
   });
 });
 
