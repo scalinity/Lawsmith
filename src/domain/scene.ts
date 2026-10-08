@@ -1,6 +1,6 @@
 // The semantic scene and document model (SPEC §5). No engine handles, no Three.js objects:
 // the semantic block is what the simulation consumes; presentation never reaches physics.
-import { EXPRESSION_LIMITS, expressionStats, validateExpression } from '../fields/expression';
+import { expressionStats, validateExpression } from '../fields/expression';
 import { regionDescriptor, isRegionKind } from '../fields/registry';
 import { canonicalQuat, finite, unsign, vec, within } from './numbers';
 
@@ -211,10 +211,6 @@ export const SCENE_LIMITS = Object.freeze({
   fixedBodies: 64,
   fields: 32,
   primitiveLeaves: 256,
-  /** Per law: every node counts, leaves and operators alike. */
-  expressionNodes: EXPRESSION_LIMITS.nodes,
-  /** Nodes on the longest root-to-leaf path; a primitive alone has depth 1. */
-  expressionDepth: EXPRESSION_LIMITS.depth,
   emitters: 16,
   idLength: 64,
   textLength: 8192,

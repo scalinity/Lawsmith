@@ -7,12 +7,10 @@ import { isPrimitiveKind, isRegionKind, primitiveDescriptor, regionDescriptor } 
 
 /** The operators of SPEC §6.3, each with its own versioned capability (SPEC §15.1). */
 export const OPERATORS = Object.freeze({
-  sum: { capability: 'operator.sum.v1', title: 'Sum' },
-  gain: { capability: 'operator.gain.v1', title: 'Gain' },
-  mask: { capability: 'operator.mask.v1', title: 'Mask' },
+  sum: { capability: 'operator.sum.v1' },
+  gain: { capability: 'operator.gain.v1' },
+  mask: { capability: 'operator.mask.v1' },
 });
-export type OperatorKind = keyof typeof OPERATORS;
-export const isOperatorKind = (kind: unknown): kind is OperatorKind => typeof kind === 'string' && Object.hasOwn(OPERATORS, kind);
 export const OPERATOR_CAPABILITIES: readonly string[] = Object.values(OPERATORS).map((o) => o.capability);
 
 /** SPEC §15.2 per-law limits: every node counts toward `nodes`; a primitive alone has depth 1. */
@@ -87,15 +85,6 @@ export function expressionCapabilities(expression: FieldExpression, used: Set<st
       used.add(regionDescriptor(node.region.kind).capability);
     } else used.add(primitiveDescriptor(node.kind).capability);
   });
-}
-
-/** True when some gain in the tree varies with the tick: its value then depends on n, not just on position. */
-export function isTimeDependent(expression: FieldExpression): boolean {
-  let varies = false;
-  walk(expression, (node) => {
-    if (node.kind === 'gain' && node.gain.kind === 'triangle') varies = true;
-  });
-  return varies;
 }
 
 /**
