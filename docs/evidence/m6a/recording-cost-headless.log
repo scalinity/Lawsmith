@@ -1,0 +1,11 @@
+{"environment":"Node.js/26"}
+{"workload":"P1","recording":false,"run":1,"steps":1200,"stepMs":{"p50":0.6062,"p95":0.8191,"p99":0.8982},"commands":0}
+{"workload":"P1","recording":false,"run":2,"steps":1200,"stepMs":{"p50":0.6106,"p95":0.8367,"p99":0.9501},"commands":0}
+{"workload":"P1","recording":false,"run":3,"steps":1200,"stepMs":{"p50":0.6174,"p95":0.826,"p99":0.92},"commands":0}
+{"workload":"P1","recording":true,"run":1,"steps":1200,"stepMs":{"p50":0.6103,"p95":0.8128,"p99":0.9098},"commands":150}
+{"workload":"P1","recording":true,"run":2,"steps":1200,"stepMs":{"p50":0.6488,"p95":0.923,"p99":1.0657},"commands":250}
+{"workload":"P1","recording":true,"run":3,"steps":1200,"stepMs":{"p50":0.6261,"p95":0.8581,"p99":0.9662},"commands":350}
+{"measure":"settle one recorded put","law":"one-leaf","commands":2000,"ms":{"p50":0.0137,"p95":0.0373,"p99":0.0606},"bytesPerCommand":288}
+{"measure":"settle one recorded put","law":"61-node","commands":2000,"ms":{"p50":0.0883,"p95":0.1523,"p99":0.2262},"bytesPerCommand":6617}
+{"measure":"replay a same-boundary batch","commands":1000,"chunk":64,"chunkMs":{"p50":0.0321,"p95":0.1468,"p99":0.1468},"chunks":16}
+{"measure":"export a full record","commands":2516,"bytes":16773123,"limit":16777216,"exportMs":193.5,"stopped":"bytes"}

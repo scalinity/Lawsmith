@@ -182,6 +182,24 @@ describe('complete UTF-8 bytes: 16 MiB', () => {
   });
 });
 
+describe('the stop resolves for whoever asks first', () => {
+  it('settled() right after a limit closes, before its scheduled resolution, returns the closed record', async () => {
+    const s = session();
+    s.coordinator.startRecording();
+    s.steps(RUN_LIMITS.ticks - 1);
+    s.step();
+    expect(s.coordinator.recordingState).toBe('finalizing');
+    expect(s.live().halted).toBe(true);
+    // No microtask has run yet: the record must still come back, and the world is released.
+    const pending = s.coordinator.settled();
+    expect(s.live().halted).toBe(false);
+    const record = await pending;
+    expect([record?.stopped, record?.finalTick]).toEqual(['duration', RUN_LIMITS.ticks]);
+    await flush();
+    expect(s.limits).toEqual(['duration']);
+  }, 120_000);
+});
+
 describe('a limit halfway through a live gesture', () => {
   /** Drags `push` one sample per frame until the recorder closes; returns the samples submitted and consumed. */
   async function dragIntoLimit(s: Session) {

@@ -567,3 +567,15 @@ describe('setAmbient: the full command vocabulary records and replays', () => {
     expect(cloneFrozen(s.live().futureState().simulation).ambientAcceleration).toEqual([0.5, -4, 0]);
   });
 });
+
+describe('the native QA scene', () => {
+  it('m6a-lab is canonical: the Storm Bottle, an independent push and an untouched drag', async () => {
+    const { default: text } = await import('../scripts/verify/scenes/m6a-lab.lawsmith.json?raw');
+    const { parseScene: parse, serializeScene: serialize } = await import('../src/persistence/sceneFile');
+    const parsed = parse(text);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(serialize(parsed.document)).toBe(text);
+    expect(parsed.document.semantic.fields.map((f) => f.id)).toEqual(['calm', 'push', 'storm-bottle']);
+  });
+});

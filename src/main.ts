@@ -1248,6 +1248,12 @@ async function start() {
     $('sim-error').hidden = true;
     applyFreeze();
     report('context', { reason, ...runs.counts(), tick: host.tick, cursor: host.lastAppliedSequence, runId: runs.replay?.record.runId ?? null, qualified: runs.replayQualified });
+    // The retained authoring world's digests at every switch: a replay must leave them exactly as they were.
+    const live = authoring.liveHost;
+    const { tick, lastAppliedSequence: cursor } = live;
+    Promise.all([sha256(JSON.stringify(live.futureState())), sha256(live.engineSnapshot())]).then(([stateSha256, engineSha256]) =>
+      report('context-live', { reason, tick, cursor, stateSha256, engineSha256, revision: authoring.revision, generation: authoring.generation, canUndo: authoring.canUndo, canRedo: authoring.canRedo }),
+    );
     renderPanel();
   };
 

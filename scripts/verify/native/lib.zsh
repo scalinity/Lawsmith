@@ -329,6 +329,18 @@ open_panel() {
 
 # alert BUTTON: answers the unsaved-work alert (Save, Don't Save, Cancel).
 alert() { wait_depth 1; [[ $(axq press $APP_PID "$1") == pressed ]] || fail "no alert button $1"; touched }
+# alert_for scene|recording BUTTON: answers the guard's alert only if it names that artifact: the
+# recording's offers "Save Recording…", the scene's a plain "Save" (M6A, SPEC §15.3).
+alert_for() {
+  wait_depth 1
+  local buttons=$(axq buttons $APP_PID)
+  case $1 in
+    recording) [[ $buttons == *'Save Recording…'* ]] || fail "expected the recording's alert; its buttons are: ${buttons//$'\n'/, }" ;;
+    scene) [[ $buttons != *'Save Recording…'* && $buttons == *Save* ]] || fail "expected the scene's alert; its buttons are: ${buttons//$'\n'/, }" ;;
+  esac
+  say "the guard asks about the $1"
+  alert "$2"
+}
 
 # Removes the preferences domain QA created for Lawsmith (panel folder and sizes); run after the
 # last launch. Only call it when the domain did not exist before QA began.

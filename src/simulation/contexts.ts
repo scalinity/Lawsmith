@@ -162,8 +162,13 @@ export class RunCoordinator {
     );
   }
 
-  /** Waits for the record being finalized, if any. */
+  /**
+   * Waits for the record being finalized, if any. A recorder that has just closed itself at a limit is
+   * resolved here at once, rather than when its scheduled resolution runs, so no caller can see the
+   * previous record in between.
+   */
   settled(): Promise<RunRecord | null> {
+    this.resolveStop();
     return this.finalizing ?? Promise.resolve(this.record);
   }
 

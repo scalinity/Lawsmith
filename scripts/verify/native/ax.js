@@ -7,6 +7,7 @@
 //   ax.js itempos PID NAME       → screen point of the item named NAME in the deepest sheet (a file)
 //   ax.js value PID NAME         → the value of the element named NAME (the Save panel's "Where:")
 //   ax.js choose PID POPUP ITEM  → opens the popup named POPUP and chooses its menu item ITEM
+//   ax.js buttons PID            → the button names of the deepest sheet, one per line (which alert is up)
 function containers(p) {
   const out = [];
   const w = p.windows[0];
@@ -62,6 +63,15 @@ function run(argv) {
     }
     try { popup.actions['AXCancel'].perform(); } catch (x) {}
     return 'no item';
+  }
+  if (command === 'buttons') {
+    const names = [];
+    for (const e of stack[0].entireContents()) {
+      try {
+        if (e.role() === 'AXButton') names.push(e.name() || e.description());
+      } catch (x) {}
+    }
+    return names.join('\n');
   }
   if (command === 'value') {
     for (const e of stack[0].entireContents()) {
