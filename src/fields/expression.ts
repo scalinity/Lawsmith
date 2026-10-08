@@ -50,11 +50,11 @@ export function replaceAt(expression: FieldExpression, path: ExprPath, replaceme
   return { ...expression, terms: expression.terms.map((t, i) => (i === step ? replaceAt(t, rest, replacement) : t)) };
 }
 
-/** Visits every node in preorder, children in stored order. Only for validated (bounded) trees. */
-export function walk(expression: FieldExpression, visit: (node: FieldExpression, path: ExprPath) => void, path: ExprPath = []): void {
-  visit(expression, path);
-  if (expression.kind === 'sum') expression.terms.forEach((t, i) => walk(t, visit, [...path, i]));
-  else if (expression.kind === 'gain' || expression.kind === 'mask') walk(expression.child, visit, [...path, 'child']);
+/** Visits every node in preorder, children in stored order, with its depth (the root's is 1). Only for validated (bounded) trees. */
+export function walk(expression: FieldExpression, visit: (node: FieldExpression, depth: number) => void, depth = 1): void {
+  visit(expression, depth);
+  if (expression.kind === 'sum') for (const t of expression.terms) walk(t, visit, depth + 1);
+  else if (expression.kind === 'gain' || expression.kind === 'mask') walk(expression.child, visit, depth + 1);
 }
 
 export interface ExpressionStats {
@@ -68,9 +68,9 @@ export function expressionStats(expression: FieldExpression): ExpressionStats {
   let nodes = 0;
   let leaves = 0;
   let depth = 0;
-  walk(expression, (node, path) => {
+  walk(expression, (node, at) => {
     nodes += 1;
-    depth = Math.max(depth, path.length + 1);
+    depth = Math.max(depth, at);
     if (isPrimitiveKind(node.kind)) leaves += 1;
   });
   return { nodes, leaves, depth };
