@@ -29,15 +29,18 @@ b = next(l['select'] for l in e['laws'] if l['id'] == '$1')
 print(round($WIN_X + b[0] + b[2] / 2), round($WIN_Y + b[1] + b[3] / 2))")})
   click_expect $p[1] $p[2] selection
 }
-# clear STATE W H: the run cluster, in STATE, inside W×H and overlapping no other region.
+# clear_of_everything STATE W H [ui]: the run cluster, in STATE, inside W×H and overlapping no other UI region
+# and, unless `ui` is given, not the selected law's projected support either (SPEC §11.1 sets that at
+# 1280×800). With `ui`, the support overlap is measured and reported, not gated.
 clear_of_everything() {
   layout
-  expect layout "$1 at $2×$3: the recording controls are inside the window and clear of every other region" "
+  local scene=$([[ $4 == ui ]] && print 0 || print 1)
+  expect layout "$1 at $2×$3: the recording controls are inside the window and clear of every other $([[ $4 == ui ]] && print 'UI region' || print 'region and the selected law')" "
 (lambda r, others, w, h: e['run']['state']=='$1' and r is not None and 0 <= r[0] and r[0] + r[2] <= w and 0 <= r[1] and r[1] + r[3] <= h
   and all(o is None or r[0] + r[2] <= o[0] or o[0] + o[2] <= r[0] or r[1] + r[3] <= o[1] or o[1] + o[3] <= r[1] for o in others)
   and all(s['scrollWidth'] <= s['clientWidth'] for s in e['scroll'].values())
-)(e['run']['box'], [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain', 'diagnostics')] + ([[e['support'][0], e['support'][1], e['support'][2] - e['support'][0], e['support'][3] - e['support'][1]]] if e['support'] else []), $2, $3)"
-  say "run cluster $1 at $2×$3: $(logq field $APP_LOG layout run.box)"
+)(e['run']['box'], [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain', 'diagnostics')] + ([[e['support'][0], e['support'][1], e['support'][2] - e['support'][0], e['support'][3] - e['support'][1]]] if e['support'] and $scene else []), $2, $3)"
+  say "run cluster $1 at $2×$3: $(logq field $APP_LOG layout run.box); selected support $(logq field $APP_LOG layout support)"
 }
 
 seed_folder $QA_STATE/scenes
@@ -79,10 +82,10 @@ sleep 0.5
 clear_of_everything replay 1280 800
 shot m6a-1280x800-replay-end
 window_size 40 50 900 600
-clear_of_everything replay 900 600
+clear_of_everything replay 900 600 ui
 shot m6a-900x600-replay-end
 press_expect run-return context
-clear_of_everything recorded 900 600
+clear_of_everything recorded 900 600 ui
 activate
 keys kd:cmd t:q ku:cmd
 sleep 1
