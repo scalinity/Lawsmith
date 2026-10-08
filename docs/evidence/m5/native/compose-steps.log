@@ -1,74 +1,75 @@
-[qa 23:22:28] segment: construct a compound law from primitives
-[qa 23:22:32] launched pid 78573, window at 0,21, log compose5.log
-[qa 23:22:35] recording m5-construct for 60 s (overlay windows skipped by the hit test: 22797)
-[qa 23:22:37] PASS {"kind": "control", "create": "softRadial", "id": "pull", "reason": null, "laws": 2, "mode": "packaged", "t": 8159}  [control] the shelf made a Pull law at the view's focus point
-[qa 23:22:47] PASS {"kind": "control", "law": "pull", "ingredient": "Add swirl", "path": [1], "revision": 2, "field": {"id": "pull", "enabled": true, "position": [0, 1, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 2}, "edgeFade": 0.25, "expression": {"kind": "sum", "terms": [{"kind": "softRadia  [control] Swirl joined the Pull: one law, a sum of two
-[qa 23:22:48] PASS {"kind": "control", "law": "pull", "ingredient": "Add drag", "path": [2], "revision": 3, "field": {"id": "pull", "enabled": true, "position": [0, 1, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 2}, "edgeFade": 0.25, "expression": {"kind": "sum", "terms": [{"kind": "softRadial  [control] Drag joined as the third ingredient, after the others
-[qa 23:22:50] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the law list still holds two laws, and the new one reads pull + swirl + drag
-[qa 23:22:50] captured construct-01-ingredients.png
-[qa 23:22:59] PASS tick 500: Pull 3.640 m/s²; Swirl 2.638 m/s²; Drag 16.269 m/s²  [m5q ingredients] a body inside it: Pull, Swirl and Drag parts, recomputed here, add up to the law's share
-[qa 23:23:00] captured construct-02-parts.png
-[qa 23:23:00] waiting for m5-construct to finish
-[qa 23:23:37] recording m5-construct.mp4 written
-[qa 23:23:37] segment: the Storm Bottle moves, turns and resizes as one law
-[qa 23:23:47] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "storm-bottle.lawsmith.json", "generation": 2, "title": "Storm Bottle", "bytes": 3493, "readMs": 0.136, "parseMs": 1, "candidateMs": 1, "commitMs": 5, "openMs": 7.136, "mode": "packaged", "t": 78720}  [document] storm-bottle opened transactionally
-[qa 23:23:48] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the Storm Bottle opens with its one law selected, three ingredients
-[qa 23:23:50] recording m5-storm for 100 s (overlay windows skipped by the hit test: 22808)
-[qa 23:24:02] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "translate", "handle": null, "samples": 28, "rejected": 0, "pointer": null, "firstRevision": 1, "lastRevision": 28, "field": {"enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0, 1], "regi  [gesture] one drag moved the whole bottle into the stream
-[qa 23:24:10] PASS 54 bodies inside the selected law (want 25–64)  [m5q held] in the stream the bottle holds a storm
-[qa 23:24:10] captured storm-01-held.png
-[qa 23:24:19] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "rotate", "handle": null, "samples": 24, "rejected": 0, "pointer": null, "firstRevision": 29, "lastRevision": 52, "field": {"enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.344505158456  [gesture] one rotate gesture tilted the bottle; its ingredients turned with it, unchanged
-[qa 23:24:29] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "radius", "samples": 25, "rejected": 0, "pointer": [449, 402, 372, 388], "firstRevision": 53, "lastRevision": 77, "field": {"enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0  [gesture] the support's radius handle widened the outer support only: no strength, core or mask changed
-[qa 23:24:31] captured storm-02-moved-turned-resized.png
-[qa 23:24:37] PASS tick 4948: Pull 9.342 m/s²; Swirl 8.006 m/s²; Drag 37.888 m/s²  [m5q ingredients] a body in the bottle: each ingredient's part, recomputed independently, adds to the bottle's share
-[qa 23:24:37] captured storm-03-parts.png
-[qa 23:24:37] waiting for m5-storm to finish
-[qa 23:25:35] recording m5-storm.mp4 written
-[qa 23:25:35] segment: remove the drag, see the difference, undo
-[qa 23:25:37] recording m5-remove for 70 s (overlay windows skipped by the hit test: 22809)
-[qa 23:25:39] PASS {"kind": "control", "law": "storm-bottle", "ingredient": "Remove ingredient", "path": [], "revision": 78, "field": {"id": "storm-bottle", "enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.34450515845692575, 0.938784424560063], "region": {"kind": "cylinderY", "radius":   [control] Drag came out of the bottle: one law put, two ingredients left
-[qa 23:25:47] PASS 7 bodies inside the selected law (want 0–18)  [m5q held] without its drag the bottle lets the stream fall through
-[qa 23:25:47] captured remove-01-without-drag.png
-[qa 23:25:48] PASS {"kind": "history", "action": "undo", "ok": true, "label": "Remove ingredient", "law": "storm-bottle", "reason": null, "revision": 79, "tick": 5791, "laws": [{"id": "storm-bottle", "enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.34450515845692575, 0.938784424560063],  [history] Undo put the drag back
-[qa 23:25:49] PASS  [layout] undo restored the bottle's expression exactly, mask included
-[qa 23:25:58] PASS 56 bodies inside the selected law (want 25–64)  [m5q held] with the drag back the bottle holds a storm again
-[qa 23:25:58] captured remove-02-undone.png
-[qa 23:25:58] waiting for m5-remove to finish
-[qa 23:26:51] recording m5-remove.mp4 written
-[qa 23:26:51] segment: adjust the drag's mask with its handle
-[qa 23:26:53] recording m5-mask for 45 s (overlay windows skipped by the hit test: 22810)
-[qa 23:26:57] PASS {"kind": "ingredient-focus", "law": "storm-bottle", "level": null, "focus": [2], "mode": "packaged", "t": 268276}  [ingredient-focus] Drag is the ingredient being edited
-[qa 23:26:59] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] Adjust shows the bottle's own handles and the drag mask's
-[qa 23:27:08] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "expression.terms[2].region.halfExtents.1", "samples": 25, "rejected": 0, "pointer": [542, 308, 542.00537109375, 382.7585144042969], "firstRevision": 80, "lastRevision": 104, "field": {"enabled": tr  [gesture] one drag of the mask's handle lowered its top: only that mask changed
-[qa 23:27:17] PASS tick 14421: Pull 8.687 m/s²; Swirl 4.836 m/s²; Drag 0.000 m/s²  [m5q ingredients] the drag's part now carries the smaller mask's weight, recomputed here
-[qa 23:27:18] captured mask-01-adjusted.png
-[qa 23:27:18] waiting for m5-mask to finish
-[qa 23:27:40] recording m5-mask.mp4 written
-[qa 23:27:40] segment: give the swirl a triangle gain and read it at named ticks
-[qa 23:27:42] recording m5-triangle for 90 s (overlay windows skipped by the hit test: 22811)
-[qa 23:27:50] PASS {"kind": "control", "law": "storm-bottle", "ingredient": "Add gain", "path": [1], "revision": 105, "field": {"id": "storm-bottle", "enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.34450515845692575, 0.938784424560063], "region": {"kind": "cylinderY", "radius": 2.35523  [control] Swirl has a gain of 1, which changes nothing yet
-[qa 23:27:51] PASS {"kind": "control", "law": "storm-bottle", "ingredient": "Change gain", "path": [1], "revision": 106, "field": {"id": "storm-bottle", "enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.34450515845692575, 0.938784424560063], "region": {"kind": "cylinderY", "radius": 2.35  [control] the swirl's gain is a triangle: 0 → 2 → 0 over 240 ticks from phase 0
-[qa 23:27:52] PASS {"kind": "sim-control", "action": "reset", "tick": 0, "run": 2, "laws": [{"id": "storm-bottle", "enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.34450515845692575, 0.938784424560063], "region": {"kind": "cylinderY", "radius": 2.355239684877314, "halfHeight": 1.8}, "ed  [sim-control] Reset rebuilt the bottle's scene at tick 0, paused
-[qa 23:28:02] PASS Swirl gain 1.9833333333333334 at tick 119  [m5q triangle] the step from tick 119: g = 2·(1 − |2·119/240 − 1|), from the tick alone
-[qa 23:28:04] PASS Swirl gain 2.0 at tick 120  [m5q triangle] the step from tick 120, the peak: g = 2
-[qa 23:28:04] captured triangle-01-peak.png
-[qa 23:28:08] PASS held at tick 121  [m5q same-retained] paused at tick 121 for 2 s: the same step and the same preview
-[qa 23:28:16] PASS Swirl gain 0.0 at tick 240  [m5q triangle] the step from tick 240, a trough: g = 0, the swirl's part is zero
-[qa 23:28:16] captured triangle-02-trough.png
-[qa 23:28:27] PASS tick 934: Pull 8.036 m/s²; Swirl 1.194 m/s²; Drag 0.000 m/s²  [m5q ingredients] with the triangle running every part still adds to the law's share
-[qa 23:28:28] PASS Swirl gain 0.4333333333333331 at tick 934  [m5q triangle] and the swirl's gain is the formula's at that step's tick
-[qa 23:28:28] waiting for m5-triangle to finish
-[qa 23:29:16] recording m5-triangle.mp4 written
-[qa 23:29:17] segment: save, quit, relaunch, open: every authored value survives
-[qa 23:29:52] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "storm-qa.lawsmith.json", "generation": 2, "revision": 106, "laterEdits": 0, "recoveryRetired": true, "bytes": 3922, "captureMs": 1, "writeMs": 8.421, "saveMs": 13, "mode": "packaged", "t": 442797}  [document] Save As wrote storm-qa and bound it
-[qa 23:29:52] PASS {"kind": "digest", "reason": "saveAs", "generation": 2, "revision": 106, "semanticSha256": "ea7dee2d53f22c091cb5627ad071e5165e90bd6b1be72339abcfae8bf7107463", "mode": "packaged", "t": 442798}  [digest] the saved scene's semantic digest is recorded
-[qa 23:29:59] launched pid 29366, window at 0,21, log compose5b.log
-[qa 23:30:09] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "storm-qa.lawsmith.json", "generation": 2, "title": "Storm Bottle", "bytes": 3922, "readMs": 0.093, "parseMs": 1, "candidateMs": 1, "commitMs": 2, "openMs": 4.093, "mode": "packaged", "t": 12196}  [document] storm-qa opened transactionally
-[qa 23:30:09] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 1, "laws": [{"id": "storm-bottle", "enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.34450515845692575, 0.938784424560063], "region": {"kind": "cylinderY", "radius": 2.355239684877314, "halfH  [sim-control] it opened paused at tick 0
-[qa 23:30:10] PASS  [layout] the reopened bottle has the saved expression exactly: ingredients, mask, triangle
-[qa 23:30:10] PASS {"kind": "digest", "reason": "load", "generation": 2, "revision": 0, "semanticSha256": "ea7dee2d53f22c091cb5627ad071e5165e90bd6b1be72339abcfae8bf7107463", "mode": "packaged", "t": 12197}  [digest] the reopened scene's semantic digest is the saved one
-[qa 23:30:10] captured reopen-01.png
-[qa 23:30:10] segment: the runtime's own fixtures on the reopened compound scene
-[qa 23:30:29] PASS {"kind": "fixtures", "elapsedMs": 2415, "root": [{"id": "storm-bottle", "enabled": true, "position": [0.16937143110957864, 1.6, 0], "rotation": [0, 0, 0.34450515845692575, 0.938784424560063], "region": {"kind": "cylinderY", "radius": 2.355239684877314, "halfHeight": 1.8}, "edgeFade": 0.25, "expressi  [fixtures] reset, cadence, invariance and observed reset agree exactly; every step's parts reconcile
-[qa 23:30:44] run digests at ticks 600 and 1200: (600, '5a94eb77e3a4d92887ab3b7c0388e4e507f31771a8d331adbb8eac65c4ac06bf', 'abf776ecae48479804ba31a1c2d313638092752ed67088c96f31be19c9707953') (1200, 'c296067b200f014b7a28502697c7feb03322c8fb1f21e5aba5a48980b12147ea', 'db1685dfcb4d8ddb85a434e73b1711cd65a63073fd88b626b614c53e65c596d9')
-[qa 23:30:48] m5-compose complete
+[qa 03:35:20] segment: construct a compound law from primitives
+[qa 03:35:25] launched pid 98185, window at 0,21, log compose5.log
+[qa 03:35:28] recording m5-construct for 60 s (overlay windows skipped by the hit test: 23848)
+[qa 03:35:29] PASS {"kind": "control", "create": "softRadial", "id": "pull", "reason": null, "laws": 2, "mode": "packaged", "t": 8184}  [control] the shelf made a Pull law at the view's focus point
+[qa 03:35:38] PASS {"kind": "control", "law": "pull", "ingredient": "Add swirl", "path": [1], "revision": 2, "field": {"id": "pull", "enabled": true, "position": [0, 1, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 2}, "edgeFade": 0.25, "expression": {"kind": "sum", "terms": [{"kind": "softRadia  [control] Swirl joined the Pull: one law, a sum of two
+[qa 03:35:40] PASS {"kind": "control", "law": "pull", "ingredient": "Add drag", "path": [2], "revision": 3, "field": {"id": "pull", "enabled": true, "position": [0, 1, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 2}, "edgeFade": 0.25, "expression": {"kind": "sum", "terms": [{"kind": "softRadial  [control] Drag joined as the third ingredient, after the others
+[qa 03:35:41] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the law list still holds two laws, and the new one reads pull + swirl + drag
+[qa 03:35:41] captured construct-01-ingredients.png
+[qa 03:35:50] PASS tick 490: Pull 6.487 m/s²; Swirl 4.667 m/s²; Drag 15.550 m/s²  [m5q ingredients] a body inside it: Pull, Swirl and Drag parts, recomputed here, add up to the law's share
+[qa 03:35:50] captured construct-02-parts.png
+[qa 03:35:50] waiting for m5-construct to finish
+[qa 03:36:30] recording m5-construct.mp4 written
+[qa 03:36:30] segment: the Storm Bottle moves, turns and resizes as one law
+[qa 03:36:40] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "storm-bottle.lawsmith.json", "generation": 2, "title": "Storm Bottle", "bytes": 3493, "readMs": 0.081, "parseMs": 1, "candidateMs": 1, "commitMs": 3, "openMs": 5.081, "mode": "packaged", "t": 78735}  [document] storm-bottle opened transactionally
+[qa 03:36:41] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the Storm Bottle opens with its one law selected, three ingredients
+[qa 03:36:43] recording m5-storm for 100 s (overlay windows skipped by the hit test: 23859)
+[qa 03:36:54] the synthetic release was lost; sending it again
+[qa 03:36:55] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "translate", "handle": null, "samples": 30, "rejected": 0, "pointer": null, "firstRevision": 1, "lastRevision": 30, "field": {"enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0, 1], "regi  [gesture] one drag moved the whole bottle into the stream
+[qa 03:37:03] PASS 54 bodies inside the selected law (want 25–64)  [m5q held] in the stream the bottle holds a storm
+[qa 03:37:03] captured storm-01-held.png
+[qa 03:37:12] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "rotate", "handle": null, "samples": 24, "rejected": 0, "pointer": null, "firstRevision": 31, "lastRevision": 54, "field": {"enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.344231855276  [gesture] one rotate gesture tilted the bottle; its ingredients turned with it, unchanged
+[qa 03:37:21] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "radius", "samples": 25, "rejected": 0, "pointer": [444, 401, 367, 387], "firstRevision": 55, "lastRevision": 79, "field": {"enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0  [gesture] the support's radius handle widened the outer support only: no strength, core or mask changed
+[qa 03:37:24] captured storm-02-moved-turned-resized.png
+[qa 03:37:29] PASS tick 4941: Pull 8.448 m/s²; Swirl 4.045 m/s²; Drag 7.581 m/s²  [m5q ingredients] a body in the bottle: each ingredient's part, recomputed independently, adds to the bottle's share
+[qa 03:37:29] captured storm-03-parts.png
+[qa 03:37:29] waiting for m5-storm to finish
+[qa 03:38:27] recording m5-storm.mp4 written
+[qa 03:38:27] segment: remove the drag, see the difference, undo
+[qa 03:38:29] recording m5-remove for 70 s (overlay windows skipped by the hit test: 23860)
+[qa 03:38:31] PASS {"kind": "control", "law": "storm-bottle", "ingredient": "Remove ingredient", "path": [], "revision": 80, "field": {"id": "storm-bottle", "enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.3442318552766619, 0.9388846733293644], "region": {"kind": "cylinderY", "radius":   [control] Drag came out of the bottle: one law put, two ingredients left
+[qa 03:38:39] PASS 6 bodies inside the selected law (want 0–18)  [m5q held] without its drag the bottle lets the stream fall through
+[qa 03:38:39] captured remove-01-without-drag.png
+[qa 03:38:40] PASS {"kind": "history", "action": "undo", "ok": true, "label": "Remove ingredient", "law": "storm-bottle", "reason": null, "revision": 81, "tick": 5767, "laws": [{"id": "storm-bottle", "enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.3442318552766619, 0.9388846733293644],  [history] Undo put the drag back
+[qa 03:38:41] PASS  [layout] undo restored the bottle's expression exactly, mask included
+[qa 03:38:49] PASS 55 bodies inside the selected law (want 25–64)  [m5q held] with the drag back the bottle holds a storm again
+[qa 03:38:49] captured remove-02-undone.png
+[qa 03:38:49] waiting for m5-remove to finish
+[qa 03:39:43] recording m5-remove.mp4 written
+[qa 03:39:43] segment: adjust the drag's mask with its handle
+[qa 03:39:45] recording m5-mask for 45 s (overlay windows skipped by the hit test: 23861)
+[qa 03:39:49] PASS {"kind": "ingredient-focus", "law": "storm-bottle", "level": null, "focus": [2], "mode": "packaged", "t": 267613}  [ingredient-focus] Drag is the ingredient being edited
+[qa 03:39:51] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] Adjust shows the bottle's own handles and the drag mask's
+[qa 03:39:59] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "expression.terms[2].region.halfExtents.1", "samples": 25, "rejected": 0, "pointer": [542, 308, 542, 386.46875], "firstRevision": 82, "lastRevision": 106, "field": {"enabled": true, "position": [0.0  [gesture] one drag of the mask's handle lowered its top: only that mask changed
+[qa 03:40:08] PASS tick 14391: Pull 6.613 m/s²; Swirl 4.664 m/s²; Drag 0.000 m/s²  [m5q ingredients] the drag's part now carries the smaller mask's weight, recomputed here
+[qa 03:40:08] captured mask-01-adjusted.png
+[qa 03:40:08] waiting for m5-mask to finish
+[qa 03:40:32] recording m5-mask.mp4 written
+[qa 03:40:32] segment: give the swirl a triangle gain and read it at named ticks
+[qa 03:40:34] recording m5-triangle for 90 s (overlay windows skipped by the hit test: 23862)
+[qa 03:40:41] PASS {"kind": "control", "law": "storm-bottle", "ingredient": "Add gain", "path": [1], "revision": 107, "field": {"id": "storm-bottle", "enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.3442318552766619, 0.9388846733293644], "region": {"kind": "cylinderY", "radius": 2.35564  [control] Swirl has a gain of 1, which changes nothing yet
+[qa 03:40:43] PASS {"kind": "control", "law": "storm-bottle", "ingredient": "Change gain", "path": [1], "revision": 108, "field": {"id": "storm-bottle", "enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.3442318552766619, 0.9388846733293644], "region": {"kind": "cylinderY", "radius": 2.35  [control] the swirl's gain is a triangle: 0 → 2 → 0 over 240 ticks from phase 0
+[qa 03:40:44] PASS {"kind": "sim-control", "action": "reset", "tick": 0, "run": 2, "laws": [{"id": "storm-bottle", "enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.3442318552766619, 0.9388846733293644], "region": {"kind": "cylinderY", "radius": 2.3556448740328353, "halfHeight": 1.8}, "e  [sim-control] Reset rebuilt the bottle's scene at tick 0, paused
+[qa 03:40:53] PASS Swirl gain 1.9833333333333334 at tick 119  [m5q triangle] the step from tick 119: g = 2·(1 − |2·119/240 − 1|), from the tick alone
+[qa 03:40:55] PASS Swirl gain 2.0 at tick 120  [m5q triangle] the step from tick 120, the peak: g = 2
+[qa 03:40:55] captured triangle-01-peak.png
+[qa 03:40:59] PASS held at tick 121  [m5q same-retained] paused at tick 121 for 2 s: the same step and the same preview
+[qa 03:41:07] PASS Swirl gain 0.0 at tick 240  [m5q triangle] the step from tick 240, a trough: g = 0, the swirl's part is zero
+[qa 03:41:07] captured triangle-02-trough.png
+[qa 03:41:17] PASS tick 908: Pull 10.825 m/s²; Swirl 4.893 m/s²; Drag 0.000 m/s²  [m5q ingredients] with the triangle running every part still adds to the law's share
+[qa 03:41:18] PASS Swirl gain 0.8666666666666667 at tick 908  [m5q triangle] and the swirl's gain is the formula's at that step's tick
+[qa 03:41:18] waiting for m5-triangle to finish
+[qa 03:42:08] recording m5-triangle.mp4 written
+[qa 03:42:08] segment: save, quit, relaunch, open: every authored value survives
+[qa 03:42:13] PASS {"kind": "document", "action": "save-as", "outcome": "saved", "file": "storm-qa.lawsmith.json", "generation": 2, "revision": 108, "laterEdits": 0, "recoveryRetired": true, "bytes": 3923, "captureMs": 0, "writeMs": 9.32, "saveMs": 12, "mode": "packaged", "t": 411495}  [document] Save As wrote storm-qa and bound it
+[qa 03:42:13] PASS {"kind": "digest", "reason": "saveAs", "generation": 2, "revision": 108, "semanticSha256": "0a96763b35e4008386c0b6d7c1cb7e5f0f46bcb5fca56b5be474262758e32d99", "mode": "packaged", "t": 411495}  [digest] the saved scene's semantic digest is recorded
+[qa 03:42:20] launched pid 20875, window at 0,21, log compose5b.log
+[qa 03:42:29] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "storm-qa.lawsmith.json", "generation": 2, "title": "Storm Bottle", "bytes": 3923, "readMs": 0.073, "parseMs": 1, "candidateMs": 2, "commitMs": 2, "openMs": 5.073, "mode": "packaged", "t": 11958}  [document] storm-qa opened transactionally
+[qa 03:42:29] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 1, "laws": [{"id": "storm-bottle", "enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.3442318552766619, 0.9388846733293644], "region": {"kind": "cylinderY", "radius": 2.3556448740328353, "half  [sim-control] it opened paused at tick 0
+[qa 03:42:30] PASS  [layout] the reopened bottle has the saved expression exactly: ingredients, mask, triangle
+[qa 03:42:30] PASS {"kind": "digest", "reason": "load", "generation": 2, "revision": 0, "semanticSha256": "0a96763b35e4008386c0b6d7c1cb7e5f0f46bcb5fca56b5be474262758e32d99", "mode": "packaged", "t": 11959}  [digest] the reopened scene's semantic digest is the saved one
+[qa 03:42:31] captured reopen-01.png
+[qa 03:42:31] segment: the runtime's own fixtures on the reopened compound scene
+[qa 03:42:50] PASS {"kind": "fixtures", "elapsedMs": 2396, "root": [{"id": "storm-bottle", "enabled": true, "position": [0.07398784064341601, 1.6, 0], "rotation": [0, 0, 0.3442318552766619, 0.9388846733293644], "region": {"kind": "cylinderY", "radius": 2.3556448740328353, "halfHeight": 1.8}, "edgeFade": 0.25, "express  [fixtures] reset, cadence, invariance and observed reset agree exactly; every step's parts reconcile
+[qa 03:43:05] run digests at ticks 600 and 1200: (600, 'fd34539c41918be9e3d1affa579b7a132e01fb1b406ca7e2906105bb88d6a4d0', '5b7712530bd405025894054e42a2342159f2de0945b8d8979873cf184d1d8d52') (1200, 'c40e78149496899ced15f93842220715a56462d8624fbe00368d323519f2a1b7', '8d3c7565472845e0b7ca8624a0b5fa14415b431acc0cf5232ff7e21a51e9c81b')
+[qa 03:43:08] m5-compose complete

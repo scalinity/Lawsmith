@@ -416,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-08 against branch <code>m5</code>: M5’s review addressed (code <code>2a06bad</code>), its native rerun pending; <code>main</code> holds accepted M4 (code <code>c25b667</code>)</span>
+    <span>Realigned 2026-10-08 against branch <code>m5</code>: M5 reviewed and requalified natively (code <code>2a06bad</code>), awaiting acceptance; <code>main</code> holds accepted M4 (code <code>c25b667</code>)</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Rerun M5’s native scenarios on the reviewed build.</h1>
-    <p class="lede">M5 is implemented on branch <code>m5</code> and is not merged. A law can now hold a few primitive ingredients under sum, gain and mask and still move, turn and resize as one law. By your decision, two read-only reviewers replaced Sol’s review. They found no critical issue, four warnings and ten suggestions, and every one is fixed (application code <code>2a06bad</code>, 508 tests passing). Those fixes came after the native runs on <code>82f1e15</code>, so the native parts of AC4–AC8 are pending until <code>m5-compose</code>, <code>m5-perf</code>, <code>m5-legible</code> and the M1–M4 chain rerun on the rebuilt app. Then come your acceptance and the close-out merge. M6A waits for that merge.</p>
+    <h1>Accept M5, then merge it.</h1>
+    <p class="lede">M5 is implemented on branch <code>m5</code> and is not merged. A law can now hold a few primitive ingredients under sum, gain and mask and still move, turn and resize as one law. By your decision, two read-only reviewers replaced Sol’s review. They found no critical issue, four warnings and ten suggestions, and every one is fixed (application code <code>2a06bad</code>, 508 tests passing). Every native scenario then reran on the rebuilt app and passed at its first attempt: the Storm Bottle holds 54 bodies, lets 6 through without its drag and holds 55 again on undo; P5 keeps step p95 1 ms and edit p95 17 ms. Your acceptance and the close-out merge are next. M6A waits for that merge.</p>
     <cite><code>docs/evidence/M5.md</code> Status, Review, Acceptance criteria, Performance, Findings</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -569,7 +569,7 @@
       </article>
 
       <!-- REALIGN M5 -->
-      <article class="unit" id="m5" data-gate="M5" data-state="owner-check" data-tier="near" data-stop="Creative core">
+      <article class="unit" id="m5" data-gate="M5" data-state="implemented" data-tier="near" data-stop="Creative core">
         <div class="gate">M5</div>
         <div>
           <div class="unit-head">
@@ -579,13 +579,13 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m5</code>. By your decision, two read-only Opus 5.5 reviewers replaced Sol’s review of <code>2f83c90</code>: one hunting bugs, one auditing architecture, performance, security and data integrity. They found no critical issue, four warnings and ten suggestions, all fixed through <code>/address</code>.</dd>
-              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>2a06bad</code> after the review, 508 tests passing, packaged from <code>565571b</code>; the native parts of AC4–AC8 pending on that build.</dd>
-              <dt>Should run</dt><dd class="run">Every native scenario on the rebuilt app in a hands-off window: <code>m5-compose</code>, <code>m5-perf</code>, <code>m5-legible</code>, then the M1–M4 chain. Then your acceptance and the close-out merge. Nothing else touches <code>m5</code> meanwhile. Second approved stopping point: creative core.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>2a06bad</code> after the review, 508 tests passing; all eight criteria passing natively on its packaged build (<code>565571b</code>).</dd>
+              <dt>Should run</dt><dd class="run">Your acceptance, then the close-out merge of <code>m5</code> into <code>main</code>. A follow-up review of the remediation is yours to ask for, as Sol gave M3 and M4. Nothing else touches <code>m5</code> meanwhile. Second approved stopping point: creative core.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M4, accepted on 2026-10-07. Contracts C1, C2, C4, C8.</dd>
-              <dt>Destroys</dt><dd>Nothing beyond publishing. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for P5, P0, P1, P2 and the 1280×800 check and restored it, and restored the panel preferences it changed.</dd>
-              <dt>Your part</dt><dd>Agree a hands-off window for the native rerun, then accept. Holding the bottle on a real trackpad and judging whether it feels like one law is an optional check, not a gate (<code>M5.md</code> Owner checks).</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. Native QA, in both of its windows, wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for P5, P0, P1, P2 and the 1280×800 check and restored it, and restored the panel preferences it changed.</dd>
+              <dt>Your part</dt><dd>Accept M5. The native rerun ran in the hands-off window, so nothing is left to measure. Holding the bottle on a real trackpad and judging whether it feels like one law is an optional check, not a gate (<code>M5.md</code> Owner checks).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>

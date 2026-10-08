@@ -1,14 +1,14 @@
-[qa 23:38:14] segment: 1280×800 with the Storm Bottle's ingredient editor open, under More Space
-[qa 23:38:14] display → 1728×1117: set 1728x1117@120
-[qa 23:38:21] launched pid 33364, window at 224,104, log legible5.log
-[qa 23:38:24] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] the content viewport is 1280×800 CSS
-[qa 23:38:24] one-leaf law (the recipe): the ingredient rows add 60 px below its fade field; panel scroll height 1210 of 596 visible
-[qa 23:38:25] captured m5-1280x800-one-leaf.png
-[qa 23:38:32] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "storm-bottle.lawsmith.json", "generation": 2, "title": "Storm Bottle", "bytes": 3493, "readMs": 0.107, "parseMs": 1, "candidateMs": 1, "commitMs": 2, "openMs": 4.107, "mode": "packaged", "t": 13854}  [document] Storm Bottle opened
-[qa 23:39:01] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] the bottle, its support and the explained body are clear of the panels, tools, transport and switches; nothing scrolls sideways; the opened editor's top is in view; the transport and history are in view and Save is in the panel's width
-[qa 23:39:01] captured m5-1280x800-storm.png
-[qa 23:39:01] rects: {'panel': [12, 52, 284, 598], 'explain': [956, 52, 312, 624], 'tools': [704, 5, 564, 30], 'transport': [830.2, 746, 437.8, 42], 'overlays': [853.8, 692, 414.2, 44]} support [376, 229, 680, 572] body [576, 436] detail [25, 144.3, 258, 505]
-[qa 23:39:05] display → 1168×755: set 1168x755@120
-[qa 23:39:08] display restored to 1168x755@120
-[qa 23:39:09] m5-legible complete
-[qa 23:39:09] display restored to 1168x755@120
+[qa 03:47:29] segment: 1280×800 with the Storm Bottle's ingredient editor open, under More Space
+[qa 03:47:45] display → 1728×1117: set 1728x1117@120
+[qa 03:47:52] launched pid 79378, window at 224,104, log legible5.log
+[qa 03:47:55] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] the content viewport is 1280×800 CSS
+[qa 03:47:55] one-leaf law (the recipe): the ingredient rows add 60 px below its fade field; panel scroll height 1210 of 596 visible
+[qa 03:47:55] captured m5-1280x800-one-leaf.png
+[qa 03:48:03] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "storm-bottle.lawsmith.json", "generation": 2, "title": "Storm Bottle", "bytes": 3493, "readMs": 0.094, "parseMs": 1, "candidateMs": 1, "commitMs": 2, "openMs": 4.094, "mode": "packaged", "t": 13307}  [document] Storm Bottle opened
+[qa 03:48:31] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] the bottle, its support and the explained body are clear of the panels, tools, transport and switches; nothing scrolls sideways; the opened editor's top is in view; the transport and history are in view and Save is in the panel's width
+[qa 03:48:31] captured m5-1280x800-storm.png
+[qa 03:48:31] rects: {'panel': [12, 52, 284, 598], 'explain': [956, 52, 312, 624], 'tools': [704, 5, 564, 30], 'transport': [830.2, 746, 437.8, 42], 'overlays': [853.8, 692, 414.2, 44]} support [382, 229, 686, 574] body [588, 427] detail [25, 144.3, 258, 505]
+[qa 03:48:35] display → 1168×755: set 1168x755@120
+[qa 03:48:38] display restored to 1168x755@120
+[qa 03:48:38] m5-legible complete
+[qa 03:48:38] display restored to 1168x755@120
