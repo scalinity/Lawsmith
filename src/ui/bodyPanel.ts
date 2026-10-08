@@ -3,7 +3,7 @@
 // the state after the step. Quantities stay in separate rows with their own glyphs and units. Text is
 // written as text, never markup (SPEC §15.2).
 import type { Vec3 } from '../domain/scene';
-import type { TransitionObservation } from '../simulation/observation';
+import { ingredientBreakdown, type IngredientShare, type TransitionObservation } from '../simulation/observation';
 
 export type ExplainViewMode = 'applied' | 'preview';
 
@@ -56,6 +56,13 @@ function fill(row: HTMLElement, mark: HTMLElement, name: string, v: Vec3 | null,
   const cells: HTMLElement[] = [mark, span(name), span(magnitude ? num(Math.hypot(...v)) : ''), ...v.map((c) => span(num(c)))];
   if (sub) cells.push(span(sub, 'sub'));
   row.replaceChildren(...cells);
+}
+
+/** What scaled an ingredient's part here: its gains and masks at the sampled center and tick, then its drag. */
+function factorText(share: IngredientShare): string | undefined {
+  const parts = share.factors.map((f) => `${f.kind} ${num(f.value, 2)}`);
+  if (share.drag > 0) parts.push(`drag ${num(share.drag)} s⁻¹`);
+  return parts.length ? parts.join(' · ') : undefined;
 }
 
 export function createBodyPanel() {
@@ -113,16 +120,44 @@ export function createBodyPanel() {
     // Laws whose sample at the center is exactly zero did not reach the body; they are named, not listed.
     const rows: HTMLElement[] = [];
     const idle: string[] = [];
-    for (const c of o.contributions) {
-      if (c.drag === 0 && c.drive[0] === 0 && c.drive[1] === 0 && c.drive[2] === 0) {
+    const row = (className = 'readout-row') => {
+      const r = document.createElement('div');
+      r.className = className;
+      r.setAttribute('role', 'row');
+      return r;
+    };
+    const quiet = (s: { drive: Vec3; drag: number }) => s.drag === 0 && s.drive[0] === 0 && s.drive[1] === 0 && s.drive[2] === 0;
+    for (const [l, c] of o.contributions.entries()) {
+      if (quiet(c)) {
         idle.push(state.lawLabel(c.id));
         continue;
       }
-      const row = document.createElement('div');
-      row.className = 'readout-row';
-      row.setAttribute('role', 'row');
-      fill(row, glyph('share', state.lawColor(c.id)), state.lawLabel(c.id), c.applied, true, c.drag > 0 ? `drag ${num(c.drag)} s⁻¹ against the sampled velocity` : undefined);
-      rows.push(row);
+      const lawRow = row();
+      fill(lawRow, glyph('share', state.lawColor(c.id)), state.lawLabel(c.id), c.applied, true, c.drag > 0 ? `drag ${num(c.drag)} s⁻¹ against the sampled velocity` : undefined);
+      rows.push(lawRow);
+      // A compound law's share, split by ingredient under the same β and λ, from this step's record (M5).
+      const split = ingredientBreakdown(o, l);
+      if (!split) continue;
+      const still: string[] = [];
+      for (const share of split.ingredients) {
+        if (quiet(share)) {
+          still.push(share.label);
+          continue;
+        }
+        const r = row('readout-row ingredient');
+        fill(r, glyph('none'), share.label, share.applied, true, factorText(share));
+        rows.push(r);
+      }
+      if (still.length) {
+        const note = row('readout-row ingredient');
+        note.append(glyph('none'), span(`${still.join(', ')}: not acting here`, 'sub'));
+        rows.push(note);
+      }
+      if (!split.reconciled) {
+        const warn = row('readout-row ingredient');
+        warn.append(glyph('none'), span('These ingredient parts do not add up to the law’s share; the law’s share above is what was applied.', 'sub'));
+        rows.push(warn);
+      }
     }
     const gravity = document.createElement('div');
     gravity.className = 'readout-row';

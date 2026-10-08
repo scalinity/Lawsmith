@@ -24,7 +24,7 @@
         <div class="segmented" role="group" aria-label="Transform mode">
           <button type="button" data-mode="translate" aria-pressed="true">Move <kbd>T</kbd></button>
           <button type="button" data-mode="rotate" aria-pressed="false">Rotate <kbd>R</kbd></button>
-          <button type="button" data-mode="scale" aria-pressed="false" title="Handles for extent, fade, strength and core radius">Adjust <kbd>S</kbd></button>
+          <button type="button" data-mode="scale" aria-pressed="false" title="Handles for extent, fade, strength and core radius; a selected ingredient adds its own and its masks’">Adjust <kbd>S</kbd></button>
         </div>
         <button type="button" id="frame-view">Frame <kbd>F</kbd></button>
         <button type="button" id="reset-view">Reset view</button>
@@ -102,6 +102,20 @@
         <div class="param-fields">
           <label>Fade <input id="law-fade" type="number" step="0.05" min="0" max="1" /></label>
         </div>
+        <!-- M5: the law's ingredients, a short list inside the one law, not a graph. -->
+        <div class="ingredients" id="ingredients" role="group" aria-labelledby="ingredients-title" hidden>
+          <div class="laws-head">
+            <h3 id="ingredients-title">Ingredients</h3>
+            <div class="law-shelf" role="group" aria-label="Add an ingredient to this law" id="ingredient-shelf"></div>
+          </div>
+          <div class="crumbs" id="ingredient-crumbs" hidden>
+            <button type="button" id="ingredient-up">Back</button>
+            <span id="ingredient-level"></span>
+          </div>
+          <ol id="ingredient-list"></ol>
+          <p class="note" id="ingredients-note"></p>
+          <div id="ingredient-detail" hidden></div>
+        </div>
         <p id="details-error" role="alert" hidden></p>
         <p class="note" id="law-sampling"></p>
       </section>
@@ -160,7 +174,7 @@
         <div class="readout" role="table" aria-label="After the step">
           <div class="readout-row" role="row" id="explain-after"></div>
         </div>
-        <p class="note">Each law’s share uses this step’s β and λ. It is not what removing that law would leave: removing a drag also changes β, λ and every later step.</p>
+        <p class="note">Each law’s share, and each ingredient’s part of it, uses this step’s β and λ. It is not what removing it would leave: removing a drag also changes β, λ and every later step.</p>
         <p class="scale-key"><span class="velocity-glyph" aria-hidden="true"></span>1 m = 5 m/s <span class="acceleration-glyph" aria-hidden="true"></span>1 m = 20 m/s² <span class="cap-glyph" aria-hidden="true"></span>drawn arrow capped at 2 m; numbers never are</p>
       </div>
     </aside>

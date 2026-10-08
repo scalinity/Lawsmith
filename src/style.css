@@ -512,7 +512,8 @@ kbd {
   margin-top: 6px;
 }
 
-.param-fields:empty {
+.param-fields:empty,
+.param-fields[hidden] {
   display: none;
 }
 
@@ -535,6 +536,159 @@ kbd {
 
 #law-sampling[data-skips="true"] {
   color: var(--lavender);
+}
+
+/* M5 ingredients: one law's short list of primitives, each with its own gains and masks. */
+.ingredients {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+}
+
+.ingredients[hidden],
+#ingredient-detail[hidden],
+.crumbs[hidden] {
+  display: none;
+}
+
+#panel h3 {
+  margin: 0;
+  font: 600 12px/1.4 var(--sans);
+  color: var(--text-secondary);
+}
+
+#ingredient-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#ingredient-list:empty {
+  display: none;
+}
+
+.ingredient-row {
+  display: flex;
+  gap: 4px;
+}
+
+.ingredient-select {
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  min-height: 32px;
+  padding: 3px 8px;
+  display: grid;
+  justify-items: start;
+  text-align: left;
+  border-left: 3px solid var(--law-color, var(--teal));
+}
+
+.ingredient-select[aria-pressed="true"] {
+  background: var(--raised);
+  border-color: var(--divider);
+  border-left-color: var(--law-color, var(--teal));
+}
+
+.ingredient-remove {
+  height: auto;
+  min-height: 32px;
+  padding: 0 8px;
+  color: var(--text-secondary);
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.crumbs button {
+  height: 24px;
+  padding: 0 8px;
+}
+
+.ingredients .note {
+  margin-top: 6px;
+}
+
+#ingredient-detail {
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: rgb(20 19 17 / 0.55);
+}
+
+#ingredient-detail .kind {
+  margin-top: 0;
+}
+
+.modifier {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hairline);
+}
+
+.modifier-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.modifier-head > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.modifier-head button {
+  height: 24px;
+  padding: 0 7px;
+}
+
+.modifier .triple {
+  grid-template-columns: 62px repeat(3, 1fr);
+}
+
+.modifier .note {
+  margin: 0 0 6px;
+}
+
+.modifier-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.modifier-actions button,
+#ingredient-detail > button {
+  height: 26px;
+  padding: 0 9px;
+}
+
+.live {
+  margin: 6px 0 0;
+  font: 11px/1.4 var(--mono);
+  color: var(--lavender);
+}
+
+/* A compound law's row in the body readout is followed by its ingredients' parts of it. */
+.readout-row.ingredient > span:nth-child(2) {
+  padding-left: 10px;
+  color: var(--text-secondary);
+}
+
+.readout-row.ingredient {
+  color: var(--text-tertiary);
 }
 
 /* 0.6 m of arrow = 12 m/s²; the glyph is only a key, not to scale. */

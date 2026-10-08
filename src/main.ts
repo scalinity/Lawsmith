@@ -3,7 +3,7 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Euler, Quaternion, Vector3, type Mesh, type Object3D } from 'three/webgpu';
 import { DocumentController } from './domain/document';
-import { expressionSummary, isCompound } from './domain/ingredients';
+import { expressionSummary, isCompound, type Edited } from './domain/ingredients';
 import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type Primitive, type SceneDocument, type Vec3 } from './domain/scene';
 import { walk } from './fields/expression';
 import { FIELD_KERNEL_VERSION, fadeBand } from './fields/kernel';
@@ -35,6 +35,8 @@ import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, init
 import type { TransitionObservation } from './simulation/observation';
 import { FixedStepScheduler } from './simulation/scheduler';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
+import { createIngredientPanel } from './ui/ingredientPanel';
+import { ingredientBreakdown } from './simulation/observation';
 
 const mode = import.meta.env.DEV ? 'dev' : 'packaged';
 // Dev-only fault injection for the controlled-failure check; compiled out of production builds.
@@ -228,6 +230,8 @@ async function start() {
       },
       haltCamera: () => viewport.haltInertia(),
       editable: () => !frozen,
+      // The ingredient being edited brings its own handles (M5); declared below, read only when handles show.
+      focus: () => ingredientPanel.focus,
       log: report,
     },
     initial.semantic.fields[0]?.id ?? null,
@@ -790,6 +794,7 @@ async function start() {
 
     // Selected-law details: refreshed from the applied value, never over a field being typed in.
     details.hidden = !law;
+    ingredientPanel.render(law, host.tick);
     if (!law) return;
     const p = authoring.presentationOf(law.id);
     const detailSignature = JSON.stringify([law, p]);
@@ -867,6 +872,42 @@ async function start() {
     report('control', { law: law.id, precise: label, revision: result.value.revision, field: lawSummary(result.value.field) });
     edited();
   };
+
+  /**
+   * One ingredient edit of the selected law (M5): the change is computed from the settled authored
+   * value, validated with the whole law (bounds, node/depth limits, the scene's leaf budget) and
+   * applied as one put and one undo entry, exactly like a precise value typed in the details.
+   */
+  const editExpression = (label: string, change: (law: FieldDefinition) => Edited, input?: HTMLInputElement): Edited | null => {
+    const law = selectedLaw();
+    if (!law || blocked()) return null;
+    settleNow();
+    const current = authoring.lawState(law.id)?.field;
+    if (!current) return null;
+    const next = change(current);
+    const refuse = (reason: string) => {
+      showDetailsError(`${reason[0]!.toUpperCase()}${reason.slice(1)}. The last valid value is kept.`, input);
+      report('control', { law: law.id, ingredient: label, rejected: reason });
+      detailsSignature = '';
+      renderPanel();
+      return null;
+    };
+    if (!next.ok) return refuse(next.reason);
+    const result = authoring.editField(law.id, label, (f) => ({ ...f, expression: next.expression }));
+    if (!result.ok) return refuse(result.path ? `${result.path}: ${result.reason}` : result.reason);
+    showDetailsError(null);
+    editLatency.accept(result.value.revision, performance.now());
+    awaitApplied(result.value.revision);
+    settleNow();
+    report('control', { law: law.id, ingredient: label, path: next.path, revision: result.value.revision, field: lawSummary(result.value.field) });
+    edited();
+    return next;
+  };
+
+  const ingredientPanel = createIngredientPanel({
+    edit: editExpression,
+    onFocus: () => report('control', { ingredientFocus: ingredientPanel.state() }),
+  });
 
   const withAxis = (v: Vec3, axis: number, value: number): Vec3 => v.map((c, i) => (i === axis ? value : c)) as unknown as Vec3;
   triples.get('position')!.forEach((input, axis) =>
@@ -1145,6 +1186,22 @@ async function start() {
           return { name: mesh.name, points: local.map((p) => toScreen(p.applyMatrix4(mesh.matrixWorld))) };
         });
     }
+    // M5: the selected law's ingredient list and the focused ingredient's controls, by role, path and label.
+    const nodeOf = (element: Element) => element.closest<HTMLElement>('[data-node]')?.dataset.node ?? null;
+    const ingredients = {
+      ...ingredientPanel.state(),
+      shelf: Object.fromEntries([...document.querySelectorAll<HTMLButtonElement>('#ingredient-shelf button')].map((b) => [b.dataset.add, box(b)])),
+      rows: [...document.querySelectorAll('#ingredient-list .ingredient-row')].map((row) => {
+        const select = row.querySelector<HTMLButtonElement>('.ingredient-select')!;
+        return { path: select.dataset.path, label: select.querySelector('.law-name')!.textContent, meta: select.querySelector('.law-meta')!.textContent, pressed: select.getAttribute('aria-pressed') === 'true', select: box(select), remove: box(row.querySelector('.ingredient-remove')) };
+      }),
+      buttons: [...document.querySelectorAll<HTMLButtonElement>('#ingredient-detail button')].map((b) => ({ action: b.dataset.action, value: b.dataset.value ?? null, checked: b.getAttribute('aria-checked'), node: nodeOf(b), text: b.textContent, box: box(b) })),
+      fields: [...document.querySelectorAll<HTMLInputElement>('#ingredient-detail input')].map((i) => ({ label: i.getAttribute('aria-label'), key: i.dataset.key, node: nodeOf(i), value: i.value, box: box(i) })),
+      live: [...document.querySelectorAll('#ingredient-detail [data-live]')].map((p) => p.textContent),
+      up: box($('ingredient-up')),
+      note: $('ingredients-note').textContent,
+      box: box($('ingredients')),
+    };
     report('layout', {
       viewport: [window.innerWidth, window.innerHeight],
       devicePixelRatio: window.devicePixelRatio,
@@ -1152,6 +1209,7 @@ async function start() {
       laws,
       inputs,
       swatches,
+      ingredients,
       selected: law?.id ?? null,
       arrows: world.arrowCount(),
       transformMode: interaction.mode,
@@ -1436,13 +1494,19 @@ async function start() {
       return [trails.ticks[at]!, trails.positions[3 * at]!, trails.positions[3 * at + 1]!, trails.positions[3 * at + 2]!];
     });
     const i = explained === null ? -1 : host.ids.indexOf(explained);
+    const shownRetained = retained && retained.bodyId === explained ? retained : null;
+    const preview = scheduler.playing ? null : host.previewTransition();
+    // Each compound law's ingredient shares, reconstructed from the transition's own record (M5).
+    const split = (o: TransitionObservation | null) => (o ? o.contributions.map((_, l) => ingredientBreakdown(o, l)).filter((b) => b !== null) : null);
     report('explanation', {
       explained,
       tick: host.tick,
       playing: scheduler.playing,
       view: explainMode,
-      retained: retained && retained.bodyId === explained ? retained : null,
-      preview: scheduler.playing ? null : host.previewTransition(),
+      retained: shownRetained,
+      retainedIngredients: split(shownRetained),
+      preview,
+      previewIngredients: split(preview),
       now: i < 0 ? null : [host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!],
       trail: trail?.slice(-8) ?? null,
       trailSamples: trail?.length ?? 0,
@@ -1518,7 +1582,7 @@ async function start() {
           const shown = interaction.handles();
           return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;
         })(),
-        focus: null,
+        focus: ingredientPanel.focus,
         tick: host.tick,
         camera: viewport.camera.position,
       },
@@ -1579,6 +1643,7 @@ async function start() {
       if (host.tick !== clockTick) {
         clockTick = host.tick;
         clock.textContent = `tick ${host.tick} · ${(host.tick * STEP_SECONDS).toFixed(3)} s`;
+        ingredientPanel.refreshLive(host.tick);
       }
       // The panel follows applied changes without a per-frame rebuild, and not during a drag.
       if (authoring.appliedRevision !== shownRevision && !interaction.gesture) {

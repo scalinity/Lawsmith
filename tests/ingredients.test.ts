@@ -61,7 +61,7 @@ describe('the ingredient view of an expression', () => {
     expect(one.expression).toEqual({ kind: 'sum', terms: [pull, { kind: 'vortexY', strength: 8, coreRadius: 0.25 }] });
     expect(one.path).toEqual([1]);
     const two = ok(addIngredient(one.expression, null, 'linearDrag'));
-    expect((two.expression as { terms: FieldExpression[] }).terms.map((t) => t.kind)).toEqual(['softRadial', 'vortexY', 'linearDrag']);
+    expect((two.expression as unknown as { terms: FieldExpression[] }).terms.map((t) => t.kind)).toEqual(['softRadial', 'vortexY', 'linearDrag']);
     expect(two.path).toEqual([2]);
   });
 

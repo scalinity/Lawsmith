@@ -6,6 +6,7 @@ import { Matrix4, Quaternion, Raycaster, Vector2, Vector3, type Object3D, type P
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { TransformControls } from 'three/addons/controls/TransformControls.js';
 import type { FieldDefinition, Validated, Vec3 } from '../domain/scene';
+import type { ExprPath } from '../fields/expression';
 import { regionDescriptor } from '../fields/registry';
 import { handlePoint, lawHandles, railParameter, worldPoint, worldRail, type LawHandle } from './handles';
 
@@ -40,6 +41,8 @@ export interface LawInteractionOptions {
   haltCamera(): void;
   /** False while edits are frozen (the close guard, launch recovery). */
   editable(): boolean;
+  /** The ingredient being edited in a compound law (M5), whose own handles show beside the law's. */
+  focus(): ExprPath | null;
   log(kind: string, data: Record<string, unknown>): void;
 }
 
@@ -95,6 +98,8 @@ export class LawInteraction {
   mode: TransformMode = 'translate';
   /** The handle under the pointer in handle mode, for the view's highlight. */
   hoverHandle: string | null = null;
+  /** The ingredient focus when the current gesture began. */
+  private gestureFocus: ExprPath | null = null;
   /** True between OrbitControls `start` and `end` for a pointer drag (wheel zoom is not a gesture). */
   private cameraActive = false;
   /** A primary press is down; seen in the capture phase, before either control handles it. */
@@ -232,7 +237,9 @@ export class LawInteraction {
   handles(): { field: FieldDefinition; handles: LawHandle[] } | null {
     if (this.mode !== 'scale' || this.selectedId === null) return null;
     const field = this.gesture?.latest ?? this.gesture?.start ?? this.o.appliedField(this.selectedId);
-    return field ? { field, handles: lawHandles(field) } : null;
+    // A gesture keeps the handle set it began with, so a drag never loses its handle mid-way.
+    const focus = this.gesture ? this.gestureFocus : this.o.focus();
+    return field ? { field, handles: lawHandles(field, focus) } : null;
   }
 
   /** Where each shown handle appears on screen (CSS px), for the layout readback. */
@@ -317,6 +324,7 @@ export class LawInteraction {
     this.o.haltCamera();
     canvas.setPointerCapture(event.pointerId);
     this.pointerId = event.pointerId;
+    this.gestureFocus = this.o.focus();
     const first = this.railAt(start, handle, event.clientX, event.clientY);
     this.gesture = { mode: 'scale', label: handle.label, handle, grab: first === null ? 0 : handle.t - first, pointer: [event.clientX, event.clientY, event.clientX, event.clientY], start, latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
     canvas.style.cursor = 'grabbing';
