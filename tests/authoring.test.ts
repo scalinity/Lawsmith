@@ -187,15 +187,16 @@ describe('one handle drag is one author-undo entry (T05)', () => {
     controller.settle();
     const before = controller.lawState(id)!;
     const h = handle(before.field);
+    const transactionId = controller.newTransaction();
     let latest = before.field;
     for (const t of ts) {
-      const result = controller.putField(h.at(t));
+      const result = controller.putField(h.at(t), transactionId);
       if (!result.ok) throw new Error(result.reason);
       latest = result.value.field;
       host.step();
       controller.sync();
     }
-    controller.record({ label: h.label, id, before, after: { field: latest, presentation: before.presentation } });
+    controller.record({ label: h.label, id, transactionId, before, after: { field: latest, presentation: before.presentation } });
     return { before: before.field, latest };
   }
 

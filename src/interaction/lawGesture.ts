@@ -30,8 +30,10 @@ export interface LawInteractionOptions {
   appliedField(id: string): FieldDefinition | undefined;
   /** The laws that can be picked in the viewport: applied and visible. */
   pickable(): readonly FieldDefinition[];
-  /** Submits a complete law value through the document controller. */
-  submit(candidate: FieldDefinition): Validated<{ revision: number; field: FieldDefinition }>;
+  /** Submits a complete law value through the document controller, as part of one gesture's transaction. */
+  submit(candidate: FieldDefinition, transactionId: string): Validated<{ revision: number; field: FieldDefinition }>;
+  /** A new transaction identity: every command of one gesture carries it (SPEC §10.3). */
+  transaction(): string;
   /** A gesture ended: a commit carries its accepted endpoints (one undo entry); a cancel restored `start`. */
   onGestureEnd(end: GestureEnd): void;
   onSelectionChange(id: string | null): void;
@@ -58,6 +60,8 @@ export interface GestureEnd {
   readonly cancelled: boolean;
   /** The final submitted revision (the restore, for a cancel). */
   readonly revision: number | null;
+  /** The transaction every command of this gesture carried. */
+  readonly transactionId: string;
 }
 
 interface Gesture {
@@ -70,6 +74,8 @@ interface Gesture {
   pointer: number[] | null;
   /** The applied value when the gesture began; a cancel restores it. */
   readonly start: FieldDefinition;
+  /** One user action: every sample and a cancel's restore carry it. */
+  readonly transactionId: string;
   latest: FieldDefinition | null;
   samples: number;
   rejected: number;
@@ -207,10 +213,15 @@ export class LawInteraction {
     this.o.log('selection', { selected: id !== null, field: id });
   }
 
-  /** Ends an active gesture as a release would, at its last accepted value (file workflows, guards). */
-  release(reason: string): boolean {
+  /**
+   * Ends an active gesture as a release would, at its last accepted value (file workflows, guards).
+   * `settled`, when given, replaces that value: a recording closed at its limit ends the gesture at
+   * the last value the host applied, its unapplied samples discarded (SPEC §13.3).
+   */
+  release(reason: string, settled?: FieldDefinition | null): boolean {
     if (!this.gesture) return false;
     this.gesture.endReason = reason;
+    if (settled !== undefined) this.gesture.latest = settled;
     this.finishDrag();
     return true;
   }
@@ -312,7 +323,7 @@ export class LawInteraction {
     const start = this.selectedId === null ? undefined : this.o.appliedField(this.selectedId);
     if (!start) return;
     const mode = this.o.gizmo.mode as TransformMode;
-    this.gesture = { mode, label: TRANSFORM_LABEL[mode], handle: null, grab: 0, pointer: null, start, latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
+    this.gesture = { mode, label: TRANSFORM_LABEL[mode], handle: null, grab: 0, pointer: null, start, transactionId: this.o.transaction(), latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
     this.o.log('gesture', { phase: 'begin', transformMode: mode, field: summary(start), camera: this.cameraPosition() });
   }
 
@@ -326,7 +337,7 @@ export class LawInteraction {
     this.pointerId = event.pointerId;
     this.gestureFocus = this.o.focus();
     const first = this.railAt(start, handle, event.clientX, event.clientY);
-    this.gesture = { mode: 'scale', label: handle.label, handle, grab: first === null ? 0 : handle.t - first, pointer: [event.clientX, event.clientY, event.clientX, event.clientY], start, latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
+    this.gesture = { mode: 'scale', label: handle.label, handle, grab: first === null ? 0 : handle.t - first, pointer: [event.clientX, event.clientY, event.clientX, event.clientY], start, transactionId: this.o.transaction(), latest: null, samples: 0, rejected: 0, firstRevision: null, lastRevision: null, cancelReason: null, endReason: 'pointerup' };
     canvas.style.cursor = 'grabbing';
     this.refreshDragRegion();
     this.o.log('gesture', { phase: 'begin', transformMode: 'scale', handle: handle.name, role: handle.role, field: summary(start), camera: this.cameraPosition() });
@@ -357,7 +368,7 @@ export class LawInteraction {
   }
 
   private accept(g: Gesture, candidate: FieldDefinition): void {
-    const result = this.o.submit(candidate);
+    const result = this.o.submit(candidate, g.transactionId);
     g.samples += 1;
     if (result.ok) {
       g.latest = result.value.field;
@@ -379,10 +390,10 @@ export class LawInteraction {
     }
     const handle = g.handle?.name ?? null;
     if (g.cancelReason) {
-      const restored = this.o.submit(g.start);
+      const restored = this.o.submit(g.start, g.transactionId);
       const revision = restored.ok ? restored.value.revision : null;
       this.o.log('gesture', { phase: 'cancel', reason: g.cancelReason, transformMode: g.mode, handle, samples: g.samples, restoredRevision: revision, field: summary(g.start), camera: this.cameraPosition() });
-      this.o.onGestureEnd({ mode: g.mode, label: g.label, handle, start: g.start, latest: g.latest, cancelled: true, revision });
+      this.o.onGestureEnd({ mode: g.mode, label: g.label, handle, start: g.start, latest: g.latest, cancelled: true, revision, transactionId: g.transactionId });
       return;
     }
     this.o.log('gesture', {
@@ -399,7 +410,7 @@ export class LawInteraction {
       lawId: g.start.id,
       camera: this.cameraPosition(),
     });
-    this.o.onGestureEnd({ mode: g.mode, label: g.label, handle, start: g.start, latest: g.latest, cancelled: false, revision: g.lastRevision });
+    this.o.onGestureEnd({ mode: g.mode, label: g.label, handle, start: g.start, latest: g.latest, cancelled: false, revision: g.lastRevision, transactionId: g.transactionId });
   }
 
   /** Ends the drag in progress: a handle's here, TransformControls' through its public pointerUp. */

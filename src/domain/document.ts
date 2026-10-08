@@ -3,6 +3,7 @@
 // the host acknowledges them, so a later reset, save or recovery uses exactly what was applied.
 import { expressionStats } from '../fields/expression';
 import { primitiveDescriptor, type PrimitiveKind } from '../fields/registry';
+import { vec } from './numbers';
 import { commandTarget, type CommandAck, type SimulationHost } from '../simulation/host';
 import {
   SCENE_LIMITS,
@@ -30,10 +31,14 @@ export interface LawState {
   readonly presentation: LawPresentation;
 }
 
-/** One author-undo entry (SPEC §10.3): a law's state before and after one user action. */
+/**
+ * One author-undo entry (SPEC §10.3): a law's state before and after one user action. Its
+ * `transactionId` is the one every command of that action carried; undoing it is a new action.
+ */
 export interface Transaction {
   readonly label: string;
   readonly id: string;
+  readonly transactionId: string;
   readonly before: LawState | null;
   readonly after: LawState | null;
 }
@@ -41,6 +46,9 @@ export interface Transaction {
 export type LawPresentationPatch = Partial<Pick<LawPresentation, 'label' | 'color' | 'visible'>>;
 
 const failure = (reason: string, path = ''): { ok: false; reason: string; path: string } => ({ ok: false, reason, path });
+
+/** The refusal of an edit the host did not apply: a recording closed at its limit (SPEC §13.3). */
+export const NOT_APPLIED = 'the recording reached its limit and stopped, so this change was not applied';
 
 export class DocumentController {
   private authored!: SceneDefinition;
@@ -54,6 +62,8 @@ export class DocumentController {
    * that span laws are checked against it, so edits awaiting the same boundary cannot pass together.
    */
   private submitted = new Map<string, FieldDefinition | null>();
+  /** Transactions issued in this session; never restarts, so a recording never sees one twice. */
+  private transactions = 0;
 
   /** Identity of the loaded document; a reply from an older generation never touches this one (SPEC §15.3). */
   generation = 0;
@@ -145,18 +155,58 @@ export class DocumentController {
   }
 
   /**
+   * A new transaction identity (SPEC §10.3): one user action, whose commands may span many boundaries,
+   * as a gesture's samples do. It groups them for undo and in a recording; it never merges them.
+   */
+  newTransaction(): string {
+    this.transactions += 1;
+    return `tx-${this.transactions}`;
+  }
+
+  /**
    * Validates a complete law value and queues it for the next boundary. Invalid input, including a
    * law that would take the scene past its primitive-leaf budget, never reaches the host.
    */
-  putField(candidate: FieldDefinition): Validated<{ revision: number; field: FieldDefinition }> {
+  putField(candidate: FieldDefinition, transactionId: string = this.newTransaction()): Validated<{ revision: number; field: FieldDefinition }> {
     const result = validateField(candidate);
     if (!result.ok) return result;
     const over = this.overLeafBudget(result.value);
     if (over) return over;
     this.revision += 1;
     this.submitted.set(result.value.id, result.value);
-    this.host.submit({ kind: 'putField', field: result.value }, this.revision);
+    this.host.submit({ kind: 'putField', field: result.value }, this.revision, transactionId);
     return { ok: true, value: { revision: this.revision, field: result.value } };
+  }
+
+  /**
+   * Replaces the ambient acceleration (SPEC §10.2): a physics command applied at the current boundary.
+   * No control offers it yet; it exists so the full command vocabulary records and replays.
+   */
+  setAmbient(acceleration: Vec3): Validated<{ revision: number }> {
+    if (!acceleration.every(Number.isFinite) || Math.hypot(...acceleration) > 200) {
+      return failure('ambient acceleration must be finite with magnitude at most 200 m/s²', 'acceleration');
+    }
+    this.settle();
+    this.revision += 1;
+    const revision = this.revision;
+    this.host.submit({ kind: 'setAmbient', acceleration: Object.freeze(vec(acceleration)) }, revision, this.newTransaction());
+    if (!this.applied(revision)) return failure(NOT_APPLIED);
+    return { ok: true, value: { revision } };
+  }
+
+  /** Settles a command just submitted at `revision`: true once the host applied it. */
+  private applied(revision: number): boolean {
+    this.settle();
+    return this.appliedRevision >= revision;
+  }
+
+  /**
+   * Drops every command still queued and unapplied (SPEC §13.3: a recording closed at a limit). The
+   * authored scene already holds everything the host applied, so nothing else changes.
+   */
+  discardPending(): void {
+    this.host.discardPending();
+    this.submitted = new Map();
   }
 
   /** SPEC §15.2's scene-wide leaf budget with `field` in place of its law's latest submitted value. */
@@ -172,16 +222,20 @@ export class DocumentController {
     const acks = this.host.takeAcks();
     if (!acks.length) return acks;
     const fields = [...this.authored.fields];
+    let simulation = this.authored.simulation;
     for (const { payload, documentRevision } of acks) {
-      const index = fields.findIndex((f) => f.id === commandTarget(payload));
-      if (payload.kind === 'removeField') {
-        if (index >= 0) fields.splice(index, 1);
-      } else if (index >= 0) fields[index] = payload.field;
-      else fields.push(payload.field);
+      if (payload.kind === 'setAmbient') simulation = Object.freeze({ ...simulation, ambientAcceleration: payload.acceleration });
+      else {
+        const index = fields.findIndex((f) => f.id === commandTarget(payload));
+        if (payload.kind === 'removeField') {
+          if (index >= 0) fields.splice(index, 1);
+        } else if (index >= 0) fields[index] = payload.field;
+        else fields.push(payload.field);
+      }
       this.appliedRevision = documentRevision;
     }
     fields.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-    this.authored = Object.freeze({ ...this.authored, fields: Object.freeze(fields) });
+    this.authored = Object.freeze({ ...this.authored, simulation, fields: Object.freeze(fields) });
     this.onAcks?.(acks);
     return acks;
   }
@@ -189,12 +243,18 @@ export class DocumentController {
   /**
    * SPEC §13.2 reset: settle pending edits, freeze a new run root from the authored scene and
    * rebuild the world at tick 0. It restarts the current configuration; it never replays a drag.
+   * `root`, when given, must be a frozen copy of the settled authored scene (a recording's root).
    */
-  reset(): SceneDefinition {
+  reset(root?: SceneDefinition): SceneDefinition {
     this.settle();
-    const root = cloneFrozen(this.authored);
-    this.host.reset(root);
-    return root;
+    const frozen = root ?? cloneFrozen(this.authored);
+    this.host.reset(frozen);
+    return frozen;
+  }
+
+  /** The world the authored document's commands go to. */
+  get liveHost(): SimulationHost {
+    return this.host;
   }
 
   /** A law's settled authored state, or null if it does not exist. */
@@ -210,13 +270,19 @@ export class DocumentController {
     this.redoStack = [];
   }
 
-  /** One complete edit of a law's semantic value, as one undo entry (a toggle or a precise value). */
+  /**
+   * One complete edit of a law's semantic value, as one undo entry (a toggle or a precise value). It is
+   * applied at the current boundary before returning; the undo entry exists only if it applied.
+   */
   editField(id: string, label: string, change: (field: FieldDefinition) => FieldDefinition): Validated<{ revision: number; field: FieldDefinition }> {
     this.settle();
     const before = this.lawState(id);
     if (!before) return failure(`no law ${id}`);
-    const result = this.putField(change(before.field));
-    if (result.ok) this.record({ label, id, before, after: { field: result.value.field, presentation: before.presentation } });
+    const transactionId = this.newTransaction();
+    const result = this.putField(change(before.field), transactionId);
+    if (!result.ok) return result;
+    if (!this.applied(result.value.revision)) return failure(NOT_APPLIED);
+    this.record({ label, id, transactionId, before, after: { field: result.value.field, presentation: before.presentation } });
     return result;
   }
 
@@ -229,7 +295,7 @@ export class DocumentController {
     const error = checkLawPresentation(next);
     if (error) return failure(error, Object.keys(patch)[0] ?? '');
     this.applyPresentation(id, next);
-    this.record({ label: 'Change appearance', id, before, after: { field: before.field, presentation: next } });
+    this.record({ label: 'Change appearance', id, transactionId: this.newTransaction(), before, after: { field: before.field, presentation: next } });
     return { ok: true, value: { revision: this.revision } };
   }
 
@@ -257,12 +323,14 @@ export class DocumentController {
     const { newId, suffix } = this.freshId(id);
     const [x, y, z] = source.field.pose.position;
     const offset = x + 1 <= 1000 ? x + 1 : x;
-    const result = this.putField({ ...source.field, id: newId, pose: { ...source.field.pose, position: [offset, y, z] } });
+    const transactionId = this.newTransaction();
+    const result = this.putField({ ...source.field, id: newId, pose: { ...source.field.pose, position: [offset, y, z] } }, transactionId);
     if (!result.ok) return result;
+    if (!this.applied(result.value.revision)) return failure(NOT_APPLIED);
     const label = `${source.presentation.label.replace(/ \d+$/, '')} ${suffix}`.slice(0, SCENE_LIMITS.textLength);
     const presentation = { ...source.presentation, id: newId, label };
     this.lawPresentation.set(newId, presentation);
-    this.record({ label: 'Duplicate law', id: newId, before: null, after: { field: result.value.field, presentation } });
+    this.record({ label: 'Duplicate law', id: newId, transactionId, before: null, after: { field: result.value.field, presentation } });
     return { ok: true, value: { id: newId, revision: this.revision } };
   }
 
@@ -276,18 +344,23 @@ export class DocumentController {
     if (this.authored.fields.length >= SCENE_LIMITS.fields) return failure(`a scene holds at most ${SCENE_LIMITS.fields} laws`);
     const descriptor = primitiveDescriptor(kind);
     const { newId, suffix } = this.freshId(descriptor.verb.toLowerCase(), true);
-    const result = this.putField({
-      id: newId,
-      enabled: true,
-      pose: { position, rotation: [0, 0, 0, 1] },
-      region: descriptor.defaultRegion,
-      edgeFade: CREATED_FADE,
-      expression: descriptor.defaults,
-    });
+    const transactionId = this.newTransaction();
+    const result = this.putField(
+      {
+        id: newId,
+        enabled: true,
+        pose: { position, rotation: [0, 0, 0, 1] },
+        region: descriptor.defaultRegion,
+        edgeFade: CREATED_FADE,
+        expression: descriptor.defaults,
+      },
+      transactionId,
+    );
     if (!result.ok) return result;
+    if (!this.applied(result.value.revision)) return failure(NOT_APPLIED);
     const presentation = { id: newId, label: suffix ? `${descriptor.verb} ${suffix}` : descriptor.verb, color: descriptor.color, visible: true };
     this.lawPresentation.set(newId, presentation);
-    this.record({ label: 'Add law', id: newId, before: null, after: { field: result.value.field, presentation } });
+    this.record({ label: 'Add law', id: newId, transactionId, before: null, after: { field: result.value.field, presentation } });
     return { ok: true, value: { id: newId, revision: this.revision } };
   }
 
@@ -296,12 +369,16 @@ export class DocumentController {
     this.settle();
     const before = this.lawState(id);
     if (!before) return failure(`no law ${id}`);
-    this.applyState(id, null);
-    this.record({ label: 'Delete law', id, before, after: null });
+    const transactionId = this.newTransaction();
+    if (!this.applyState(id, null, transactionId)) return failure(NOT_APPLIED);
+    this.record({ label: 'Delete law', id, transactionId, before, after: null });
     return { ok: true, value: { revision: this.revision } };
   }
 
-  /** Restores the state before the latest action, through new commands at the current boundary. */
+  /**
+   * Restores the state before the latest action, through new commands at the current boundary: a new
+   * action with its own transaction, which never removes a consumed command from a recording.
+   */
   undo(): Validated<Transaction> {
     const transaction = this.undoStack[this.undoStack.length - 1];
     if (!transaction) return failure('nothing to undo');
@@ -330,28 +407,33 @@ export class DocumentController {
     if (state && !current && this.authored.fields.length >= SCENE_LIMITS.fields) return failure(`a scene holds at most ${SCENE_LIMITS.fields} laws`);
     const over = state ? this.overLeafBudget(state.field) : null;
     if (over) return over;
-    this.applyState(id, state);
+    if (!this.applyState(id, state, this.newTransaction())) return failure(NOT_APPLIED);
     return { ok: true, value: null };
   }
 
-  /** Makes a law's authored state equal `state`, submitting only what differs. */
-  private applyState(id: string, state: LawState | null): void {
+  /**
+   * Makes a law's authored state equal `state`, submitting only what differs, and applies it at the
+   * current boundary. Its presentation follows only once the host applied the command; false when a
+   * recording limit refused it, leaving the law as it was.
+   */
+  private applyState(id: string, state: LawState | null, transactionId: string): boolean {
     const current = this.lawState(id);
+    let revision: number | null = null;
     if (!state) {
       if (current) {
-        this.revision += 1;
+        revision = ++this.revision;
         this.submitted.set(id, null);
-        this.host.submit({ kind: 'removeField', id }, this.revision);
+        this.host.submit({ kind: 'removeField', id }, revision, transactionId);
       }
-      this.lawPresentation.delete(id);
-      return;
-    }
-    if (!current || !sameField(current.field, state.field)) {
-      this.revision += 1;
+    } else if (!current || !sameField(current.field, state.field)) {
+      revision = ++this.revision;
       this.submitted.set(id, state.field);
-      this.host.submit({ kind: 'putField', field: state.field }, this.revision);
+      this.host.submit({ kind: 'putField', field: state.field }, revision, transactionId);
     }
-    if (!current || !samePresentation(current.presentation, state.presentation)) this.applyPresentation(id, state.presentation);
+    if (revision !== null && !this.applied(revision)) return false;
+    if (!state) this.lawPresentation.delete(id);
+    else if (!current || !samePresentation(current.presentation, state.presentation)) this.applyPresentation(id, state.presentation);
+    return true;
   }
 
   private applyPresentation(id: string, presentation: LawPresentation): void {

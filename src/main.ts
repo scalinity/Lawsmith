@@ -188,8 +188,8 @@ async function start() {
   let editLatency = new EditLatency();
   /** Final revisions of gestures and toggles, reported once the host applies them. */
   const awaited = new Set<number>();
-  const submit = (candidate: FieldDefinition) => {
-    const result = authoring.putField(candidate);
+  const submit = (candidate: FieldDefinition, transactionId: string) => {
+    const result = authoring.putField(candidate, transactionId);
     if (result.ok) editLatency.accept(result.value.revision, performance.now());
     return result;
   };
@@ -227,6 +227,7 @@ async function start() {
       appliedField: (id) => appliedLaw(id),
       pickable: () => host.appliedFields().filter((f) => authoring.presentationOf(f.id).visible),
       submit,
+      transaction: () => authoring.newTransaction(),
       onGestureEnd: (end) => gestureEnded(end),
       onSelectionChange: () => renderPanel(),
       clickBody: (x, y) => {
@@ -249,7 +250,7 @@ async function start() {
     awaitApplied(end.revision);
     if (!end.cancelled && end.latest) {
       const presentation = authoring.presentationOf(end.start.id);
-      authoring.record({ label: end.label, id: end.start.id, before: { field: end.start, presentation }, after: { field: end.latest, presentation } });
+      authoring.record({ label: end.label, id: end.start.id, transactionId: end.transactionId, before: { field: end.start, presentation }, after: { field: end.latest, presentation } });
     }
     edited();
   };
@@ -283,7 +284,8 @@ async function start() {
           appliedRevision: ack.documentRevision,
           tick: ack.tick,
           sequence: ack.sequence,
-          field: ack.payload.kind === 'putField' ? lawSummary(ack.payload.field) : { removed: ack.payload.id },
+          transactionId: ack.transactionId,
+          field: ack.payload.kind === 'putField' ? lawSummary(ack.payload.field) : ack.payload.kind === 'removeField' ? { removed: ack.payload.id } : { ambient: ack.payload.acceleration },
         });
       }
     }

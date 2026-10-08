@@ -60,9 +60,28 @@ function readProfile(world: RAPIER.World): EffectiveProfile {
   };
 }
 
+/** Rapier worlds allocated in this process now, and the most at once since the last `resetPeakWorlds` (SPEC §18.2 resource accounting). */
+let allocatedWorlds = 0;
+let peakWorlds = 0;
+
+export function worldCounts(): { allocated: number; peak: number } {
+  return { allocated: allocatedWorlds, peak: peakWorlds };
+}
+
+export function resetPeakWorlds(): void {
+  peakWorlds = allocatedWorlds;
+}
+
+function freeWorld(world: RAPIER.World): void {
+  world.free();
+  allocatedWorlds -= 1;
+}
+
 /** A world under the profile: zero engine gravity (gravity enters through the adapter, SPEC §9.1). */
 function createWorld(): RAPIER.World {
   const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+  allocatedWorlds += 1;
+  peakWorlds = Math.max(peakWorlds, allocatedWorlds);
   world.timestep = STEP_SECONDS;
   const p = world.integrationParameters;
   p.numSolverIterations = 4;
@@ -75,7 +94,7 @@ function createWorld(): RAPIER.World {
   for (const [key, expected] of Object.entries(SIMULATION_PROFILE.effective)) {
     const actual = effective[key as keyof EffectiveProfile];
     if (!Object.is(actual, expected)) {
-      world.free();
+      freeWorld(world);
       throw new Error(`Rapier ${key} is ${actual}, but profile ${SIMULATION_PROFILE.id} requires ${expected}.`);
     }
   }
@@ -98,7 +117,7 @@ export async function initSimulation(): Promise<SimulationReady> {
   try {
     return { rapierVersion, effectiveProfile: readProfile(world) };
   } finally {
-    world.free();
+    freeWorld(world);
   }
 }
 
@@ -119,17 +138,50 @@ export interface RemoveField {
   readonly kind: 'removeField';
   readonly id: string;
 }
-/** The command vocabulary (SPEC §10.2): a complete validated field put, or removal of a known law. */
-export type CommandPayload = PutField | RemoveField;
+/** Replaces the ambient acceleration (SPEC §10.2): a physics command, validated (finite, at most 200 m/s²) before submission. */
+export interface SetAmbient {
+  readonly kind: 'setAmbient';
+  readonly acceleration: Vec3;
+}
+/** The command vocabulary (SPEC §10.2): a complete validated field put, removal of a known law, or the ambient acceleration. */
+export type CommandPayload = PutField | RemoveField | SetAmbient;
 
-/** The law a command addresses. */
-export const commandTarget = (payload: CommandPayload) => (payload.kind === 'putField' ? payload.field.id : payload.id);
+/** The law a command addresses; null for the ambient acceleration. */
+export const commandTarget = (payload: CommandPayload): string | null =>
+  payload.kind === 'putField' ? payload.field.id : payload.kind === 'removeField' ? payload.id : null;
+
+/** Transaction of a command submitted without one: scripted fixtures, never the document controller. */
+export const UNATTRIBUTED = 'unattributed';
+
+/**
+ * A command as the host consumed it (SPEC §10.2): applied at boundary `atTick`, before the transition
+ * atTick → atTick+1, as the run's `sequence`th command. Its payload is the complete resolved value.
+ */
+export interface AppliedCommand {
+  readonly atTick: number;
+  readonly sequence: number;
+  readonly transactionId: string;
+  readonly payload: CommandPayload;
+}
 
 export interface CommandAck {
   readonly tick: number;
   readonly sequence: number;
   readonly documentRevision: number;
+  readonly transactionId: string;
   readonly payload: CommandPayload;
+}
+
+/**
+ * The run recorder's view of command consumption (SPEC §13.3). `admit` is the preflight: it sees a
+ * resolved command before it mutates anything and refuses one the record cannot hold, closing the
+ * record at the last accepted address. `append` follows a successful application; `stepped` follows
+ * every completed transition and may close the record at its duration limit.
+ */
+export interface CommandRecorder {
+  admit(command: AppliedCommand): boolean;
+  append(command: AppliedCommand): void;
+  stepped(tick: number): void;
 }
 
 /**
@@ -144,6 +196,15 @@ export class SimulationFault extends Error {
   ) {
     super(`${reason}: ${entity} at tick ${tick}`);
   }
+}
+
+/**
+ * Every future-affecting value the host holds beyond the engine snapshot (SPEC §13.4): the canonical
+ * state plus the live simulation settings, which `setAmbient` changes. Body colliders, materials and
+ * emitter definitions come from the run root, which a replay shares by construction.
+ */
+export interface FutureState extends CanonicalState {
+  simulation: SimulationSettings;
 }
 
 /** Authoritative body state at a settled boundary, ordered by stable ID (SPEC §13.4). */
@@ -208,6 +269,7 @@ interface EmitterState {
 
 interface PendingCommand {
   readonly documentRevision: number;
+  readonly transactionId: string;
   readonly payload: CommandPayload;
 }
 
@@ -226,10 +288,22 @@ let worldsBuilt = 0;
 export class SimulationHost {
   private world: RAPIER.World | null = null;
   private root!: SceneDefinition;
+  /** The root's settings with the current ambient acceleration, which `setAmbient` replaces. */
+  private live!: SimulationSettings;
   tick = 0;
   lastAppliedSequence = 0;
   skippedEmissions = 0;
   fault: SimulationFault | null = null;
+  /**
+   * The run recorder consuming this world's commands, if a recording is active (SPEC §13.3). Set and
+   * cleared by the recorder; a replay world never has one.
+   */
+  recorder: CommandRecorder | null = null;
+  /**
+   * Set when the recorder closed at a limit (SPEC §13.3): nothing is consumed and nothing steps until the
+   * owner discards the queued commands and calls `releaseHalt`, so neither can spill past the record.
+   */
+  halted = false;
 
   /** Applied laws in ascending stable ID order, independent of UI order (SPEC §6.3). */
   private fieldDefs: FieldDefinition[] = [];
@@ -286,6 +360,8 @@ export class SimulationHost {
 
   /** Rebuilds the world from a frozen run root at tick 0 (SPEC §13.2). Pending commands are dropped. */
   reset(root: SceneDefinition): void {
+    // A recording belongs to one world from its root: rebuilding under it would corrupt the record.
+    if (this.recorder) throw new Error('A recording is active on this world; stop it before resetting.');
     if (root.simulation.profile !== SIMULATION_PROFILE.id) {
       throw new Error(`Scene requires profile ${root.simulation.profile}; this build provides ${SIMULATION_PROFILE.id}.`);
     }
@@ -295,12 +371,15 @@ export class SimulationHost {
     }
     for (const def of root.bodies) if (def.type === 'dynamic') radiusOf(def.collider);
     for (const def of root.emitters) radiusOf(def.template.collider);
-    this.world?.free();
+    if (this.world) freeWorld(this.world);
+    this.world = null;
     this.world = createWorld();
     this.generation = ++worldsBuilt;
     this.explanation = null;
     this.colliderIds = new Map();
     this.root = root;
+    this.live = root.simulation;
+    this.halted = false;
     this.tick = 0;
     this.lastAppliedSequence = 0;
     this.skippedEmissions = 0;
@@ -330,34 +409,91 @@ export class SimulationHost {
    * Queues a validated command for the next boundary. A put replaces an unconsumed put for the same
    * law at the end of the queue (pointer coalescing, SPEC §10.2); structural order is otherwise kept.
    */
-  submit(payload: CommandPayload, documentRevision: number): void {
+  submit(payload: CommandPayload, documentRevision: number, transactionId: string = UNATTRIBUTED): void {
     const last = this.pending[this.pending.length - 1];
     const coalesce = last && payload.kind === 'putField' && last.payload.kind === 'putField' && last.payload.field.id === payload.field.id;
-    if (coalesce) this.pending[this.pending.length - 1] = { documentRevision, payload };
-    else this.pending.push({ documentRevision, payload });
+    if (coalesce) this.pending[this.pending.length - 1] = { documentRevision, transactionId, payload };
+    else this.pending.push({ documentRevision, transactionId, payload });
   }
 
-  /** Applies queued commands at the current boundary n, in sequence order, without advancing (SPEC §10.2). */
+  /** Commands queued for the next boundary and not yet consumed. */
+  get pendingCount(): number {
+    return this.pending.length;
+  }
+
+  /**
+   * Applies queued commands at the current boundary n, in sequence order, without advancing (SPEC §10.2).
+   * An active recorder preflights each resolved command before it changes anything; a refusal halts
+   * the host with that command and every later one still queued.
+   */
   settleBoundary(): void {
-    for (const { documentRevision, payload } of this.pending) {
-      const index = this.fieldDefs.findIndex((f) => f.id === commandTarget(payload));
-      if (payload.kind === 'removeField') {
+    if (this.halted) return;
+    let consumed = 0;
+    try {
+      for (const { documentRevision, transactionId, payload } of this.pending) {
         // Delete requires a known ID (SPEC §10.2); the document controller only removes laws it holds.
-        if (index < 0) throw new Error(`removeField: no law ${payload.id}`);
-        this.fieldDefs.splice(index, 1);
-        this.compiled.splice(index, 1);
-      } else if (index >= 0) {
-        this.fieldDefs[index] = payload.field;
-        this.compiled[index] = compileField(payload.field);
-      } else {
-        this.fieldDefs.push(payload.field);
-        this.fieldDefs.sort(byId);
-        this.compiled = this.fieldDefs.map(compileField);
+        if (payload.kind === 'removeField' && !this.fieldDefs.some((f) => f.id === payload.id)) throw new Error(`removeField: no law ${payload.id}`);
+        const command: AppliedCommand = { atTick: this.tick, sequence: this.lastAppliedSequence + 1, transactionId, payload };
+        if (this.recorder && !this.recorder.admit(command)) {
+          this.halted = true;
+          return;
+        }
+        this.apply(payload);
+        this.lastAppliedSequence = command.sequence;
+        this.recorder?.append(command);
+        this.acks.push({ tick: this.tick, sequence: command.sequence, documentRevision, transactionId, payload });
+        consumed += 1;
       }
-      this.lastAppliedSequence += 1;
-      this.acks.push({ tick: this.tick, sequence: this.lastAppliedSequence, documentRevision, payload });
+    } finally {
+      this.pending.splice(0, consumed);
     }
+  }
+
+  /**
+   * Applies one recorded command at its own boundary (SPEC §13.3 linear replay): the same
+   * interpretation as a consumed live command, with the recorded sequence and no acknowledgment, since
+   * a replay world never feeds the authored document.
+   */
+  applyRecorded(command: AppliedCommand): void {
+    if (this.fault) throw this.fault;
+    if (command.atTick !== this.tick || command.sequence !== this.lastAppliedSequence + 1) {
+      throw new Error(`recorded command ${command.sequence} at tick ${command.atTick} does not follow (${this.tick}, ${this.lastAppliedSequence})`);
+    }
+    const { payload } = command;
+    if (payload.kind === 'removeField' && !this.fieldDefs.some((f) => f.id === payload.id)) throw new Error(`removeField: no law ${payload.id}`);
+    this.apply(payload);
+    this.lastAppliedSequence = command.sequence;
+  }
+
+  /** The one interpretation of a resolved command (SPEC §10.2), shared by live consumption and replay. */
+  private apply(payload: CommandPayload): void {
+    if (payload.kind === 'setAmbient') {
+      this.live = Object.freeze({ ...this.live, ambientAcceleration: payload.acceleration });
+      return;
+    }
+    const index = this.fieldDefs.findIndex((f) => f.id === commandTarget(payload));
+    if (payload.kind === 'removeField') {
+      this.fieldDefs.splice(index, 1);
+      this.compiled.splice(index, 1);
+    } else if (index >= 0) {
+      this.fieldDefs[index] = payload.field;
+      this.compiled[index] = compileField(payload.field);
+    } else {
+      this.fieldDefs.push(payload.field);
+      this.fieldDefs.sort(byId);
+      this.compiled = this.fieldDefs.map(compileField);
+    }
+  }
+
+  /** Drops every queued command unconsumed: a recording that closed at a limit, or a guard's discard. */
+  discardPending(): void {
     this.pending.length = 0;
+  }
+
+  /** Lets a host halted at a recording limit consume and step again, once its queue is discarded. */
+  releaseHalt(): void {
+    if (this.pending.length) throw new Error('queued commands must be discarded before a halted host resumes');
+    this.halted = false;
   }
 
   /** Acknowledgments since the last call, in sequence order. */
@@ -372,6 +508,8 @@ export class SimulationHost {
     if (this.fault) throw this.fault;
     const world = this.world!;
     this.settleBoundary();
+    // A recording closed at a limit: the transition waits until its owner has resolved the stop (SPEC §13.3).
+    if (this.halted) return;
     // SPEC §10.1: the completed-step count stays a safe integer. At the largest one the transition
     // faults at the settled boundary, before lifecycle, engine or clock change.
     if (!fitsSafe(this.tick, 1)) throw (this.fault = new SimulationFault(this.tick, 'simulation clock', 'Tick leaves the safe-integer range'));
@@ -381,7 +519,7 @@ export class SimulationHost {
     // Laws add in stable ID order: A = g + ΣA_i and K = ΣK_i, then one adapter call per body. Each
     // law is sampled at this boundary's tick n, the one input a tick-dependent gain reads.
     const fieldStart = performance.now();
-    const { ambientAcceleration: g, maxAppliedAcceleration } = this.root.simulation;
+    const { ambientAcceleration: g, maxAppliedAcceleration } = this.live;
     const { bodies, compiled, sample, accel, forces } = this;
     const n = this.tick;
     // The explained body's samples are copied as they are summed (SPEC §12): its explanation is this
@@ -457,6 +595,7 @@ export class SimulationHost {
     if (explained >= 0) this.explanation = this.retain(bodies[explained]!, 3 * explained);
     this.tick += 1;
     this.publish();
+    this.recorder?.stepped(this.tick);
   }
 
   /**
@@ -489,8 +628,8 @@ export class SimulationHost {
       fromTick: this.tick,
       cursor: this.lastAppliedSequence,
       laws: [...this.fieldDefs],
-      gravity: this.root.simulation.ambientAcceleration,
-      maxApplied: this.root.simulation.maxAppliedAcceleration,
+      gravity: this.live.ambientAcceleration,
+      maxApplied: this.live.maxAppliedAcceleration,
       state: s,
       samples: this.explainSamples,
       adapted: s.subarray(6),
@@ -509,7 +648,7 @@ export class SimulationHost {
   previewTransition(): TransitionObservation | null {
     const live = this.explainId === null || this.fault ? undefined : this.bodies.find((b) => b.id === this.explainId);
     if (!live) return null;
-    const { ambientAcceleration: g, maxAppliedAcceleration } = this.root.simulation;
+    const { ambientAcceleration: g, maxAppliedAcceleration } = this.live;
     const p = live.body.translation();
     const v = live.body.linvel();
     const samples = new Float64Array(4 * this.compiled.length);
@@ -563,9 +702,9 @@ export class SimulationHost {
     return this.compiled;
   }
 
-  /** The run root's simulation settings: gravity, the acceleration limit and the body limit. */
+  /** The simulation settings in force: the run root's, with the current ambient acceleration. */
   get settings(): SimulationSettings {
-    return this.root.simulation;
+    return this.live;
   }
 
   canonicalState(): CanonicalState {
@@ -594,13 +733,26 @@ export class SimulationHost {
     };
   }
 
-  /** Engine snapshot bytes, for same-environment comparison only (SPEC §13.4). */
+  /** The canonical state and the live settings: what a replay must reproduce at an address (SPEC §13.4). */
+  futureState(): FutureState {
+    return { ...this.canonicalState(), simulation: this.live };
+  }
+
+  /**
+   * Engine snapshot bytes, for same-environment comparison only (SPEC §13.4). Taking one observes the
+   * world; nothing in Lawsmith restores one.
+   */
   engineSnapshot(): Uint8Array {
     return this.world!.takeSnapshot();
   }
 
+  /** True once disposed: the world is freed and the host must not be used again. */
+  get disposed(): boolean {
+    return this.world === null;
+  }
+
   dispose(): void {
-    this.world?.free();
+    if (this.world) freeWorld(this.world);
     this.world = null;
   }
 

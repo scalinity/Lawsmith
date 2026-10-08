@@ -25,15 +25,16 @@ const moved = (f: FieldDefinition, x: number): FieldDefinition => ({ ...f, pose:
 /** A drag as LawInteraction performs it: many previews through putField, then one recorded transaction. */
 function drag(controller: DocumentController, host: SimulationHost, xs: number[]) {
   const before = controller.lawState('sideways')!;
+  const transactionId = controller.newTransaction();
   let latest = before.field;
   for (const x of xs) {
-    const result = controller.putField(moved(before.field, x));
+    const result = controller.putField(moved(before.field, x), transactionId);
     if (!result.ok) throw new Error(result.reason);
     latest = result.value.field;
     host.step();
     controller.sync();
   }
-  controller.record({ label: 'Move law', id: 'sideways', before, after: { field: latest, presentation: before.presentation } });
+  controller.record({ label: 'Move law', id: 'sideways', transactionId, before, after: { field: latest, presentation: before.presentation } });
 }
 
 describe('author undo: gestures', () => {
