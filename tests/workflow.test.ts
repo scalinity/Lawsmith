@@ -11,6 +11,7 @@ import { parseRecovery } from '../src/persistence/recovery';
 import { parseScene } from '../src/persistence/sceneFile';
 import { DocumentWorkflow, suggestedName, type WorkflowApp } from '../src/persistence/workflow';
 import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
+import { wrapIngredient } from '../src/domain/ingredients';
 import { SimulationHost, initSimulation } from '../src/simulation/host';
 
 beforeAll(async () => {
@@ -452,6 +453,32 @@ describe('transactional Open of compound laws (M5, SPEC §15.2)', () => {
     expect(expected.ok && t.host().appliedFields()).toEqual(expected.ok && expected.document.semantic.fields);
     expect(t.workflow.fileName).toBe('storm-bottle.lawsmith.json');
     expect(t.workflow.dirty).toBe(false);
+  });
+
+  it('recovery keeps an edited compound law whole: after a crash it reopens with the same expression, paused at tick 0', async () => {
+    const t = await setup();
+    t.io.openQueue.push(opened(t.io, 'storm-bottle.lawsmith.json', stormBottle));
+    expect(await t.workflow.open()).toBe(true);
+    const edit = t.controller.editField('storm-bottle', 'Add gain', (f) => {
+      const wrapped = wrapIngredient(f.expression, [1], 'gain', f.region);
+      if (!wrapped.ok) throw new Error(wrapped.reason);
+      const swirl = wrapped.expression as Extract<typeof wrapped.expression, { kind: 'sum' }>;
+      const gain = swirl.terms[1] as Extract<typeof wrapped.expression, { kind: 'gain' }>;
+      return { ...f, expression: { ...swirl, terms: [swirl.terms[0]!, { ...gain, gain: { kind: 'triangle', min: 0, max: 2, periodTicks: 240, phaseTicks: 31 } }, swirl.terms[2]!] } };
+    });
+    expect(edit.ok).toBe(true);
+    t.workflow.edited();
+    await t.workflow.recovery.writeNow();
+    const authored = t.controller.scene;
+    expect(parseRecovery(t.io.recovery.current!.text).ok).toBe(true);
+    // The app is gone; the next launch finds the snapshot and recovers it.
+    const restart = await setup(structuredClone(t.io.recovery));
+    expect(restart.offer).toMatchObject({ older: false });
+    expect(await restart.workflow.recover(restart.offer!)).toBe(true);
+    expect(restart.controller.scene.fields).toEqual(authored.fields);
+    expect(restart.host().appliedFields()).toEqual(authored.fields);
+    expect(restart.host().tick).toBe(0);
+    expect(restart.workflow.fileName).toBeNull(); // a recovered document chooses its destination again
   });
 });
 
