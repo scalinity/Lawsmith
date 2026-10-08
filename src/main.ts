@@ -209,6 +209,13 @@ async function start() {
   };
   applyFreeze();
 
+  // The selected law's ingredient editor. Its edits run through editExpression, an authoring command
+  // defined further down, so the call is deferred to the moment an edit happens.
+  const ingredientPanel = createIngredientPanel({
+    edit: (label, change, input) => editExpression(label, change, input),
+    onFocus: () => report('ingredient-focus', ingredientPanel.state()),
+  });
+
   const interaction = new LawInteraction(
     {
       canvas: renderer.domElement,
@@ -230,7 +237,7 @@ async function start() {
       },
       haltCamera: () => viewport.haltInertia(),
       editable: () => !frozen,
-      // The ingredient being edited brings its own handles (M5); declared below, read only when handles show.
+      // The ingredient being edited brings its own handles (M5).
       focus: () => ingredientPanel.focus,
       log: report,
     },
@@ -916,11 +923,6 @@ async function start() {
     edited();
     return next;
   };
-
-  const ingredientPanel = createIngredientPanel({
-    edit: editExpression,
-    onFocus: () => report('ingredient-focus', ingredientPanel.state()),
-  });
 
   const withAxis = (v: Vec3, axis: number, value: number): Vec3 => v.map((c, i) => (i === axis ? value : c)) as unknown as Vec3;
   triples.get('position')!.forEach((input, axis) =>
