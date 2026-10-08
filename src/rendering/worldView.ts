@@ -368,13 +368,15 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const overlay = (color: Color) => new MeshBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true });
   const lineOverlay = (color: Color, opacity = 1) => new LineBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true, opacity });
   const roleMaterial = { extent: overlay(tokenColor('--text')), fade: overlay(teal), strength: overlay(lavender), core: overlay(tokenColor('--text-secondary')) };
-  // Enough for a compound law's own handles plus a focused ingredient's primitive and two nested masks.
-  const knobs = Array.from({ length: 16 }, () => {
+  // One knob per handle. A compound law's handle count follows its focused ingredient's masks, so the
+  // knobs grow to the longest list shown; every handle that can be grabbed is drawn.
+  const knobs: Mesh[] = [];
+  const makeKnob = () => {
     const mesh = new Mesh(sphereGeometry, roleMaterial.extent);
     mesh.renderOrder = 22;
     handleGroup.add(mesh);
     return mesh;
-  });
+  };
   const strengthShaft = new Mesh(shaftGeometry, roleMaterial.strength);
   const strengthHead = new Mesh(headGeometry, roleMaterial.strength);
   const gauge = new LineSegments(segments([0, 0, 0, 0, 1, 0]), lineOverlay(lavender));
@@ -395,6 +397,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     const { field, handles } = shown;
     place(handleGroup, field);
     handleGroup.updateMatrixWorld(true);
+    while (knobs.length < handles.length) knobs.push(makeKnob());
     knobs.forEach((knob, i) => {
       const h = handles[i];
       knob.visible = h !== undefined;
@@ -442,14 +445,16 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const maskMaterial = lineOverlay(lavender, 0.9);
   const maskDimMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.35 });
   const maskInnerMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.3 });
-  const maskLines = Array.from({ length: 16 }, () => {
+  // One outline per mask in the law, grown to the most masks shown.
+  const maskLines: { pose: Group; outer: LineSegments; inner: LineSegments }[] = [];
+  const makeMaskLine = () => {
     const pose = new Group();
     const outer = new LineSegments(shapes.box.edges, maskDimMaterial);
     const inner = new LineSegments(shapes.box.edges, maskInnerMaterial);
     pose.add(outer, inner);
     maskGroup.add(pose);
     return { pose, outer, inner };
-  });
+  };
   scene.add(maskGroup);
 
   function updateMasks(field: FieldDefinition | undefined, focus: ExprPath | null) {
@@ -463,6 +468,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     }
     maskGroup.visible = masks.length > 0;
     if (field) place(maskGroup, field);
+    while (maskLines.length < masks.length) maskLines.push(makeMaskLine());
     maskLines.forEach((line, i) => {
       const entry = masks[i];
       line.pose.visible = entry !== undefined;
