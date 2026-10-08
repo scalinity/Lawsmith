@@ -137,9 +137,9 @@ function compoundRoot(): SceneDefinition {
   const bottle = document.semantic.fields[0]!;
   let expression = bottle.expression;
   // Swirl pulses: 0 → 2 → 0 every 240 ticks from phase 30.
-  expression = replaceAt(expression, [1], { kind: 'gain', gain: { kind: 'triangle', min: 0, max: 2, periodTicks: 240, phaseTicks: 30 }, child: nodeAt(expression, [1])! });
+  expression = replaceAt(expression, [1], { kind: 'gain', gain: { kind: 'triangle', min: 0, max: 2, periodTicks: 240, phaseTicks: 30 }, child: nodeAt(expression, [1])! })!;
   // Inside the drag's mask, a constant gain 1.2 on the drag.
-  expression = replaceAt(expression, [2, 'child'], { kind: 'gain', gain: { kind: 'constant', value: 1.2 }, child: nodeAt(expression, [2, 'child'])! });
+  expression = replaceAt(expression, [2, 'child'], { kind: 'gain', gain: { kind: 'constant', value: 1.2 }, child: nodeAt(expression, [2, 'child'])! })!;
   return { ...document.semantic, fields: [resolved({ ...bottle, pose: { ...bottle.pose, position: [0, 1.6, 0] }, expression })] };
 }
 
@@ -156,7 +156,7 @@ function compoundEdits(root: SceneDefinition): ScriptedCommand[] {
     return r.expression;
   };
   put(150, (x) => ({ ...x, pose: { ...x.pose, position: [0.3, 1.5, -0.2] } }));
-  put(260, (x) => ({ ...x, expression: replaceAt(x.expression, [2], { ...(nodeAt(x.expression, [2]) as Extract<FieldExpression, { kind: 'mask' }>), region: { kind: 'box', halfExtents: [1.6, 1.6, 1.6] } }) }));
+  put(260, (x) => ({ ...x, expression: replaceAt(x.expression, [2], { ...(nodeAt(x.expression, [2]) as Extract<FieldExpression, { kind: 'mask' }>), region: { kind: 'box', halfExtents: [1.6, 1.6, 1.6] } })! }));
   put(330, (x) => ({ ...x, expression: edited(addIngredient(x.expression, null, 'directional')) }));
   put(420, (x) => ({ ...x, expression: edited(wrapIngredient(x.expression, [3], 'mask', x.region)) }));
   put(500, (x) => ({ ...x, expression: edited(removeIngredient(x.expression, [0])) }));
@@ -173,7 +173,7 @@ function lateEdits(start: FieldDefinition): ScriptedCommand[] {
   };
   put(700, (x) => {
     const swirl = nodeAt(x.expression, [0]) as Extract<FieldExpression, { kind: 'gain' }>;
-    return { ...x, expression: replaceAt(x.expression, [0], { ...swirl, gain: { kind: 'triangle', min: 0.5, max: 1.5, periodTicks: 97, phaseTicks: 96 } }) };
+    return { ...x, expression: replaceAt(x.expression, [0], { ...swirl, gain: { kind: 'triangle', min: 0.5, max: 1.5, periodTicks: 97, phaseTicks: 96 } })! };
   });
   put(800, (x) => ({ ...x, enabled: false }));
   put(860, (x) => ({ ...x, enabled: true }));

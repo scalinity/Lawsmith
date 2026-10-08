@@ -13,6 +13,7 @@ import {
   parentLevel,
   peel,
   removeIngredient,
+  replaced,
   samePath,
   unwrapModifier,
   wrapIngredient,
@@ -21,7 +22,7 @@ import {
   type Modifier,
 } from '../domain/ingredients';
 import { EDGE_FADE, type FieldDefinition, type FieldExpression, type Gain, type MaskExpression, type Primitive, type Quat, type Vec3 } from '../domain/scene';
-import { GAIN_BOUNDS, gainAt, nodeAt, pathText, replaceAt, type ExprPath } from '../fields/expression';
+import { GAIN_BOUNDS, gainAt, nodeAt, pathText, type ExprPath } from '../fields/expression';
 import { PRIMITIVES, REGIONS, isPrimitiveKind, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from '../fields/registry';
 
 export interface IngredientPanelOptions {
@@ -194,7 +195,7 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
   const setNode = (path: ExprPath, make: (node: FieldExpression) => FieldExpression) => (l: FieldDefinition): Edited => {
     const node = nodeAt(l.expression, path);
     if (!node) return { ok: false, reason: 'that part of the law no longer exists' };
-    return { ok: true, expression: replaceAt(l.expression, path, make(node)), path };
+    return replaced(l.expression, path, make(node));
   };
 
   // ---- adding, focusing, removing and opening ingredients

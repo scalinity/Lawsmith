@@ -6,7 +6,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
 import { DocumentController } from '../src/domain/document';
-import { DEFAULT_TRIANGLE, addIngredient, expressionSummary, ingredientLabels, ingredientsOf, isCompound, keptView, parentLevel, peel, removeIngredient, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
+import { DEFAULT_TRIANGLE, addIngredient, expressionSummary, ingredientLabels, ingredientsOf, isCompound, keptView, parentLevel, peel, removeIngredient, replaced, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
 import { cloneFrozen, type FieldDefinition, type FieldExpression, type MaskExpression, type SceneDocument } from '../src/domain/scene';
 import { nodeAt, replaceAt, validateExpression } from '../src/fields/expression';
 import { compileField, sampleField } from '../src/fields/kernel';
@@ -109,6 +109,15 @@ describe('the ingredient view of an expression', () => {
     expect(removeIngredient({ kind: 'sum', terms: [pull] }, [0]).ok).toBe(false);
   });
 
+  it('an edit at a path that has left the tree is refused, never thrown', () => {
+    const tree: FieldExpression = { kind: 'sum', terms: [pull, swirl] };
+    expect(replaceAt(tree, [1], drag)).toEqual({ kind: 'sum', terms: [pull, drag] });
+    for (const path of [[2], [-1], [0, 'child'], [1, 0]] as const) expect(replaceAt(tree, path, drag)).toBeUndefined();
+    expect(replaceAt(pull, ['child'], drag)).toBeUndefined();
+    expect(replaced(tree, [2], drag)).toEqual({ ok: false, reason: 'that part of the law no longer exists' });
+    expect(replaced(tree, [0], drag, [7])).toEqual({ ok: true, expression: { kind: 'sum', terms: [drag, swirl] }, path: [7] });
+  });
+
   it('a sum left with one term becomes that term: a one-leaf law again, or a group of one its ingredient', () => {
     const back = ok(removeIngredient({ kind: 'sum', terms: [pull, swirl] }, [1]));
     expect(back).toEqual({ ok: true, expression: pull, path: [] });
@@ -184,7 +193,7 @@ describe('AC7: three ways to take a contribution out, each undone exactly', () =
     expect(sampleBottle(host)).toEqual(before); // a gain of 1 changes nothing
     controller.editField('storm-bottle', 'Change gain', (f) => {
       const g = nodeAt(f.expression, [2]) as Extract<FieldExpression, { kind: 'gain' }>;
-      return { ...f, expression: replaceAt(f.expression, [2], { ...g, gain: { kind: 'constant', value: 0 } }) };
+      return { ...f, expression: replaceAt(f.expression, [2], { ...g, gain: { kind: 'constant', value: 0 } })! };
     });
     controller.settle();
     const zeroed = sampleBottle(host);
@@ -345,7 +354,7 @@ describe('AC6: export, reload and reset keep the whole expression and its equal-
   it('an edited compound scene saved and reopened runs exactly as the authored one', () => {
     const { controller, host } = stormDocument();
     controller.editField('storm-bottle', 'Add gain', (f) => ({ ...f, expression: ok(wrapIngredient(f.expression, [1], 'gain', f.region)).expression }));
-    controller.editField('storm-bottle', 'Change gain', (f) => ({ ...f, expression: replaceAt(f.expression, [1], { ...(nodeAt(f.expression, [1]) as Extract<FieldExpression, { kind: 'gain' }>), gain: { kind: 'triangle', min: 0, max: 2, periodTicks: 240, phaseTicks: 17 } }) }));
+    controller.editField('storm-bottle', 'Change gain', (f) => ({ ...f, expression: replaceAt(f.expression, [1], { ...(nodeAt(f.expression, [1]) as Extract<FieldExpression, { kind: 'gain' }>), gain: { kind: 'triangle', min: 0, max: 2, periodTicks: 240, phaseTicks: 17 } })! }));
     const snapshot = controller.snapshot(undefined);
     const text = serializeScene(createDocument(snapshot.semantic, snapshot.metadata, snapshot.presentation));
     const reopened = load(text);

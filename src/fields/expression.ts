@@ -38,16 +38,21 @@ export function nodeAt(expression: FieldExpression, path: ExprPath): FieldExpres
   return node;
 }
 
-/** The tree with the node at `path` replaced; every other node is shared, nothing is mutated. */
-export function replaceAt(expression: FieldExpression, path: ExprPath, replacement: FieldExpression): FieldExpression {
+/**
+ * The tree with the node at `path` replaced, or undefined when the path leaves the tree, as for
+ * nodeAt. Every other node is shared; nothing is mutated.
+ */
+export function replaceAt(expression: FieldExpression, path: ExprPath, replacement: FieldExpression): FieldExpression | undefined {
   if (!path.length) return replacement;
   const [step, ...rest] = path;
   if (step === 'child') {
-    if (expression.kind !== 'gain' && expression.kind !== 'mask') throw new Error('path leaves the tree');
-    return { ...expression, child: replaceAt(expression.child, rest, replacement) };
+    if (expression.kind !== 'gain' && expression.kind !== 'mask') return undefined;
+    const child = replaceAt(expression.child, rest, replacement);
+    return child && { ...expression, child };
   }
-  if (expression.kind !== 'sum' || step! >= expression.terms.length) throw new Error('path leaves the tree');
-  return { ...expression, terms: expression.terms.map((t, i) => (i === step ? replaceAt(t, rest, replacement) : t)) };
+  const term = expression.kind === 'sum' ? expression.terms[step!] : undefined;
+  const replaced = term && replaceAt(term, rest, replacement);
+  return replaced && expression.kind === 'sum' ? { ...expression, terms: expression.terms.map((t, i) => (i === step ? replaced : t)) } : undefined;
 }
 
 /** Visits every node in preorder, children in stored order, with its depth (the root's is 1). Only for validated (bounded) trees. */

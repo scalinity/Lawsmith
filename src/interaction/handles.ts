@@ -97,7 +97,8 @@ const prefixOf = (path: ExprPath) => (path.length ? `expression.${pathText(path)
  * setting that one node, so a drag still yields a complete law value for the ordinary command path.
  */
 export function lawHandles(field: FieldDefinition, focus: ExprPath | null = null): LawHandle[] {
-  const withExpression = (path: ExprPath, node: FieldExpression): FieldDefinition => ({ ...field, expression: replaceAt(field.expression, path, node) });
+  // Paths here come from peeling this same law's focused ingredient, so they always name a node.
+  const withExpression = (path: ExprPath, node: FieldExpression): FieldDefinition => ({ ...field, expression: replaceAt(field.expression, path, node) ?? field.expression });
   const handles = supportHandles(field.region, field.edgeFade, (region) => ({ ...field, region }), (edgeFade) => ({ ...field, edgeFade }), '', {});
   if (isPrimitiveKind(field.expression.kind)) {
     handles.push(...primitiveHandles(field, field.expression as Primitive, (p) => ({ ...field, expression: p }), ''));

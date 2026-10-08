@@ -94,6 +94,12 @@ export function expressionSummary(expression: FieldExpression): string {
 
 export type Edited = { ok: true; expression: FieldExpression; path: ExprPath } | { ok: false; reason: string };
 
+/** The law's tree with the node at `at` replaced, as an edit whose result names `path`; refused if `at` has left the tree. */
+export function replaced(expression: FieldExpression, at: ExprPath, node: FieldExpression, path: ExprPath = at): Edited {
+  const next = replaceAt(expression, at, node);
+  return next ? { ok: true, expression: next, path } : { ok: false, reason: 'that part of the law no longer exists' };
+}
+
 /**
  * Adds a primitive with its registry defaults as the last ingredient of a level. A law that is not
  * yet a sum becomes one: its whole expression is the first term and the new primitive the second.
@@ -103,7 +109,7 @@ export function addIngredient(expression: FieldExpression, group: ExprPath | nul
   const at = group ?? [];
   const level = nodeAt(expression, at);
   if (!level) return { ok: false, reason: 'no such group' };
-  if (level.kind === 'sum') return { ok: true, expression: replaceAt(expression, at, { kind: 'sum', terms: [...level.terms, leaf] }), path: [...at, level.terms.length] };
+  if (level.kind === 'sum') return replaced(expression, at, { kind: 'sum', terms: [...level.terms, leaf] }, [...at, level.terms.length]);
   if (group !== null) return { ok: false, reason: 'only a group takes ingredients' };
   return { ok: true, expression: { kind: 'sum', terms: [expression, leaf] }, path: [1] };
 }
@@ -120,7 +126,7 @@ export function removeIngredient(expression: FieldExpression, path: ExprPath): E
   if (!parent || parent.kind !== 'sum') return { ok: false, reason: 'a law keeps its last ingredient; delete the law to remove it' };
   if (parent.terms.length === 1) return { ok: false, reason: 'a group keeps at least one ingredient' };
   const terms = parent.terms.filter((_, i) => i !== index);
-  return { ok: true, expression: replaceAt(expression, parentPath, terms.length === 1 ? terms[0]! : { kind: 'sum', terms }), path: parentPath };
+  return replaced(expression, parentPath, terms.length === 1 ? terms[0]! : { kind: 'sum', terms });
 }
 
 /** The gain an ingredient starts with: 1, which changes nothing until it is edited. */
@@ -139,12 +145,12 @@ export function wrapIngredient(expression: FieldExpression, path: ExprPath, wrap
   const node = nodeAt(expression, path);
   if (!node) return { ok: false, reason: 'no such ingredient' };
   const wrapped: Modifier = wrapper === 'gain' ? { kind: 'gain', gain: DEFAULT_GAIN, child: node } : defaultMask(lawRegion, node);
-  return { ok: true, expression: replaceAt(expression, path, wrapped), path };
+  return replaced(expression, path, wrapped);
 }
 
 /** Removes one gain or mask, keeping what it wrapped. */
 export function unwrapModifier(expression: FieldExpression, path: ExprPath): Edited {
   const node = nodeAt(expression, path);
   if (!node || (node.kind !== 'gain' && node.kind !== 'mask')) return { ok: false, reason: 'no such gain or mask' };
-  return { ok: true, expression: replaceAt(expression, path, node.child), path };
+  return replaced(expression, path, node.child);
 }
