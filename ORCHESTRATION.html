@@ -416,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-07 against branch <code>m4</code>: M4’s review remediated (code <code>c25b667</code>), follow-up review pending; <code>main</code> holds accepted M3 (code <code>1812374</code>)</span>
+    <span>Realigned 2026-10-07 against branch <code>m4</code>: M4 remediated (code <code>c25b667</code>) and both reviews complete, awaiting your acceptance; <code>main</code> holds accepted M3 (code <code>1812374</code>)</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Send M4’s remediation to GPT-6.1 Sol for a follow-up review.</h1>
-    <p class="lede">Sol’s review of M4 found one high issue: after a Reset or an Open while paused, the previous world’s trails stayed drawn until the next step. It is fixed in <code>c25b667</code> and verified in the packaged app, and a formatting note is fixed too. All seven acceptance criteria pass, AC5 again with the fix. Because the finding was high, a targeted follow-up review comes next, then your acceptance and the close-out merge. M4 is on branch <code>m4</code>, not merged; M5 waits for it.</p>
+    <h1>Accept M4, or send it back.</h1>
+    <p class="lede">M4 is remediated on branch <code>m4</code> (code <code>c25b667</code>). Sol’s review of <code>8ec6342</code> found one high issue, old trails still drawn after a paused Reset or Open, and a formatting note; both are fixed and verified in the packaged app. Sol’s follow-up review of <code>0cec626</code> returned REMEDIATION VERIFIED with no new findings. All seven acceptance criteria pass. Your acceptance comes next, then the close-out merge of <code>m4</code> into <code>main</code>. M5 waits for it.</p>
     <cite><code>docs/evidence/M4.md</code> Status, Acceptance criteria, Performance, Findings</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -553,14 +553,14 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m4</code>. GPT-6.1 Sol reviewed <code>8ec6342</code> and found 1 high finding (AC5) and 1 formatting note; both were resolved and the fix verified natively. Sol runs the targeted follow-up review.</dd>
-              <dt>Graph permits</dt><dd class="soft">Remediated: code at <code>c25b667</code>, all seven criteria passing on the packaged app; follow-up review pending.</dd>
-              <dt>Should run</dt><dd class="run">Sol’s targeted follow-up review of the remediation (the trail recorder’s <code>sync</code> and its evidence) on <code>m4</code>, then your acceptance and the close-out merge. Nothing else touches <code>m4</code> meanwhile.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m4</code>. GPT-6.1 Sol reviewed <code>8ec6342</code> and found 1 high finding (AC5) and 1 formatting note; both were resolved and the fix verified natively. Sol’s follow-up review of <code>0cec626</code> returned REMEDIATION VERIFIED with no new findings.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>c25b667</code>, reviews complete; awaiting your acceptance, not merged.</dd>
+              <dt>Should run</dt><dd class="run">Your acceptance, then the close-out merge of <code>m4</code> into <code>main</code>. Nothing beside it: M5 shares <code>ui</code> and waits.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M3, accepted on 2026-10-07. Contracts C4, C5.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for P0, P1, P2 and the 1280×800 check and restored it, and restored the panel preferences it changed.</dd>
-              <dt>Your part</dt><dd>Run Sol’s follow-up review, then accept. The 1280×800 check ran under More Space, so nothing is left for you to measure; clicking a moving body on a real trackpad is an optional check, not a gate (<code>M4.md</code> Owner checks).</dd>
+              <dt>Your part</dt><dd>Done: you ran both reviews. Optionally click a moving body on the real trackpad (<code>M4.md</code> Owner checks; not a gate). Then accept M4 or send it back.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
