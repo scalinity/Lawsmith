@@ -72,7 +72,7 @@ expect sim-control "reset pauses at tick 0 with the authored configuration" "e['
 press play
 wait_log run-digest $(( digests + 2 )) 30
 logq all $APP_LOG run-digest | tail -2 > $QA_OUT/demo-a-digests.jsonl
-say "run A digests: $(cut -c1-200 $QA_OUT/demo-a-digests.jsonl | tr '\n' ' ')"
+say "run A digests: $(cut -c1-200 $QA_OUT/demo-a-digests.jsonl | paste -sd ' ' -)"
 
 # Step 10: save the configuration through the real macOS Save panel, quit, reopen in a fresh app.
 keys kd:cmd,shift t:s ku:cmd,shift
