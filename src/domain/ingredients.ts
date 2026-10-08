@@ -108,14 +108,19 @@ export function addIngredient(expression: FieldExpression, group: ExprPath | nul
   return { ok: true, expression: { kind: 'sum', terms: [expression, leaf] }, path: [1] };
 }
 
-/** Removes one ingredient from its sum. A sum keeps at least one term; a law's last one goes with the law. */
+/**
+ * Removes one ingredient from its sum. A sum left with one term becomes that term, which adds the same
+ * drive and drag: a law taken back to one primitive is a one-leaf law again, and a group of one is its
+ * ingredient. A sum keeps at least one term; a law's last one goes with the law.
+ */
 export function removeIngredient(expression: FieldExpression, path: ExprPath): Edited {
   const index = path[path.length - 1];
   const parentPath = path.slice(0, -1);
   const parent = typeof index === 'number' ? nodeAt(expression, parentPath) : undefined;
   if (!parent || parent.kind !== 'sum') return { ok: false, reason: 'a law keeps its last ingredient; delete the law to remove it' };
   if (parent.terms.length === 1) return { ok: false, reason: 'a group keeps at least one ingredient' };
-  return { ok: true, expression: replaceAt(expression, parentPath, { kind: 'sum', terms: parent.terms.filter((_, i) => i !== index) }), path: parentPath };
+  const terms = parent.terms.filter((_, i) => i !== index);
+  return { ok: true, expression: replaceAt(expression, parentPath, terms.length === 1 ? terms[0]! : { kind: 'sum', terms }), path: parentPath };
 }
 
 /** The gain an ingredient starts with: 1, which changes nothing until it is edited. */

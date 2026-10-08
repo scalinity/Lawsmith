@@ -6,10 +6,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
 import { DocumentController } from '../src/domain/document';
-import { addIngredient, expressionSummary, ingredientLabels, ingredientsOf, keptView, parentLevel, peel, removeIngredient, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
+import { addIngredient, expressionSummary, ingredientLabels, ingredientsOf, isCompound, keptView, parentLevel, peel, removeIngredient, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
 import { cloneFrozen, type FieldDefinition, type FieldExpression, type SceneDocument } from '../src/domain/scene';
 import { nodeAt, replaceAt, validateExpression } from '../src/fields/expression';
-import { sampleField } from '../src/fields/kernel';
+import { compileField, sampleField } from '../src/fields/kernel';
 import { regionDescriptor } from '../src/fields/registry';
 import { lawHandles } from '../src/interaction/handles';
 import { createDocument, parseScene, semanticDigest, serializeScene } from '../src/persistence/sceneFile';
@@ -106,6 +106,25 @@ describe('the ingredient view of an expression', () => {
     expect(ingredientLabels(ingredientsOf(withoutSwirl.expression))).toEqual(['Pull', 'Drag']);
     expect(removeIngredient(pull, []).ok).toBe(false);
     expect(removeIngredient({ kind: 'sum', terms: [pull] }, [0]).ok).toBe(false);
+  });
+
+  it('a sum left with one term becomes that term: a one-leaf law again, or a group of one its ingredient', () => {
+    const back = ok(removeIngredient({ kind: 'sum', terms: [pull, swirl] }, [1]));
+    expect(back).toEqual({ ok: true, expression: pull, path: [] });
+    expect(isCompound(back.expression)).toBe(false);
+    const nested: FieldExpression = { kind: 'sum', terms: [drag, { kind: 'gain', gain: { kind: 'constant', value: 2 }, child: { kind: 'sum', terms: [pull, swirl] } }] };
+    const ungrouped = ok(removeIngredient(nested, [1, 'child', 0]));
+    expect(ungrouped.expression).toEqual({ kind: 'sum', terms: [drag, { kind: 'gain', gain: { kind: 'constant', value: 2 }, child: swirl }] });
+    expect(ungrouped.path).toEqual([1, 'child']);
+    // The one term adds what the one-term sum added, bit for bit, at every sampled point.
+    const one: FieldExpression = { kind: 'sum', terms: [swirl] };
+    const law = (expression: FieldExpression): FieldDefinition => ({ id: 'x', enabled: true, pose: { position: [0, 0, 0], rotation: [0, 0, 0, 1] }, region: { kind: 'sphere', radius: 3 }, edgeFade: 0.25, expression });
+    const sample = (expression: FieldExpression, x: number) => {
+      const out = [0, 0, 0, 0];
+      const weight = sampleField(compileField(law(expression)), x, 0.5, 0.7, 7, out);
+      return [weight, ...out];
+    };
+    for (const x of [-1.2, -0.3, 0, 0.4, 2.1]) expect(sample(one, x)).toEqual(sample(swirl, x));
   });
 
   it('wraps an ingredient in a gain or a mask and unwraps it again, leaving the tree as it was', () => {
