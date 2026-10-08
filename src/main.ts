@@ -77,7 +77,7 @@ function withTimeout<T>(work: Promise<T>, what: string): Promise<T> {
 function showFailure(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   report('failure', { message, facts });
-  for (const id of ['status', 'tools', 'diagnostics', 'panel', 'transport', 'overlays']) $(id).hidden = true;
+  for (const id of ['status', 'tools', 'diagnostics', 'panel', 'transport', 'overlays', 'run']) $(id).hidden = true;
   $('failure-summary').textContent = message;
   $('failure-detail').textContent = JSON.stringify(facts, null, 2);
   $('failure').hidden = false;
@@ -2350,7 +2350,7 @@ async function start() {
   }, 500);
 
   $('status').hidden = true;
-  for (const id of ['tools', 'panel', 'transport', 'overlays']) $(id).hidden = false;
+  for (const id of ['tools', 'panel', 'transport', 'overlays', 'run']) $(id).hidden = false;
   overlay.hidden = false;
   renderPanel();
   reportDigest('startup');
