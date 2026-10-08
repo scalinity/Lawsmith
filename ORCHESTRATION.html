@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-08 against branch <code>m5</code>: M5 implemented (code <code>82f1e15</code>) and awaiting review; <code>main</code> holds accepted M4 (code <code>c25b667</code>)</span>
+    <span>Realigned 2026-10-08 against branch <code>m5</code>: M5’s review addressed (code <code>2a06bad</code>), its native rerun pending; <code>main</code> holds accepted M4 (code <code>c25b667</code>)</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Send M5 to GPT-6.1 Sol for review.</h1>
-    <p class="lede">M5 is implemented on branch <code>m5</code> (application code <code>82f1e15</code>) and is not merged. A law can now hold a few primitive ingredients under sum, gain and mask and still move, turn and resize as one law. The Storm Bottle in the packaged app holds the falling stream with its drag (54 bodies), lets it fall through without it (7), and comes back exactly on undo. Each ingredient’s part of a body’s step is recomputed independently. A triangle gain reads 2 at tick 120 and 0 at tick 240. All eight acceptance criteria pass, including P5’s compound gate (step p95 1 ms, edit p95 16 ms), with M1–M4 regressions passing on the same build. Sol reviews read-only from the prompt in the unit’s final report; then come your acceptance and the close-out merge. M6A waits for that merge.</p>
-    <cite><code>docs/evidence/M5.md</code> Status, Acceptance criteria, Performance, Findings</cite>
+    <h1>Rerun M5’s native scenarios on the reviewed build.</h1>
+    <p class="lede">M5 is implemented on branch <code>m5</code> and is not merged. A law can now hold a few primitive ingredients under sum, gain and mask and still move, turn and resize as one law. By your decision, two read-only reviewers replaced Sol’s review. They found no critical issue, four warnings and ten suggestions, and every one is fixed (application code <code>2a06bad</code>, 508 tests passing). Those fixes came after the native runs on <code>82f1e15</code>, so the native parts of AC4–AC8 are pending until <code>m5-compose</code>, <code>m5-perf</code>, <code>m5-legible</code> and the M1–M4 chain rerun on the rebuilt app. Then come your acceptance and the close-out merge. M6A waits for that merge.</p>
+    <cite><code>docs/evidence/M5.md</code> Status, Review, Acceptance criteria, Performance, Findings</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -569,7 +569,7 @@
       </article>
 
       <!-- REALIGN M5 -->
-      <article class="unit" id="m5" data-gate="M5" data-state="implemented" data-tier="near" data-stop="Creative core">
+      <article class="unit" id="m5" data-gate="M5" data-state="owner-check" data-tier="near" data-stop="Creative core">
         <div class="gate">M5</div>
         <div>
           <div class="unit-head">
@@ -578,18 +578,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m5</code>. GPT-6.1 Sol runs the independent review gate next, read-only: the math, serialization, and whether it still feels like manipulating a law.</dd>
-              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>82f1e15</code>, all eight criteria passing on the packaged app; review pending.</dd>
-              <dt>Should run</dt><dd class="run">Sol’s review of the evidence head on <code>m5</code>, then <code>/address</code> in a fresh Opus 5.5 session on <code>m5</code> if it finds anything, then your acceptance and the close-out merge. Nothing else touches <code>m5</code> meanwhile. Second approved stopping point: creative core.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m5</code>. By your decision, two read-only Opus 5.5 reviewers replaced Sol’s review of <code>2f83c90</code>: one hunting bugs, one auditing architecture, performance, security and data integrity. They found no critical issue, four warnings and ten suggestions, all fixed through <code>/address</code>.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>2a06bad</code> after the review, 508 tests passing, packaged from <code>565571b</code>; the native parts of AC4–AC8 pending on that build.</dd>
+              <dt>Should run</dt><dd class="run">Every native scenario on the rebuilt app in a hands-off window: <code>m5-compose</code>, <code>m5-perf</code>, <code>m5-legible</code>, then the M1–M4 chain. Then your acceptance and the close-out merge. Nothing else touches <code>m5</code> meanwhile. Second approved stopping point: creative core.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M4, accepted on 2026-10-07. Contracts C1, C2, C4, C8.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for P5, P0, P1, P2 and the 1280×800 check and restored it, and restored the panel preferences it changed.</dd>
-              <dt>Your part</dt><dd>Run Sol’s review, then accept. The native checks ran in the hands-off window, so nothing is left to measure. Holding the bottle on a real trackpad and judging whether it feels like one law is an optional check, not a gate (<code>M5.md</code> Owner checks).</dd>
+              <dt>Your part</dt><dd>Agree a hands-off window for the native rerun, then accept. Holding the bottle on a real trackpad and judging whether it feels like one law is an optional check, not a gate (<code>M5.md</code> Owner checks).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/evidence/M5.md</code> Status, Acceptance criteria, Storm Bottle, Performance, 1280×800, Findings, Owner checks; <code>docs/MILESTONES.md</code> M5</cite>
+          <cite class="src"><code>docs/evidence/M5.md</code> Status, Review, Acceptance criteria, Storm Bottle, Performance, 1280×800, Findings, Owner checks; <code>docs/MILESTONES.md</code> M5</cite>
         </div>
       </article>
 
@@ -1161,6 +1161,12 @@
           <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails. In M2 a new bundle’s first launch took about 4.6 s and later launches about 2 s. Moved to M9 by your decision, to measure with the performance envelope.</td>
           <td data-label="Owner"><a href="#m9">M9</a></td>
           <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup, Owner decisions; <code>M2.md</code> finding 7</cite></td>
+        </tr>
+        <tr id="t-m5-probes" data-owner="m9" data-short="Probes at the limits">
+          <td data-label="Thread" class="lead">Probes at SPEC’s work limits</td>
+          <td data-label="What the record says">At SPEC §15.2’s limits (32 laws, 256 leaves, 57 nodes and depth 8 per law, every body inside every law), one 2,000-probe step takes about 14 ms headless (p50; p95 16 ms), against about 1 ms for P5. The host step stays under 2.1 ms p95 there. Two probe steps per 60 Hz frame would not keep 1× with probes on. The limits are import and work safeguards, not the envelope, and SPEC allows an oversized scene reduced visualization. For M9’s envelope, measured on the packaged app.</td>
+          <td data-label="Owner"><a href="#m9">M9</a></td>
+          <td data-label="Source"><cite><code>M5.md</code> Performance (headless at the work limits), Review</cite></td>
         </tr>
         <tr id="t-m2-quit" data-owner="owner" data-short="Clean quit">
           <td data-label="Thread" class="lead">M2 findings 9 and 10: Dock Quit and logout of a clean session</td>
