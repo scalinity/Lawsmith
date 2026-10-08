@@ -73,9 +73,10 @@ press_expect run-return context
 activate
 keys kd:cmd t:q ku:cmd
 sleep 1
-[[ $(depth) == 1 ]] && alert_for recording "Don't Save"
-sleep 1
+# Back in authoring, the guard asks about the scene first, then the recording.
 [[ $(depth) == 1 ]] && alert_for scene "Don't Save"
+sleep 1
+[[ $(depth) == 1 ]] && alert_for recording "Don't Save"
 wait_exit
 restore_display
 [[ $(screen_size) == $LARGER_TEXT ]] || fail "the display was not restored"
