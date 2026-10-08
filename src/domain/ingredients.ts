@@ -46,6 +46,30 @@ export function ingredientsOf(expression: FieldExpression, group: ExprPath | nul
   return group === null ? [peel(expression, [])] : [];
 }
 
+export const samePath = (a: ExprPath | null, b: ExprPath | null) => a !== null && b !== null && a.length === b.length && a.every((s, i) => s === b[i]);
+
+/**
+ * The level holding the group whose sum is at `group`: past the group's own gains and masks to its
+ * ingredient, then past that ingredient's term index to the sum holding it; the law's list at the top.
+ */
+export function parentLevel(group: ExprPath): ExprPath | null {
+  const p = [...group];
+  while (p[p.length - 1] === 'child') p.pop();
+  p.pop();
+  return p.length ? p : null;
+}
+
+/**
+ * The editor's open group and focused ingredient once the law has changed: the group while it is still
+ * a sum, the focus while it is still one of that level's ingredients, and otherwise the law's own list
+ * and no focus. A one-leaf law has no ingredient list.
+ */
+export function keptView(expression: FieldExpression, level: ExprPath | null, focus: ExprPath | null): { level: ExprPath | null; focus: ExprPath | null; ingredients: Ingredient[] } {
+  const kept = level !== null && nodeAt(expression, level)?.kind === 'sum' ? level : null;
+  const ingredients = isCompound(expression) ? ingredientsOf(expression, kept) : [];
+  return { level: kept, focus: ingredients.some((i) => samePath(i.path, focus)) ? focus : null, ingredients };
+}
+
 /** Each ingredient's everyday name: its primitive's verb or "Group", numbered when a name repeats. */
 export function ingredientLabels(ingredients: readonly Ingredient[]): string[] {
   const seen = new Map<string, number>();

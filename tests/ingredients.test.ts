@@ -6,7 +6,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
 import { DocumentController } from '../src/domain/document';
-import { addIngredient, expressionSummary, ingredientLabels, ingredientsOf, removeIngredient, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
+import { addIngredient, expressionSummary, ingredientLabels, ingredientsOf, keptView, parentLevel, peel, removeIngredient, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
 import { cloneFrozen, type FieldDefinition, type FieldExpression, type SceneDocument } from '../src/domain/scene';
 import { nodeAt, replaceAt, validateExpression } from '../src/fields/expression';
 import { sampleField } from '../src/fields/kernel';
@@ -54,6 +54,41 @@ describe('the ingredient view of an expression', () => {
     expect(only!.core.node.kind).toBe('sum');
     expect(ingredientLabels([only!])).toEqual(['Group']);
     expect(ingredientLabels(ingredientsOf(tree, ['child', 'child']))).toEqual(['Pull', 'Pull 2']);
+  });
+
+  it('opens a group past its gains and masks, and goes back up to the level holding it', () => {
+    const masked = (child: FieldExpression): FieldExpression => ({ kind: 'mask', pose: { position: [0, 0, 0], rotation: [0, 0, 0, 1] }, region: { kind: 'sphere', radius: 1 }, edgeFade: 0, child });
+    const gained = (child: FieldExpression): FieldExpression => ({ kind: 'gain', gain: { kind: 'constant', value: 2 }, child });
+    // Root sum: [pull, gain(mask(sum(swirl, sum(drag, pull))))].
+    const inner: FieldExpression = { kind: 'sum', terms: [drag, pull] };
+    const tree: FieldExpression = { kind: 'sum', terms: [pull, gained(masked({ kind: 'sum', terms: [swirl, inner] }))] };
+    // Opening term 1's group lands on its sum, beneath the gain and the mask.
+    expect(peel(tree, [1]).core.path).toEqual([1, 'child', 'child']);
+    expect(peel(tree, [1, 'child', 'child', 1]).core.path).toEqual([1, 'child', 'child', 1]);
+    // Up from the nested group is term 1's group; up from that is the law's own list.
+    expect(parentLevel([1, 'child', 'child', 1])).toEqual([1, 'child', 'child']);
+    expect(parentLevel([1, 'child', 'child'])).toBeNull();
+    expect(parentLevel([0])).toBeNull();
+    // A root gain over a sum: its one ingredient's group is at ['child'], and a group inside it goes back there.
+    const rooted = gained({ kind: 'sum', terms: [pull, inner] });
+    expect(peel(rooted, []).core.path).toEqual(['child']);
+    expect(parentLevel(['child'])).toBeNull();
+    expect(parentLevel(['child', 1])).toEqual(['child']);
+  });
+
+  it('keeps the open group and focus only while they still name a group and one of its ingredients', () => {
+    const tree: FieldExpression = { kind: 'sum', terms: [pull, { kind: 'sum', terms: [swirl, drag] }] };
+    expect(keptView(tree, [1], [1, 1])).toMatchObject({ level: [1], focus: [1, 1] });
+    expect(keptView(tree, [1], [1, 1]).ingredients.map((i) => i.path)).toEqual([[1, 0], [1, 1]]);
+    // The focused term was removed: the group stays open, the focus goes.
+    const fewer: FieldExpression = { kind: 'sum', terms: [pull, { kind: 'sum', terms: [swirl] }] };
+    expect(keptView(fewer, [1], [1, 1])).toMatchObject({ level: [1], focus: null });
+    // The group is no longer a sum: back to the law's list, with no focus.
+    const flat: FieldExpression = { kind: 'sum', terms: [pull, swirl] };
+    expect(keptView(flat, [1], [1, 1])).toMatchObject({ level: null, focus: null });
+    // A focus at the law's level survives; a one-leaf law has no list, so no focus.
+    expect(keptView(flat, null, [0]).focus).toEqual([0]);
+    expect(keptView(pull, null, [])).toEqual({ level: null, focus: null, ingredients: [] });
   });
 
   it('adds an ingredient as the last term; a one-leaf law becomes a sum with its leaf first', () => {

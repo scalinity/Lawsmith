@@ -8,9 +8,12 @@ import {
   DEFAULT_TRIANGLE,
   addIngredient,
   ingredientLabels,
-  ingredientsOf,
   isCompound,
+  keptView,
+  parentLevel,
+  peel,
   removeIngredient,
+  samePath,
   unwrapModifier,
   wrapIngredient,
   type Edited,
@@ -35,7 +38,6 @@ const DEGREES = 180 / Math.PI;
 const $ = (id: string) => document.getElementById(id)!;
 const fmt = (value: number, digits: number) => String(Math.round(value * 10 ** digits) / 10 ** digits);
 const short = (v: number) => fmt(v, 2);
-const samePath = (a: ExprPath | null, b: ExprPath | null) => a !== null && b !== null && a.length === b.length && a.every((s, i) => s === b[i]);
 
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { dataset?: Record<string, string> } = {}, ...children: (Node | string)[]): HTMLElementTagNameMap[K] {
   const { dataset, ...rest } = props;
@@ -169,17 +171,6 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
     render(law ?? undefined, lastTick);
   });
 
-  /**
-   * The level holding the group whose sum is at `group`: past the group's own gains and masks to its
-   * ingredient, then past that ingredient's term index to the sum holding it; the law's list at the top.
-   */
-  function parentLevel(group: ExprPath): ExprPath | null {
-    const p = [...group];
-    while (p[p.length - 1] === 'child') p.pop();
-    p.pop();
-    return p.length ? p : null;
-  }
-
   // ---- the focused ingredient's controls
   detail.addEventListener('click', (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]');
@@ -218,10 +209,7 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
       }
       case 'open-group': {
         // The group's sum sits beneath the ingredient's own gains and masks: open that sum.
-        const node = nodeAt(law.expression, focus);
-        let at: ExprPath = focus;
-        for (let n = node; n && (n.kind === 'gain' || n.kind === 'mask'); n = n.child) at = [...at, 'child'];
-        level = at;
+        level = peel(law.expression, focus).core.path;
         setFocus(null);
         render(law ?? undefined, lastTick);
         return;
@@ -419,10 +407,11 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
     }
     law = selected;
     const compound = isCompound(selected.expression);
-    if (level !== null && nodeAt(selected.expression, level)?.kind !== 'sum') level = null;
-    const ingredients = compound ? ingredientsOf(selected.expression, level) : [];
-    if (focus !== null && !ingredients.some((i) => samePath(i.path, focus))) {
-      focus = null;
+    const view = keptView(selected.expression, level, focus);
+    level = view.level;
+    const ingredients = view.ingredients;
+    if (focus !== view.focus) {
+      focus = view.focus;
       o.onFocus();
     }
     note.textContent = compound

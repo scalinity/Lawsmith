@@ -200,6 +200,87 @@ describe('T07 I: in-memory candidates (live edits)', () => {
     expect(expressionStats(host.appliedFields().find((f) => f.id === 'one-more')!.expression).leaves).toBe(3);
     host.dispose();
   });
+
+  /** The bundled recipe (one 1-leaf law) plus `count` laws of 63 drag leaves each, applied. */
+  function budgetScene(count: number) {
+    const base = defaultDocument();
+    const host = new SimulationHost(cloneFrozen(base.semantic));
+    const controller = new DocumentController(base, host);
+    const law = (id: string, leaves: number): FieldDefinition => ({ ...base.semantic.fields[0]!, id, expression: { kind: 'sum', terms: Array.from({ length: leaves }, () => drag(0.5)) } as unknown as FieldExpression });
+    for (let i = 0; i < count; i++) expect(controller.putField(law(`big-${i}`, 63)).ok).toBe(true);
+    controller.settle();
+    const leavesOf = (id: string) => expressionStats(host.appliedFields().find((f) => f.id === id)!.expression).leaves;
+    return { host, controller, law, leavesOf };
+  }
+
+  it('a queued removal frees its leaves before the boundary', () => {
+    const { host, controller, law } = budgetScene(4);
+    // 253 leaves applied. The deletion of big-0 is queued; its 63 leaves are already free.
+    expect(controller.remove('big-0').ok).toBe(true);
+    expect(controller.putField(law('big-4', 63)).ok).toBe(true);
+    expect(controller.putField(law('big-5', 4))).toMatchObject({ ok: false, path: 'expression' });
+    controller.settle();
+    expect(host.appliedFields().map((f) => f.id)).toEqual(['big-1', 'big-2', 'big-3', 'big-4', 'sideways']);
+    host.dispose();
+  });
+
+  it('an undo past the leaf budget is refused, leaving the law and both histories as they were', () => {
+    const { host, controller, law, leavesOf } = budgetScene(4);
+    expect(controller.editField('big-0', 'Remove ingredients', (f) => ({ ...f, expression: law('x', 1).expression })).ok).toBe(true);
+    // 191 leaves; an unrecorded law brings the scene back to 253, so undoing the shrink would make 315.
+    expect(controller.putField(law('big-4', 62)).ok).toBe(true);
+    const revision = controller.revision;
+    expect(controller.undo()).toMatchObject({ ok: false, path: 'expression' });
+    expect(controller.revision).toBe(revision);
+    expect([controller.canUndo, controller.canRedo]).toEqual([true, false]);
+    controller.settle();
+    expect(leavesOf('big-0')).toBe(1);
+    // With room again (192 leaves, 254 after), the same undo goes through.
+    expect(controller.putField(law('big-4', 1)).ok).toBe(true);
+    expect(controller.undo().ok).toBe(true);
+    controller.settle();
+    expect(leavesOf('big-0')).toBe(63);
+    expect([controller.canUndo, controller.canRedo]).toEqual([false, true]);
+    host.dispose();
+  });
+
+  it('a redo past the leaf budget is refused and stays available', () => {
+    const { host, controller, law, leavesOf } = budgetScene(0);
+    expect(controller.putField(law('grown', 1)).ok).toBe(true);
+    controller.settle();
+    expect(controller.editField('grown', 'Add ingredients', (f) => ({ ...f, expression: law('x', 63).expression })).ok).toBe(true);
+    expect(controller.undo().ok).toBe(true);
+    // 2 leaves; unrecorded laws bring the scene to 195, so redoing the growth would make 257.
+    for (let i = 0; i < 3; i++) expect(controller.putField(law(`big-${i}`, 63)).ok).toBe(true);
+    expect(controller.putField(law('big-3', 4)).ok).toBe(true);
+    const revision = controller.revision;
+    expect(controller.redo()).toMatchObject({ ok: false, path: 'expression' });
+    expect(controller.revision).toBe(revision);
+    expect([controller.canUndo, controller.canRedo]).toEqual([false, true]);
+    controller.settle();
+    expect(leavesOf('grown')).toBe(1);
+    // One leaf fewer elsewhere makes exactly 256, which is allowed.
+    expect(controller.putField(law('big-3', 3)).ok).toBe(true);
+    expect(controller.redo().ok).toBe(true);
+    controller.settle();
+    expect(leavesOf('grown')).toBe(63);
+    host.dispose();
+  });
+
+  it('creating or duplicating a law at the leaf budget is refused with nothing recorded', () => {
+    const { host, controller, law } = budgetScene(4);
+    expect(controller.putField(law('big-4', 3)).ok).toBe(true);
+    controller.settle();
+    // 256 leaves: a new law's one leaf does not fit.
+    const revision = controller.revision;
+    expect(controller.create('directional', [0, 0, 0])).toMatchObject({ ok: false, path: 'expression' });
+    expect(controller.duplicate('sideways')).toMatchObject({ ok: false, path: 'expression' });
+    expect(controller.revision).toBe(revision);
+    expect(controller.canUndo).toBe(false);
+    controller.settle();
+    expect(host.appliedFields().map((f) => f.id)).toEqual(['big-0', 'big-1', 'big-2', 'big-3', 'big-4', 'sideways']);
+    host.dispose();
+  });
 });
 
 /** Every expression variant M5 writes. */
