@@ -1,12 +1,13 @@
 // Same-environment determinism fixtures (SPEC §13.4, T04). Shared by the Vitest harness and
 // the app's diagnostic run, so the qualified WKWebView runtime executes the same code.
-import { STARTING_RECIPE, validateField, type FieldDefinition, type SceneDefinition } from '../domain/scene';
+import { STARTING_RECIPE, validateField, type FieldDefinition, type FieldExpression, type Primitive, type SceneDefinition } from '../domain/scene';
 import { sampleField } from '../fields/kernel';
 import { primitiveDescriptor, regionDescriptor } from '../fields/registry';
 import { MAX_PROBES, ProbeField, type ProbeSettings } from '../observation/probes';
 import { TRAIL_INTERVAL_TICKS, TrailRecorder, type TrailMode } from '../observation/trails';
 import { ARROW_STRIDE, DOT_STRIDE, MAX_SAMPLES, OTHER_LATTICE, SELECTED_LATTICE, sampleLattice } from '../rendering/samples';
 import { SimulationHost, type CanonicalState, type CommandPayload } from './host';
+import { ingredientBreakdown } from './observation';
 import { FixedStepScheduler } from './scheduler';
 
 export const FIXTURE_TICKS = [600, 1200] as const;
@@ -124,7 +125,7 @@ export function runAtCadence(root: SceneDefinition, hz: number, script: readonly
       for (let i = 0; i < host.count * 3; i++) readback += host.positions[i]!;
       for (const field of host.appliedFields()) {
         const compiled = host.compiledField(field.id)!;
-        for (let k = 0; k < 125; k++) readback += sampleField(compiled, compiled.px + (k % 5) - 2, compiled.py, compiled.pz, arrow);
+        for (let k = 0; k < 125; k++) readback += sampleField(compiled, compiled.px + (k % 5) - 2, compiled.py, compiled.pz, host.tick, arrow);
       }
       if (Number.isNaN(readback)) throw new Error('nonfinite render observation');
     }
@@ -218,7 +219,7 @@ export function runObserved(
       for (const field of host.appliedFields()) {
         if (view.arrowsFor !== 'all' && view.arrowsFor !== field.id) continue;
         const lattice = view.arrowsFor === field.id ? SELECTED_LATTICE : OTHER_LATTICE;
-        const drawn = sampleLattice(host.compiledField(field.id)!, regionDescriptor(field.region.kind).bounds(field.region), lattice, arrows, dots);
+        const drawn = sampleLattice(host.compiledField(field.id)!, regionDescriptor(field.region.kind).bounds(field.region), lattice, host.tick, arrows, dots);
         activity.arrowSamples += drawn.arrows + drawn.dots;
       }
     }
@@ -301,11 +302,13 @@ export function trailFidelity(root: SceneDefinition, ticks = 1200): { samples: n
  * T08 in whichever runtime runs it: the oldest living body is explained at every step; each retained
  * transition's shares plus gravity are compared with its submitted total and its force/mass under the
  * T03 tolerance, and every 50 ticks the paused-style preview is compared with the step that follows.
+ * Each compound law's ingredient shares are reconstructed from the retained step and compared with
+ * that law's share (M5).
  */
 export function explanationFixture(root: SceneDefinition, script: readonly ScriptedCommand[] = [], ticks = 600) {
   const host = new SimulationHost(root);
   const revision = { value: 0 };
-  const result = { steps: 0, worstSumRatio: 0, worstForceRatio: 0, limitedSteps: 0, contactSteps: 0, previews: 0, previewMismatches: 0 };
+  const result = { steps: 0, worstSumRatio: 0, worstForceRatio: 0, limitedSteps: 0, contactSteps: 0, previews: 0, previewMismatches: 0, ingredientChecks: 0, worstIngredientRatio: 0, unreconciled: 0 };
   const ratio = (actual: number, expected: number) => Math.abs(actual - expected) / (1e-9 + 1e-8 * Math.abs(expected));
   try {
     while (host.tick < ticks) {
@@ -327,20 +330,36 @@ export function explanationFixture(root: SceneDefinition, script: readonly Scrip
       }
       if (o.lambda < 1) result.limitedSteps += 1;
       if (o.contacts?.length) result.contactSteps += 1;
+      o.contributions.forEach((c, l) => {
+        const breakdown = ingredientBreakdown(o, l);
+        if (!breakdown) return;
+        result.ingredientChecks += 1;
+        if (!breakdown.reconciled) result.unreconciled += 1;
+        const applied = [0, 0, 0];
+        for (const share of breakdown.ingredients) for (let i = 0; i < 3; i++) applied[i]! += share.applied[i]!;
+        for (let i = 0; i < 3; i++) result.worstIngredientRatio = Math.max(result.worstIngredientRatio, ratio(applied[i]!, c.applied[i]!));
+      });
       if (preview && preview.bodyId === o.bodyId) {
         result.previews += 1;
         if (JSON.stringify([preview.submitted, preview.contributions, preview.beta, preview.lambda]) !== JSON.stringify([o.submitted, o.contributions, o.beta, o.lambda])) result.previewMismatches += 1;
       }
     }
-    return { ...result, pass: result.steps > 0 && result.worstSumRatio <= 1 && result.worstForceRatio <= 1 && result.previewMismatches === 0 };
+    return { ...result, pass: result.steps > 0 && result.worstSumRatio <= 1 && result.worstForceRatio <= 1 && result.previewMismatches === 0 && result.unreconciled === 0 && result.worstIngredientRatio <= 1 };
   } finally {
     host.dispose();
   }
 }
 
+/** Every primitive of a tree retuned through its own controls (×0.75), the tree's shape and order kept. */
+function retuned(e: FieldExpression): FieldExpression {
+  if (e.kind === 'sum') return { ...e, terms: e.terms.map(retuned) };
+  if (e.kind === 'gain' || e.kind === 'mask') return { ...e, child: retuned(e.child) };
+  return primitiveDescriptor(e.kind).controls.reduce<Primitive>((p, c) => c.set(p, c.get(p) * 0.75), e);
+}
+
 /**
  * A tick-addressed edit script for every law of a root, whatever its kinds: each law is moved,
- * rotated, resized through its region controls, retuned through its primitive controls, disabled
+ * rotated, resized through its region controls, retuned through its primitives' controls, disabled
  * and enabled; the last law is removed and put back. Values are resolved through validation, as a
  * live edit would be, and laws are staggered by ID order.
  */
@@ -355,12 +374,11 @@ export function scriptedEdits(root: SceneDefinition): ScriptedCommand[] {
   const s = Math.sin(Math.PI / 8);
   root.fields.forEach((base, i) => {
     const region = regionDescriptor(base.region.kind);
-    const primitive = primitiveDescriptor(base.expression.kind);
     const [x, y, z] = base.pose.position;
     let f = put(120 + i, { ...base, pose: { ...base.pose, position: [x - 0.5, y + 0.2, z + 0.1] } });
     f = put(300 + i, { ...f, pose: { ...f.pose, rotation: [0, 0, s, Math.cos(Math.PI / 8)] } });
     f = put(480 + i, { ...f, region: region.controls.reduce((r, c) => c.set(r, Math.min(c.max, c.get(r) * 1.2)), f.region) });
-    f = put(560 + i, { ...f, edgeFade: Math.min(1, f.edgeFade + 0.1), expression: primitive.controls.reduce((p, c) => c.set(p, c.get(p) * 0.75), f.expression) });
+    f = put(560 + i, { ...f, edgeFade: Math.min(1, f.edgeFade + 0.1), expression: retuned(f.expression) });
     f = put(700 + i, { ...f, enabled: false });
     put(840 + i, { ...f, enabled: true });
   });

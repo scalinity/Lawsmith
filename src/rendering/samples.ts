@@ -21,10 +21,11 @@ export const DOT_STRIDE = 4;
 const sample = [0, 0, 0, 0];
 
 /**
- * Evaluates the law at each lattice point of its local bounding box: an arrow wherever |A| reaches
- * ARROW_MIN_MS2 and a dot wherever K reaches DOT_MIN_PER_S, written into the two buffers.
+ * Evaluates the law at each lattice point of its local bounding box at tick n: an arrow wherever |A|
+ * reaches ARROW_MIN_MS2 and a dot wherever K reaches DOT_MIN_PER_S, written into the two buffers. The
+ * view passes the host's current tick, the one its next step samples.
  */
-export function sampleLattice(c: CompiledField, bounds: Vec3, lattice: readonly number[], arrows: Float64Array, dots: Float64Array): { arrows: number; dots: number } {
+export function sampleLattice(c: CompiledField, bounds: Vec3, lattice: readonly number[], tick: number, arrows: Float64Array, dots: Float64Array): { arrows: number; dots: number } {
   const { m } = c;
   let n = 0;
   let d = 0;
@@ -37,7 +38,7 @@ export function sampleLattice(c: CompiledField, bounds: Vec3, lattice: readonly 
         const wx = c.px + m[0]! * rx + m[1]! * ry + m[2]! * rz;
         const wy = c.py + m[3]! * rx + m[4]! * ry + m[5]! * rz;
         const wz = c.pz + m[6]! * rx + m[7]! * ry + m[8]! * rz;
-        sampleField(c, wx, wy, wz, sample);
+        sampleField(c, wx, wy, wz, tick, sample);
         if (sample[3]! >= DOT_MIN_PER_S) {
           dots.set([wx, wy, wz, sample[3]!], DOT_STRIDE * d++);
         }

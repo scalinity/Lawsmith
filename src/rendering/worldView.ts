@@ -27,9 +27,11 @@ import {
   type Scene,
 } from 'three/webgpu';
 import { abs, float, max, mix, normalView, smoothstep, uniform, uv } from 'three/tsl';
-import type { FieldDefinition, LawPresentation, RegionDefinition, SceneDefinition, Vec3 } from '../domain/scene';
+import { peel } from '../domain/ingredients';
+import type { FieldDefinition, FieldExpression, LawPresentation, MaskExpression, RegionDefinition, SceneDefinition, Vec3 } from '../domain/scene';
+import { nodeAt, walk, type ExprPath } from '../fields/expression';
 import type { CompiledField } from '../fields/kernel';
-import { DRIVE_METERS_PER_MS2, primitiveDescriptor, regionDescriptor, type RegionKind } from '../fields/registry';
+import { DRIVE_METERS_PER_MS2, isPrimitiveKind, primitiveDescriptor, regionDescriptor, type Glyph, type RegionKind } from '../fields/registry';
 import { handlePoint, type LawHandle } from '../interaction/handles';
 import type { SimulationHost } from '../simulation/host';
 import { ARROW_STRIDE, DOT_STRIDE, MAX_SAMPLES, OTHER_LATTICE, SELECTED_LATTICE, sampleLattice } from './samples';
@@ -66,6 +68,10 @@ export interface LawsViewState {
   onlySelectedArrows: boolean;
   /** The selected law's spatial handles, in handle mode. */
   handles: { field: FieldDefinition; handles: readonly LawHandle[]; hover: string | null; active: string | null } | null;
+  /** The ingredient being edited in the selected compound law; its masks are drawn brighter. */
+  focus: ExprPath | null;
+  /** The host's tick: drawn samples of a tick-dependent law are this tick's (SPEC §12). */
+  tick: number;
   camera: Vector3;
 }
 
@@ -111,6 +117,7 @@ interface LawVisual {
   sampleLattice: readonly number[] | null;
   samplesShown: boolean;
   sampledAt: number;
+  sampledTick: number;
 }
 
 /** Releases the GPU resources a subtree owns; shared geometries survive. */
@@ -285,7 +292,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       scene.add(mesh);
     }
     scene.add(group);
-    return { group, shell, outer, inner, axis, shellIntensity, boxShell, roundShell, outerMaterial, innerMaterial, shafts, heads, dots, color: new Color(), sampleSource: null, sampleLattice: null, samplesShown: false, sampledAt: -Infinity };
+    return { group, shell, outer, inner, axis, shellIntensity, boxShell, roundShell, outerMaterial, innerMaterial, shafts, heads, dots, color: new Color(), sampleSource: null, sampleLattice: null, samplesShown: false, sampledAt: -Infinity, sampledTick: -1 };
   }
 
   function removeVisual(visual: LawVisual): void {
@@ -314,9 +321,9 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
    * Draws the host's compiled evaluator on a local lattice over the region's bounds (samples.ts): an
    * arrow along each nonzero drive A and a dot for each nonzero drag rate K, which has no direction.
    */
-  function refreshSamples(visual: LawVisual, c: CompiledField, bounds: Vec3, lattice: readonly number[]): number {
+  function refreshSamples(visual: LawVisual, c: CompiledField, bounds: Vec3, lattice: readonly number[], tick: number): number {
     const { shafts, heads, dots } = visual;
-    const counts = sampleLattice(c, bounds, lattice, arrowSamples, dotSamples);
+    const counts = sampleLattice(c, bounds, lattice, tick, arrowSamples, dotSamples);
     for (let d = 0; d < counts.dots; d++) {
       const [wx, wy, wz, k] = dotSamples.subarray(DOT_STRIDE * d, DOT_STRIDE * d + DOT_STRIDE);
       const r = DOT_METERS_PER_SQRT_K * Math.sqrt(k!);
@@ -361,7 +368,8 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const overlay = (color: Color) => new MeshBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true });
   const lineOverlay = (color: Color, opacity = 1) => new LineBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true, opacity });
   const roleMaterial = { extent: overlay(tokenColor('--text')), fade: overlay(teal), strength: overlay(lavender), core: overlay(tokenColor('--text-secondary')) };
-  const knobs = Array.from({ length: 8 }, () => {
+  // Enough for a compound law's own handles plus a focused ingredient's primitive and two nested masks.
+  const knobs = Array.from({ length: 16 }, () => {
     const mesh = new Mesh(sphereGeometry, roleMaterial.extent);
     mesh.renderOrder = 22;
     handleGroup.add(mesh);
@@ -399,7 +407,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     });
     // The strength handle is an arrow tip (directional, radial, vortex) or a gauge (drag, which has no direction).
     const strength = handles.find((h) => h.role === 'strength');
-    const glyph = primitiveDescriptor(field.expression.kind).glyph;
+    const glyph = strength?.glyph;
     strengthShaft.visible = strengthHead.visible = strength !== undefined && glyph !== 'drag' && Math.abs(strength.t) > 1e-6;
     gauge.visible = strength !== undefined && glyph === 'drag';
     if (strength) {
@@ -427,6 +435,64 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     coreRing.visible = core !== undefined;
     if (core) coreRing.scale.setScalar(Math.max(core.t, 1e-6));
   }
+
+  // ---- the selected law's masks (SPEC §6.3): each mask's region in the law frame, where it moves support
+  const maskGroup = new Group();
+  maskGroup.renderOrder = 3;
+  const maskMaterial = lineOverlay(lavender, 0.9);
+  const maskDimMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.35 });
+  const maskInnerMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.3 });
+  const maskLines = Array.from({ length: 16 }, () => {
+    const pose = new Group();
+    const outer = new LineSegments(shapes.box.edges, maskDimMaterial);
+    const inner = new LineSegments(shapes.box.edges, maskInnerMaterial);
+    pose.add(outer, inner);
+    maskGroup.add(pose);
+    return { pose, outer, inner };
+  });
+  scene.add(maskGroup);
+
+  function updateMasks(field: FieldDefinition | undefined, focus: ExprPath | null) {
+    const masks: { mask: MaskExpression; focused: boolean }[] = [];
+    if (field && !isPrimitiveKind(field.expression.kind)) {
+      const focused = new Set<FieldExpression>();
+      if (focus && nodeAt(field.expression, focus)) for (const m of peel(field.expression, focus).modifiers) focused.add(m.node);
+      walk(field.expression, (node) => {
+        if (node.kind === 'mask') masks.push({ mask: node, focused: focused.has(node) });
+      });
+    }
+    maskGroup.visible = masks.length > 0;
+    if (field) place(maskGroup, field);
+    maskLines.forEach((line, i) => {
+      const entry = masks[i];
+      line.pose.visible = entry !== undefined;
+      if (!entry) return;
+      const { mask, focused } = entry;
+      line.pose.position.set(...mask.pose.position);
+      line.pose.quaternion.set(...mask.pose.rotation);
+      const bounds = regionDescriptor(mask.region.kind).bounds(mask.region);
+      line.outer.geometry = line.inner.geometry = shapes[mask.region.kind].edges;
+      line.outer.material = focused ? maskMaterial : maskDimMaterial;
+      line.outer.scale.set(...bounds);
+      const core = 1 - mask.edgeFade;
+      line.inner.visible = focused && mask.edgeFade > 0;
+      line.inner.scale.set(core * bounds[0], core * bounds[1], core * bounds[2]);
+    });
+  }
+
+  /** The glyphs of a law's primitives, cached per accepted expression. */
+  const glyphCache = new WeakMap<FieldExpression, Set<Glyph>>();
+  const glyphsOf = (expression: FieldExpression) => {
+    let glyphs = glyphCache.get(expression);
+    if (!glyphs) {
+      const found = new Set<Glyph>();
+      walk(expression, (node) => {
+        if (isPrimitiveKind(node.kind)) found.add(primitiveDescriptor(node.kind).glyph);
+      });
+      glyphCache.set(expression, (glyphs = found));
+    }
+    return glyphs;
+  };
 
   showScene(prepareScene(root));
 
@@ -469,7 +535,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
         visual.inner.scale.set(core * bounds[0], core * bounds[1], core * bounds[2]);
         visual.inner.visible = selected && field.edgeFade > 0 && field.enabled;
         // A vortex's axis is its local Y: drawn through the support when selected, so the swirl's frame is visible.
-        visual.axis.visible = selected && primitiveDescriptor(field.expression.kind).glyph === 'axis';
+        visual.axis.visible = selected && glyphsOf(field.expression).has('axis');
         visual.axis.scale.set(1, bounds[1], 1);
         visual.color.set(presentation.color);
         visual.shellIntensity.value = !field.enabled ? 0.35 : selected ? 1 : 0.7;
@@ -491,11 +557,14 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
         }
         const show = lattice !== null;
         const due = !state.throttle || !selected || now - visual.sampledAt >= ARROW_REFRESH_MS;
-        if (show && (compiled !== visual.sampleSource || lattice !== visual.sampleLattice || !visual.samplesShown) && due) {
-          refreshSamples(visual, compiled, bounds, lattice!);
+        // A tick-dependent law's samples belong to one tick: they follow the clock at most at 30 Hz.
+        const stale = compiled.timeDependent && visual.sampledTick !== state.tick && now - visual.sampledAt >= ARROW_REFRESH_MS;
+        if (show && (compiled !== visual.sampleSource || lattice !== visual.sampleLattice || !visual.samplesShown || stale) && due) {
+          refreshSamples(visual, compiled, bounds, lattice!, state.tick);
           visual.sampleSource = compiled;
           visual.sampleLattice = lattice;
           visual.sampledAt = now;
+          visual.sampledTick = state.tick;
         }
         visual.samplesShown = show;
         visual.shafts.visible = visual.heads.visible = visual.dots.visible = show;
@@ -514,6 +583,8 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
         preview.scale.set(...regionDescriptor(state.preview.region.kind).bounds(state.preview.region));
       }
       updateHandles(state);
+      const selected = laws.find((l) => l.field.id === state.selectedId && l.presentation.visible);
+      updateMasks(selected?.field, state.focus);
     },
 
     arrowCount: () => drawnArrows,

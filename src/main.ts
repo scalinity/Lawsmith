@@ -3,9 +3,11 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Euler, Quaternion, Vector3, type Mesh, type Object3D } from 'three/webgpu';
 import { DocumentController } from './domain/document';
-import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type SceneDocument, type Vec3 } from './domain/scene';
+import { expressionSummary, isCompound } from './domain/ingredients';
+import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type Primitive, type SceneDocument, type Vec3 } from './domain/scene';
+import { walk } from './fields/expression';
 import { FIELD_KERNEL_VERSION, fadeBand } from './fields/kernel';
-import { PRIMITIVES, REGIONS, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from './fields/registry';
+import { PRIMITIVES, REGIONS, isPrimitiveKind, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from './fields/registry';
 import { LawInteraction, type GestureEnd, type TransformMode } from './interaction/lawGesture';
 import { EditLatency, percentile, percentiles } from './measurement';
 import { defaultDocument } from './persistence/defaultScene';
@@ -758,8 +760,7 @@ async function start() {
           name.textContent = p.label; // text, never markup (SPEC §15.2)
           const meta = document.createElement('span');
           meta.className = 'law-meta';
-          const primitive = primitiveDescriptor(f.expression.kind);
-          meta.textContent = `${primitive.title.toLowerCase()}, ${primitive.summary(f.expression)}`;
+          meta.textContent = expressionSummary(f.expression);
           select.append(name, meta);
           const visible = document.createElement('button');
           visible.type = 'button';
@@ -806,18 +807,23 @@ async function start() {
     triples.get('rotation')!.forEach((input, i) => show(input, fmt([euler.x, euler.y, euler.z][i]! * DEGREES, 1)));
     for (const button of supportGroup.querySelectorAll<HTMLButtonElement>('button')) button.setAttribute('aria-checked', String(button.dataset.kind === law.region.kind));
     const region = regionDescriptor(law.region.kind);
-    const primitive = primitiveDescriptor(law.expression.kind);
     if (regionParams.dataset.kind !== law.region.kind) {
       regionParams.dataset.kind = law.region.kind;
       controlInputs(regionParams, 'region', region.controls as readonly ScalarControl<never>[]);
     }
-    if (primitiveParams.dataset.kind !== law.expression.kind) {
-      primitiveParams.dataset.kind = law.expression.kind;
-      controlInputs(primitiveParams, 'primitive', primitive.controls as readonly ScalarControl<never>[]);
-    }
-    $('law-kind').textContent = `${primitive.title} · ${primitive.summary(law.expression)}: ${primitive.describe(law.expression)}`;
     for (const input of regionParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(region.controls.find((c) => c.key === input.dataset.control)!.get(law.region), 3));
-    for (const input of primitiveParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(primitive.controls.find((c) => c.key === input.dataset.control)!.get(law.expression), 3));
+    // A one-leaf law keeps M3's inspector: its primitive's own parameters, right here.
+    const leaf = isCompound(law.expression) ? null : (law.expression as Primitive);
+    $('law-kind').hidden = primitiveParams.hidden = leaf === null;
+    if (leaf) {
+      const primitive = primitiveDescriptor(leaf.kind);
+      if (primitiveParams.dataset.kind !== leaf.kind) {
+        primitiveParams.dataset.kind = leaf.kind;
+        controlInputs(primitiveParams, 'primitive', primitive.controls as readonly ScalarControl<never>[]);
+      }
+      $('law-kind').textContent = `${primitive.title} · ${primitive.summary(leaf)}: ${primitive.describe(leaf)}`;
+      for (const input of primitiveParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(primitive.controls.find((c) => c.key === input.dataset.control)!.get(leaf), 3));
+    }
     show(fadeInput, fmt(law.edgeFade, 3));
     renderSampling();
   }
@@ -885,9 +891,9 @@ async function start() {
       if (input.dataset.target === 'region') {
         const control = regionDescriptor(law.region.kind).controls.find((c) => c.key === input.dataset.control)!;
         editSelected(control.edit, input, (f, v) => ({ ...f, region: control.set(f.region, v) }));
-      } else {
-        const control = primitiveDescriptor(law.expression.kind).controls.find((c) => c.key === input.dataset.control)!;
-        editSelected(control.edit, input, (f, v) => ({ ...f, expression: control.set(f.expression, v) }));
+      } else if (!isCompound(law.expression)) {
+        const control = primitiveDescriptor((law.expression as Primitive).kind).controls.find((c) => c.key === input.dataset.control)!;
+        editSelected(control.edit, input, (f, v) => ({ ...f, expression: control.set(f.expression as Primitive, v) }));
       }
     });
   }
@@ -1027,7 +1033,16 @@ async function start() {
       workload: {
         title: authoring.metadata.title,
         laws: host.appliedFields().length,
-        lawKinds: [...new Set(host.appliedFields().flatMap((f) => [f.expression.kind, f.region.kind]))].sort(),
+        lawKinds: [...new Set(host.appliedFields().flatMap((f) => {
+          const kinds: string[] = [f.region.kind];
+          walk(f.expression, (node) => kinds.push(node.kind));
+          return kinds;
+        }))].sort(),
+        primitiveLeaves: host.appliedFields().reduce((n, f) => {
+          let leaves = 0;
+          walk(f.expression, (node) => (leaves += isPrimitiveKind(node.kind) ? 1 : 0));
+          return n + leaves;
+        }, 0),
         fixedColliders: authoring.scene.bodies.filter((b) => b.type === 'fixed').length,
         authoredDynamic: authoring.scene.bodies.filter((b) => b.type === 'dynamic').length,
         allBodyContacts: authoring.scene.bodies.some((b) => b.type === 'dynamic' && b.collisionMode === 'all') || authoring.scene.emitters.some((e) => e.template.collisionMode === 'all'),
@@ -1503,6 +1518,8 @@ async function start() {
           const shown = interaction.handles();
           return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;
         })(),
+        focus: null,
+        tick: host.tick,
         camera: viewport.camera.position,
       },
     );

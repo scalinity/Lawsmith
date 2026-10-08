@@ -378,10 +378,12 @@ export class SimulationHost {
     this.runLifecycle();
 
     // Every force comes from the same start-of-step state; nothing is applied until all exist.
-    // Laws add in stable ID order: A = g + ΣA_i and K = ΣK_i, then one adapter call per body.
+    // Laws add in stable ID order: A = g + ΣA_i and K = ΣK_i, then one adapter call per body. Each
+    // law is sampled at this boundary's tick n, the one input a tick-dependent gain reads.
     const fieldStart = performance.now();
     const { ambientAcceleration: g, maxAppliedAcceleration } = this.root.simulation;
     const { bodies, compiled, sample, accel, forces } = this;
+    const n = this.tick;
     // The explained body's samples are copied as they are summed (SPEC §12): its explanation is this
     // transition's arithmetic, not a later re-evaluation. Every other body takes the plain path.
     const explained = this.explainId === null ? -1 : bodies.findIndex((b) => b.id === this.explainId);
@@ -396,7 +398,7 @@ export class SimulationHost {
       let k = 0;
       for (let f = 0; f < compiled.length; f++) {
         const field = compiled[f]!;
-        sampleField(field, p.x, p.y, p.z, sample);
+        sampleField(field, p.x, p.y, p.z, n, sample);
         if (!finite3(sample[0]!, sample[1]!, sample[2]!) || !Number.isFinite(sample[3]!)) {
           throw (this.fault = new SimulationFault(this.tick, `${field.id} → ${live.id}`, 'Nonfinite field output'));
         }
@@ -501,8 +503,8 @@ export class SimulationHost {
 
   /**
    * SPEC §12's paused "next-step preview": what the next transition would submit for the explained
-   * body from its current center and velocity under the applied laws, by the same kernel and
-   * adapter. It writes nothing: the retained explanation, the world and the clock are untouched.
+   * body from its current center and velocity under the applied laws at the current tick, by the same
+   * kernel and adapter. It writes nothing: the retained explanation, the world and the clock are untouched.
    */
   previewTransition(): TransitionObservation | null {
     const live = this.explainId === null || this.fault ? undefined : this.bodies.find((b) => b.id === this.explainId);
@@ -517,7 +519,7 @@ export class SimulationHost {
     let az = g[2];
     let k = 0;
     for (let f = 0; f < this.compiled.length; f++) {
-      sampleField(this.compiled[f]!, p.x, p.y, p.z, sample);
+      sampleField(this.compiled[f]!, p.x, p.y, p.z, this.tick, sample);
       samples.set(sample, 4 * f);
       ax += sample[0]!;
       ay += sample[1]!;

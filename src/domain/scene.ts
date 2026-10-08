@@ -1,6 +1,7 @@
 // The semantic scene and document model (SPEC §5). No engine handles, no Three.js objects:
 // the semantic block is what the simulation consumes; presentation never reaches physics.
-import { primitiveDescriptor, regionDescriptor, isPrimitiveKind, isRegionKind } from '../fields/registry';
+import { EXPRESSION_LIMITS, expressionStats, validateExpression } from '../fields/expression';
+import { regionDescriptor, isRegionKind } from '../fields/registry';
 import { canonicalQuat, finite, unsign, vec, within } from './numbers';
 
 export { canonicalDirection, canonicalQuat } from './numbers';
@@ -56,8 +57,37 @@ export interface LinearDragPrimitive {
   readonly kind: 'linearDrag';
   readonly coefficient: number;
 }
-/** The primitive leaves of SPEC §6.3; a scene's law is one leaf until M5's operators. */
+/** The primitive leaves of SPEC §6.3. */
 export type Primitive = DirectionalPrimitive | SoftRadialPrimitive | VortexYPrimitive | LinearDragPrimitive;
+
+/** A nonnegative scale on both A and K (SPEC §6.3), constant or a pure function of the tick. */
+export type Gain =
+  | { readonly kind: 'constant'; readonly value: number }
+  | { readonly kind: 'triangle'; readonly min: number; readonly max: number; readonly periodTicks: number; readonly phaseTicks: number };
+
+/** Adds its terms' A and K, left to right in stored order; never empty. */
+export interface SumExpression {
+  readonly kind: 'sum';
+  readonly terms: readonly FieldExpression[];
+}
+export interface GainExpression {
+  readonly kind: 'gain';
+  readonly gain: Gain;
+  readonly child: FieldExpression;
+}
+/**
+ * Multiplies its child's A and K by a region weight. The pose places the region in the law's own
+ * frame, however deeply the mask is nested; the child still evaluates in that law frame.
+ */
+export interface MaskExpression {
+  readonly kind: 'mask';
+  readonly pose: Pose;
+  readonly region: RegionDefinition;
+  readonly edgeFade: number;
+  readonly child: FieldExpression;
+}
+/** One law's behavior (SPEC §6.3): a primitive, or a small tree of sum, gain and mask over primitives. */
+export type FieldExpression = Primitive | SumExpression | GainExpression | MaskExpression;
 
 export interface FieldDefinition {
   readonly id: EntityId;
@@ -66,7 +96,7 @@ export interface FieldDefinition {
   readonly region: RegionDefinition;
   /** Inner fade fraction in [0,1] (SPEC §7). */
   readonly edgeFade: number;
-  readonly expression: Primitive;
+  readonly expression: FieldExpression;
 }
 
 export type ColliderShape =
@@ -181,6 +211,10 @@ export const SCENE_LIMITS = Object.freeze({
   fixedBodies: 64,
   fields: 32,
   primitiveLeaves: 256,
+  /** Per law: every node counts, leaves and operators alike. */
+  expressionNodes: EXPRESSION_LIMITS.nodes,
+  /** Nodes on the longest root-to-leaf path; a primitive alone has depth 1. */
+  expressionDepth: EXPRESSION_LIMITS.depth,
   emitters: 16,
   idLength: 64,
   textLength: 8192,
@@ -324,8 +358,8 @@ export function validateField(field: FieldDefinition): Validated<FieldDefinition
   const region = regionDescriptor(field.region.kind).validate(field.region);
   if (!region.ok) return { ...region, path: at('region', region.path) };
   if (!within(field.edgeFade, EDGE_FADE.min, EDGE_FADE.max)) return reject('edgeFade', 'edge fade must be within 0–1');
-  if (!isPrimitiveKind(field.expression.kind)) return reject('expression.kind', `unknown primitive kind ${JSON.stringify(field.expression.kind)}`);
-  const expression = primitiveDescriptor(field.expression.kind).validate(field.expression);
+  // The whole tree, within the per-law node and depth limits; the scene's leaf budget is the caller's.
+  const expression = validateExpression(field.expression);
   if (!expression.ok) return { ...expression, path: at('expression', expression.path) };
 
   return {
@@ -526,11 +560,15 @@ export function validateScene(scene: SceneDefinition): Validated<SceneDefinition
     emitters.push(result.value);
   }
   const fields: FieldDefinition[] = [];
+  let leaves = 0;
   for (const [i, field] of scene.fields.entries()) {
     const result = validateField(field);
     if (!result.ok) return { ...result, path: at(`fields[${i}]`, result.path) };
     const duplicate = claim(field.id, `fields[${i}]`);
     if (duplicate) return duplicate;
+    // SPEC §15.2: the leaf budget is the scene's, so laws that are each valid cannot exceed it together.
+    leaves += expressionStats(result.value.expression).leaves;
+    if (leaves > SCENE_LIMITS.primitiveLeaves) return reject(`fields[${i}].expression`, `the scene's laws hold more than ${SCENE_LIMITS.primitiveLeaves} primitive leaves`);
     fields.push(result.value);
   }
   return {

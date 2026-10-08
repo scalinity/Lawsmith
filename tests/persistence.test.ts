@@ -237,12 +237,21 @@ describe('T06 transactional rejection (AC6)', () => {
     expect(error.reason).toContain('primitive.vortexY.v2');
   });
 
-  it('rejects a law kind this build lacks and names the capability, never dropping the law', () => {
+  it('rejects an operator this build lacks and names it, never dropping the law', () => {
     const value = json();
-    value.semantic.fields[0].expression = { kind: 'sum', terms: [{ kind: 'directional', direction: [1, 0, 0], strength: 12 }] };
+    // A deferred operator (SPEC §6.3): unknown here, so the law is refused, not evaluated without it.
+    value.semantic.fields[0].expression = { kind: 'clamp', max: 4, child: { kind: 'directional', direction: [1, 0, 0], strength: 12 } };
     const error = rejection(value)!;
     expect(error.path).toBe('semantic.fields[0].expression.kind');
-    expect(error.reason).toContain('operator.sum.v1');
+    expect(error.reason).toContain('"clamp"');
+  });
+
+  it('rejects an operator capability this build lacks before reading the scene', () => {
+    const value = json();
+    value.requiredCapabilities.push('operator.clamp.v1');
+    const error = rejection(value)!;
+    expect(error.path).toBe('requiredCapabilities[3]');
+    expect(error.reason).toContain('operator.clamp.v1');
   });
 
   it('rejects a scene that uses a capability it does not declare', () => {

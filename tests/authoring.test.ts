@@ -162,8 +162,8 @@ describe('spatial handles (SPEC §10.3)', () => {
       const point = worldPoint(field, [0.3, 0.2, -0.4]);
       const a = [0, 0, 0, 0];
       const b = [0, 0, 0, 0];
-      sampleField(compileField(field), ...point, a);
-      sampleField(compileField(bigger), ...point, b);
+      sampleField(compileField(field), ...point, 0, a);
+      sampleField(compileField(bigger), ...point, 0, b);
       expect(b).toEqual(a); // both at full weight: strength, core and coefficient untouched
     }
   });

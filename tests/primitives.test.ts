@@ -28,7 +28,7 @@ function law(expression: Primitive, region: RegionDefinition = BIG, changes: Par
 /** Samples at CENTER + offset: { A, K, weight }. */
 function at(field: FieldDefinition, offset: Vec3) {
   const out = [NaN, NaN, NaN, NaN];
-  const weight = sampleField(compileField(field), CENTER[0] + offset[0], CENTER[1] + offset[1], CENTER[2] + offset[2], out);
+  const weight = sampleField(compileField(field), CENTER[0] + offset[0], CENTER[1] + offset[1], CENTER[2] + offset[2], 0, out);
   return { A: out.slice(0, 3), K: out[3]!, weight };
 }
 

@@ -18,7 +18,7 @@ const QZ90: Quat = [0, 0, Math.sin(Math.PI / 4), Math.cos(Math.PI / 4)];
 const withChanges = (changes: Partial<FieldDefinition>): FieldDefinition => ({ ...law, ...changes });
 const sample = (field: FieldDefinition, x: number, y: number, z: number) => {
   const out = [NaN, NaN, NaN, NaN];
-  const weight = sampleField(compileField(field), x, y, z, out);
+  const weight = sampleField(compileField(field), x, y, z, 0, out);
   return { weight, out };
 };
 

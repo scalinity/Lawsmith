@@ -10,6 +10,7 @@ import type { ChooseOutcome, DocumentIo, IoFailure, OpenOutcome, RecoverySlot } 
 import { parseRecovery } from '../src/persistence/recovery';
 import { parseScene } from '../src/persistence/sceneFile';
 import { DocumentWorkflow, suggestedName, type WorkflowApp } from '../src/persistence/workflow';
+import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
 import { SimulationHost, initSimulation } from '../src/simulation/host';
 
 beforeAll(async () => {
@@ -389,6 +390,67 @@ describe('transactional Open (SPEC §15.2)', () => {
     t.io.askQueue.push('discard');
     expect(await t.workflow.newScene()).toBe(true);
     expect(t.workflow.fileName).toBeNull();
+    expect(t.workflow.dirty).toBe(false);
+  });
+});
+
+describe('transactional Open of compound laws (M5, SPEC §15.2)', () => {
+  /** The Storm Bottle with its bottle's expression changed by `edit`. */
+  const bottleWith = (edit: (expression: Record<string, any>) => void) => {
+    const value = JSON.parse(stormBottle);
+    edit(value.semantic.fields[0].expression);
+    return JSON.stringify(value);
+  };
+  const deep = (depth: number): Record<string, any> => (depth === 1 ? { kind: 'linearDrag', coefficient: 1 } : { kind: 'gain', gain: { kind: 'constant', value: 1 }, child: deep(depth - 1) });
+  const invalid: [string, string, string][] = [
+    ['an invalid triangle phase', bottleWith((e) => (e.terms[1] = { kind: 'gain', gain: { kind: 'triangle', min: 0, max: 2, periodTicks: 240, phaseTicks: 240 }, child: e.terms[1] })), 'semantic.fields[0].expression.terms[1].gain.phaseTicks'],
+    ['a negative gain', bottleWith((e) => (e.terms[2].child = { kind: 'gain', gain: { kind: 'constant', value: -1 }, child: e.terms[2].child })), 'semantic.fields[0].expression.terms[2].child.gain.value'],
+    ['an expression nine deep', bottleWith((e) => (e.terms[2] = deep(9))), 'semantic.fields[0].expression.terms[2]'],
+    ['an unknown operator', bottleWith((e) => (e.terms[0] = { kind: 'priority', child: e.terms[0] })), 'semantic.fields[0].expression.terms[0].kind'],
+    ['an empty sum', bottleWith((e) => (e.terms = [])), 'semantic.fields[0].expression.terms'],
+  ];
+  for (const [name, text, path] of invalid) {
+    it(`a file with ${name} leaves the scene, revision, undo, world, recovery and file binding untouched`, async () => {
+      const t = await setup();
+      t.io.chooseQueue.push('mine.lawsmith.json');
+      expect(await t.workflow.saveAs()).toBe(true);
+      t.edit();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      const before = {
+        generation: t.controller.generation,
+        revision: t.controller.revision,
+        scene: t.controller.scene,
+        host: t.host(),
+        tick: t.host().tick,
+        recovery: structuredClone(t.io.recovery),
+        writes: t.io.writes.length,
+      };
+      t.io.openQueue.push(opened(t.io, 'bad.lawsmith.json', text));
+      expect(await t.workflow.open()).toBe(false);
+      expect(t.controller.generation).toBe(before.generation);
+      expect(t.controller.revision).toBe(before.revision);
+      expect(t.controller.scene).toBe(before.scene);
+      expect(t.host()).toBe(before.host);
+      expect(t.host().tick).toBe(before.tick);
+      expect(t.controller.canUndo).toBe(true);
+      expect(t.workflow.fileName).toBe('mine.lawsmith.json');
+      expect(t.workflow.dirty).toBe(true);
+      expect(t.io.recovery).toEqual(before.recovery);
+      expect(t.io.writes).toHaveLength(before.writes);
+      expect(t.disposed).toHaveLength(0); // rejected before any candidate world was built
+      expect(t.workflow.message?.text).toContain(path);
+      expect(t.io.asked).toEqual([]);
+    });
+  }
+
+  it('a valid compound file commits paused at tick 0 with the whole expression and its capabilities', async () => {
+    const t = await setup();
+    t.io.openQueue.push(opened(t.io, 'storm-bottle.lawsmith.json', stormBottle));
+    expect(await t.workflow.open()).toBe(true);
+    expect(t.host().tick).toBe(0);
+    const expected = parseScene(stormBottle);
+    expect(expected.ok && t.host().appliedFields()).toEqual(expected.ok && expected.document.semantic.fields);
+    expect(t.workflow.fileName).toBe('storm-bottle.lawsmith.json');
     expect(t.workflow.dirty).toBe(false);
   });
 });

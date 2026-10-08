@@ -92,6 +92,8 @@ export class ProbeField {
     const { position: x, velocity: v, alive, sample, adapted } = this;
     const h = STEP_SECONDS;
     const n = this.current.count;
+    // The transition the host just completed, tick → tick + 1: the probes sample the laws at its tick.
+    const tick = this.tick;
     let live = 0;
     for (let i = 0; i < n; i++) {
       if (!alive[i]) continue;
@@ -104,7 +106,7 @@ export class ProbeField {
       let az = g[2];
       let k = 0;
       for (let f = 0; f < fields.length; f++) {
-        sampleField(fields[f]!, px, py, pz, sample);
+        sampleField(fields[f]!, px, py, pz, tick, sample);
         ax += sample[0]!;
         ay += sample[1]!;
         az += sample[2]!;

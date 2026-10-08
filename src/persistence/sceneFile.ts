@@ -14,6 +14,8 @@ import {
   type CollisionMode,
   type EmitterDefinition,
   type FieldDefinition,
+  type FieldExpression,
+  type Gain,
   type LawPresentation,
   type Pose,
   type Quat,
@@ -26,6 +28,7 @@ import {
   checkCamera,
   checkLawPresentation,
 } from '../domain/scene';
+import { EXPRESSION_LIMITS, OPERATOR_CAPABILITIES, expressionCapabilities } from '../fields/expression';
 import { LAW_CAPABILITIES, isPrimitiveKind, isRegionKind, primitiveDescriptor, regionDescriptor, type ValueKind } from '../fields/registry';
 
 /** The emitter capability; region and primitive capabilities come from the law registry. */
@@ -35,14 +38,17 @@ export const EMITTER_CAPABILITY = 'emitter.xorshift32.v1';
  * Semantic capabilities this build implements (SPEC §15.1). A scene lists the ones it needs;
  * an unknown one is rejected, never ignored.
  */
-const KNOWN_CAPABILITIES: ReadonlySet<string> = new Set([...LAW_CAPABILITIES, EMITTER_CAPABILITY]);
+const KNOWN_CAPABILITIES: ReadonlySet<string> = new Set([...LAW_CAPABILITIES, ...OPERATOR_CAPABILITIES, EMITTER_CAPABILITY]);
 
-/** The capabilities a semantic block uses, sorted. */
+/**
+ * The capabilities a semantic block uses, sorted and without repeats: every law's support region,
+ * and everything in its expression however deeply nested (primitives, operators, mask regions).
+ */
 export function requiredCapabilities(scene: SceneDefinition): string[] {
   const used = new Set<string>();
   for (const field of scene.fields) {
     used.add(regionDescriptor(field.region.kind).capability);
-    used.add(primitiveDescriptor(field.expression.kind).capability);
+    expressionCapabilities(field.expression, used);
   }
   if (scene.emitters.length) used.add(EMITTER_CAPABILITY);
   return [...used].sort();
@@ -239,16 +245,8 @@ function emitter(value: unknown, path: string): EmitterDefinition {
   };
 }
 
-/** Operators the SPEC defines for later builds (M5), with their capabilities. */
-const LATER_EXPRESSIONS: Readonly<Record<string, string>> = {
-  sum: 'operator.sum.v1',
-  gain: 'operator.gain.v1',
-  mask: 'operator.mask.v1',
-};
-
-function unsupportedKind(kind: unknown, path: string, later: Readonly<Record<string, string>>): never {
-  const capability = typeof kind === 'string' && Object.hasOwn(later, kind) ? later[kind] : null;
-  throw new ImportError(path, capability ? `kind ${JSON.stringify(kind)} needs capability ${capability}, which this build does not support` : `unknown kind ${JSON.stringify(kind)}`);
+function unsupportedKind(kind: unknown, path: string): never {
+  throw new ImportError(path, `unknown kind ${JSON.stringify(kind)}`);
 }
 
 /** Reads `{ kind, ...keys }` with exactly the keys a registry entry declares, each a number or a 3-vector. */
@@ -259,21 +257,67 @@ function tagged(value: unknown, path: string, kind: string, keys: Readonly<Recor
   return read;
 }
 
+function region(value: unknown, path: string): FieldDefinition['region'] {
+  const kind = kindOf(value, path);
+  if (!isRegionKind(kind)) unsupportedKind(kind, at(path, 'kind'));
+  return tagged(value, path, kind, regionDescriptor(kind).keys) as unknown as FieldDefinition['region'];
+}
+
+function gain(value: unknown, path: string): Gain {
+  const kind = oneOf(kindOf(value, path), at(path, 'kind'), ['constant', 'triangle'] as const);
+  if (kind === 'constant') return { kind, value: number(object(value, path, ['kind', 'value']).value, at(path, 'value')) };
+  const o = object(value, path, ['kind', 'min', 'max', 'periodTicks', 'phaseTicks']);
+  return {
+    kind,
+    min: number(o.min, at(path, 'min')),
+    max: number(o.max, at(path, 'max')),
+    periodTicks: integer(o.periodTicks, at(path, 'periodTicks')),
+    phaseTicks: integer(o.phaseTicks, at(path, 'phaseTicks')),
+  };
+}
+
+/**
+ * Reads one expression node strictly (SPEC §6.3, §15.2): exactly its known keys, its children in
+ * stored order. The depth and node bounds are checked on arrival, before any child is read, so a
+ * long or deeply nested file is refused instead of traversed. Semantic bounds follow in validation.
+ */
+function expression(value: unknown, path: string, depth: number, budget: { nodes: number }): FieldExpression {
+  if (depth > EXPRESSION_LIMITS.depth) throw new ImportError(path, `expression depth exceeds ${EXPRESSION_LIMITS.depth}`);
+  if (++budget.nodes > EXPRESSION_LIMITS.nodes) throw new ImportError(path, `a law has at most ${EXPRESSION_LIMITS.nodes} expression nodes`);
+  const kind = kindOf(value, path);
+  if (isPrimitiveKind(kind)) return tagged(value, path, kind, primitiveDescriptor(kind).keys) as unknown as FieldExpression;
+  if (kind === 'sum') {
+    const termsPath = at(path, 'terms');
+    const terms = array(object(value, path, ['kind', 'terms']).terms, termsPath, EXPRESSION_LIMITS.nodes);
+    if (!terms.length) throw new ImportError(termsPath, 'a sum needs at least one term');
+    return { kind, terms: terms.map((t, i) => expression(t, at(termsPath, i), depth + 1, budget)) };
+  }
+  if (kind === 'gain') {
+    const o = object(value, path, ['kind', 'gain', 'child']);
+    return { kind, gain: gain(o.gain, at(path, 'gain')), child: expression(o.child, at(path, 'child'), depth + 1, budget) };
+  }
+  if (kind === 'mask') {
+    const o = object(value, path, ['kind', 'pose', 'region', 'edgeFade', 'child']);
+    return {
+      kind,
+      pose: pose(o.pose, at(path, 'pose')),
+      region: region(o.region, at(path, 'region')),
+      edgeFade: number(o.edgeFade, at(path, 'edgeFade')),
+      child: expression(o.child, at(path, 'child'), depth + 1, budget),
+    };
+  }
+  unsupportedKind(kind, at(path, 'kind'));
+}
+
 function field(value: unknown, path: string): FieldDefinition {
   const o = object(value, path, ['id', 'enabled', 'pose', 'region', 'edgeFade', 'expression']);
-  const regionPath = at(path, 'region');
-  const regionKind = kindOf(o.region, regionPath);
-  if (!isRegionKind(regionKind)) unsupportedKind(regionKind, at(regionPath, 'kind'), {});
-  const expressionPath = at(path, 'expression');
-  const expressionKind = kindOf(o.expression, expressionPath);
-  if (!isPrimitiveKind(expressionKind)) unsupportedKind(expressionKind, at(expressionPath, 'kind'), LATER_EXPRESSIONS);
   return {
     id: string(o.id, at(path, 'id'), SCENE_LIMITS.idLength),
     enabled: boolean(o.enabled, at(path, 'enabled')),
     pose: pose(o.pose, at(path, 'pose')),
-    region: tagged(o.region, regionPath, regionKind, regionDescriptor(regionKind).keys) as unknown as FieldDefinition['region'],
+    region: region(o.region, at(path, 'region')),
     edgeFade: number(o.edgeFade, at(path, 'edgeFade')),
-    expression: tagged(o.expression, expressionPath, expressionKind, primitiveDescriptor(expressionKind).keys) as unknown as FieldDefinition['expression'],
+    expression: expression(o.expression, at(path, 'expression'), 1, { nodes: 0 }),
   };
 }
 

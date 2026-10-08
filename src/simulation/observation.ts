@@ -1,7 +1,11 @@
 // Selected-body transition observations (SPEC §9.1, §12): what the host submitted for one body
 // over one transition n → n+1, kept to explain it. An observation is telemetry. It never enters the
 // canonical state, the engine, a run root, a scene file or command scheduling.
-import type { FieldDefinition, Vec3 } from '../domain/scene';
+import { ingredientLabels, ingredientsOf, isCompound } from '../domain/ingredients';
+import type { FieldDefinition, FieldExpression, MaskExpression, Vec3 } from '../domain/scene';
+import { gainAt, nodeAt, type ExprPath } from '../fields/expression';
+import { compileExpression, fadeWeight, rotationMatrix, type ExpressionEvaluator } from '../fields/kernel';
+import { regionDescriptor } from '../fields/registry';
 
 /** One law's part of a submitted external acceleration, under the transition's shared β and λ. */
 export interface LawContribution {
@@ -117,4 +121,94 @@ export function observeTransition(s: SampledTransition): TransitionObservation {
     after: s.after,
     contacts: s.contacts,
   };
+}
+
+/** One ingredient's part of its law's share in one transition (M5). */
+export interface IngredientShare {
+  readonly path: ExprPath;
+  readonly label: string;
+  /** The ingredient's drive at the sampled center and tick after its own gains and masks and the law's support, world frame, m/s². */
+  readonly drive: Vec3;
+  /** Its drag rate there, s⁻¹. */
+  readonly drag: number;
+  /** λβ(A − K·v) with the transition's shared β and λ: an algebraic part of the law's share, not the effect of removing it. */
+  readonly applied: Vec3;
+  /** Each of its gains and masks at that center and tick, outermost first. */
+  readonly factors: readonly { readonly kind: 'gain' | 'mask'; readonly value: number }[];
+}
+
+export interface LawIngredients {
+  readonly id: string;
+  readonly ingredients: readonly IngredientShare[];
+  /** The ingredients' drive and drag add up to the law's retained sample within the T03 tolerance. */
+  readonly reconciled: boolean;
+}
+
+/** Ingredient evaluators, compiled once per frozen node: retained laws never change, so neither does this. */
+const compiledNodes = new WeakMap<FieldExpression, ExpressionEvaluator>();
+function evaluatorOf(node: FieldExpression): ExpressionEvaluator {
+  let evaluate = compiledNodes.get(node);
+  if (!evaluate) compiledNodes.set(node, (evaluate = compileExpression(node).evaluate));
+  return evaluate;
+}
+
+/** A mask's SPEC §7 weight at law-local r. */
+function maskWeight(mask: MaskExpression, rx: number, ry: number, rz: number): number {
+  const m = rotationMatrix(mask.pose.rotation);
+  const dx = rx - mask.pose.position[0];
+  const dy = ry - mask.pose.position[1];
+  const dz = rz - mask.pose.position[2];
+  const gauge = regionDescriptor(mask.region.kind).compile(mask.region);
+  return fadeWeight(gauge(m[0]! * dx + m[3]! * dy + m[6]! * dz, m[1]! * dx + m[4]! * dy + m[7]! * dz, m[2]! * dx + m[5]! * dy + m[8]! * dz), mask.edgeFade);
+}
+
+const agrees = (actual: number, expected: number) => Math.abs(actual - expected) <= 1e-9 + 1e-8 * Math.abs(expected);
+
+/**
+ * A compound law's share of one observed transition, split by ingredient. Each ingredient is
+ * evaluated from what the observation retained: the law's frozen definition, the sampled center and
+ * the transition's tick, so a later edit cannot rewrite it. The law's support weight and rotation
+ * apply as the kernel applies them, and the transition's own β and λ scale every part. Null for a
+ * one-leaf law, which is its own single ingredient.
+ */
+export function ingredientBreakdown(o: TransitionObservation, index: number): LawIngredients | null {
+  const law = o.laws[index];
+  const contribution = o.contributions[index];
+  if (!law || !contribution || !isCompound(law.expression)) return null;
+  const m = rotationMatrix(law.pose.rotation);
+  const dx = o.center[0] - law.pose.position[0];
+  const dy = o.center[1] - law.pose.position[1];
+  const dz = o.center[2] - law.pose.position[2];
+  const rx = m[0]! * dx + m[3]! * dy + m[6]! * dz;
+  const ry = m[1]! * dx + m[4]! * dy + m[7]! * dz;
+  const rz = m[2]! * dx + m[5]! * dy + m[8]! * dz;
+  const weight = law.enabled ? fadeWeight(regionDescriptor(law.region.kind).compile(law.region)(rx, ry, rz), law.edgeFade) : 0;
+  const factor = o.lambda * o.beta;
+  const v = o.velocity;
+  const list = ingredientsOf(law.expression);
+  const labels = ingredientLabels(list);
+  const local = [0, 0, 0];
+  const total = [0, 0, 0, 0];
+  const ingredients = list.map((ingredient, i): IngredientShare => {
+    let drive: Vec3 = [0, 0, 0];
+    let drag = 0;
+    if (weight !== 0) {
+      const k = evaluatorOf(nodeAt(law.expression, ingredient.path)!)(rx, ry, rz, local, o.fromTick);
+      const [lx, ly, lz] = local as [number, number, number];
+      drive = [weight * (m[0]! * lx + m[1]! * ly + m[2]! * lz), weight * (m[3]! * lx + m[4]! * ly + m[5]! * lz), weight * (m[6]! * lx + m[7]! * ly + m[8]! * lz)];
+      drag = weight * k;
+    }
+    for (let c = 0; c < 3; c++) total[c]! += drive[c]!;
+    total[3]! += drag;
+    return {
+      path: ingredient.path,
+      label: labels[i]!,
+      drive,
+      drag,
+      applied: [factor * (drive[0] - drag * v[0]), factor * (drive[1] - drag * v[1]), factor * (drive[2] - drag * v[2])],
+      factors: ingredient.modifiers.map(({ node }) => (node.kind === 'gain' ? { kind: 'gain', value: gainAt(node.gain, o.fromTick) } : { kind: 'mask', value: maskWeight(node, rx, ry, rz) })),
+    };
+  });
+  const reconciled = [0, 1, 2].every((c) => agrees(total[c]!, contribution.drive[c]!)) && agrees(total[3]!, contribution.drag);
+  return { id: law.id, ingredients, reconciled };
 }

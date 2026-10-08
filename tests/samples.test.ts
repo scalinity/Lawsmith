@@ -31,7 +31,7 @@ function draw(field: FieldDefinition, lattice: readonly number[]) {
   const compiled = compileField(field);
   const arrows = new Float64Array(ARROW_STRIDE * MAX_SAMPLES);
   const dots = new Float64Array(DOT_STRIDE * MAX_SAMPLES);
-  const counts = sampleLattice(compiled, regionDescriptor(field.region.kind).bounds(field.region), lattice, arrows, dots);
+  const counts = sampleLattice(compiled, regionDescriptor(field.region.kind).bounds(field.region), lattice, 0, arrows, dots);
   return { compiled, arrows, dots, counts };
 }
 
@@ -45,13 +45,13 @@ describe('AC1 sparse samples are the authoritative evaluator', () => {
           expect(counts.arrows).toBeLessThanOrEqual(MAX_SAMPLES);
           for (let a = 0; a < counts.arrows; a++) {
             const [x, y, z, ax, ay, az] = arrows.subarray(ARROW_STRIDE * a, ARROW_STRIDE * a + ARROW_STRIDE);
-            sampleField(compiled, x!, y!, z!, out);
+            sampleField(compiled, x!, y!, z!, 0, out);
             expect([ax, ay, az]).toEqual(out.slice(0, 3));
             expect(Math.hypot(ax!, ay!, az!)).toBeGreaterThanOrEqual(ARROW_MIN_MS2);
           }
           for (let d = 0; d < counts.dots; d++) {
             const [x, y, z, k] = dots.subarray(DOT_STRIDE * d, DOT_STRIDE * d + DOT_STRIDE);
-            sampleField(compiled, x!, y!, z!, out);
+            sampleField(compiled, x!, y!, z!, 0, out);
             expect(k).toBe(out[3]);
           }
         }

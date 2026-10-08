@@ -1,6 +1,7 @@
 // The document controller (SPEC §4): owns the authored scene, its presentation and author undo.
 // Semantic edits become validated commands for the host and enter the authored scene only when
 // the host acknowledges them, so a later reset, save or recovery uses exactly what was applied.
+import { expressionStats } from '../fields/expression';
 import { primitiveDescriptor, type PrimitiveKind } from '../fields/registry';
 import { commandTarget, type CommandAck, type SimulationHost } from '../simulation/host';
 import {
@@ -48,6 +49,11 @@ export class DocumentController {
   private meta!: SceneMetadata;
   private undoStack: Transaction[] = [];
   private redoStack: Transaction[] = [];
+  /**
+   * The latest value submitted for each law (null: its removal), applied or still queued. Budgets
+   * that span laws are checked against it, so edits awaiting the same boundary cannot pass together.
+   */
+  private submitted = new Map<string, FieldDefinition | null>();
 
   /** Identity of the loaded document; a reply from an older generation never touches this one (SPEC §15.3). */
   generation = 0;
@@ -115,6 +121,7 @@ export class DocumentController {
     this.meta = document.metadata;
     this.undoStack = [];
     this.redoStack = [];
+    this.submitted = new Map();
     this.generation += 1;
     this.revision = 0;
     this.appliedRevision = 0;
@@ -137,13 +144,27 @@ export class DocumentController {
     return { revision: this.revision, semantic: this.authored, presentation, metadata: this.meta };
   }
 
-  /** Validates a complete law value and queues it for the next boundary. Invalid input never reaches the host. */
+  /**
+   * Validates a complete law value and queues it for the next boundary. Invalid input, including a
+   * law that would take the scene past its primitive-leaf budget, never reaches the host.
+   */
   putField(candidate: FieldDefinition): Validated<{ revision: number; field: FieldDefinition }> {
     const result = validateField(candidate);
     if (!result.ok) return result;
+    const over = this.overLeafBudget(result.value);
+    if (over) return over;
     this.revision += 1;
+    this.submitted.set(result.value.id, result.value);
     this.host.submit({ kind: 'putField', field: result.value }, this.revision);
     return { ok: true, value: { revision: this.revision, field: result.value } };
+  }
+
+  /** SPEC §15.2's scene-wide leaf budget with `field` in place of its law's latest submitted value. */
+  private overLeafBudget(field: FieldDefinition): { ok: false; reason: string; path: string } | null {
+    let leaves = expressionStats(field.expression).leaves;
+    for (const f of this.authored.fields) if (f.id !== field.id && !this.submitted.has(f.id)) leaves += expressionStats(f.expression).leaves;
+    for (const [id, f] of this.submitted) if (id !== field.id && f) leaves += expressionStats(f.expression).leaves;
+    return leaves > SCENE_LIMITS.primitiveLeaves ? failure(`a scene's laws hold at most ${SCENE_LIMITS.primitiveLeaves} primitive leaves`, 'expression') : null;
   }
 
   /** Adopts the host's acknowledgments into the authored scene; the current run root is untouched (SPEC §10.2). */
@@ -307,6 +328,8 @@ export class DocumentController {
     // A deleted law comes back with its original ID only if that ID is free (SPEC §10.3).
     if (state && !current && this.idInUse(id)) return failure(`id ${id} is in use`);
     if (state && !current && this.authored.fields.length >= SCENE_LIMITS.fields) return failure(`a scene holds at most ${SCENE_LIMITS.fields} laws`);
+    const over = state ? this.overLeafBudget(state.field) : null;
+    if (over) return over;
     this.applyState(id, state);
     return { ok: true, value: null };
   }
@@ -317,6 +340,7 @@ export class DocumentController {
     if (!state) {
       if (current) {
         this.revision += 1;
+        this.submitted.set(id, null);
         this.host.submit({ kind: 'removeField', id }, this.revision);
       }
       this.lawPresentation.delete(id);
@@ -324,6 +348,7 @@ export class DocumentController {
     }
     if (!current || !sameField(current.field, state.field)) {
       this.revision += 1;
+      this.submitted.set(id, state.field);
       this.host.submit({ kind: 'putField', field: state.field }, this.revision);
     }
     if (!current || !samePresentation(current.presentation, state.presentation)) this.applyPresentation(id, state.presentation);
