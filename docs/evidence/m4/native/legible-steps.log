@@ -1,0 +1,13 @@
+[qa 20:12:04] segment: 1280×800 legibility with the defaults (AC7), under More Space
+[qa 20:12:09] display → 1728×1117: set 1728x1117@120
+[qa 20:12:16] launched pid 80406, window at 224,104, log legible4.log
+[qa 20:12:25] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "why-it-moves.lawsmith.json", "generation": 2, "title": "Why It Moves", "bytes": 3630, "readMs": 0.069, "parseMs": 1, "candidateMs": 1, "commitMs": 2, "openMs": 4.069, "mode": "packaged", "t": 12044}  [document] Why It Moves opened
+[qa 20:12:43] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] 1280×800 with 2,000 probes and 32 trails: the selected law's support and the explained body are clear of the panels, tools, transport and switches; nothing scrolls sideways; the switches and primary controls are in view
+[qa 20:12:43] captured m4-1280x800.png
+[qa 20:12:50] PASS {"kind": "visualization", "change": "trails", "probes": {"enabled": false, "count": 2000, "seed": 1, "live": 0}, "trails": {"mode": "off", "count": 0}, "explained": "stream:67", "explainMode": "applied", "arrowScope": "all", "bytes": {"probePositions": 48000, "probeVelocities": 48000, "probeAlive":   [visualization] probes and trails are off, every law untouched: no revision, nothing dirty
+[qa 20:12:52] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] both laws are still listed; revision 0 above shows neither was edited or disabled
+[qa 20:12:52] captured m4-1280x800-overlays-off.png
+[qa 20:12:55] display → 1168×755: set 1168x755@120
+[qa 20:12:59] display restored to 1168x755@120
+[qa 20:12:59] m4-legible complete
+[qa 20:12:59] display restored to 1168x755@120

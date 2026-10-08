@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-07 against <code>main</code> with M3 accepted and merged (code <code>1812374</code>), and M4 eligible but not started</span>
+    <span>Realigned 2026-10-07 against branch <code>m4</code>: M4 implemented (code <code>3b29c69</code>) and awaiting review; <code>main</code> holds accepted M3 (code <code>1812374</code>)</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Start M4 in a fresh Opus 5.5 session.</h1>
-    <p class="lede">You accepted M3 on 2026-10-07, after Sol’s follow-up review returned M3 FOLLOW-UP: REMEDIATION VERIFIED. All eight acceptance criteria pass, AC2 under your amended f32 drag bound, and M3 is merged to <code>main</code>. M4, which makes motion legible through selected-body contributions, faithful trails and lightweight field probes, is now the only eligible unit and is not started. Opus 5.5 authors it on branch <code>m4</code> from <code>main</code>, and GPT-6.1 Sol reviews.</p>
-    <cite><code>docs/evidence/M3.md</code> Status, Review; <code>docs/MILESTONES.md</code> M4</cite>
+    <h1>Send M4 to GPT-6.1 Sol for review.</h1>
+    <p class="lede">M4 is implemented on branch <code>m4</code> (application code <code>3b29c69</code>) and is not merged. A selected body’s last step is explained from the values the simulation used: each law’s share under the step’s β and λ, gravity’s share, the submitted total, the limiter, contacts and the velocity after. Trails and 2,000 probes observe the same steps without changing them. All seven acceptance criteria pass on the packaged app, including P2 and a true 1280×800 check. Sol’s read-only review comes next, then <code>/address</code> on its findings, then your acceptance and the close-out merge. M5 waits for that.</p>
+    <cite><code>docs/evidence/M4.md</code> Status, Acceptance criteria, Performance, Findings</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -544,7 +544,7 @@
       </article>
 
       <!-- REALIGN M4 -->
-      <article class="unit" id="m4" data-gate="M4" data-state="not-started">
+      <article class="unit" id="m4" data-gate="M4" data-state="implemented">
         <div class="gate">M4</div>
         <div>
           <div class="unit-head">
@@ -553,18 +553,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews. If Claude limits bind, GPT-6 Astra authors.</dd>
-              <dt>Graph permits</dt><dd class="soft">Now: M3 is ACCEPTED (2026-10-07).</dd>
-              <dt>Should run</dt><dd class="run">Next, and alone: the next implementation unit, in a fresh session from <code>main</code> on branch <code>m4</code>. It shares <code>simulation</code>, <code>rendering</code> and <code>ui</code> with M3, and <code>ui</code> with M5, which waits for it.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m4</code>. GPT-6.1 Sol reviews next, read-only, from the prompt in the unit’s final report.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>3b29c69</code>, all seven criteria passing on the packaged app; review pending.</dd>
+              <dt>Should run</dt><dd class="run">Sol’s review of the evidence head on <code>m4</code>, then <code>/address</code> in a fresh Opus 5.5 session on <code>m4</code>, then your acceptance and the close-out merge. Nothing else touches <code>m4</code> meanwhile.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M3, accepted on 2026-10-07. Contracts C4, C5.</dd>
-              <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
-              <dt>Your part</dt><dd>The 1280×800 legibility check (AC7) needs More Space or an external display.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for P0, P1, P2 and the 1280×800 check and restored it, and restored the panel preferences it changed.</dd>
+              <dt>Your part</dt><dd>Run Sol’s review, then accept. The 1280×800 check ran under More Space, so nothing is left for you to measure; clicking a moving body on a real trackpad is an optional check, not a gate (<code>M4.md</code> Owner checks).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M4 Acceptance criteria 6–7</cite>
+          <cite class="src"><code>docs/evidence/M4.md</code> Status, Acceptance criteria, Performance, 1280×800, Findings, Owner checks; <code>docs/MILESTONES.md</code> M4</cite>
         </div>
       </article>
 
@@ -1179,6 +1179,12 @@
           <td data-label="What the record says">At 1280×800, Strength and Fade sit below the Scene panel’s visible area; at the built-in display’s height with two or more laws, Rotation and Half extents do too. All stay reachable by scrolling. For M8’s interface pass.</td>
           <td data-label="Owner"><a href="#m8">M8</a></td>
           <td data-label="Source"><cite><code>M2.md</code> finding 8</cite></td>
+        </tr>
+        <tr id="t-m4-contacts" data-owner="deferred" data-short="Contact readback">
+          <td data-label="Thread" class="lead">M4 finding 2: contact naming on the pinned engine</td>
+          <td data-label="What the record says">The body readout names a contact partner when its manifold’s <code>contactImpulse</code>, read after <code>world.step()</code>, is positive. That this impulse is the step’s own, and that zero-impulse proximity pairs are common, was established against Rapier 0.21.0 and is pinned by the contact fixtures. Any Rapier upgrade re-runs <code>tests/explanation.test.ts</code> before it is accepted.</td>
+          <td data-label="Owner">The next qualified dependency update</td>
+          <td data-label="Source"><cite><code>M4.md</code> finding 2</cite></td>
         </tr>
         <tr id="t-m2-tauri" data-owner="deferred" data-short="Tauri update">
           <td data-label="Thread" class="lead">M2 findings 1 and 2: the next Tauri update</td>

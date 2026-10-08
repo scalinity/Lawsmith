@@ -1,0 +1,7 @@
+[qa 19:58:12] segment: examples: radial catch, release and repulsion
+[qa 19:58:16] launched pid 57212, window at 0,21, log demo3.log
+[qa 19:58:25] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "catch-and-release.lawsmith.json", "generation": 2, "title": "Catch and Release", "bytes": 2504, "readMs": 0.085, "parseMs": 0, "candidateMs": 2, "commitMs": 2, "openMs": 4.085, "mode": "packaged", "t": 11645}  [document] catch-and-release opened transactionally
+[qa 19:58:25] PASS {"kind": "sim-control", "action": "load", "tick": 0, "playing": false, "run": 1, "laws": [{"id": "pull", "enabled": true, "position": [1, 2.8, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 1.6}, "edgeFade": 0.25, "expression": {"kind": "softRadial", "strength": 12, "coreRadius  [sim-control] catch-and-release starts paused at tick 0
+[qa 19:58:27] recording m3-radial for 55 s (overlay windows skipped by the hit test: 21770)
+[qa 19:58:34] FAIL {"kind": "pacing", "intervalMs": [17, 18, 18], "maxIntervalMs": 18, "workP95Ms": 2, "stallsOver50ms": 2, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 0, "playing": false, "bodies": 0, "stepMs": [0, 0, 0], "editMs": null, "editSamples": 0, "simWallRatio": 0, "droppedMs": 0, "mode": "packaged", "  [pacing] the stream runs through the pull without limiting
+[qa 19:58:34] FAIL: expectation failed: the stream runs through the pull without limiting
