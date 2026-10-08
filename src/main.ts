@@ -464,6 +464,7 @@ async function start() {
       displaced.dispose();
       world.showScene(candidate.view);
       applyCamera(document.presentation.camera);
+      ingredientPanel.reset();
       interaction.select(document.semantic.fields[0]?.id ?? null);
       setExplained(null, 'load');
       editLatency = new EditLatency();

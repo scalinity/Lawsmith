@@ -449,6 +449,12 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
   return {
     render,
     refreshLive,
+    /** A new document: its first law shown starts at its own list with nothing focused, even under a reused ID. */
+    reset() {
+      lawId = null;
+      level = null;
+      focus = null;
+    },
     /** The focused ingredient's path in the selected law, for its masks and handles in the viewport. */
     get focus(): ExprPath | null {
       return focus;
