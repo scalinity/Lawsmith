@@ -189,6 +189,8 @@ export interface SceneMetadata {
 }
 
 export const SCENE_FORMAT = 'lawsmith.scene';
+/** The recording format's discriminator (SPEC §15.1): a run file is never read as a scene, or the reverse. */
+export const RUN_FORMAT = 'lawsmith.run';
 export const SCHEMA_VERSION = 1;
 
 /** A complete scene artifact (SPEC §5.1, §15.1). */
@@ -307,7 +309,8 @@ export function cloneFrozen<T>(value: T): T {
   return deepFreeze(structuredClone(value));
 }
 
-function deepFreeze<T>(value: T): T {
+/** Freezes a value and everything it holds, in place: for freshly built data no one else references. */
+export function deepFreeze<T>(value: T): T {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.freeze(value);
     for (const child of Object.values(value)) deepFreeze(child);

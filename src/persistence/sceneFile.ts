@@ -2,6 +2,7 @@
 // candidate document, canonical writing, and the semantic digest. JSON here is declarative data
 // only: known keys are read into new objects, nothing is evaluated, fetched or merged.
 import {
+  RUN_FORMAT,
   SCENE_FORMAT,
   SCENE_LIMITS,
   SCHEMA_VERSION,
@@ -262,7 +263,8 @@ function region(value: unknown, path: string): FieldDefinition['region'] {
   return tagged(value, path, kind, regionDescriptor(kind).keys) as unknown as FieldDefinition['region'];
 }
 
-function field(value: unknown, path: string): FieldDefinition {
+/** Reads one law's structure strictly (exact keys); its expression and bounds are `validateField`'s. Shared with run files. */
+export function readField(value: unknown, path: string): FieldDefinition {
   const o = object(value, path, ['id', 'enabled', 'pose', 'region', 'edgeFade', 'expression']);
   return {
     id: string(o.id, at(path, 'id'), SCENE_LIMITS.idLength),
@@ -312,7 +314,7 @@ function semantic(value: unknown, path: string): SceneDefinition {
     simulation: settings(o.simulation, at(path, 'simulation')),
     bodies: array(o.bodies, bodiesPath, SCENE_LIMITS.dynamicBodies + SCENE_LIMITS.fixedBodies).map((b, i) => body(b, at(bodiesPath, i))),
     emitters: array(o.emitters, emittersPath, SCENE_LIMITS.emitters).map((e, i) => emitter(e, at(emittersPath, i))),
-    fields: array(o.fields, fieldsPath, SCENE_LIMITS.fields).map((f, i) => field(f, at(fieldsPath, i))),
+    fields: array(o.fields, fieldsPath, SCENE_LIMITS.fields).map((f, i) => readField(f, at(fieldsPath, i))),
   };
   const result = validateScene(scene);
   if (!result.ok) throw new ImportError(at(path, result.path), result.reason);
@@ -363,6 +365,7 @@ function metadata(value: unknown, path: string): SceneMetadata {
 export function readSceneValue(value: unknown, path = ''): SceneDocument {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new ImportError(path, 'is not a Lawsmith scene (not a JSON object)');
   const root = value as Obj;
+  if (root.format === RUN_FORMAT) throw new ImportError(at(path, 'format'), 'this is a Lawsmith recording, not a scene; open it with Open Recording');
   if (root.format !== SCENE_FORMAT) throw new ImportError(at(path, 'format'), `is not a Lawsmith scene (expected format ${JSON.stringify(SCENE_FORMAT)})`);
   const version = integer(root.schemaVersion, at(path, 'schemaVersion'));
   if (version > SCHEMA_VERSION) throw new ImportError(at(path, 'schemaVersion'), `schema ${version} is newer than this build supports (${SCHEMA_VERSION})`);
