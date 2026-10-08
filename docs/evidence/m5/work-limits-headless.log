@@ -1,0 +1,8 @@
+# VITE_LAWSMITH_MEASURE=1 npx vitest run tests/workLimits.test.ts --silent=false at 2a06bad (+ tests/workLimits.test.ts as committed next), 2026-10-08T07:02Z
+{"environment":"Node.js/26","bodies":105,"probes":2000}
+{"workload":"P5","run":1,"steps":1200,"hostStepMs":{"p50":0.415,"p95":0.604,"p99":0.696},"probeStepMs":{"p50":0.963,"p95":1.131,"p99":1.233},"tick":1800}
+{"workload":"P5","run":2,"steps":1200,"hostStepMs":{"p50":0.421,"p95":0.634,"p99":0.747},"probeStepMs":{"p50":0.969,"p95":1.156,"p99":1.306},"tick":3000}
+{"workload":"P5","run":3,"steps":1200,"hostStepMs":{"p50":0.452,"p95":0.647,"p99":0.752},"probeStepMs":{"p50":1.011,"p95":1.199,"p99":1.286},"tick":4200}
+{"workload":"limits","run":1,"steps":1200,"hostStepMs":{"p50":1.447,"p95":1.817,"p99":2.056},"probeStepMs":{"p50":14.277,"p95":15.706,"p99":16.791},"tick":1800}
+{"workload":"limits","run":2,"steps":1200,"hostStepMs":{"p50":1.646,"p95":1.956,"p99":2.175},"probeStepMs":{"p50":14.087,"p95":15.646,"p99":16.346},"tick":3000}
+{"workload":"limits","run":3,"steps":1200,"hostStepMs":{"p50":1.622,"p95":2.075,"p99":2.486},"probeStepMs":{"p50":14.164,"p95":16.098,"p99":18.917},"tick":4200}
