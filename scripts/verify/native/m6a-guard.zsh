@@ -50,7 +50,7 @@ pause
 n=$(count recording)
 press_expect run-stop recording
 wait_log recording $(( n + 2 )) 10
-run_id=$(field recording runId)
+run_id=${$(field recording runId)//\"/}
 law calm enabled
 expect control "the scene is edited after the recording: dirty" "e.get('law')=='calm' and e['enabled'] is False"
 sleep 1.5

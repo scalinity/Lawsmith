@@ -115,7 +115,7 @@ n=$(count recording)
 press_expect run-stop recording
 wait_log recording $(( n + 2 )) 10
 expect recording "Stop froze the record at its final address, with a final check" "e['action']=='stopped' and e['stopped']=='user' and e['finalCheck'] is not None"
-run_id=$(field recording runId)
+run_id=${$(field recording runId)//\"/}
 final_tick=$(field recording finalTick)
 final_cursor=$(field recording lastAppliedSequence)
 say "recorded $run_id: final address ($final_tick, $final_cursor)"
