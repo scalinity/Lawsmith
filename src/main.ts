@@ -1372,9 +1372,13 @@ async function start() {
     for (const [key, span] of labelSpans) if (!shown.has(key)) span.hidden = true;
   };
 
-  /** Each frame: probes catch up with a paused world, then the vectors, labels and readout follow the host. */
+  /**
+   * Each frame: probes and trails follow a world that was reset or replaced while paused, then the
+   * vectors, labels and readout follow the host.
+   */
   const updateExplanation = () => {
     probes.sync(host);
+    trails.sync(host);
     const observation = shownObservation();
     const i = explained === null ? -1 : host.ids.indexOf(explained);
     const labels = explainView.update(
@@ -1404,6 +1408,7 @@ async function start() {
       arrowScope,
       bytes,
       totalBytes: Object.values(bytes).reduce((a, b) => a + b, 0),
+      drawn: explainView.drawn(),
     };
   };
 

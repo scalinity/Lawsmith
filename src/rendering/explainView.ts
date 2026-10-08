@@ -62,6 +62,8 @@ export interface ExplainView {
   update(scene: ExplainScene, probes: ProbeField, trails: TrailRecorder, explained: string | null): ExplainLabel[];
   /** Bytes of the CPU-side buffers this view allocates; all are allocated once, at creation. */
   bytes(): Record<string, number>;
+  /** What is submitted for drawing now: trail line vertices, probe instances and law-share arrows. */
+  drawn(): { trailVertices: number; probeInstances: number; shareArrows: number };
 }
 
 /** The drawn length of a vector of magnitude `value` at `scale` m per unit, and whether it was capped. */
@@ -335,6 +337,10 @@ export function createExplainView(scene: Scene): ExplainView {
         labels.push({ key: 'contact', text: `contact: ${contacts.join(', ')}`, at: o.after!.center });
       }
       return labels;
+    },
+
+    drawn() {
+      return { trailVertices: trailGeometry.drawRange.count, probeInstances: probeMesh.visible ? probeMesh.count : 0, shareArrows: shareShafts.count };
     },
 
     bytes() {

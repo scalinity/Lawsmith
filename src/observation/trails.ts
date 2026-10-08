@@ -55,15 +55,24 @@ export class TrailRecorder {
   }
 
   /**
+   * Called every frame, paused or not: a world rebuilt or replaced since the last call (a reset, an
+   * opened or recovered scene) clears every trail at once, so no earlier world's trail is ever drawn
+   * over the new one (SPEC §13.2). It never stores a sample; samples come only from completed steps.
+   */
+  sync(host: SimulationHost): void {
+    if (host.generation === this.generation) return;
+    this.generation = host.generation;
+    if (this.slotOf.size > 0 || this.lastTick !== -1) this.clear();
+  }
+
+  /**
    * Called after every completed host step. Samples only at ticks divisible by four, so presentation
    * cadence and dropped frames never decide which positions are stored.
    */
   record(host: SimulationHost, selected: string | null): void {
     if (this.current === 'off') return;
-    if (host.generation !== this.generation || host.tick < this.lastTick) {
-      this.clear();
-      this.generation = host.generation;
-    }
+    this.sync(host);
+    if (host.tick < this.lastTick) this.clear();
     const tick = host.tick;
     if (tick % TRAIL_INTERVAL_TICKS !== 0 || tick === this.lastTick) return;
     // Nothing explained and nothing held: no work at all.

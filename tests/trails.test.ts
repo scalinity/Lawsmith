@@ -173,6 +173,64 @@ describe('trails reset with their world', () => {
     loaded.dispose();
   });
 
+  // Review finding: a paused Reset or Open replaced the world but left its trails drawn until a step.
+  // The frame loop syncs the recorder every frame; a sync never adds a sample.
+  it('a paused reset clears every trail at once, with no step and no new sample', () => {
+    const host = new SimulationHost(STARTING_RECIPE);
+    const trails = new TrailRecorder('all');
+    for (let n = 0; n < 100; n++) {
+      host.step();
+      trails.record(host, null);
+    }
+    expect(trails.count).toBeGreaterThan(0);
+    const version = trails.version;
+    host.reset(STARTING_RECIPE);
+    trails.sync(host);
+    expect(host.tick).toBe(0);
+    expect(trails.count).toBe(0);
+    expect([...trails.lengths].every((n) => n === 0)).toBe(true);
+    expect(trails.owners.every((o) => o === null)).toBe(true);
+    expect(trails.version).not.toBe(version);
+    // Sampling still waits for completed fourth ticks: tick 4 is the first sample of the new world.
+    for (let n = 0; n < 4; n++) {
+      host.step();
+      trails.record(host, null);
+    }
+    for (let s = 0; s < MAX_TRAILS; s++) for (let k = 0; k < trails.lengths[s]!; k++) expect(trails.ticks[trails.at(s, k)]).toBe(4);
+    host.dispose();
+  });
+
+  it('a paused open of another scene, even an empty one, clears the previous scene’s trails', () => {
+    const first = new SimulationHost(STARTING_RECIPE);
+    const trails = new TrailRecorder('all');
+    for (let n = 0; n < 100; n++) {
+      first.step();
+      trails.record(first, null);
+    }
+    expect(trails.count).toBeGreaterThan(0);
+    const empty = new SimulationHost(cloneFrozen({ ...STARTING_RECIPE, emitters: [], fields: [] }));
+    trails.sync(empty);
+    expect(empty.count).toBe(0);
+    expect(trails.count).toBe(0);
+    expect([...trails.lengths].every((n) => n === 0)).toBe(true);
+    first.dispose();
+    empty.dispose();
+  });
+
+  it('syncing within the same world keeps every trail and stores nothing', () => {
+    const host = new SimulationHost(STARTING_RECIPE);
+    const trails = new TrailRecorder('all');
+    for (let n = 0; n < 100; n++) {
+      host.step();
+      trails.record(host, null);
+    }
+    const before = { lengths: [...trails.lengths], owners: [...trails.owners], version: trails.version };
+    trails.sync(host);
+    trails.sync(host);
+    expect({ lengths: [...trails.lengths], owners: [...trails.owners], version: trails.version }).toEqual(before);
+    host.dispose();
+  });
+
   it('off records nothing and a mode change starts afresh', () => {
     const host = new SimulationHost(example('overlap'));
     const trails = new TrailRecorder('off');
