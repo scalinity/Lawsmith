@@ -33,7 +33,8 @@ except (StopIteration, KeyError, IndexError, TypeError):
     b = None
 if b: print(round($WIN_X + b[0] + b[2] / 2), round($WIN_Y + b[1] + b[3] / 2), round(b[1]), round(b[3]))"
 }
-# reveal EXPR: scrolls the Scene panel with hit-tested wheel steps until that box is in view, then clicks it.
+# reveal EXPR [KIND]: scrolls the Scene panel with hit-tested wheel steps until that box is in view, then
+# clicks it; with KIND, a click the app logs as that event, resent once if lost.
 reveal() {
   local i p panel
   for i in {1..30}; do
@@ -42,7 +43,7 @@ reveal() {
     [[ -n $p[1] ]] || fail "the layout has no box for $1"
     panel=(${=$(logq field $APP_LOG layout controls.panel | tr -d '[],')})
     if (( p[3] >= panel[2] + 4 && p[3] + p[4] <= panel[2] + panel[4] - 4 )); then
-      click $p[1] $p[2]
+      if [[ -n $2 ]]; then click_expect $p[1] $p[2] $2; else click $p[1] $p[2]; fi
       return 0
     fi
     local sx=$(( WIN_X + ${panel[1]%.*} + 8 )) sy=$(( WIN_Y + ${panel[2]%.*} + ${panel[4]%.*} / 2 ))
@@ -52,8 +53,10 @@ reveal() {
 }
 row() { print -r -- "next(r['$2'] for r in e['ingredients']['rows'] if r['label']=='$1')" }
 button() { print -r -- "next(b['box'] for b in e['ingredients']['buttons'] if b['action']=='$1'${2:+ and b['value']=='$2'})" }
-law() { reveal "next(l['$2'] for l in e['laws'] if l['id']=='$1')" }
-pause() { [[ $(field sim-control action) == '"play"' ]] && press play; sleep 0.3 }
+law() { reveal "next(l['$2'] for l in e['laws'] if l['id']=='$1')" $([[ $2 == select ]] && print selection || print control) }
+# select_law ID: selects a law from its row unless it already is (a second click deselects).
+select_law() { layout; [[ $(logq field $APP_LOG layout selected) == "\"$1\"" ]] || law $1 select }
+pause() { [[ $(field sim-control action) == '"play"' ]] && press_expect play sim-control; sleep 0.3 }
 run_field() { logq field $APP_LOG layout run.$1 }
 
 seed_folder $QA_STATE/scenes
@@ -72,12 +75,12 @@ layout
 expect layout "idle: Record from tick 0 and Open recording are offered" "e['run']['state']=='idle' and e['run']['buttons']['record'] and e['run']['buttons']['open'] and not e['run']['buttons']['stop']"
 shot record-01-idle
 n=$(count recording)
-press run-record
+press_expect run-record recording
 wait_log recording $(( n + 1 )) 10
 expect recording "Record from tick 0 started a new experiment at (0, 0)" "e['action']=='start' and e['tick']==0 and e['cursor']==0 and e['qualified'] is True"
-press play
+press_expect play sim-control
 sleep 1.2
-law push select
+select_law push
 drag_law_to -1.5 1 0 0.4 1 0
 expect gesture "the push was dragged while the stream played: one gesture of many samples" "e['phase']=='commit' and e['transformMode']=='translate' and e['samples'] > 3"
 sleep 1
@@ -88,14 +91,14 @@ law storm-bottle enabled
 expect control "and enabled again" "e.get('law')=='storm-bottle' and e['enabled'] is True"
 sleep 1
 pause
-law storm-bottle select
-reveal "$(row Swirl select)"
-reveal "$(button add-gain)"
+select_law storm-bottle
+reveal "$(row Swirl select)" ingredient-focus
+reveal "$(button add-gain)" control
 expect control "paused: the swirl got a gain" "e.get('ingredient')=='Add gain'"
-reveal "$(button gain-kind triangle)"
+reveal "$(button gain-kind triangle)" control
 expect control "and, at the same tick, a triangle" "e.get('ingredient')=='Change gain' and e['field']['expression']['terms'][1]['gain']['kind']=='triangle'"
 shot record-02-recording
-press play
+press_expect play sim-control
 sleep 2
 n=$(count history)
 keys kd:cmd t:z ku:cmd
@@ -109,7 +112,7 @@ expect control "two paused edits at the final tick" "e.get('law')=='push' and e[
 layout
 expect layout "recording: Stop, and progress toward the limits" "e['run']['state']=='recording' and e['run']['buttons']['stop'] and e['run']['meter'] is not None and e['run']['recording']['count'] > 10"
 n=$(count recording)
-press run-stop
+press_expect run-stop recording
 wait_log recording $(( n + 2 )) 10
 expect recording "Stop froze the record at its final address, with a final check" "e['action']=='stopped' and e['stopped']=='user' and e['finalCheck'] is not None"
 run_id=$(field recording runId)
@@ -126,15 +129,15 @@ shot record-03-stopped
 segment "session A: replay shows the recording, then Return to authoring"
 activate
 n=$(count context)
-press run-replay
+press_expect run-replay context
 wait_log context $(( n + 1 )) 10
 expect context "replay: a second world from the frozen root, the authoring world kept" "e['reason']=='replay' and e['selected']=='replay' and e['replay']==1 and e['tick']==0 and e['cursor']==0"
-law push select
+select_law push
 layout
 expect layout "the replay shows the root's push (enabled, at -1.5), not the newer authored one" "e['selectedField']['id']=='push' and e['selectedField']['enabled'] is True and e['selectedField']['pose']['position'][0]==-1.5 and [l['id'] for l in e['laws']]==['calm','push','storm-bottle']"
 expect layout "read-only replay: its title, Replay from start and Return to authoring, no Record" "e['run']['state']=='replay' and e['run']['title']=='Replay of “M6A lab”' and e['run']['buttons']['restart'] and e['run']['buttons']['return'] and not e['run']['buttons']['record']"
 shot replay-01-root
-press play
+press_expect play sim-control
 wait_log replay-complete 1 $(( final_tick / 120 + 20 ))
 expect replay-complete "the replay reached the frozen address and matched the recorded end" "e['runId']=='$run_id' and e['tick']==$final_tick and e['cursor']==$final_cursor and e['check']['kind']=='match'"
 sleep 0.5
@@ -146,10 +149,10 @@ keys kd:cmd t:s ku:cmd
 wait_log file-control $(( n + 1 ))
 expect file-control "⌘S during replay saves nothing: ordinary Save Scene is off" "e['action']=='save' and e['outcome']=='refused' and e['reason']=='replay'"
 n=$(count context-live)
-press run-return
+press_expect run-return context
 wait_log context-live $(( n + 1 )) 10
 expect context "Return to authoring freed the replay world" "e['reason']=='return' and e['selected']=='authoring' and e['replay']==0 and e['tick']==$final_tick"
-law push select
+select_law push
 layout
 expect layout "the retained authoring scene is back: the push disabled after the stop" "e['selectedField']['id']=='push' and e['selectedField']['enabled'] is False"
 verdict "the authoring world, revision and history are identical before and after the replay" retained $APP_LOG
@@ -158,7 +161,7 @@ shot replay-03-returned
 segment "session A: save the recording and quit"
 activate
 n=$(count document)
-press run-save
+press_panel run-save
 save_panel $QA_STATE/scenes m6a-qa.lawsmith-run.json
 wait_log document $(( n + 1 )) 15
 expect document "Save Recording wrote the run file" "e['action']=='save-recording' and e['outcome']=='saved' and e['runId']=='$run_id' and e['bytes'] > 0"
@@ -174,16 +177,16 @@ launch m6a-replay $RECOVERY
 activate
 record_start m6a-replay 80
 n=$(count document)
-press run-open
+press_panel run-open
 open_panel m6a-qa.lawsmith-run.json
 wait_log document $(( n + 1 )) 15
 expect document "Open Recording validated and committed the run" "e['action']=='open-recording' and e['outcome']=='committed' and e['runId']=='$run_id'"
 expect context "it replays from tick 0, beside the untouched default scene" "e['selected']=='replay' and e['tick']==0 and e['cursor']==0"
 # Visualization that session A never had: probes, every trail, one law's arrows, an explained body.
-press probes-toggle
-press trails-all
-press arrows-selected
-press play
+press_expect probes-toggle visualization
+press_expect trails-all visualization
+press_expect arrows-selected visualization
+press_expect play sim-control
 sleep 2.5
 n=$(count lifecycle)
 idle_gate; guard_front
@@ -197,7 +200,7 @@ layout
 expect sim-control "Hide paused the replay; nothing advanced while hidden" "e['action']=='pause' and e['tick']==$hidden_tick"
 expect layout "still paused at the same tick after coming back: Play stays explicit" "e['run']['replay']['address']['tick']==$hidden_tick and e['run']['replay']['complete'] is False"
 keys t:b
-press play
+press_expect play sim-control
 wait_log replay-complete 1 $(( final_tick / 120 + 20 ))
 expect replay-complete "after a fresh launch, the same final address and a matching end check" "e['runId']=='$run_id' and e['tick']==$final_tick and e['cursor']==$final_cursor and e['check']['kind']=='match'"
 shot replay-04-fresh-end
@@ -207,7 +210,7 @@ record_stop
 
 segment "session B: the runtime's own M6A fixtures"
 activate
-press run-return
+press_expect run-return context
 keys kd:shift t:m ku:shift
 wait_log m6a-fixtures 1 300
 expect m6a-fixtures "the linear oracle agrees with itself and the record; 20+20 cycles and 20 imports hold the counts" "e['pass'] is True and e['oracle']['divergence'] is None and e['oracle']['end']['matchesRecord'] is True and e['lifecycle']['peakWorlds'] <= e['lifecycle']['before']['worlds'] + 2"

@@ -22,11 +22,11 @@ except (StopIteration, KeyError, IndexError, TypeError):
     b = None
 if b: print(round($WIN_X + b[0] + b[2] / 2), round($WIN_Y + b[1] + b[3] / 2))"
 }
-law() { layout; local p=(${=$(box "next(l['$2'] for l in e['laws'] if l['id']=='$1')")}); click $p[1] $p[2] }
-pause() { [[ $(field sim-control action) == '"play"' ]] && press play; sleep 0.3 }
+law() { layout; local p=(${=$(box "next(l['$2'] for l in e['laws'] if l['id']=='$1')")}); click_expect $p[1] $p[2] $([[ $2 == select ]] && print selection || print control) }
+pause() { [[ $(field sim-control action) == '"play"' ]] && press_expect play sim-control; sleep 0.3 }
 open_run() {
   local n=$(count document)
-  press run-open
+  press_panel run-open
   open_panel $1
   wait_log document $(( n + 1 )) 15
 }
@@ -40,15 +40,15 @@ keys kd:cmd t:o ku:cmd
 n=$(count document)
 open_panel m6a-lab.lawsmith.json
 wait_log document $(( n + 1 )) 15
-press run-record
-press play
+press_expect run-record recording
+press_expect play sim-control
 sleep 1.2
 law storm-bottle enabled
 sleep 1
 law storm-bottle enabled
 pause
 n=$(count recording)
-press run-stop
+press_expect run-stop recording
 wait_log recording $(( n + 2 )) 10
 run_id=$(field recording runId)
 law calm enabled
@@ -70,8 +70,8 @@ shot guard-01-canceled
 
 segment "from replay: Save Recording, then Cancel the scene"
 activate
-press run-replay
-press play
+press_expect run-replay context
+press_expect play sim-control
 sleep 1.5
 pause
 layout

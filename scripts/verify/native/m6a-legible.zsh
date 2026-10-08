@@ -18,15 +18,16 @@ window_size() {
   window_origin
 }
 restore_display() { [[ $(screen_size) == $LARGER_TEXT ]] || display_mode ${=${${LARGER_TEXT%@*}/x/ }}; cliclick m:584,300; touched; say "display restored to $(screen_size)" }
-pause() { [[ $(field sim-control action) == '"play"' ]] && press play; sleep 0.3 }
+pause() { [[ $(field sim-control action) == '"play"' ]] && press_expect play sim-control; sleep 0.3 }
 select_law() {
   layout
+  [[ $(logq field $APP_LOG layout selected) == "\"$1\"" ]] && return 0
   local p=(${=$(logq last $APP_LOG layout | python3 -I -c "
 import json, sys
 e = json.load(sys.stdin)
 b = next(l['select'] for l in e['laws'] if l['id'] == '$1')
 print(round($WIN_X + b[0] + b[2] / 2), round($WIN_Y + b[1] + b[3] / 2))")})
-  click $p[1] $p[2]
+  click_expect $p[1] $p[2] selection
 }
 # clear STATE W H: the run cluster, in STATE, inside W×H and overlapping no other region.
 clear_of_everything() {
@@ -56,22 +57,22 @@ layout
 expect layout "the content viewport is 1280×800 CSS, the Storm Bottle selected" "e['viewport']==[1280, 800] and e['selected']=='storm-bottle'"
 clear_of_everything idle 1280 800
 shot m6a-1280x800-idle
-press run-record
-press play
+press_expect run-record recording
+press_expect play sim-control
 sleep 2
 clear_of_everything recording 1280 800
 shot m6a-1280x800-recording
 pause
 n=$(count recording)
-press run-stop
+press_expect run-stop recording
 wait_log recording $(( n + 2 )) 10
 clear_of_everything recorded 1280 800
-press run-replay
+press_expect run-replay context
 select_law storm-bottle
 n=$(count explain-select)
 keys t:b
 wait_log explain-select $(( n + 1 ))
-press play
+press_expect play sim-control
 wait_log replay-complete 1 30
 sleep 0.5
 clear_of_everything replay 1280 800
@@ -79,7 +80,7 @@ shot m6a-1280x800-replay-end
 window_size 40 50 900 600
 clear_of_everything replay 900 600
 shot m6a-900x600-replay-end
-press run-return
+press_expect run-return context
 clear_of_everything recorded 900 600
 activate
 keys kd:cmd t:q ku:cmd

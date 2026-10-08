@@ -43,10 +43,10 @@ wait_log document 1 15
 layout
 expect layout "the content viewport is 1600×1000 CSS, drag-0 selected" "e['viewport']==[1600, 1000] and e['selected']=='drag-0'"
 n=$(count recording)
-press run-record
+press_expect run-record recording
 wait_log recording $(( n + 1 )) 10
 recording_from=$(logq field $APP_LOG recording t)
-press play
+press_expect play sim-control
 start=$EPOCHSECONDS
 flip=0
 while (( EPOCHSECONDS - start < 50 )); do
@@ -55,20 +55,20 @@ while (( EPOCHSECONDS - start < 50 )); do
   sleep 1.5
 done
 n=$(count recording)
-press run-stop
+press_expect run-stop recording
 wait_log recording $(( n + 2 )) 10
 expect recording "about 50 s of P1 recorded with its drags" "e['action']=='stopped' and e['finalTick'] > 5000 and e['commands'] > 100"
 say "while recording: $(pacing_since $recording_from)"
 final_tick=$(field recording finalTick)
 n=$(count context)
-press run-replay
+press_expect run-replay context
 wait_log context $(( n + 1 )) 10
 replay_from=$(logq field $APP_LOG context t)
-press play
+press_expect play sim-control
 wait_log replay-complete 1 $(( final_tick / 120 + 30 ))
 expect replay-complete "the P1 replay reached the recorded end exactly" "e['check']['kind']=='match' and e['tick']==$final_tick"
 say "while replaying: $(pacing_since $replay_from)"
-press run-return
+press_expect run-return context
 activate
 keys kd:cmd t:q ku:cmd
 sleep 1

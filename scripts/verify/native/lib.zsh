@@ -256,6 +256,25 @@ press_expect() {
   wait_log $2 $(( n + 1 )) 3
 }
 
+# click_expect X Y KIND: a hit-tested click whose effect the app logs as a KIND event, sent once more if
+# no event follows within a second (M5 finding 10: a synthetic click can be lost without a trace).
+click_expect() {
+  local n=$(count $3) i
+  click $1 $2
+  for i in {1..10}; do (( $(count $3) > n )) && return 0; sleep 0.1; done
+  say "the synthetic click at ($1,$2) was lost (no $3 event); sending it again"
+  click $1 $2
+  wait_log $3 $(( n + 1 )) 3
+}
+# press_panel ID: presses a control that opens a native panel, once more if no panel appears.
+press_panel() {
+  local i
+  press $1
+  for i in {1..12}; do (( $(depth) >= 1 )) && return 0; sleep 0.25; done
+  say "the synthetic click on $1 opened no panel; sending it again"
+  press $1
+}
+
 # Whole-window capture of the app under test (it proves pixels, never what is on top).
 shot() {
   local id=$(osascript -l JavaScript $NATIVE/windows.js list $APP_PID | python3 -I -c '
