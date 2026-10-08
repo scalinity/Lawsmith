@@ -504,14 +504,20 @@ async function start() {
   const selectedLaw = () => (interaction.selectedId === null ? undefined : appliedLaw(interaction.selectedId));
   const blocked = () => frozen || interaction.gesture !== null;
 
+  /** The note a refused undo or redo left, cleared by the next one that applies. */
+  let historyRefusal: typeof workflow.message = null;
   const undo = (redo: boolean) => {
     if (blocked()) return;
     const result = redo ? authoring.redo() : authoring.undo();
     if (result.ok) {
+      if (workflow.message === historyRefusal) workflow.message = null;
       settleNow();
       if (appliedLaw(result.value.id)) interaction.select(result.value.id);
       else if (interaction.selectedId === result.value.id) interaction.select(authoring.scene.fields[0]?.id ?? null);
       edited();
+    } else if (redo ? authoring.canRedo : authoring.canUndo) {
+      // The step stays available but cannot apply now (the scene's leaf budget, an ID taken since): say why.
+      workflow.message = historyRefusal = { kind: 'error', text: `${redo ? 'Redo' : 'Undo'} was not applied: ${result.reason}. Nothing changed.` };
     }
     report('history', {
       action: redo ? 'redo' : 'undo',
