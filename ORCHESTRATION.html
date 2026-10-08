@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-07 against branch <code>m4</code>: M4 remediated (code <code>c25b667</code>) and both reviews complete, awaiting your acceptance; <code>main</code> holds accepted M3 (code <code>1812374</code>)</span>
+    <span>Realigned 2026-10-07 against <code>main</code> with M4 accepted and merged (code <code>c25b667</code>), and M5 eligible but not started</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Accept M4, or send it back.</h1>
-    <p class="lede">M4 is remediated on branch <code>m4</code> (code <code>c25b667</code>). Sol’s review of <code>8ec6342</code> found one high issue, old trails still drawn after a paused Reset or Open, and a formatting note; both are fixed and verified in the packaged app. Sol’s follow-up review of <code>0cec626</code> returned REMEDIATION VERIFIED with no new findings. All seven acceptance criteria pass. Your acceptance comes next, then the close-out merge of <code>m4</code> into <code>main</code>. M5 waits for it.</p>
-    <cite><code>docs/evidence/M4.md</code> Status, Acceptance criteria, Performance, Findings</cite>
+    <h1>Start M5 in a fresh Opus 5.5 session.</h1>
+    <p class="lede">You accepted M4 on 2026-10-07, after Sol’s follow-up review returned M4 FOLLOW-UP: REMEDIATION VERIFIED. All seven acceptance criteria pass, and M4 is merged to <code>main</code>. M5, which builds one compound law you can move as a whole from a few primitive ingredients with sum, gain and mask, is now the only eligible unit and is not started. Opus 5.5 authors it on branch <code>m5</code> from <code>main</code>, and GPT-6.1 Sol reviews.</p>
+    <cite><code>docs/evidence/M4.md</code> Status, Review; <code>docs/MILESTONES.md</code> M5</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -544,7 +544,7 @@
       </article>
 
       <!-- REALIGN M4 -->
-      <article class="unit" id="m4" data-gate="M4" data-state="implemented">
+      <article class="unit" id="m4" data-gate="M4" data-state="accepted">
         <div class="gate">M4</div>
         <div>
           <div class="unit-head">
@@ -554,13 +554,13 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m4</code>. GPT-6.1 Sol reviewed <code>8ec6342</code> and found 1 high finding (AC5) and 1 formatting note; both were resolved and the fix verified natively. Sol’s follow-up review of <code>0cec626</code> returned REMEDIATION VERIFIED with no new findings.</dd>
-              <dt>Graph permits</dt><dd class="soft">Done: code at <code>c25b667</code>, reviews complete; awaiting your acceptance, not merged.</dd>
-              <dt>Should run</dt><dd class="run">Your acceptance, then the close-out merge of <code>m4</code> into <code>main</code>. Nothing beside it: M5 shares <code>ui</code> and waits.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>c25b667</code>, accepted by you on 2026-10-07.</dd>
+              <dt>Should run</dt><dd class="run">Nothing. M4 is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M3, accepted on 2026-10-07. Contracts C4, C5.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing. Native QA wrote only disposable files, a 1 MiB disk image and per-run recovery directories, switched the display to More Space only for P0, P1, P2 and the 1280×800 check and restored it, and restored the panel preferences it changed.</dd>
-              <dt>Your part</dt><dd>Done: you ran both reviews. Optionally click a moving body on the real trackpad (<code>M4.md</code> Owner checks; not a gate). Then accept M4 or send it back.</dd>
+              <dt>Your part</dt><dd>Done: you ran both reviews and accepted M4 on 2026-10-07. Clicking a moving body on the real trackpad stays an optional check, not a gate (<code>M4.md</code> Owner checks).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
@@ -579,11 +579,11 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the independent review gate on math, serialization, and whether it still feels like manipulating a law. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once M4 is ACCEPTED.</dd>
-              <dt>Should run</dt><dd class="run">Not before. It shares <code>ui</code> with M4. Second approved stopping point: creative core.</dd>
+              <dt>Graph permits</dt><dd class="soft">Now: M4 is ACCEPTED (2026-10-07).</dd>
+              <dt>Should run</dt><dd class="run">Next, and alone: the next implementation unit, in a fresh session from <code>main</code> on branch <code>m5</code>. It shares <code>ui</code> with M4. Second approved stopping point: creative core.</dd>
             </dl>
             <dl class="facts">
-              <dt>Needs</dt><dd>M4 accepted. Contracts C1, C2, C4, C8.</dd>
+              <dt>Needs</dt><dd>M4, accepted on 2026-10-07. Contracts C1, C2, C4, C8.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
               <dt>Your part</dt><dd>Hands-off windows for the construction recording.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
