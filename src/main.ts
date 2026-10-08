@@ -893,6 +893,12 @@ async function start() {
       return null;
     };
     if (!next.ok) return refuse(next.reason);
+    // An edit that changes nothing (the checked gain kind or mask shape, a value committed unchanged)
+    // puts nothing: a put would advance the revision and mark the document edited with no undo entry.
+    if (JSON.stringify(next.expression) === JSON.stringify(current.expression)) {
+      showDetailsError(null);
+      return next;
+    }
     const result = authoring.editField(law.id, label, (f) => ({ ...f, expression: next.expression }));
     if (!result.ok) return refuse(result.path ? `${result.path}: ${result.reason}` : result.reason);
     showDetailsError(null);
