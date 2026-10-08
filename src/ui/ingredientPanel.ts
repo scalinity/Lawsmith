@@ -128,6 +128,9 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
     if (samePath(path, focus) || (path === null && focus === null)) return;
     focus = path;
     o.onFocus();
+    // The editor opens below the list; at a small window height that is below the panel's fold, so
+    // bring it into view, the least distance that shows it (and its top, if it is taller than the panel).
+    if (path !== null) requestAnimationFrame(() => detail.hidden || detail.scrollIntoView({ block: 'nearest' }));
   };
 
   const apply = (label: string, change: (law: FieldDefinition) => Edited, input?: HTMLInputElement, refocus?: (edited: Edited & { ok: true }) => ExprPath | null) => {
@@ -424,7 +427,7 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
       ? level === null
         ? 'Added in this order, each at the bottle’s center and turned with it. The law’s support applies once, to all of them.'
         : 'A group’s ingredients are added in this order, then its own gains and masks apply.'
-      : 'One primitive. Add another and both act inside this one law, which still moves, turns and resizes as a whole.';
+      : 'Add one to combine it with this law’s primitive.';
     crumbs.hidden = level === null;
     levelText.textContent = level === null ? '' : `Inside a group (${pathText(level)})`;
     const labels = ingredientLabels(ingredients);

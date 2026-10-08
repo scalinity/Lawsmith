@@ -1199,6 +1199,7 @@ async function start() {
       fields: [...document.querySelectorAll<HTMLInputElement>('#ingredient-detail input')].map((i) => ({ label: i.getAttribute('aria-label'), key: i.dataset.key, node: nodeOf(i), value: i.value, box: box(i) })),
       live: [...document.querySelectorAll('#ingredient-detail [data-live]')].map((p) => p.textContent),
       up: box($('ingredient-up')),
+      detail: box($('ingredient-detail')),
       note: $('ingredients-note').textContent,
       box: box($('ingredients')),
     };
@@ -1211,6 +1212,8 @@ async function start() {
       swatches,
       ingredients,
       selected: law?.id ?? null,
+      // The selected law as applied, so a harness can test bodies against its support itself.
+      selectedField: law ?? null,
       arrows: world.arrowCount(),
       transformMode: interaction.mode,
       support,
@@ -1219,7 +1222,7 @@ async function start() {
       lawHandles: interaction.handlesOnScreen(),
       // The explained body's center now, and the panel's scroll extent (it must not scroll sideways).
       explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
-      scroll: Object.fromEntries(['panel', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight }]; })),
+      scroll: Object.fromEntries(['panel', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: visualizationState(),
       camera: viewport.camera.position.toArray(),
       // World → clip space, so a harness can find where any world point appears.

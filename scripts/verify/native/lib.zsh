@@ -177,6 +177,10 @@ guard_front() {
 
 click() { idle_gate; guard_point $1 $2; cliclick -e 20 c:$1,$2; touched; sleep 0.3 }
 
+# scroll_at X Y DY: one wheel step of DY pixels over (X,Y), hit-tested like a click; scrolls the panel
+# under the pointer, never the scene behind it.
+scroll_at() { idle_gate; guard_point $1 $2; cliclick -e 20 m:$1,$2; osascript -l JavaScript $NATIVE/scroll.js $3 >/dev/null; touched; sleep 0.35 }
+
 # drag X1 Y1 X2 Y2 [STEPS]: press, move in steps, release; both ends are hit-tested. A synthetic
 # mouse-up is sometimes lost (M0 finding 1; WebKit reads button state from the hardware, so a later
 # synthetic move does not reveal it). If a law gesture began but did not end, the release is sent
