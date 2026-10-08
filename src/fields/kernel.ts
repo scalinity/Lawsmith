@@ -2,7 +2,7 @@
 // through the same transform, normalized gauge, fade and rotation, producing E = (A, K) at a tick.
 // Plain numbers only, no Three.js: the simulation host, the probes and the sparse visual samples all
 // call `sampleField`, so what is drawn and what probes feel is this evaluator.
-import type { FieldDefinition, FieldExpression, Quat } from '../domain/scene';
+import type { FieldDefinition, FieldExpression, MaskExpression, Quat } from '../domain/scene';
 import { gainAt } from './expression';
 import { primitiveDescriptor, regionDescriptor, type Gauge } from './registry';
 
@@ -50,6 +50,24 @@ export function fadeWeight(d: number, f: number): number {
   if (f === 0) return d <= 1 ? 1 : 0;
   const z = Math.min(1, Math.max(0, (1 - d) / f));
   return z * z * (3 - 2 * z);
+}
+
+/** A mask's SPEC §7 weight at law-local r. */
+export type MaskWeight = (rx: number, ry: number, rz: number) => number;
+
+/** Compiles a mask's weight: r in the mask's pose, which is relative to the law frame, then its region's gauge and fade. */
+export function compileMaskWeight(mask: MaskExpression): MaskWeight {
+  const gauge = regionDescriptor(mask.region.kind).compile(mask.region);
+  const m = rotationMatrix(mask.pose.rotation);
+  const [px, py, pz] = mask.pose.position;
+  const f = mask.edgeFade;
+  return (rx, ry, rz) => {
+    // Mask-local coordinates Rₘᵀ(r − pₘ), for the weight only.
+    const dx = rx - px;
+    const dy = ry - py;
+    const dz = rz - pz;
+    return fadeWeight(gauge(m[0]! * dx + m[3]! * dy + m[6]! * dz, m[1]! * dx + m[4]! * dy + m[7]! * dz, m[2]! * dx + m[5]! * dy + m[8]! * dz), f);
+  };
 }
 
 const zero: ExpressionEvaluator = (_rx, _ry, _rz, out) => {
@@ -120,16 +138,9 @@ export function compileExpression(expression: FieldExpression): { evaluate: Expr
     case 'mask': {
       const compiled = compileExpression(expression.child);
       const child = compiled.evaluate;
-      const gauge = regionDescriptor(expression.region.kind).compile(expression.region);
-      const m = rotationMatrix(expression.pose.rotation);
-      const [px, py, pz] = expression.pose.position;
-      const f = expression.edgeFade;
+      const weightAt = compileMaskWeight(expression);
       const evaluate: ExpressionEvaluator = (rx, ry, rz, out, n) => {
-        // Mask-local coordinates Rₘᵀ(r − pₘ), for the weight only.
-        const dx = rx - px;
-        const dy = ry - py;
-        const dz = rz - pz;
-        const w = fadeWeight(gauge(m[0]! * dx + m[3]! * dy + m[6]! * dz, m[1]! * dx + m[4]! * dy + m[7]! * dz, m[2]! * dx + m[5]! * dy + m[8]! * dz), f);
+        const w = weightAt(rx, ry, rz);
         if (w === 0) return zero(rx, ry, rz, out, n);
         const k = child(rx, ry, rz, out, n);
         out[0] = w * out[0]!;
