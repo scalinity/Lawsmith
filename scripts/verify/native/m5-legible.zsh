@@ -1,7 +1,8 @@
 # M5 legibility at 1280×800 in the packaged app (SPEC §11.1; MILESTONES M5 visual QA): the Storm Bottle in
 # the stream, selected, its drag ingredient open with its mask's fields, and a body explained. The bottle's
 # support and that body stay clear of every panel, nothing scrolls sideways, the opened editor's top is in
-# view, and the primary controls are reachable. A one-leaf law's added rows are measured beside it, since
+# view, and the primary controls are reachable: the transport and history in view, Save within the
+# panel's width (it scrolls vertically to the editor; ⌘S needs no scrolling). A one-leaf law's added rows are measured beside it, since
 # the panel's height (M2 finding 8) belongs to M8 and M5 must not make it materially worse.
 # Usage: QA_STATE=… QA_OUT=… scripts/verify/verify.sh native m5-legible
 source ${0:A:h}/lib.zsh
@@ -72,13 +73,12 @@ sleep 6
 press play
 reveal "next(r['select'] for r in e['ingredients']['rows'] if r['label']=='Drag')"
 sleep 0.5
-keys t:f
 n=$(count explain-select)
 keys t:b
 wait_log explain-select $(( n + 1 ))
 keys t:.
 layout
-expect layout "the bottle, its support and the explained body are clear of the panels, tools, transport and switches; nothing scrolls sideways; the opened editor's top is in view; primary controls are reachable" "e['viewport']==[1280, 800] and e['selected']=='storm-bottle' and e['ingredients']['focus']==[2] and e['explained']['point'] is not None and all(not (a[0] < e['support'][2] and a[0] + a[2] > e['support'][0] and a[1] < e['support'][3] and a[1] + a[3] > e['support'][1]) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and all(not (a[0] - 6 <= e['explained']['point'][0] <= a[0] + a[2] + 6 and a[1] - 6 <= e['explained']['point'][1] <= a[1] + a[3] + 6) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and all(s['scrollWidth'] <= s['clientWidth'] for s in e['scroll'].values()) and e['controls']['panel'][1] <= e['ingredients']['detail'][1] <= e['controls']['panel'][1] + e['controls']['panel'][3] - 40 and all(0 <= e['controls'][k][0] and e['controls'][k][0] + e['controls'][k][2] <= 1280 and e['controls'][k][1] + e['controls'][k][3] <= 800 for k in ('play', 'reset', 'file-save', 'undo'))"
+expect layout "the bottle, its support and the explained body are clear of the panels, tools, transport and switches; nothing scrolls sideways; the opened editor's top is in view; the transport and history are in view and Save is in the panel's width" "e['viewport']==[1280, 800] and e['selected']=='storm-bottle' and e['ingredients']['focus']==[2] and e['explained']['point'] is not None and all(not (a[0] < e['support'][2] and a[0] + a[2] > e['support'][0] and a[1] < e['support'][3] and a[1] + a[3] > e['support'][1]) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and all(not (a[0] - 6 <= e['explained']['point'][0] <= a[0] + a[2] + 6 and a[1] - 6 <= e['explained']['point'][1] <= a[1] + a[3] + 6) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and all(s['scrollWidth'] <= s['clientWidth'] for s in e['scroll'].values()) and e['controls']['panel'][1] <= e['ingredients']['detail'][1] <= e['controls']['panel'][1] + e['controls']['panel'][3] - 40 and all(0 <= e['controls'][k][0] and e['controls'][k][0] + e['controls'][k][2] <= 1280 and 0 <= e['controls'][k][1] and e['controls'][k][1] + e['controls'][k][3] <= 800 for k in ('play', 'reset', 'undo', 'redo')) and 0 <= e['controls']['file-save'][0] and e['controls']['file-save'][0] + e['controls']['file-save'][2] <= 296"
 shot m5-1280x800-storm
 say "rects: $(logq last $APP_LOG layout | python3 -I -c 'import json,sys; e=json.load(sys.stdin); print({k: e["controls"][k] for k in ("panel","explain","tools","transport","overlays")}, "support", [round(v) for v in e["support"]], "body", [round(v) for v in e["explained"]["point"]], "detail", e["ingredients"]["detail"])')"
 activate

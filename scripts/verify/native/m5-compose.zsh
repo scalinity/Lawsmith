@@ -7,6 +7,8 @@
 # with its own evaluator of SPEC §6.3 and §7. Whole-window captures and recordings are supporting evidence.
 # Usage: QA_STATE=… QA_OUT=… scripts/verify/verify.sh native m5-compose
 source ${0:A:h}/lib.zsh
+# Any exit, a script error included, stops a recording in progress, so its overlay never outlives the run.
+trap '[[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; gui_unlock' EXIT
 RECOVERY=$QA_STATE/recovery-compose5-$EPOCHSECONDS
 mkdir -p $RECOVERY $QA_STATE/scenes
 cp ${NATIVE:h:h:h}/examples/storm-bottle.lawsmith.json $QA_STATE/scenes/
@@ -183,12 +185,12 @@ activate
 record_start m5-mask 45
 pause
 reveal "$(row Drag select)"
-expect control "Drag is the ingredient being edited" "e.get('ingredientFocus') and e['ingredientFocus']['focus']==[2]"
+expect ingredient-focus "Drag is the ingredient being edited" "e['law']=='storm-bottle' and e['focus']==[2]"
 keys t:s
 layout
 expect layout "Adjust shows the bottle's own handles and the drag mask's" "any(h['name']=='expression.terms[2].region.halfExtents.1' for h in e['lawHandles']) and any(h['name']=='radius' for h in e['lawHandles'])"
-drag_handle expression.terms[2].region.halfExtents.1 0 -0.6 0
-expect gesture "one drag of the mask's handle lowered its top: only that mask changed" "e['phase']=='commit' and e['handle']=='expression.terms[2].region.halfExtents.1' and e['field']['expression']['terms'][2]['region']['halfExtents'][1] < 1.25 and e['field']['expression']['terms'][0]==$original['terms'][0] and e['field']['expression']['terms'][1]==$original['terms'][1]"
+drag_handle 'expression.terms[2].region.halfExtents.1' 0 -0.6 0
+expect gesture "one drag of the mask's handle lowered its top: only that mask changed" "e['phase']=='commit' and e['handle']=='expression.terms[2].region.halfExtents.1' and e['field']['expression']['terms'][2]['region']['halfExtents'][1] < 1.25 and e['field']['expression']['terms'][0]==(${original})['terms'][0] and e['field']['expression']['terms'][1]==(${original})['terms'][1]"
 keys t:t
 press play
 sleep 3
@@ -240,7 +242,7 @@ saved=$(selected_expression)
 n=$(count document)
 d=$(count digest)
 keys kd:cmd,shift t:s ku:cmd,shift
-save_panel $QA_STATE/scenes storm-qa
+save_panel $QA_STATE/scenes storm-qa.lawsmith.json
 wait_log document $(( n + 1 )) 15
 expect document "Save As wrote storm-qa and bound it" "e['action']=='save-as' and e['outcome']=='saved'"
 wait_log digest $(( d + 1 )) 10
@@ -273,7 +275,7 @@ press play
 sleep 11.5
 pause
 wait_log run-digest 2 10
-say "run digests at ticks 600 and 1200: $(logq all $APP_LOG run-digest | python3 -I -c 'import json,sys; print(*[(e[\"tick\"], e[\"stateSha256\"][:8], e[\"engineSha256\"][:8]) for e in map(json.loads, sys.stdin)][-2:])')"
+say "run digests at ticks 600 and 1200: $(logq all $APP_LOG run-digest | python3 -I -c "import json,sys; print(*[(e['tick'], e['stateSha256'], e['engineSha256']) for e in map(json.loads, sys.stdin)][-2:])")"
 activate
 keys kd:cmd t:q ku:cmd
 sleep 1

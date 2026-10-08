@@ -906,7 +906,7 @@ async function start() {
 
   const ingredientPanel = createIngredientPanel({
     edit: editExpression,
-    onFocus: () => report('control', { ingredientFocus: ingredientPanel.state() }),
+    onFocus: () => report('ingredient-focus', ingredientPanel.state()),
   });
 
   const withAxis = (v: Vec3, axis: number, value: number): Vec3 => v.map((c, i) => (i === axis ? value : c)) as unknown as Vec3;
