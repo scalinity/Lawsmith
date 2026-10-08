@@ -15,7 +15,6 @@ import {
   type EmitterDefinition,
   type FieldDefinition,
   type FieldExpression,
-  type Gain,
   type LawPresentation,
   type Pose,
   type Quat,
@@ -28,8 +27,8 @@ import {
   checkCamera,
   checkLawPresentation,
 } from '../domain/scene';
-import { EXPRESSION_LIMITS, OPERATOR_CAPABILITIES, expressionCapabilities } from '../fields/expression';
-import { LAW_CAPABILITIES, isPrimitiveKind, isRegionKind, primitiveDescriptor, regionDescriptor, type ValueKind } from '../fields/registry';
+import { OPERATOR_CAPABILITIES, expressionCapabilities } from '../fields/expression';
+import { LAW_CAPABILITIES, isRegionKind, regionDescriptor, type ValueKind } from '../fields/registry';
 
 /** The emitter capability; region and primitive capabilities come from the law registry. */
 export const EMITTER_CAPABILITY = 'emitter.xorshift32.v1';
@@ -263,52 +262,6 @@ function region(value: unknown, path: string): FieldDefinition['region'] {
   return tagged(value, path, kind, regionDescriptor(kind).keys) as unknown as FieldDefinition['region'];
 }
 
-function gain(value: unknown, path: string): Gain {
-  const kind = oneOf(kindOf(value, path), at(path, 'kind'), ['constant', 'triangle'] as const);
-  if (kind === 'constant') return { kind, value: number(object(value, path, ['kind', 'value']).value, at(path, 'value')) };
-  const o = object(value, path, ['kind', 'min', 'max', 'periodTicks', 'phaseTicks']);
-  return {
-    kind,
-    min: number(o.min, at(path, 'min')),
-    max: number(o.max, at(path, 'max')),
-    periodTicks: integer(o.periodTicks, at(path, 'periodTicks')),
-    phaseTicks: integer(o.phaseTicks, at(path, 'phaseTicks')),
-  };
-}
-
-/**
- * Reads one expression node strictly (SPEC §6.3, §15.2): exactly its known keys, its children in
- * stored order. The depth and node bounds are checked on arrival, before any child is read, so a
- * long or deeply nested file is refused instead of traversed. Semantic bounds follow in validation.
- */
-function expression(value: unknown, path: string, depth: number, budget: { nodes: number }): FieldExpression {
-  if (depth > EXPRESSION_LIMITS.depth) throw new ImportError(path, `expression depth exceeds ${EXPRESSION_LIMITS.depth}`);
-  if (++budget.nodes > EXPRESSION_LIMITS.nodes) throw new ImportError(path, `a law has at most ${EXPRESSION_LIMITS.nodes} expression nodes`);
-  const kind = kindOf(value, path);
-  if (isPrimitiveKind(kind)) return tagged(value, path, kind, primitiveDescriptor(kind).keys) as unknown as FieldExpression;
-  if (kind === 'sum') {
-    const termsPath = at(path, 'terms');
-    const terms = array(object(value, path, ['kind', 'terms']).terms, termsPath, EXPRESSION_LIMITS.nodes);
-    if (!terms.length) throw new ImportError(termsPath, 'a sum needs at least one term');
-    return { kind, terms: terms.map((t, i) => expression(t, at(termsPath, i), depth + 1, budget)) };
-  }
-  if (kind === 'gain') {
-    const o = object(value, path, ['kind', 'gain', 'child']);
-    return { kind, gain: gain(o.gain, at(path, 'gain')), child: expression(o.child, at(path, 'child'), depth + 1, budget) };
-  }
-  if (kind === 'mask') {
-    const o = object(value, path, ['kind', 'pose', 'region', 'edgeFade', 'child']);
-    return {
-      kind,
-      pose: pose(o.pose, at(path, 'pose')),
-      region: region(o.region, at(path, 'region')),
-      edgeFade: number(o.edgeFade, at(path, 'edgeFade')),
-      child: expression(o.child, at(path, 'child'), depth + 1, budget),
-    };
-  }
-  unsupportedKind(kind, at(path, 'kind'));
-}
-
 function field(value: unknown, path: string): FieldDefinition {
   const o = object(value, path, ['id', 'enabled', 'pose', 'region', 'edgeFade', 'expression']);
   return {
@@ -317,7 +270,9 @@ function field(value: unknown, path: string): FieldDefinition {
     pose: pose(o.pose, at(path, 'pose')),
     region: region(o.region, at(path, 'region')),
     edgeFade: number(o.edgeFade, at(path, 'edgeFade')),
-    expression: expression(o.expression, at(path, 'expression'), 1, { nodes: 0 }),
+    // The expression tree is read by validateExpression (through validateScene), the same strict reader
+    // a live edit passes: exact keys, depth and node limits before recursion, bounds and canonical form.
+    expression: o.expression as FieldExpression,
   };
 }
 
