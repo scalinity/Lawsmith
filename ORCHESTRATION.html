@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-08 against <code>main</code> with M5 accepted and merged (code <code>2a06bad</code>), and M6A eligible but not started</span>
+    <span>Realigned 2026-10-08 against branch <code>m6a</code>: M6A implemented (code <code>6903cf4</code>) and awaiting review; <code>main</code> holds accepted M5 (code <code>2a06bad</code>)</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Start M6A in a fresh Opus 5.5 session.</h1>
-    <p class="lede">You accepted M5 on 2026-10-08, after two read-only reviewers’ findings were all fixed and every native scenario reran on the rebuilt app and passed. A law can now hold a few primitive ingredients under sum, gain and mask and still move, turn and resize as one law, and M5 is merged to <code>main</code>. M6A, which records the interventions you make and replays them to the exact same final state, is next and runs alone: it shares <code>domain</code>, <code>persistence</code> and <code>ui</code> with M5. Opus 5.5 authors it and waits for Opus rather than falling back; Sol reviews.</p>
-    <cite><code>docs/evidence/M5.md</code> Status, Review; <code>docs/MILESTONES.md</code> M6A</cite>
+    <h1>Send M6A to GPT-6.1 Sol for review.</h1>
+    <p class="lede">M6A is implemented on branch <code>m6a</code> (application code <code>6903cf4</code>) and is not merged. You can now record what you do to a scene from tick 0 and replay it from its frozen root to exactly the same final state, with no checkpoint. In the packaged app a real intervention stopped at tick 3298, change 32: a 25-sample drag, a law turned off and on, a triangle gain added and undone, and two paused edits. It was saved and the app quit. After a fresh launch the file replayed to the same address with equal state and engine digests, under visualization the recording never had, and all 13 live checkpoints were equal. All ten criteria pass, P0, P1 and P2 meet their gates, and M1–M5’s native scenarios pass on the same build. Sol reviews next. Your one check is inspecting the playback controls.</p>
+    <cite><code>docs/evidence/M6A.md</code> Status, Acceptance criteria, Performance, Findings, Owner checks</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -594,7 +594,7 @@
       </article>
 
       <!-- REALIGN M6A -->
-      <article class="unit" id="m6a" data-gate="M6A" data-state="not-started" data-tier="scarce">
+      <article class="unit" id="m6a" data-gate="M6A" data-state="implemented" data-tier="scarce">
         <div class="gate">M6A</div>
         <div>
           <div class="unit-head">
@@ -603,18 +603,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors, and M6A waits for it rather than falling back. GPT-6.1 Sol reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">Now: M5 is ACCEPTED (2026-10-08).</dd>
-              <dt>Should run</dt><dd class="run">Next, and alone: the next implementation unit, in a fresh session from <code>main</code> on branch <code>m6a</code>. It shares <code>domain</code>, <code>persistence</code> and <code>ui</code> with M5, and M6B waits for it.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m6a</code>. Before any native run, one read-only Opus 5.5 reviewer checked the app integration, the part with no automated coverage, and its nine findings were fixed in <code>fd4cab8</code>. GPT-6.1 Sol runs the independent review next, read-only.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented: code at <code>6903cf4</code>, all ten criteria passing on the packaged app; review pending.</dd>
+              <dt>Should run</dt><dd class="run">Sol’s review of the evidence head on <code>m6a</code>. If it finds anything, <code>/address</code> runs in a fresh Opus 5.5 session on <code>m6a</code>. Then your inspection, your acceptance and the close-out merge. Nothing else touches <code>m6a</code> meanwhile, and M6B waits for acceptance.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M5, accepted on 2026-10-08. Contracts C5–C8.</dd>
-              <dt>Destroys</dt><dd>Saves run files through the native dialog. Use disposable files only.</dd>
-              <dt>Your part</dt><dd>Someone who did not implement the playback controls inspects them.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. Native QA saved scenes and run files only in disposable folders, with per-run recovery directories and a 1 MiB disk image. It switched the display to More Space only for the 1280×800, pacing and P0–P2 checks, restoring it each time, and restored the panel preferences it changed. The two published recordings are cut where another window was on screen.</dd>
+              <dt>Your part</dt><dd>Inspect the playback controls as someone who did not implement them (<code>M6A.md</code> Owner checks, six steps), then accept. Every other native check ran in the hands-off window.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M6A Visual QA; <code>docs/SPEC.md</code> §17.3</cite>
+          <cite class="src"><code>docs/evidence/M6A.md</code> Status, Acceptance criteria, Performance, Recording controls, Findings, Review, Owner checks; <code>docs/MILESTONES.md</code> M6A</cite>
         </div>
       </article>
 
@@ -1170,9 +1170,9 @@
         </tr>
         <tr id="t-m2-quit" data-owner="owner" data-short="Clean quit">
           <td data-label="Thread" class="lead">M2 findings 9 and 10: Dock Quit and logout of a clean session</td>
-          <td data-label="What the record says"><code>terminate:</code> proceeds at once only when the document is clean and recovery holds nothing, so a clean Lawsmith never interrupts a logout. The cost is a window of one IPC round trip in which a just-made edit can be lost, and invalid earlier-session recovery files that are left in place make each such quit run the guard. Routing every <code>terminate:</code> through the guard closes the window but interrupts every logout. Informational; yours to choose.</td>
+          <td data-label="What the record says"><code>terminate:</code> proceeds at once only when the document is clean and recovery holds nothing, so a clean Lawsmith never interrupts a logout. The cost is a window of one IPC round trip in which a just-made edit can be lost, and invalid earlier-session recovery files that are left in place make each such quit run the guard. Routing every <code>terminate:</code> through the guard closes the window but interrupts every logout. An unsaved recording counts as unsaved work through the same flag, so Dock Quit protects it too. Informational; yours to choose.</td>
           <td data-label="Owner">You</td>
-          <td data-label="Source"><cite><code>M2.md</code> findings 9, 10</cite></td>
+          <td data-label="Source"><cite><code>M2.md</code> findings 9, 10; <code>M6A.md</code> Findings</cite></td>
         </tr>
         <tr id="t-m2-emitter" data-owner="m8" data-short="Emitter rotation">
           <td data-label="Thread" class="lead">M2 finding 5: emitter rotation</td>
@@ -1185,6 +1185,12 @@
           <td data-label="What the record says">At 1280×800, Strength and Fade sit below the Scene panel’s visible area; at the built-in display’s height with two or more laws, Rotation and Half extents do too. All stay reachable by scrolling. M5 adds 60 px below a one-leaf law’s Fade. A compound law’s ingredient editor opens below the fold and scrolls itself into view, at 1,795 px of content against 596 visible, taking the file buttons out of view (⌘S still works). For M8’s interface pass.</td>
           <td data-label="Owner"><a href="#m8">M8</a></td>
           <td data-label="Source"><cite><code>M2.md</code> finding 8; <code>M5.md</code> 1280×800, finding 3</cite></td>
+        </tr>
+        <tr id="t-m6a-minimum" data-owner="m8" data-short="Minimum window">
+          <td data-label="Thread" class="lead">M6A finding 4: the recording controls at the minimum window</td>
+          <td data-label="What the record says">At the 900×600 minimum window, the replay cluster’s lower edge (y 206) meets the top of the selected Storm Bottle’s projected support (from y 184) in the QA scene’s framing. It is clear of every UI region. SPEC §11.1 sets the selected law’s clearance at 1280×800, where every state passes. For M8’s narrow-window layout.</td>
+          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="Source"><cite><code>M6A.md</code> Recording controls, finding 4</cite></td>
         </tr>
         <tr id="t-m4-contacts" data-owner="deferred" data-short="Contact readback">
           <td data-label="Thread" class="lead">M4 finding 2: contact naming on the pinned engine</td>
