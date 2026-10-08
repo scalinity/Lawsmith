@@ -1,5 +1,7 @@
 :root {
   --shell: #141311;
+  /* The shell at 55%: a panel inset that lets the canvas behind it show through. */
+  --shell-veil: rgb(20 19 17 / 0.55);
   --card: #211f1c;
   --raised: #282521;
   --hover: #302c27;
@@ -622,7 +624,7 @@ kbd {
   padding: 8px;
   border: 1px solid var(--hairline);
   border-radius: 8px;
-  background: rgb(20 19 17 / 0.55);
+  background: var(--shell-veil);
 }
 
 #ingredient-detail .kind {

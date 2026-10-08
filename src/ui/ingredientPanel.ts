@@ -345,7 +345,8 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
     const shape = JSON.stringify([ingredient.path, ingredient.core.node.kind, ingredient.modifiers.map((m) => (m.node.kind === 'gain' ? m.node.gain.kind : m.node.region.kind))]);
     if (shape !== structureSignature) {
       structureSignature = shape;
-      const focused = document.activeElement instanceof HTMLInputElement && detail.contains(document.activeElement) ? `${document.activeElement.closest<HTMLElement>('[data-node]')?.dataset.node}|${document.activeElement.dataset.key}` : null;
+      const active = document.activeElement instanceof HTMLInputElement && detail.contains(document.activeElement) ? document.activeElement : null;
+      const focused = active && { node: active.closest<HTMLElement>('[data-node]')?.dataset.node, key: active.dataset.key };
       const parts: HTMLElement[] = [];
       const core = ingredient.core.node;
       if (core.kind === 'sum') {
@@ -366,7 +367,7 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
       actions.append(element('button', { type: 'button', textContent: ingredient.modifiers.some((m) => m.node.kind === 'mask') ? 'Add another mask' : 'Add mask', title: 'Limit where this ingredient acts inside the law', dataset: { action: 'add-mask' } }));
       parts.push(actions);
       detail.replaceChildren(...parts);
-      if (focused) detail.querySelector<HTMLInputElement>(`[data-node='${focused.split('|')[0]}'] input[data-key='${focused.split('|')[1]}']`)?.focus();
+      if (focused?.node && focused.key) detail.querySelector<HTMLInputElement>(`[data-node="${CSS.escape(focused.node)}"] input[data-key="${CSS.escape(focused.key)}"]`)?.focus();
     }
     refreshValues();
     refreshLive(lastTick);

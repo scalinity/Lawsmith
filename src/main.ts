@@ -5,9 +5,9 @@ import { Euler, Quaternion, Vector3, type Mesh, type Object3D } from 'three/webg
 import { DocumentController } from './domain/document';
 import { expressionSummary, isCompound, type Edited } from './domain/ingredients';
 import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type Primitive, type SceneDocument, type Vec3 } from './domain/scene';
-import { walk } from './fields/expression';
+import { expressionStats, walk } from './fields/expression';
 import { FIELD_KERNEL_VERSION, fadeBand } from './fields/kernel';
-import { PRIMITIVES, REGIONS, isPrimitiveKind, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from './fields/registry';
+import { PRIMITIVES, REGIONS, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from './fields/registry';
 import { LawInteraction, type GestureEnd, type TransformMode } from './interaction/lawGesture';
 import { EditLatency, percentile, percentiles } from './measurement';
 import { defaultDocument } from './persistence/defaultScene';
@@ -1094,11 +1094,7 @@ async function start() {
           walk(f.expression, (node) => kinds.push(node.kind));
           return kinds;
         }))].sort(),
-        primitiveLeaves: host.appliedFields().reduce((n, f) => {
-          let leaves = 0;
-          walk(f.expression, (node) => (leaves += isPrimitiveKind(node.kind) ? 1 : 0));
-          return n + leaves;
-        }, 0),
+        primitiveLeaves: host.appliedFields().reduce((n, f) => n + expressionStats(f.expression).leaves, 0),
         fixedColliders: authoring.scene.bodies.filter((b) => b.type === 'fixed').length,
         authoredDynamic: authoring.scene.bodies.filter((b) => b.type === 'dynamic').length,
         allBodyContacts: authoring.scene.bodies.some((b) => b.type === 'dynamic' && b.collisionMode === 'all') || authoring.scene.emitters.some((e) => e.template.collisionMode === 'all'),
