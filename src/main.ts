@@ -267,6 +267,7 @@ async function start() {
     for (const id of ['details', 'law-shelf']) $(id).inert = readOnly;
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) b.disabled = readOnly;
     $<HTMLButtonElement>('reset').disabled = readOnly;
+    $<HTMLButtonElement>('arrows-toggle').disabled = readOnly;
     $('reset').title = readOnly ? 'Reset restarts your authored scene. Return to authoring to use it.' : '';
     viewport.gizmo.enabled = !frozen && !readOnly;
     viewport.gizmo.getHelper().visible = !readOnly;
@@ -437,7 +438,10 @@ async function start() {
   const timedStep = () => {
     if (runs.recordingState === 'recording' && host.tick > 0 && host.tick % CHECKPOINT_TICKS === 0) runCheckpoint('live', host, runs.recorder!.runId);
     const t0 = performance.now();
+    const before = host.tick;
     host.step();
+    // Halted at a recording limit: nothing stepped, so nothing is observed (SPEC §13.3).
+    if (host.tick === before) return;
     const t1 = performance.now();
     // Observers of the completed step: probes take the same transition, trails sample every fourth tick.
     probes.advance(host);
@@ -465,6 +469,8 @@ async function start() {
     }
     if (interaction.gesture || host.fault || frozen || host.halted) return;
     setPlaying(false, 'step');
+    // The boundary settles before the step, as a frame's does, so a checkpoint here sees it settled.
+    settleNow();
     try {
       timedStep();
     } catch (error) {
@@ -654,7 +660,8 @@ async function start() {
   // ------------------------------------------------------------------ authoring commands
 
   const selectedLaw = () => (interaction.selectedId === null ? undefined : appliedLaw(interaction.selectedId));
-  const blocked = () => frozen || interaction.gesture !== null;
+  /** Authoring commands wait: edits frozen, a gesture in progress, or a replay displayed (read-only, SPEC §13.2). */
+  const blocked = () => frozen || interaction.gesture !== null || replaying();
 
   /** The note a refused undo or redo left, cleared by the next one that applies. */
   let historyRefusal: typeof workflow.message = null;
@@ -1245,7 +1252,9 @@ async function start() {
     replayEnded = false;
     replayCheckpoint = -1;
     if (interaction.selectedId !== null && !appliedLaw(interaction.selectedId)) interaction.select(null);
-    $('sim-error').hidden = true;
+    // A fault belongs to its world: shown again when that world is, hidden otherwise.
+    if (host.fault) showSimError(`${host.fault.message}. The last valid frame is shown.`, !replaying());
+    else $('sim-error').hidden = true;
     applyFreeze();
     report('context', { reason, ...runs.counts(), tick: host.tick, cursor: host.lastAppliedSequence, runId: runs.replay?.record.runId ?? null, qualified: runs.replayQualified });
     // The retained authoring world's digests at every switch: a replay must leave them exactly as they were.
@@ -1279,17 +1288,8 @@ async function start() {
     showContext('replay');
   };
 
-  /** Replay from Start: the replay world is rebuilt from the original root; authoring is untouched. */
-  const restartReplay = () => {
-    if (frozen || !replaying()) return;
-    runs.restartReplay();
-    showContext('replay-restart');
-  };
-
-  /** Return to authoring: the replay world is freed and the kept authoring world shown again, paused, with its camera. */
-  const returnToAuthoring = () => {
-    if (frozen || !replaying()) return;
-    runs.returnToAuthoring();
+  /** Shows the kept authoring view and camera again, releasing the replay's view. */
+  const restoreAuthoringView = () => {
     if (authoringView) world.discardScene(world.swapScene(authoringView));
     authoringView = null;
     if (authoringCamera) {
@@ -1297,6 +1297,29 @@ async function start() {
       cameraMoved = authoringCamera.moved;
       authoringCamera = null;
     }
+  };
+
+  /** Replay from Start: the replay world is rebuilt from the original root; authoring is untouched. */
+  const restartReplay = () => {
+    if (frozen || !replaying()) return;
+    try {
+      runs.restartReplay();
+    } catch (error) {
+      // The coordinator selected authoring again; show its kept view and camera, and say why.
+      restoreAuthoringView();
+      workflow.message = { kind: 'error', text: `The replay could not start again: ${error instanceof Error ? error.message : String(error)}. Your scene is as you left it.` };
+      report('recording', { action: 'replay-failed', error: String(error) });
+      showContext('replay-failed');
+      return;
+    }
+    showContext('replay-restart');
+  };
+
+  /** Return to authoring: the replay world is freed and the kept authoring world shown again, paused, with its camera. */
+  const returnToAuthoring = () => {
+    if (frozen || !replaying()) return;
+    runs.returnToAuthoring();
+    restoreAuthoringView();
     showContext('return');
   };
 
@@ -1346,22 +1369,23 @@ async function start() {
     const deadline = performance.now() + REPLAY_BUDGET_MS;
     const now = () => performance.now();
     let steps = 0;
+    // Probes and trails observe each transition right after it, under the laws it used, as live ones do.
+    const stepped = () => {
+      probes.advance(host);
+      trails.record(host, explained);
+      steps += 1;
+    };
     const unit = (n: number) => {
-      const tick = host.tick;
       const t0 = performance.now();
+      const before = steps;
       let result;
       try {
-        result = runs.advanceReplay(n, deadline, now);
+        result = runs.advanceReplay(n, deadline, now, stepped);
       } catch (error) {
         onFault(error);
         return { complete: false, partial: true };
       }
-      if (host.tick !== tick) {
-        pushBounded(stepTimes, performance.now() - t0, 480);
-        probes.advance(host);
-        trails.record(host, explained);
-        steps += 1;
-      }
+      if (steps !== before) pushBounded(stepTimes, performance.now() - t0, 480);
       if (!result.partial && host.tick > 0 && host.tick % CHECKPOINT_TICKS === 0 && host.tick !== replayCheckpoint) {
         replayCheckpoint = host.tick;
         runCheckpoint('replay', host, replay.record.runId);
@@ -1459,7 +1483,13 @@ async function start() {
       status = ['tick ', ['count', String(host.tick)], ' of ', ['count', String(finalTick)], ', change ', ['count', String(host.lastAppliedSequence)], ' of ', ['count', String(lastAppliedSequence)], `.${where}`];
       meter = replay.complete ? 1 : finalTick > 0 ? host.tick / finalTick : lastAppliedSequence > 0 ? host.lastAppliedSequence / lastAppliedSequence : 0;
       if (replayEnded) {
-        const exactness = runs.replayQualified ? '' : ' This build is not the packaged app, so this is not a qualified exact replay.';
+        const recorded = replay.record.qualification;
+        const unknown = Object.entries(recorded).filter(([, v]) => v.startsWith('unavailable')).map(([k]) => k);
+        const exactness = runs.replayQualified
+          ? ''
+          : recorded.build !== 'packaged'
+            ? ` It was recorded in a ${recorded.build} build, not the packaged app, so this is not a qualified exact replay.`
+            : ` Its recorded identity lacks ${unknown.join(', ')}, so this is not a qualified exact replay.`;
         check = !replayCheck
           ? { text: 'Checking against the recorded end…', result: 'pending' }
           : replayCheck.kind === 'match'
@@ -2174,7 +2204,8 @@ async function start() {
         selectedId: interaction.selectedId,
         preview: interaction.previewField(),
         throttle: interaction.gesture !== null,
-        arrows: authoring.arrows,
+        // The arrows default is the displayed document's: a replay shows its root's.
+        arrows: replaying() ? (runs.replay?.record.root.presentation.arrows ?? true) : authoring.arrows,
         onlySelectedArrows: arrowScope === 'selected',
         handles: (() => {
           if (replaying()) return null;

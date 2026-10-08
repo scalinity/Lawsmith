@@ -189,7 +189,13 @@ export class RunCoordinator {
     if (this.recordingState !== 'recorded') throw new Error('Stop the recording before replaying it.');
     this.controller.settle();
     this.disposeReplay();
-    this.replay = new LinearReplay(this.record);
+    try {
+      this.replay = new LinearReplay(this.record);
+    } catch (error) {
+      // Nothing to show: the authoring context is selected again, as it was kept.
+      this.selected = 'authoring';
+      throw error;
+    }
     this.selected = 'replay';
     return this.replay;
   }
@@ -217,8 +223,10 @@ export class RunCoordinator {
    * current boundary's recorded commands, or steps once and settles the next boundary. Work stops at
    * `deadline` between chunks of commands; a unit cut short resumes on the next call without stepping,
    * so physics never advances before its boundary is fully settled. `units` may be 0 to finish one.
+   * `stepped` runs right after each transition, before the new boundary's commands: an observer of the
+   * step (probes, trails) sees the laws that step used, as a live observer does.
    */
-  advanceReplay(units: number, deadline: number, now: () => number): { complete: boolean; partial: boolean } {
+  advanceReplay(units: number, deadline: number, now: () => number, stepped?: () => void): { complete: boolean; partial: boolean } {
     const replay = this.replay;
     if (!replay || this.selected !== 'replay') return { complete: false, partial: false };
     let remaining = units;
@@ -231,7 +239,10 @@ export class RunCoordinator {
         if (remaining === 0) return { complete: false, partial: false };
         remaining -= 1;
         this.unitOpen = true;
-        if (replay.unsettled === 0) replay.step();
+        if (replay.unsettled === 0) {
+          replay.step();
+          stepped?.();
+        }
       }
       do replay.settle(CHUNK);
       while (replay.unsettled > 0 && now() < deadline);

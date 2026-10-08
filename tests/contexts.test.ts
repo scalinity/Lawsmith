@@ -157,6 +157,53 @@ describe('presentation cannot change a replay (AC8)', () => {
     void s;
   });
 
+  it('probes observing the replay through its step observer evolve exactly as the live probes did, through recorded edits', async () => {
+    const s = session();
+    const live = new ProbeField();
+    live.configure({ enabled: true, count: 600, seed: 11 });
+    s.coordinator.startRecording();
+    live.sync(s.live());
+    // As the app's frame does: settle, step, then observe the step, with an edit at every fifth boundary.
+    for (let i = 0; i < 90; i++) {
+      if (i % 5 === 0) s.controller.putField(moveTo(-1.5 + 0.05 * i)(s.controller.lawState('push')!.field), s.controller.newTransaction());
+      s.controller.settle();
+      s.live().step();
+      live.advance(s.live());
+    }
+    s.controller.settle();
+    await s.coordinator.stopRecording();
+    s.coordinator.enterReplay();
+    const replayed = new ProbeField();
+    replayed.configure({ enabled: true, count: 600, seed: 11 });
+    replayed.sync(s.coordinator.shown);
+    const cursors: number[] = [];
+    let clock = 0;
+    while (!s.coordinator.replay!.complete) {
+      s.coordinator.advanceReplay(3, Infinity, () => clock++, () => {
+        // Right after the step: the new boundary's recorded commands are not applied yet.
+        cursors.push(s.coordinator.shown.lastAppliedSequence);
+        replayed.advance(s.coordinator.shown);
+      });
+    }
+    expect(cursors).toHaveLength(90);
+    expect(cursors.slice(0, 6)).toEqual([1, 1, 1, 1, 1, 2]);
+    expect(replayed.position).toEqual(live.position);
+    expect(replayed.velocity).toEqual(live.velocity);
+    expect(replayed.alive).toEqual(live.alive);
+    // Negative control: observing after the whole unit, once the next boundary's edit applied, drifts.
+    s.coordinator.restartReplay();
+    const late = new ProbeField();
+    late.configure({ enabled: true, count: 600, seed: 11 });
+    late.sync(s.coordinator.shown);
+    while (!s.coordinator.replay!.complete) {
+      const tick = s.coordinator.shown.tick;
+      s.coordinator.advanceReplay(1, Infinity, () => clock++);
+      if (s.coordinator.shown.tick !== tick) late.advance(s.coordinator.shown);
+    }
+    expect(late.position).not.toEqual(live.position);
+    s.coordinator.returnToAuthoring();
+  });
+
   it('30, 60 and 144 Hz presentation reach the identical replayed end', async () => {
     const { record } = await retained();
     const ends = [30, 60, 144].map((hz) => {

@@ -129,6 +129,12 @@ interface LawVisual {
   sampledTick: number;
 }
 
+/** Releases a body instance mesh with its material (an InstancedMesh's dispose leaves the material). */
+function disposeBodies(mesh: InstancedMesh): void {
+  mesh.dispose();
+  (mesh.material as Material).dispose();
+}
+
 /** Releases the GPU resources a subtree owns; shared geometries survive. */
 function disposeTree(object: Object3D, shared: ReadonlySet<BufferGeometry>): void {
   object.traverse((child) => {
@@ -256,7 +262,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     if (prepared.bodies) {
       if (bodies) {
         scene.remove(bodies);
-        bodies.dispose();
+        disposeBodies(bodies);
       }
       bodies = prepared.bodies;
       scene.add(bodies);
@@ -280,7 +286,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
 
   function discardScene(prepared: PreparedScene): void {
     disposeTree(prepared.fixed, shared);
-    prepared.bodies?.dispose();
+    if (prepared.bodies) disposeBodies(prepared.bodies);
   }
 
   // Each law: a translucent support shell, its outer edges and, when selected, the inner
