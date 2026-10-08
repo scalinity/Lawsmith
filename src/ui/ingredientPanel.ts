@@ -128,6 +128,8 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
     if (samePath(path, focus) || (path === null && focus === null)) return;
     focus = path;
     o.onFocus();
+    // Focus is the panel's own state: show the newly focused editor (and the row's pressed state) now.
+    if (law) render(law, lastTick);
     // The editor opens below the list; at a small window height that is below the panel's fold, so
     // bring it into view, the least distance that shows it (and its top, if it is taller than the panel).
     if (path !== null) requestAnimationFrame(() => detail.hidden || detail.scrollIntoView({ block: 'nearest' }));
@@ -425,7 +427,7 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
     }
     note.textContent = compound
       ? level === null
-        ? 'Added in this order, each at the bottle’s center and turned with it. The law’s support applies once, to all of them.'
+        ? 'Added in this order, all centered and turned with the law. Its support applies once, to them all.'
         : 'A group’s ingredients are added in this order, then its own gains and masks apply.'
       : 'Add one to combine it with this law’s primitive.';
     crumbs.hidden = level === null;
