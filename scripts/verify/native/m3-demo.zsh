@@ -30,6 +30,15 @@ law_control() {
   local i=$(logq field $APP_LOG layout laws | python3 -I -c "import json,sys; print([l['id'] for l in json.load(sys.stdin)].index('$1'))")
   local p=(${=$(point laws.$i.$2)}); click $p[1] $p[2]
 }
+# select_law ID: selects a law from its row; a lost synthetic click (no selection event) is sent again once.
+select_law() {
+  local n=$(count selection) i
+  law_control $1 select
+  for i in {1..10}; do (( $(count selection) > n )) && return 0; sleep 0.1; done
+  say "the synthetic click on $1's row was lost (no selection event); sending it again"
+  law_control $1 select
+  wait_log selection $(( n + 1 )) 3
+}
 # rotate_law_z X Y Z: turns the selected law about world Z by dragging the rotate gizmo's Z ring. As in
 # m2-demo, TransformControls turns a ring by the drag along axis × eye, so the drag follows that
 # direction's projection on screen.
@@ -67,7 +76,7 @@ launch demo3 $RECOVERY
 activate
 open_example catch-and-release
 record_start m3-radial 55
-press play
+press_expect play sim-control
 sleep 5
 expect pacing "the stream runs through the pull without limiting" "e['bodies'] > 20 and e['playing'] is True"
 shot radial-01-catch
@@ -94,7 +103,7 @@ record_start m3-vortex 42
 keys t:s
 layout
 expect layout "the swirl's cylinder support spans its radius and half-height" "e['selected']=='swirl'"
-press play
+press_expect play sim-control
 sleep 5
 shot vortex-01-counterclockwise
 drag_handle strength 0 0 1.4
@@ -111,7 +120,7 @@ segment "examples: drag pocket"
 activate
 open_example drag-pocket
 record_start m3-drag 50
-press play
+press_expect play sim-control
 sleep 5
 shot drag-01-pocket
 keys t:s
@@ -134,7 +143,7 @@ segment "examples: overlap"
 activate
 open_example overlap
 record_start m3-overlap 46
-press play
+press_expect play sim-control
 sleep 6
 shot overlap-01-three-laws
 law_control pull enabled
@@ -145,7 +154,7 @@ law_control pull enabled
 expect control "the pull is enabled again" "e.get('law')=='pull' and e.get('enabled') is True"
 keys t:s
 layout
-[[ $(field layout selected) == '"drag"' ]] || law_control drag select
+[[ $(field layout selected) == '"drag"' ]] || select_law drag
 layout
 expect layout "the overlap's drag law is selected, with its handles" "e['selected']=='drag' and any(h['name']=='coefficient' for h in e['lawHandles'])"
 drag_handle coefficient 0 1.2 0
@@ -158,12 +167,12 @@ segment "examples: collisions"
 activate
 open_example collisions
 record_start m3-collisions 42
-press play
+press_expect play sim-control
 sleep 8
 shot collisions-01-clump
 keys t:s
 layout
-[[ $(field layout selected) == '"pull"' ]] || law_control pull select
+[[ $(field layout selected) == '"pull"' ]] || select_law pull
 layout
 expect layout "the collision scene's pull is selected, with its handles" "e['selected']=='pull' and any(h['name']=='strength' for h in e['lawHandles'])"
 drag_handle strength 1.0 0 0

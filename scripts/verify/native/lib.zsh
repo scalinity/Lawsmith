@@ -244,6 +244,17 @@ point() { logq center $APP_LOG $WIN_X $WIN_Y $1 }
 handle() { logq handle $APP_LOG $WIN_X $WIN_Y $1 ${2:-0} }
 # press ID: clicks a control by its id, from a fresh readback (the panel reflows as laws come and go).
 press() { layout; local p=(${=$(point controls.$1)}); click $p[1] $p[2] }
+# press_expect ID KIND: presses a control whose click the app logs as a KIND event. A synthetic click
+# that never reached WebKit (M0 finding 1; M5 finding 10) logs nothing, so it is sent again once, and
+# the harness says so; a click that did arrive is never repeated, since its event comes at once.
+press_expect() {
+  local n=$(count $2) i
+  press $1
+  for i in {1..10}; do (( $(count $2) > n )) && return 0; sleep 0.1; done
+  say "the synthetic click on $1 was lost (no $2 event); sending it again"
+  press $1
+  wait_log $2 $(( n + 1 )) 3
+}
 
 # Whole-window capture of the app under test (it proves pixels, never what is on top).
 shot() {
