@@ -22,7 +22,7 @@ import {
 } from '../domain/ingredients';
 import { EDGE_FADE, type FieldDefinition, type FieldExpression, type Gain, type MaskExpression, type Primitive, type Quat, type Vec3 } from '../domain/scene';
 import { GAIN_BOUNDS, gainAt, nodeAt, pathText, replaceAt, type ExprPath } from '../fields/expression';
-import { PRIMITIVES, REGIONS, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from '../fields/registry';
+import { PRIMITIVES, REGIONS, isPrimitiveKind, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from '../fields/registry';
 
 export interface IngredientPanelOptions {
   /**
@@ -100,6 +100,53 @@ const eulerOf = (q: Quat) => {
   const e = new Euler().setFromQuaternion(new Quaternion(...q), 'XYZ');
   return [e.x * DEGREES, e.y * DEGREES, e.z * DEGREES];
 };
+
+/**
+ * The control a field's key names on a node (`primitive.strength`, `gain.min`, `position.0`,
+ * `region.radius`, `edgeFade`): its edit's undo label, its shown value and the node with a typed value
+ * set. A typed edit and the refresh both read it, so each control is described once. Null when the key
+ * does not fit the node.
+ */
+export function controlFor(node: FieldExpression, key: string): { label: string; value: string; set(value: number): FieldExpression } | null {
+  const [part, ...rest] = key.split('.');
+  const sub = rest.join('.');
+  if (part === 'primitive') {
+    if (!isPrimitiveKind(node.kind)) return null;
+    const primitive = node as Primitive;
+    const c = primitiveDescriptor(primitive.kind).controls.find((c) => c.key === sub);
+    return c ? { label: c.edit, value: fmt(c.get(primitive), 3), set: (v) => c.set(primitive, v) } : null;
+  }
+  if (part === 'gain') {
+    if (node.kind !== 'gain' || sub === 'kind' || !Object.hasOwn(node.gain, sub)) return null;
+    const value = (node.gain as unknown as Record<string, number>)[sub]!;
+    return { label: 'Change gain', value: fmt(value, 3), set: (v) => ({ ...node, gain: { ...node.gain, [sub]: v } as Gain }) };
+  }
+  if (node.kind !== 'mask') return null;
+  const axis = Number(sub);
+  switch (part) {
+    case 'position':
+      return { label: 'Move mask', value: fmt(node.pose.position[axis]!, 3), set: (v) => ({ ...node, pose: { ...node.pose, position: node.pose.position.map((c, i) => (i === axis ? v : c)) as unknown as Vec3 } }) };
+    case 'rotation':
+      return {
+        label: 'Rotate mask',
+        value: fmt(eulerOf(node.pose.rotation)[axis]!, 1),
+        set: (v) => {
+          // Only the edited angle changes; the others keep full precision from the stored rotation.
+          const euler = new Euler().setFromQuaternion(new Quaternion(...node.pose.rotation), 'XYZ');
+          euler[(['x', 'y', 'z'] as const)[axis]!] = v / DEGREES;
+          const q = new Quaternion().setFromEuler(euler);
+          return { ...node, pose: { ...node.pose, rotation: [q.x, q.y, q.z, q.w] } };
+        },
+      };
+    case 'region': {
+      const c = regionDescriptor(node.region.kind).controls.find((c) => c.key === sub);
+      return c ? { label: 'Resize mask', value: fmt(c.get(node.region), 3), set: (v) => ({ ...node, region: c.set(node.region, v) }) } : null;
+    }
+    case 'edgeFade':
+      return { label: 'Change mask fade', value: fmt(node.edgeFade, 3), set: (v) => ({ ...node, edgeFade: v }) };
+  }
+  return null;
+}
 
 export function createIngredientPanel(o: IngredientPanelOptions) {
   const root = $('ingredients');
@@ -220,40 +267,15 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
   detail.addEventListener('change', (event) => {
     const input = event.target as HTMLInputElement;
     const at = input.closest<HTMLElement>('[data-node]');
-    if (!at || !input.dataset.key || !law) return;
+    const key = input.dataset.key;
+    if (!at || !key || !law) return;
     const path = JSON.parse(at.dataset.node!) as ExprPath;
-    const value = input.value.trim() === '' ? NaN : Number(input.value);
-    const [part, ...rest] = input.dataset.key.split('.');
     const node = nodeAt(law.expression, path);
-    if (!node) return;
-    if (part === 'primitive') {
-      const control = primitiveDescriptor((node as Primitive).kind).controls.find((c) => c.key === rest.join('.'))!;
-      apply(control.edit, setNode(path, (n) => control.set(n as Primitive, value)), input);
-    } else if (part === 'gain') {
-      apply('Change gain', setNode(path, (n) => ({ ...(n as Extract<FieldExpression, { kind: 'gain' }>), gain: { ...(n as Extract<FieldExpression, { kind: 'gain' }>).gain, [rest[0]!]: value } as Gain })), input);
-    } else if (part === 'position') {
-      const axis = Number(rest[0]);
-      apply('Move mask', setNode(path, (n) => {
-        const m = n as MaskExpression;
-        return { ...m, pose: { ...m.pose, position: m.pose.position.map((c, i) => (i === axis ? value : c)) as unknown as Vec3 } };
-      }), input);
-    } else if (part === 'rotation') {
-      const axis = Number(rest[0]);
-      apply('Rotate mask', setNode(path, (n) => {
-        const m = n as MaskExpression;
-        // Only the edited angle changes; the others keep full precision from the stored rotation.
-        const euler = new Euler().setFromQuaternion(new Quaternion(...m.pose.rotation), 'XYZ');
-        euler[(['x', 'y', 'z'] as const)[axis]!] = value / DEGREES;
-        const q = new Quaternion().setFromEuler(euler);
-        return { ...m, pose: { ...m.pose, rotation: [q.x, q.y, q.z, q.w] } };
-      }), input);
-    } else if (part === 'region') {
-      const m = node as MaskExpression;
-      const control = regionDescriptor(m.region.kind).controls.find((c) => c.key === rest.join('.'))!;
-      apply('Resize mask', setNode(path, (n) => ({ ...(n as MaskExpression), region: control.set((n as MaskExpression).region, value) })), input);
-    } else if (part === 'edgeFade') {
-      apply('Change mask fade', setNode(path, (n) => ({ ...(n as MaskExpression), edgeFade: value })), input);
-    }
+    const control = node && controlFor(node, key);
+    if (!control) return;
+    const value = input.value.trim() === '' ? NaN : Number(input.value);
+    // Set on the law's value at apply time; a node that no longer takes this key is left as it is.
+    apply(control.label, setNode(path, (n) => controlFor(n, key)?.set(value) ?? n), input);
   });
 
   // ---- rendering
@@ -356,27 +378,9 @@ export function createIngredientPanel(o: IngredientPanelOptions) {
       const holder = input.closest<HTMLElement>('[data-node]');
       if (!holder || input === document.activeElement) continue;
       const node = nodeAt(law.expression, JSON.parse(holder.dataset.node!) as ExprPath);
-      const value = node ? valueOf(node, input.dataset.key!) : null;
-      if (value !== null) input.value = value;
+      const control = node && controlFor(node, input.dataset.key!);
+      if (control) input.value = control.value;
     }
-  }
-
-  function valueOf(node: FieldExpression, key: string): string | null {
-    const [part, ...rest] = key.split('.');
-    if (part === 'primitive') {
-      const control = primitiveDescriptor((node as Primitive).kind).controls.find((c) => c.key === rest.join('.'));
-      return control ? fmt(control.get(node as Primitive), 3) : null;
-    }
-    if (part === 'gain' && node.kind === 'gain') return fmt((node.gain as unknown as Record<string, number>)[rest[0]!]!, 3);
-    if (node.kind !== 'mask') return null;
-    if (part === 'position') return fmt(node.pose.position[Number(rest[0])]!, 3);
-    if (part === 'rotation') return fmt(eulerOf(node.pose.rotation)[Number(rest[0])]!, 1);
-    if (part === 'region') {
-      const control = regionDescriptor(node.region.kind).controls.find((c) => c.key === rest.join('.'));
-      return control ? fmt(control.get(node.region), 3) : null;
-    }
-    if (part === 'edgeFade') return fmt(node.edgeFade, 3);
-    return null;
   }
 
   /** A triangle gain's value at the host's tick: what the next step will use. */

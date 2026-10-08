@@ -6,14 +6,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
 import { DocumentController } from '../src/domain/document';
-import { addIngredient, expressionSummary, ingredientLabels, ingredientsOf, isCompound, keptView, parentLevel, peel, removeIngredient, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
-import { cloneFrozen, type FieldDefinition, type FieldExpression, type SceneDocument } from '../src/domain/scene';
+import { DEFAULT_TRIANGLE, addIngredient, expressionSummary, ingredientLabels, ingredientsOf, isCompound, keptView, parentLevel, peel, removeIngredient, unwrapModifier, wrapIngredient } from '../src/domain/ingredients';
+import { cloneFrozen, type FieldDefinition, type FieldExpression, type MaskExpression, type SceneDocument } from '../src/domain/scene';
 import { nodeAt, replaceAt, validateExpression } from '../src/fields/expression';
 import { compileField, sampleField } from '../src/fields/kernel';
 import { regionDescriptor } from '../src/fields/registry';
 import { lawHandles } from '../src/interaction/handles';
 import { createDocument, parseScene, semanticDigest, serializeScene } from '../src/persistence/sceneFile';
 import { compareRuns, runFixedSteps } from '../src/simulation/fixtures';
+import { controlFor } from '../src/ui/ingredientPanel';
 import { SimulationHost, initSimulation } from '../src/simulation/host';
 
 beforeAll(async () => {
@@ -357,5 +358,38 @@ describe('AC6: export, reload and reset keep the whole expression and its equal-
     const fresh = new SimulationHost(reopened.semantic);
     expect(compareRuns(runFixedSteps(fresh), runFixedSteps(host)).every((c) => c.equal)).toBe(true);
     for (const h of [authored, loaded, fresh, host]) h.dispose();
+  });
+});
+
+describe("the ingredient editor's controls", () => {
+  const sphereMask = (child: FieldExpression): MaskExpression => ({ kind: 'mask', pose: { position: [0.5, -1, 2], rotation: [0, 0, 0, 1] }, region: { kind: 'sphere', radius: 1.25 }, edgeFade: 0.3, child });
+
+  it('reads and sets each kind of key on the node it names; a key that does not fit the node gives null', () => {
+    const strength = controlFor(swirl, 'primitive.strength')!;
+    expect([strength.label, strength.value]).toEqual(['Change strength', '12']);
+    expect(strength.set(-4)).toEqual({ ...swirl, strength: -4 });
+    expect(controlFor(swirl, 'primitive.coreRadius')!.set(0.5)).toEqual({ ...swirl, coreRadius: 0.5 });
+    const pulsing: FieldExpression = { kind: 'gain', gain: DEFAULT_TRIANGLE, child: swirl };
+    expect(controlFor(pulsing, 'gain.min')).toMatchObject({ label: 'Change gain', value: '0' });
+    expect(controlFor(pulsing, 'gain.phaseTicks')!.set(7)).toEqual({ ...pulsing, gain: { ...DEFAULT_TRIANGLE, phaseTicks: 7 } });
+    const masked = sphereMask(swirl);
+    expect(controlFor(masked, 'position.1')).toMatchObject({ label: 'Move mask', value: '-1' });
+    expect(controlFor(masked, 'position.1')!.set(3)).toEqual({ ...masked, pose: { ...masked.pose, position: [0.5, 3, 2] } });
+    expect(controlFor(masked, 'region.radius')).toMatchObject({ label: 'Resize mask', value: '1.25' });
+    expect(controlFor(masked, 'edgeFade')!.set(0)).toEqual({ ...masked, edgeFade: 0 });
+    // Rotation is typed in degrees about x, y and z; only the edited angle changes.
+    const turned = controlFor(masked, 'rotation.2')!.set(90) as MaskExpression;
+    expect(turned.pose.rotation.map((c) => +c.toFixed(12))).toEqual([0, 0, +Math.SQRT1_2.toFixed(12), +Math.SQRT1_2.toFixed(12)]);
+    expect(controlFor(turned, 'rotation.2')).toMatchObject({ label: 'Rotate mask', value: '90' });
+    const misfits: [FieldExpression, string][] = [
+      [pulsing, 'primitive.strength'],
+      [swirl, 'gain.min'],
+      [pulsing, 'gain.kind'],
+      [pulsing, 'gain.value'],
+      [swirl, 'position.0'],
+      [masked, 'region.halfExtents'],
+      [masked, 'nonsense'],
+    ];
+    for (const [node, key] of misfits) expect(controlFor(node, key)).toBeNull();
   });
 });
