@@ -338,12 +338,20 @@ cancel_panel() { wait_panel; axq press $APP_PID Cancel >/dev/null; touched; wait
 # synthetic double-click may register as a single one) and the Open button is pressed through AX.
 open_panel() {
   wait_panel
-  local p=(${=$(axq itempos $APP_PID "$1")})
+  local p=(${=$(axq itempos $APP_PID "$1")}) attempt names
   [[ $p[1] == not ]] && { axq press $APP_PID Cancel >/dev/null; fail "$1 is not shown in the Open panel; canceled" }
-  click $p[1] $p[2]
-  sleep 0.4
-  [[ $(axq press $APP_PID Open) == pressed ]] || fail "could not press Open"
-  touched
+  for attempt in 1 2; do
+    click $p[1] $p[2]
+    sleep 0.4
+    [[ $(axq press $APP_PID Open) == pressed ]] || fail "could not press Open"
+    touched
+    sleep 0.8
+    # Done once the panel is gone or has given way to the guard's alert; an Open panel still up means
+    # the selecting click was lost (M5 finding 10's class), so the file is selected again, once.
+    names=(${(f)"$(axq buttons $APP_PID)"})
+    (( $(depth) >= 1 && ${names[(Ie)Open]} )) || return 0
+    (( attempt == 1 )) && say "the Open panel stayed open (the click selecting $1 was lost); selecting it again"
+  done
 }
 
 # alert BUTTON: answers the unsaved-work alert (Save, Don't Save, Cancel).
