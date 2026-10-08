@@ -1,0 +1,132 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "description": "Pull, swirl and drag inside one law. Move the bottle into the falling stream to catch a storm. Select it to see its ingredients; take one out to see what it was doing, then Undo. Resize the drag’s mask, or give the swirl a triangle gain to make it pulse.",
+    "title": "Storm Bottle"
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [6.5, 5.5, 10.5],
+      "target": [1.4, 1.6, 0]
+    },
+    "laws": [
+      {
+        "color": "#c58ae5",
+        "id": "storm-bottle",
+        "label": "Storm Bottle",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": ["emitter.xorshift32.v1", "operator.mask.v1", "operator.sum.v1", "primitive.linearDrag.v1", "primitive.softRadial.v1", "primitive.vortexY.v1", "region.box.v1", "region.cylinderY.v1"],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "collider": {
+          "halfExtents": [20, 0.1, 20],
+          "kind": "box"
+        },
+        "collisionMode": "all",
+        "id": "floor",
+        "initialAngularVelocity": [0, 0, 0],
+        "initialLinearVelocity": [0, 0, 0],
+        "initialPose": {
+          "position": [0, -2.1, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "material": {
+          "friction": 0.6,
+          "restitution": 0.25
+        },
+        "type": "fixed"
+      }
+    ],
+    "emitters": [
+      {
+        "id": "stream",
+        "intervalTicks": 8,
+        "jitter": [0.25, 0, 0.25],
+        "lifetimeTicks": 512,
+        "pose": {
+          "position": [0, 6, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "seed": 1279350577,
+        "startTick": 0,
+        "template": {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.08
+          },
+          "collisionMode": "all",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [0, -0.5, 0],
+          "massKg": 1,
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          }
+        }
+      }
+    ],
+    "fields": [
+      {
+        "edgeFade": 0.25,
+        "enabled": true,
+        "expression": {
+          "kind": "sum",
+          "terms": [
+            {
+              "coreRadius": 0.35,
+              "kind": "softRadial",
+              "strength": 14
+            },
+            {
+              "coreRadius": 0.35,
+              "kind": "vortexY",
+              "strength": 12
+            },
+            {
+              "child": {
+                "coefficient": 5,
+                "kind": "linearDrag"
+              },
+              "edgeFade": 0.3,
+              "kind": "mask",
+              "pose": {
+                "position": [0, -0.45, 0],
+                "rotation": [0, 0, 0, 1]
+              },
+              "region": {
+                "halfExtents": [1.6, 1.35, 1.6],
+                "kind": "box"
+              }
+            }
+          ]
+        },
+        "id": "storm-bottle",
+        "pose": {
+          "position": [3.2, 1.6, 0],
+          "rotation": [0, 0, 0, 1]
+        },
+        "region": {
+          "halfHeight": 1.8,
+          "kind": "cylinderY",
+          "radius": 1.4
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [0, -9.81, 0],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}
