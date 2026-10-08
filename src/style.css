@@ -943,10 +943,10 @@ button.primary {
 /* The explained body, on the right (SPEC §11.1). It scrolls rather than reaching the transport. */
 #explain {
   position: fixed;
-  top: 52px;
+  top: calc(52px + var(--run-reserve, 0px));
   right: 12px;
   width: 312px;
-  max-height: calc(100vh - 52px - 124px);
+  max-height: calc(100vh - 52px - 124px - var(--run-reserve, 0px));
   overflow-y: auto;
   box-sizing: border-box;
   padding: 10px 12px 12px;
@@ -1182,15 +1182,17 @@ button.primary {
   color: var(--text-secondary);
 }
 
-/* M6A recording and replay: bottom left, on the transport's baseline, below the Scene panel's fold
-   (which ends 150 px above the bottom), so the panel and its controls never move. */
+/* M6A recording and replay: top right, below the tools and above the body readout, over the scene's
+   open sky. The bottom left belongs to the diagnostics overlay and the bottom right to the switches and
+   transport; the readout moves down by this cluster's height (--run-reserve), so neither covers the other. */
 #run {
   position: fixed;
-  left: 12px;
-  bottom: 12px;
+  top: 52px;
+  right: 12px;
+  z-index: 1;
   box-sizing: border-box;
   width: max-content;
-  max-width: min(440px, calc(100vw - 474px));
+  max-width: min(440px, calc(100vw - 320px));
   padding: 8px 10px 8px;
   border: 1px solid var(--hairline);
   border-radius: 12px;
@@ -1306,10 +1308,4 @@ button.primary {
 body[data-context="replay"] #details,
 body[data-context="replay"] #law-shelf {
   opacity: 0.62;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #run-fill {
-    transition: none;
-  }
 }

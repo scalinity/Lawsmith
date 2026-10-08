@@ -1456,7 +1456,7 @@ async function start() {
     let shown: (keyof typeof runButtons)[] = [];
     const record = runs.record;
     if (state === 'idle') {
-      status = ['Record from tick 0 resets the motion and records every change you make.'];
+      status = ['Resets the motion to tick 0, then records what you change.'];
       shown = ['record', 'open'];
     } else if (state === 'recording') {
       const r = runs.recorder!;
@@ -1501,7 +1501,7 @@ async function start() {
       shown = ['restart', 'return', 'save', 'open'];
     }
     const busy = workflow.busy !== null;
-    const signature = JSON.stringify([state, title, tag, status, meter === null ? null : Math.round(meter * 1000), check, shown, busy]);
+    const signature = JSON.stringify([runParts.root.hidden, state, title, tag, status, meter === null ? null : Math.round(meter * 1000), check, shown, busy]);
     if (signature === runShown) return;
     runShown = signature;
     runParts.root.dataset.state = state;
@@ -1528,6 +1528,9 @@ async function start() {
       button.hidden = !shown.includes(key as keyof typeof runButtons);
       button.disabled = busy;
     }
+    // The body readout starts below this cluster, however tall its state makes it.
+    const reserve = runParts.root.hidden ? 0 : runParts.root.offsetHeight + 8;
+    document.documentElement.style.setProperty('--run-reserve', `${reserve}px`);
   }
 
   runButtons.record.addEventListener('click', () => runFile('record'));
@@ -1628,7 +1631,7 @@ async function start() {
       return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
     };
     const controls: Record<string, number[] | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, button[id], input[id]')) {
+    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, #run, #diagnostics, button[id], input[id]')) {
       controls[element.id] = box(element);
     }
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);

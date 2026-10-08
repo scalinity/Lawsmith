@@ -61,7 +61,9 @@ alert_for scene "Don't Save"
 alert_for recording "Cancel"
 sleep 0.8
 running || fail "Lawsmith quit although the recording's question was canceled"
-expect guard "the recording's question came second and was canceled" "e.get('item')=='recording' and e['choice']=='cancel' and e['runId']=='$run_id'"
+choices=$(logq all $APP_LOG guard | python3 -I -c "import json,sys; print(json.dumps([(e['item'], e['choice']) for e in map(json.loads, sys.stdin) if 'item' in e]))")
+[[ $choices == '[["scene", "discard"], ["recording", "cancel"]]' ]] || fail "the guard's choices were $choices"
+say "PASS  [guard] the scene was asked first (Discard, staged), then the recording (Cancel): $choices"
 layout
 expect layout "the recording is kept, unsaved, in authoring" "e['run']['state']=='recorded' and e['run']['record']['exported'] is False and e['run']['record']['runId']=='$run_id'"
 [[ -n $(ls $RECOVERY) && $(ls $RECOVERY) == $recovery_before ]] || fail "the staged Discard retired recovery although the transition was canceled"
@@ -82,6 +84,9 @@ save_panel $SCENES guard-run.lawsmith-run.json
 alert_for scene "Cancel"
 sleep 0.8
 running || fail "Lawsmith closed although the scene's question was canceled"
+choices=$(logq all $APP_LOG guard | python3 -I -c "import json,sys; print(json.dumps([(e['item'], e['choice']) for e in map(json.loads, sys.stdin) if 'item' in e][-2:]))")
+[[ $choices == '[["recording", "save"], ["scene", "cancel"]]' ]] || fail "from replay the guard's choices were $choices"
+say "PASS  [guard] from replay the recording was asked first (Save Recording), then the scene (Cancel): $choices"
 expect document "the guard saved the recording" "e['action']=='save-recording' and e['outcome']=='saved' and e['runId']=='$run_id'"
 layout
 expect layout "the same paused replay, at the same address; the recording now saved" "e['run']['state']=='replay' and e['run']['replay']['address']==$address and e['run']['record']['exported'] is True"

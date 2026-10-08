@@ -36,7 +36,7 @@ clear_of_everything() {
 (lambda r, others, w, h: e['run']['state']=='$1' and r is not None and 0 <= r[0] and r[0] + r[2] <= w and 0 <= r[1] and r[1] + r[3] <= h
   and all(o is None or r[0] + r[2] <= o[0] or o[0] + o[2] <= r[0] or r[1] + r[3] <= o[1] or o[1] + o[3] <= r[1] for o in others)
   and all(s['scrollWidth'] <= s['clientWidth'] for s in e['scroll'].values())
-)(e['run']['box'], [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')] + ([[e['support'][0], e['support'][1], e['support'][2] - e['support'][0], e['support'][3] - e['support'][1]]] if e['support'] else []), $2, $3)"
+)(e['run']['box'], [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain', 'diagnostics')] + ([[e['support'][0], e['support'][1], e['support'][2] - e['support'][0], e['support'][3] - e['support'][1]]] if e['support'] else []), $2, $3)"
   say "run cluster $1 at $2×$3: $(logq field $APP_LOG layout run.box)"
 }
 
@@ -69,10 +69,11 @@ wait_log recording $(( n + 2 )) 10
 clear_of_everything recorded 1280 800
 press_expect run-replay context
 select_law storm-bottle
+press_expect play sim-control
+sleep 1.5
 n=$(count explain-select)
 keys t:b
 wait_log explain-select $(( n + 1 ))
-press_expect play sim-control
 wait_log replay-complete 1 30
 sleep 0.5
 clear_of_everything replay 1280 800

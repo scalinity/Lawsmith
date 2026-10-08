@@ -1,5 +1,5 @@
 # M6A pacing in the packaged app (MILESTONES M6A performance gate; supporting, not the P1 protocol): the
-# P1 workshop at a 1600×1000 CSS viewport under More Space, recorded for about 50 s while a law is dragged
+# P1 workshop at a 1600×1000 CSS viewport under More Space, recorded for about 40 s while a law is dragged
 # every 1.5 s, then replayed at 1× to its end. The app's own 5-second pacing lines (frame interval, step
 # and edit latency over the last 240 frames) are summarized for the recording and for the replay; the
 # replay must also reach the recorded end exactly. The P1/P2 gates are requalified by m3-p1 and m4-perf.
@@ -49,7 +49,8 @@ recording_from=$(logq field $APP_LOG recording t)
 press_expect play sim-control
 start=$EPOCHSECONDS
 flip=0
-while (( EPOCHSECONDS - start < 50 )); do
+# Each drag costs the harness about 4 s, so 36 s of wall time keeps the recording well under its 60 s limit.
+while (( EPOCHSECONDS - start < 36 )); do
   if (( flip )); then drag_law_to -2.6 -0.5 -3 -3 -0.5 -3; else drag_law_to -3 -0.5 -3 -2.6 -0.5 -3; fi
   flip=$(( 1 - flip ))
   sleep 1.5
@@ -57,7 +58,7 @@ done
 n=$(count recording)
 press_expect run-stop recording
 wait_log recording $(( n + 2 )) 10
-expect recording "about 50 s of P1 recorded with its drags" "e['action']=='stopped' and e['finalTick'] > 5000 and e['commands'] > 100"
+expect recording "P1 recorded with its drags, stopped by the user" "e['action']=='stopped' and e['stopped']=='user' and e['finalTick'] > 3600 and e['commands'] > 50"
 say "while recording: $(pacing_since $recording_from)"
 final_tick=$(field recording finalTick)
 n=$(count context)
