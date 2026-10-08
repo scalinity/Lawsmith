@@ -29,6 +29,13 @@ export interface DocumentIo {
   /** Deletes only the snapshots an earlier session left. */
   recoveryDiscardEarlier(): Promise<void>;
   askUnsaved(title: string): Promise<'save' | 'discard' | 'cancel'>;
+  /** Recordings (SPEC §15.3): the same narrow path with the `.lawsmith-run.json` kind and its 16 MiB bound. */
+  openRun(): Promise<OpenOutcome>;
+  readRun(token: number): Promise<{ text: string; readMs: number }>;
+  chooseRunDestination(suggestedName: string): Promise<ChooseOutcome>;
+  writeRun(token: number, text: string): Promise<{ writeMs: number }>;
+  /** The guard's question for an unsaved recording, naming it: Save Recording, Don't Save or Cancel. */
+  askUnsavedRecording(title: string, detail: string): Promise<'save' | 'discard' | 'cancel'>;
   exit(): Promise<void>;
 }
 
@@ -44,5 +51,10 @@ export const nativeIo: DocumentIo = {
   recoveryDiscard: (generation) => invoke('recovery_discard', { generation }),
   recoveryDiscardEarlier: () => invoke('recovery_discard_earlier'),
   askUnsaved: (title) => invoke('ask_unsaved', { title }),
+  openRun: () => invoke('open_run'),
+  readRun: (token) => invoke('read_run', { token }),
+  chooseRunDestination: (suggestedName) => invoke('choose_run_destination', { suggestedName }),
+  writeRun: (token, text) => invoke('write_run', { token, text }),
+  askUnsavedRecording: (title, detail) => invoke('ask_unsaved_recording', { title, detail }),
   exit: () => invoke('exit_app'),
 };

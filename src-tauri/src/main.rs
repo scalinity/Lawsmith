@@ -16,13 +16,42 @@ use tauri::{
 };
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult};
 
-use document_io::{Destinations, IoFailure, SCENE_LIMIT, display_name, is_scene_name, read_bounded_utf8, replace_file};
+use document_io::{Destinations, IoFailure, Kind, RUN_LIMIT, SCENE_LIMIT, display_name, is_run_name, is_scene_name, read_bounded_utf8, replace_file};
 use recovery::{RecoveryStore, Slots};
 
-/// Native half of the qualification record (SPEC §13.1): facts only the shell can report.
+/// One value of a property list's `<key>` as the `<string>` that follows it, as SystemVersion.plist writes it.
+fn plist_string(text: &str, key: &str) -> Option<String> {
+    let after = &text[text.find(&format!("<key>{key}</key>"))?..];
+    let start = after.find("<string>")? + "<string>".len();
+    let end = after[start..].find("</string>")?;
+    Some(after[start..start + end].trim().to_string())
+}
+
+/// The macOS product version and build, read from the system's own record rather than inferred.
+fn macos_version() -> (String, String) {
+    match std::fs::read_to_string("/System/Library/CoreServices/SystemVersion.plist") {
+        Ok(text) => (
+            plist_string(&text, "ProductVersion").unwrap_or_else(|| "unavailable: no ProductVersion".into()),
+            plist_string(&text, "ProductBuildVersion").unwrap_or_else(|| "unavailable: no ProductBuildVersion".into()),
+        ),
+        Err(error) => (format!("unavailable: {error}"), format!("unavailable: {error}")),
+    }
+}
+
+/// Native half of the qualification record (SPEC §13.1): facts only the shell can report. The Tauri
+/// family is the one Cargo.lock resolved for this build (set by build.rs), not a guess from a version range.
 #[tauri::command]
 fn runtime_identity(app: AppHandle) -> BTreeMap<&'static str, String> {
+    let (macos, macos_build) = macos_version();
+    let info = app.package_info();
     BTreeMap::from([
+        ("app", format!("{} {}", info.name, info.version)),
+        ("macos", macos),
+        ("macosBuild", macos_build),
+        ("tauriRuntime", env!("LAWSMITH_LOCKED_TAURI_RUNTIME").to_string()),
+        ("tauriRuntimeWry", env!("LAWSMITH_LOCKED_TAURI_RUNTIME_WRY").to_string()),
+        ("wry", env!("LAWSMITH_LOCKED_WRY").to_string()),
+        ("tao", env!("LAWSMITH_LOCKED_TAO").to_string()),
         ("tauri", tauri::VERSION.to_string()),
         (
             "webview",
@@ -76,7 +105,7 @@ async fn open_scene(window: WebviewWindow, destinations: State<'_, Destinations>
     let read_path = path.clone();
     let text = blocking(move || read_bounded_utf8(&read_path, SCENE_LIMIT)).await??;
     let read_ms = elapsed_ms(start);
-    Ok(OpenOutcome::Opened { name: display_name(&path), token: destinations.issue(path), text, read_ms })
+    Ok(OpenOutcome::Opened { name: display_name(&path), token: destinations.issue(path, Kind::Scene), text, read_ms })
 }
 
 #[derive(Serialize)]
@@ -90,7 +119,7 @@ struct Read {
 /// saved first must commit what that file holds now.
 #[tauri::command]
 async fn read_scene(destinations: State<'_, Destinations>, token: u64) -> Result<Read, IoFailure> {
-    let path = destinations.path(token).ok_or_else(|| IoFailure::new("unknown-destination", "read", "this file was not chosen in this session"))?;
+    let path = destinations.path(token, Kind::Scene).ok_or_else(|| IoFailure::new("unknown-destination", "read", "this file was not chosen in this session"))?;
     let start = Instant::now();
     let text = blocking(move || read_bounded_utf8(&path, SCENE_LIMIT)).await??;
     Ok(Read { text, read_ms: elapsed_ms(start) })
@@ -124,7 +153,7 @@ async fn choose_scene_destination(window: WebviewWindow, destinations: State<'_,
     if !is_scene_name(&name) {
         return Ok(ChooseOutcome::Refused { name });
     }
-    Ok(ChooseOutcome::Chosen { name, token: destinations.issue(path) })
+    Ok(ChooseOutcome::Chosen { name, token: destinations.issue(path, Kind::Scene) })
 }
 
 #[derive(Serialize)]
@@ -136,7 +165,7 @@ struct Written {
 /// Reliably replaces the file behind a dialog-issued token with `text`. Writes are serialized.
 #[tauri::command]
 async fn write_scene(destinations: State<'_, Destinations>, writes: State<'_, WriteLock>, token: u64, text: String) -> Result<Written, IoFailure> {
-    let path = destinations.path(token).ok_or_else(|| IoFailure::new("unknown-destination", "write", "this destination was not chosen in this session"))?;
+    let path = destinations.path(token, Kind::Scene).ok_or_else(|| IoFailure::new("unknown-destination", "write", "this destination was not chosen in this session"))?;
     if text.len() as u64 > SCENE_LIMIT {
         return Err(IoFailure::new("too-large", "write", "the scene exceeds 5 MiB"));
     }
@@ -150,6 +179,67 @@ async fn write_scene(destinations: State<'_, Destinations>, writes: State<'_, Wr
 }
 
 struct WriteLock(std::sync::Arc<std::sync::Mutex<()>>);
+
+/// Open Recording (SPEC §15.3): the same narrow path as Open Scene, with the run kind and its 16 MiB bound.
+#[tauri::command]
+async fn open_run(window: WebviewWindow, destinations: State<'_, Destinations>) -> Result<OpenOutcome, IoFailure> {
+    let dialog = window.dialog().file().set_parent(&window).set_title("Open Recording").add_filter("Lawsmith recording", &["json"]);
+    let Some(chosen) = blocking(move || dialog.blocking_pick_file()).await? else {
+        return Ok(OpenOutcome::Canceled);
+    };
+    let path = chosen.into_path().map_err(|e| IoFailure::new("not-found", "dialog", e.to_string()))?;
+    let start = Instant::now();
+    let read_path = path.clone();
+    let text = blocking(move || read_bounded_utf8(&read_path, RUN_LIMIT)).await??;
+    let read_ms = elapsed_ms(start);
+    Ok(OpenOutcome::Opened { name: display_name(&path), token: destinations.issue(path, Kind::Run), text, read_ms })
+}
+
+/// Reads an opened recording again: an Open Recording whose guard saved first opens what the file holds now.
+#[tauri::command]
+async fn read_run(destinations: State<'_, Destinations>, token: u64) -> Result<Read, IoFailure> {
+    let path = destinations.path(token, Kind::Run).ok_or_else(|| IoFailure::new("unknown-destination", "read", "this recording was not chosen in this session"))?;
+    let start = Instant::now();
+    let text = blocking(move || read_bounded_utf8(&path, RUN_LIMIT)).await??;
+    Ok(Read { text, read_ms: elapsed_ms(start) })
+}
+
+/// The Save Recording dialog. A name without `.lawsmith-run.json` is refused, never renamed.
+#[tauri::command]
+async fn choose_run_destination(window: WebviewWindow, destinations: State<'_, Destinations>, suggested_name: String) -> Result<ChooseOutcome, IoFailure> {
+    let dialog = window
+        .dialog()
+        .file()
+        .set_parent(&window)
+        .set_title("Save Recording")
+        .set_file_name(suggested_name)
+        .add_filter("Lawsmith recording", &["json"]);
+    let Some(chosen) = blocking(move || dialog.blocking_save_file()).await? else {
+        return Ok(ChooseOutcome::Canceled);
+    };
+    let path = chosen.into_path().map_err(|e| IoFailure::new("not-found", "dialog", e.to_string()))?;
+    let name = display_name(&path);
+    if !is_run_name(&name) {
+        return Ok(ChooseOutcome::Refused { name });
+    }
+    Ok(ChooseOutcome::Chosen { name, token: destinations.issue(path, Kind::Run) })
+}
+
+/// Reliably replaces the file behind a run token with the recording's complete text.
+#[tauri::command]
+async fn write_run(destinations: State<'_, Destinations>, writes: State<'_, WriteLock>, token: u64, text: String) -> Result<Written, IoFailure> {
+    let path = destinations.path(token, Kind::Run).ok_or_else(|| IoFailure::new("unknown-destination", "write", "this destination was not chosen in this session"))?;
+    if text.len() as u64 > RUN_LIMIT {
+        return Err(IoFailure::new("too-large", "write", "the recording exceeds 16 MiB"));
+    }
+    let lock = writes.0.clone();
+    blocking(move || {
+        let _serialized = lock.lock().unwrap();
+        let start = Instant::now();
+        replace_file(&path, |f| f.write_all(text.as_bytes())).map(|()| Written { write_ms: elapsed_ms(start) })
+    })
+    .await?
+}
 
 #[tauri::command]
 async fn recovery_load(store: State<'_, std::sync::Arc<RecoveryStore>>) -> Result<Slots, IoFailure> {
@@ -203,6 +293,24 @@ async fn ask_unsaved(window: WebviewWindow, title: String) -> Result<&'static st
     let result = blocking(move || dialog.blocking_show_with_result()).await?;
     Ok(match result {
         MessageDialogResult::Custom(label) if label == "Save" => "save",
+        MessageDialogResult::Custom(label) if label == "Don't Save" => "discard",
+        _ => "cancel",
+    })
+}
+
+/// The guard's alert for an unsaved recording: Save Recording (then its dialog), Don't Save, or Cancel.
+#[tauri::command]
+async fn ask_unsaved_recording(window: WebviewWindow, title: String, detail: String) -> Result<&'static str, IoFailure> {
+    let dialog = window
+        .dialog()
+        .message(detail)
+        .title(format!("Do you want to save the recording of “{title}”?"))
+        .kind(MessageDialogKind::Warning)
+        .buttons(MessageDialogButtons::YesNoCancelCustom("Save Recording…".into(), "Don't Save".into(), "Cancel".into()))
+        .parent(&window);
+    let result = blocking(move || dialog.blocking_show_with_result()).await?;
+    Ok(match result {
+        MessageDialogResult::Custom(label) if label == "Save Recording…" => "save",
         MessageDialogResult::Custom(label) if label == "Don't Save" => "discard",
         _ => "cancel",
     })
@@ -402,6 +510,11 @@ fn main() {
             recovery_discard,
             recovery_discard_earlier,
             ask_unsaved,
+            open_run,
+            read_run,
+            choose_run_destination,
+            write_run,
+            ask_unsaved_recording,
             guard_ready,
             guard_state,
             exit_app,

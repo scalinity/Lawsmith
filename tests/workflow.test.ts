@@ -13,6 +13,9 @@ import { DocumentWorkflow, suggestedName, type WorkflowApp } from '../src/persis
 import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
 import { wrapIngredient } from '../src/domain/ingredients';
 import { SimulationHost, initSimulation } from '../src/simulation/host';
+import { RunCoordinator } from '../src/simulation/contexts';
+import type { LinearReplay } from '../src/simulation/replay';
+import { EXPECT, TEST_IDENTITY } from './support/run';
 
 beforeAll(async () => {
   await initSimulation();
@@ -51,6 +54,15 @@ class FakeIo implements DocumentIo {
   heldRecovery: Deferred[] = [];
   /** The recovery store as it was when the app exited: what the next launch would find. */
   recoveryAtExit: unknown = null;
+  /** Recordings: their own dialogs and questions; files share the disk. */
+  runOpenQueue: OpenOutcome[] = [];
+  runChooseQueue: (string | null)[] = [];
+  recordingAskQueue: ('save' | 'discard' | 'cancel')[] = [];
+  recordingAsked: { title: string; detail: string }[] = [];
+  runWrites: { name: string; text: string }[] = [];
+  failRunWrite: IoFailure | null = null;
+  /** Every guard question in the order asked: which artifact each one named. */
+  questions: ('scene' | 'recording')[] = [];
 
   async openScene(): Promise<OpenOutcome> {
     return this.openQueue.shift() ?? { outcome: 'canceled' };
@@ -116,7 +128,32 @@ class FakeIo implements DocumentIo {
   }
   async askUnsaved(title: string) {
     this.asked.push(title);
+    this.questions.push('scene');
     return this.askQueue.shift() ?? 'cancel';
+  }
+  async openRun(): Promise<OpenOutcome> {
+    return this.runOpenQueue.shift() ?? { outcome: 'canceled' };
+  }
+  async readRun(token: number) {
+    return { text: this.disk.get(this.tokens.get(token)!)!, readMs: 0.1 };
+  }
+  async chooseRunDestination(): Promise<ChooseOutcome> {
+    const name = this.runChooseQueue.shift();
+    if (!name) return { outcome: 'canceled' };
+    if (!name.endsWith('.lawsmith-run.json')) return { outcome: 'refused', name };
+    return { outcome: 'chosen', token: this.issue(name), name };
+  }
+  async writeRun(token: number, text: string) {
+    if (this.failRunWrite) throw this.failRunWrite;
+    const name = this.tokens.get(token)!;
+    this.disk.set(name, text);
+    this.runWrites.push({ name, text });
+    return { writeMs: 1 };
+  }
+  async askUnsavedRecording(title: string, detail: string) {
+    this.recordingAsked.push({ title, detail });
+    this.questions.push('recording');
+    return this.recordingAskQueue.shift() ?? 'cancel';
   }
   async exit() {
     this.exited += 1;
@@ -139,7 +176,9 @@ function session(earlier: FakeIo['recovery'] | null = null) {
   const logs: Record<string, unknown>[] = [];
   let frozen = false;
   let gesture = false;
-  const app: WorkflowApp = {
+  const runs = new RunCoordinator({ controller, identity: () => TEST_IDENTITY });
+  type RunCandidate = { replay: LinearReplay; dispose(): void };
+  const app: WorkflowApp<SimulationHost, RunCandidate> = {
     controller,
     quiesce: (reason) => quiesced.push(reason),
     freeze: (value) => (frozen = value),
@@ -155,9 +194,21 @@ function session(earlier: FakeIo['recovery'] | null = null) {
       return candidate;
     },
     commit: (doc, candidate) => {
+      // Replacing the scene context drops the recording the guard has already protected.
+      runs.dropRecord();
       host.dispose();
       host = candidate;
       controller.load(doc, candidate);
+    },
+    runs,
+    runExpectations: () => EXPECT,
+    runCandidate: (record) => {
+      const replay = runs.prepareImport(record);
+      return { replay, dispose: () => runs.discardImport(replay) };
+    },
+    commitRun: (_record, candidate) => runs.commitImport(candidate.replay),
+    startRecording: () => {
+      runs.startRecording();
     },
     log: (kind, data) => logs.push({ kind, ...data }),
     now: () => performance.now(),
@@ -169,7 +220,7 @@ function session(earlier: FakeIo['recovery'] | null = null) {
     if (!result.ok) throw new Error(result.reason);
     workflow.edited();
   };
-  return { io, controller, workflow, disposed, quiesced, logs, edit, host: () => host, frozen: () => frozen, setGesture: (v: boolean) => (gesture = v) };
+  return { io, controller, workflow, runs, disposed, quiesced, logs, edit, host: () => host, frozen: () => frozen, setGesture: (v: boolean) => (gesture = v) };
 }
 
 /** A launched session: launch recovery has been looked up, as main.ts does before enabling edits. */
@@ -920,5 +971,345 @@ describe('close/quit guard (AC10)', () => {
     await saving;
     expect(await quitting).toBe(false);
     expect(t.io.asked).toHaveLength(1);
+  });
+});
+
+// ------------------------------------------------------------------ M6A: recordings (T06, T09; AC6, AC9)
+
+/** A launched session with a finished, unsaved recording of a few edits, then a dirty scene after it. */
+async function withRecording(options: { dirty?: boolean } = {}) {
+  const t = await setup();
+  expect(await t.workflow.record()).toBe(true);
+  for (let i = 0; i < 12; i++) t.host().step();
+  t.edit();
+  for (let i = 0; i < 6; i++) t.host().step();
+  await t.runs.stopRecording();
+  const record = t.runs.record!;
+  expect(record).not.toBeNull();
+  if (options.dirty !== false) {
+    // Newer authoring after the recording: a move the recording never saw.
+    expect(t.controller.editField('sideways', 'Move law', (f) => ({ ...f, pose: { ...f.pose, position: [1.25, 1, 0] } })).ok).toBe(true);
+    t.workflow.edited();
+    for (let i = 0; i < 4; i++) t.host().step();
+  }
+  return { ...t, record };
+}
+
+const runOpened = (io: FakeIo, name: string, text: string): OpenOutcome => ({ outcome: 'opened', token: io.issue(name), name, text, readMs: 0.3 });
+const runText = (r: import('../src/persistence/runFile').RunRecord) => exportRun(r).text;
+import { exportRun } from '../src/simulation/recorder';
+import { parseRun } from '../src/persistence/runFile';
+import { worldCounts } from '../src/simulation/host';
+
+describe('Save Recording (SPEC §13.2)', () => {
+  it('writes the immutable record through its own dialog; the scene stays unsaved and is not touched', async () => {
+    const t = await withRecording();
+    const revision = t.controller.revision;
+    t.io.runChooseQueue.push('storm.lawsmith-run.json');
+    expect(await t.workflow.saveRecording()).toBe(true);
+    expect(t.runs.exported).toBe(true);
+    const saved = parseRun(t.io.disk.get('storm.lawsmith-run.json')!, EXPECT);
+    expect(saved.ok && saved.record.runId).toBe(t.record.runId);
+    expect(t.workflow.dirty).toBe(true);
+    expect(t.controller.revision).toBe(revision);
+    expect(t.io.writes).toEqual([]);
+    expect(t.workflow.message?.text).toBe('Saved the recording to storm.lawsmith-run.json. Your scene is saved separately.');
+  });
+
+  it('a running recording is stopped under its normal policy first, then saved', async () => {
+    const t = await setup();
+    await t.workflow.record();
+    for (let i = 0; i < 9; i++) t.host().step();
+    t.edit();
+    expect(t.runs.recordingState).toBe('recording');
+    t.io.runChooseQueue.push('live.lawsmith-run.json');
+    expect(await t.workflow.saveRecording()).toBe(true);
+    expect(t.runs.recordingState).toBe('recorded');
+    expect([t.runs.record!.finalTick, t.runs.record!.lastAppliedSequence]).toEqual([9, 1]);
+  });
+
+  it('a canceled dialog, a refused name or a failed write leaves the recording unsaved and says so', async () => {
+    const t = await withRecording();
+    expect(await t.workflow.saveRecording()).toBe(false);
+    expect(t.workflow.message?.text).toBe('Save Recording canceled. Nothing was written.');
+    t.io.runChooseQueue.push('storm.json');
+    expect(await t.workflow.saveRecording()).toBe(false);
+    expect(t.workflow.message?.text).toMatch(/Recordings end in \.lawsmith-run\.json, so “storm\.json” was not used/);
+    t.io.runChooseQueue.push('full.lawsmith-run.json');
+    t.io.failRunWrite = failure('disk-full');
+    expect(await t.workflow.saveRecording()).toBe(false);
+    expect(t.workflow.message?.text).toMatch(/Couldn't save the recording to full\.lawsmith-run\.json: .*The recording is still here/);
+    expect(t.runs.exported).toBe(false);
+    expect(t.io.disk.has('full.lawsmith-run.json')).toBe(false);
+  });
+});
+
+describe('transactional Open Recording (SPEC §15.2; AC6, AC10)', () => {
+  it('a valid run replaces nothing until it commits, then replays from its root; the scene, undo and recovery stay', async () => {
+    const t = await withRecording();
+    t.io.runChooseQueue.push('a.lawsmith-run.json');
+    await t.workflow.saveRecording();
+    const scene = t.controller.scene;
+    const revision = t.controller.revision;
+    const tick = t.host().tick;
+    t.io.runOpenQueue.push(runOpened(t.io, 'a.lawsmith-run.json', t.io.disk.get('a.lawsmith-run.json')!));
+    expect(await t.workflow.openRecording()).toBe(true);
+    expect(t.runs.selected).toBe('replay');
+    expect(t.runs.replay!.address).toEqual({ tick: 0, cursor: 0 });
+    expect(t.runs.exported).toBe(true);
+    expect([t.controller.scene, t.controller.revision, t.host().tick, t.workflow.dirty]).toEqual([scene, revision, tick, true]);
+    expect(t.runs.counts()).toMatchObject({ candidates: 0, replay: 1 });
+  });
+
+  it('invalid, incompatible, scene-shaped and unbuildable files change nothing, from authoring or from replay', async () => {
+    const t = await withRecording();
+    const valid = runText(t.record);
+    for (const selected of ['authoring', 'replay'] as const) {
+      if (selected === 'replay') t.runs.enterReplay();
+      const replay = t.runs.replay;
+      const record = t.runs.record;
+      const worlds = worldCounts().allocated;
+      const cases: [string, string, RegExp][] = [
+        ['broken.lawsmith-run.json', valid.replace('"sequence":1,', '"sequence":2,'), /commands\[0\]\.sequence: must be 1/],
+        ['other.lawsmith-run.json', valid.replace('"build": "headless"', '"build": "packaged"'), /cannot replay exactly here: qualification: it was recorded by a different Lawsmith build or runtime: build "packaged"/],
+        ['scene.lawsmith.json', DEFAULT_SCENE_TEXT, /this is a Lawsmith scene, not a recording; open it with Open Scene/],
+        ['profile.lawsmith-run.json', valid.replaceAll('"profile": "lawsmith-m1-rapier-0.21.0"', '"profile": "lawsmith-m9"'), /simulationFingerprint\.profile|root\.semantic\.simulation\.profile/],
+      ];
+      for (const [name, text, message] of cases) {
+        t.io.runOpenQueue.push(runOpened(t.io, name, text));
+        expect(await t.workflow.openRecording()).toBe(false);
+        expect(t.workflow.message?.text).toMatch(message);
+        expect(t.workflow.message?.text).toMatch(/Your scene and any recording are unchanged\.$/);
+        expect([t.runs.selected, t.runs.replay, t.runs.record, t.runs.exported]).toEqual([selected, replay, record, false]);
+        expect(worldCounts().allocated).toBe(worlds);
+        expect(t.frozen()).toBe(false);
+      }
+    }
+  });
+
+  it('opening over an unsaved recording asks about it by name; Cancel keeps it, its replay and the candidate is freed', async () => {
+    const t = await withRecording();
+    const other = await withRecording({ dirty: false });
+    t.runs.enterReplay();
+    const replay = t.runs.replay;
+    const worlds = worldCounts().allocated;
+    t.io.runOpenQueue.push(runOpened(t.io, 'other.lawsmith-run.json', runText(other.record)));
+    t.io.recordingAskQueue.push('cancel');
+    expect(await t.workflow.openRecording()).toBe(false);
+    expect(t.io.recordingAsked[0]!.title).toBe('Falling stream');
+    expect(t.io.recordingAsked[0]!.detail).toMatch(/^It holds 1 recorded change over 0\.15 s\. Recordings are not kept for recovery/);
+    expect(t.io.asked).toEqual([]);
+    expect([t.runs.replay, t.runs.record, t.runs.exported, t.runs.selected]).toEqual([replay, t.record, false, 'replay']);
+    expect(worldCounts().allocated).toBe(worlds);
+    // Discard: the other run replaces it, and the displaced replay world is freed.
+    t.io.runOpenQueue.push(runOpened(t.io, 'other.lawsmith-run.json', runText(other.record)));
+    t.io.recordingAskQueue.push('discard');
+    expect(await t.workflow.openRecording()).toBe(true);
+    expect(t.runs.record!.runId).toBe(other.record.runId);
+    expect(t.runs.replay).not.toBe(replay);
+    expect(worldCounts().allocated).toBe(worlds);
+  });
+
+  it('a guard save onto the very file being opened opens what that file holds now', async () => {
+    const t = await withRecording();
+    const other = await withRecording({ dirty: false });
+    t.io.disk.set('same.lawsmith-run.json', runText(other.record));
+    t.io.runOpenQueue.push(runOpened(t.io, 'same.lawsmith-run.json', runText(other.record)));
+    t.io.recordingAskQueue.push('save');
+    t.io.runChooseQueue.push('same.lawsmith-run.json');
+    expect(await t.workflow.openRecording()).toBe(true);
+    expect(t.runs.record!.runId).toBe(t.record.runId);
+    expect(t.runs.exported).toBe(true);
+  });
+});
+
+describe('the guard protects two artifacts, transactionally (SPEC §15.3; AC9)', () => {
+  it('names each: the scene first from authoring, the recording first from replay', async () => {
+    const a = await withRecording();
+    a.io.askQueue.push('cancel');
+    expect(await a.workflow.requestExit('quit')).toBe(false);
+    expect(a.io.questions).toEqual(['scene']);
+    a.io.askQueue.push('discard');
+    a.io.recordingAskQueue.push('cancel');
+    expect(await a.workflow.requestExit('quit')).toBe(false);
+    expect(a.io.questions).toEqual(['scene', 'scene', 'recording']);
+    const b = await withRecording();
+    b.runs.enterReplay();
+    b.io.recordingAskQueue.push('cancel');
+    expect(await b.workflow.requestExit('close')).toBe(false);
+    expect(b.io.questions).toEqual(['recording']);
+  });
+
+  it('Save main scene → Cancel recording: the scene stays saved, the recording kept unsaved, nothing closed', async () => {
+    const t = await withRecording();
+    t.io.askQueue.push('save');
+    t.io.chooseQueue.push('main.lawsmith.json');
+    t.io.recordingAskQueue.push('cancel');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect(t.io.exited).toBe(0);
+    expect(t.workflow.dirty).toBe(false);
+    expect(parseScene(t.io.disk.get('main.lawsmith.json')!).ok).toBe(true);
+    expect([t.runs.record, t.runs.exported, t.runs.selected, t.frozen()]).toEqual([t.record, false, 'authoring', false]);
+  });
+
+  it('staged Discard scene → Cancel recording: no recovery is retired and the recording stays', async () => {
+    const t = await withRecording();
+    await t.workflow.recovery.writeNow();
+    const recovery = structuredClone(t.io.recovery);
+    expect(recovery.current).not.toBeNull();
+    t.io.askQueue.push('discard');
+    t.io.recordingAskQueue.push('cancel');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect(t.io.recovery).toEqual(recovery);
+    expect(t.workflow.dirty).toBe(true);
+    expect([t.runs.record, t.runs.exported]).toEqual([t.record, false]);
+  });
+
+  it('from replay, Save Recording → Cancel scene: the recording stays saved, the scene unsaved, the replay selected', async () => {
+    const t = await withRecording();
+    const replay = t.runs.enterReplay();
+    for (let i = 0; i < 5; i++) replay.advance();
+    const address = replay.address;
+    t.io.recordingAskQueue.push('save');
+    t.io.runChooseQueue.push('kept.lawsmith-run.json');
+    t.io.askQueue.push('cancel');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect(t.io.questions).toEqual(['recording', 'scene']);
+    expect(t.runs.exported).toBe(true);
+    expect(t.io.disk.has('kept.lawsmith-run.json')).toBe(true);
+    expect(t.workflow.dirty).toBe(true);
+    expect([t.runs.selected, t.runs.replay, t.runs.replay!.address]).toEqual(['replay', replay, address]);
+  });
+
+  it('from replay, staged Discard recording → Cancel scene: the recording and its replay remain', async () => {
+    const t = await withRecording();
+    const replay = t.runs.enterReplay();
+    t.io.recordingAskQueue.push('discard');
+    t.io.askQueue.push('cancel');
+    expect(await t.workflow.requestExit('close')).toBe(false);
+    expect([t.runs.record, t.runs.exported, t.runs.replay, t.runs.selected]).toEqual([t.record, false, replay, 'replay']);
+  });
+
+  it('a failed recording save or a failed scene save abandons the transition', async () => {
+    const t = await withRecording();
+    t.io.askQueue.push('save');
+    t.io.chooseQueue.push('main.lawsmith.json');
+    t.io.recordingAskQueue.push('save');
+    t.io.runChooseQueue.push('run.lawsmith-run.json');
+    t.io.failRunWrite = failure('permission');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect([t.io.exited, t.runs.exported]).toEqual([0, false]);
+    t.io.failRunWrite = null;
+    t.edit();
+    t.io.askQueue.push('save');
+    t.io.failWrite = failure('disk-full');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect(t.io.questions.at(-1)).toBe('scene');
+    expect([t.io.exited, t.workflow.dirty, t.runs.record]).toEqual([0, true, t.record]);
+  });
+
+  it('Save main authored scene from replay writes the retained authored document, never the replay', async () => {
+    const t = await withRecording();
+    const authored = t.controller.scene;
+    t.runs.enterReplay();
+    t.runs.replay!.runToEnd();
+    t.io.recordingAskQueue.push('discard');
+    t.io.askQueue.push('save');
+    t.io.chooseQueue.push('main.lawsmith.json');
+    expect(await t.workflow.requestExit('quit')).toBe(true);
+    const saved = parseScene(t.io.disk.get('main.lawsmith.json')!);
+    expect(saved.ok && saved.document.semantic).toEqual(authored);
+    expect(saved.ok && JSON.stringify(saved.document.semantic)).not.toBe(JSON.stringify(t.record.root.semantic));
+    expect(t.io.exited).toBe(1);
+  });
+
+  it('a canceled Save As inside the guard returns to the same paused replay', async () => {
+    const t = await withRecording();
+    const replay = t.runs.enterReplay();
+    replay.advance();
+    t.io.recordingAskQueue.push('discard');
+    t.io.askQueue.push('save');
+    expect(await t.workflow.requestExit('quit')).toBe(false);
+    expect([t.runs.selected, t.runs.replay, t.runs.record, t.workflow.dirty, t.io.exited]).toEqual(['replay', replay, t.record, true, 0]);
+  });
+
+  it('both saved, or both discarded, close; a discarded scene retires recovery, the recording simply goes', async () => {
+    const t = await withRecording();
+    t.io.askQueue.push('save');
+    t.io.chooseQueue.push('main.lawsmith.json');
+    t.io.recordingAskQueue.push('save');
+    t.io.runChooseQueue.push('run.lawsmith-run.json');
+    expect(await t.workflow.requestExit('quit')).toBe(true);
+    expect(parseRun(t.io.disk.get('run.lawsmith-run.json')!, EXPECT).ok).toBe(true);
+    const u = await withRecording();
+    await u.workflow.recovery.writeNow();
+    u.io.askQueue.push('discard');
+    u.io.recordingAskQueue.push('discard');
+    expect(await u.workflow.requestExit('close')).toBe(true);
+    expect(u.io.recoveryAtExit).toEqual({ current: null, previous: null });
+  });
+
+  it('a recording still running is finalized first; simultaneous requests coalesce while the guard asks', async () => {
+    const t = await setup();
+    await t.workflow.record();
+    for (let i = 0; i < 7; i++) t.host().step();
+    t.edit();
+    t.io.askQueue.push('cancel');
+    const first = t.workflow.requestExit('quit');
+    const second = t.workflow.requestExit('close');
+    expect(await second).toBe(false);
+    expect(await first).toBe(false);
+    expect(t.runs.recordingState).toBe('recorded');
+    expect([t.runs.record!.finalTick, t.runs.record!.lastAppliedSequence]).toEqual([7, 1]);
+    // An Open during a running guard is refused, not queued.
+    t.io.askQueue.push('cancel');
+    const quitting = t.workflow.requestExit('quit');
+    expect(await t.workflow.openRecording()).toBeNull();
+    await quitting;
+  });
+
+  it('Open Scene and New Scene drop the recording only after its guard; a saved recording needs no question', async () => {
+    const t = await withRecording();
+    t.io.askQueue.push('discard');
+    t.io.recordingAskQueue.push('cancel');
+    expect(await t.workflow.newScene()).toBe(false);
+    expect(t.runs.record).toBe(t.record);
+    t.io.askQueue.push('discard');
+    t.io.recordingAskQueue.push('discard');
+    expect(await t.workflow.newScene()).toBe(true);
+    expect(t.runs.record).toBeNull();
+    const u = await withRecording({ dirty: false });
+    u.io.runChooseQueue.push('kept.lawsmith-run.json');
+    await u.workflow.saveRecording();
+    u.io.askQueue.push('discard');
+    u.io.openQueue.push(opened(u.io, 'b.lawsmith.json', DEFAULT_SCENE_TEXT));
+    expect(await u.workflow.open()).toBe(true);
+    expect(u.io.recordingAsked).toEqual([]);
+    expect(u.runs.record).toBeNull();
+  });
+
+  it('Start Recording over an unsaved recording asks first: Cancel keeps it; Discard starts afresh', async () => {
+    const t = await withRecording();
+    t.io.recordingAskQueue.push('cancel');
+    expect(await t.workflow.record()).toBe(false);
+    expect([t.runs.record, t.runs.recordingState]).toEqual([t.record, 'recorded']);
+    t.io.recordingAskQueue.push('discard');
+    expect(await t.workflow.record()).toBe(true);
+    expect([t.runs.record, t.runs.recordingState, t.host().tick]).toEqual([null, 'recording', 0]);
+    expect(t.io.asked).toEqual([]);
+  });
+});
+
+describe('recovery stays the main scene’s (SPEC §15.3)', () => {
+  it('while replaying, recovery writes the retained authored document and no recording', async () => {
+    const t = await withRecording();
+    t.runs.enterReplay();
+    t.runs.replay!.runToEnd();
+    const revision = t.controller.revision;
+    await t.workflow.recovery.writeNow();
+    expect(t.io.recovery.current!.r).toBe(revision);
+    const envelope = parseRecovery(t.io.recovery.current!.text);
+    expect(envelope.ok && envelope.envelope.document.semantic).toEqual(t.controller.scene);
+    expect(t.io.recovery.current!.text).not.toContain('lawsmith.run');
   });
 });

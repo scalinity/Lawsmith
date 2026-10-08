@@ -1,13 +1,19 @@
-// Explicit document workflows (SPEC §15.3): Open, Save, Save As, New, launch recovery and the
-// shared close/quit/replace guard. One workflow runs at a time, so destination binding cannot be
-// reordered; a save acknowledges only the revision it captured; replies from an older document
-// generation never touch the current one; nothing is replaced or retired until a transition commits.
+// Explicit document workflows (SPEC §15.3): Open, Save, Save As, New, launch recovery, Save and Open
+// Recording, Start Recording, and the shared close/quit/replace guard. One workflow runs at a time, so
+// destination binding cannot be reordered; a save acknowledges only the revision it captured; replies
+// from an older document generation never touch the current one; nothing is replaced, retired or
+// dropped until a transition commits. The guard protects two separate artifacts by name: the main
+// authored scene and an unsaved recording.
 import type { DocumentController } from '../domain/document';
 import type { SceneDocument, ScenePresentation } from '../domain/scene';
+import type { RunCoordinator } from '../simulation/contexts';
 import type { SimulationHost } from '../simulation/host';
+import { exportRun } from '../simulation/recorder';
+import type { LinearReplay } from '../simulation/replay';
 import { defaultDocument } from './defaultScene';
 import type { DocumentIo, IoFailure } from './io';
 import { RecoveryWriter, describeFailure, parseRecovery, serializeRecovery, type RecoveryCapture, type RecoveryEnvelope } from './recovery';
+import { RUN_SUFFIX, parseRun, suggestedRunName, type RunExpectations, type RunRecord } from './runFile';
 import { createDocument, parseScene, serializeScene } from './sceneFile';
 
 /** A candidate world, with whatever else its promotion needs, owned by the workflow until commit. */
@@ -16,7 +22,7 @@ export interface Candidate {
 }
 
 /** What the workflow needs from the running application. */
-export interface WorkflowApp<C extends Candidate = SimulationHost> {
+export interface WorkflowApp<C extends Candidate = SimulationHost, R extends Candidate = LinearReplay> {
   readonly controller: DocumentController;
   /** Pauses, discards scheduling debt and ends any gesture at its last accepted value. */
   quiesce(reason: string): void;
@@ -35,6 +41,16 @@ export interface WorkflowApp<C extends Candidate = SimulationHost> {
    * It must not fail: everything fallible belongs in `candidate`, before anything is replaced.
    */
   commit(document: SceneDocument, candidate: C): void;
+  /** The run coordinator: the recording, its finalized record and the replay context (SPEC §13.2). */
+  readonly runs: RunCoordinator;
+  /** This build's simulation and runtime, which an opened recording must match (SPEC §13.1). */
+  runExpectations(): RunExpectations;
+  /** Builds one unstepped candidate replay world, and its view, for a validated record; throws, allocating nothing. */
+  runCandidate(record: RunRecord): R;
+  /** Promotes the candidate to the selected replay of `record`; the displaced replay is freed. It must not fail. */
+  commitRun(record: RunRecord, candidate: R): void;
+  /** Starts a new recorded experiment from tick zero; throws, changing nothing, if the scene cannot be recorded. */
+  startRecording(): void;
   log(kind: string, data: Record<string, unknown>): void;
   now(): number;
   onChange(): void;
@@ -52,7 +68,20 @@ export interface RecoveryOffer {
   readonly newestProblem: string | null;
 }
 
-type GuardDecision = { kind: 'clean' } | { kind: 'saved' } | { kind: 'discard'; generation: number };
+type SceneDecision = { kind: 'clean' } | { kind: 'saved' } | { kind: 'discard'; generation: number };
+type RecordingDecision = { kind: 'none' } | { kind: 'saved' } | { kind: 'discard' };
+/** A guard's decisions, one per artifact. A Discard is staged: nothing is retired or dropped until the transition commits. */
+interface GuardDecision {
+  readonly scene: SceneDecision;
+  readonly recording: RecordingDecision;
+}
+/** What a transition would drop: the main authored scene, an unsaved recording, or both. */
+interface GuardItems {
+  readonly scene: boolean;
+  readonly recording: boolean;
+}
+const BOTH: GuardItems = { scene: true, recording: true };
+const RECORDING_ONLY: GuardItems = { scene: false, recording: true };
 
 const round = (value: number) => Math.round(value * 1000) / 1000;
 
@@ -62,13 +91,14 @@ export function suggestedName(title: string): string {
   return `${base}.lawsmith.json`;
 }
 
-export class DocumentWorkflow<C extends Candidate = SimulationHost> {
+export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Candidate = LinearReplay> {
   private binding: { token: number; name: string } | null = null;
   /** The revision of this generation stored at the binding; null if it has never been saved. */
   private savedRevision: number | null = 0;
   private running: { kind: string; done: Promise<unknown> } | null = null;
   /** A candidate world not yet committed; disposed if its workflow ends any other way. */
   private uncommitted: C | null = null;
+  private uncommittedRun: R | null = null;
   private exitPending = false;
   /**
    * Launch recovery is answered once the lookup finds nothing to offer, or the user recovers or
@@ -83,7 +113,7 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost> {
 
   constructor(
     private readonly io: DocumentIo,
-    private readonly app: WorkflowApp<C>,
+    private readonly app: WorkflowApp<C, R>,
   ) {
     this.recovery = new RecoveryWriter({
       io,
@@ -131,6 +161,21 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost> {
 
   newScene(): Promise<boolean | null> {
     return this.explicit('new', () => this.replace('new', defaultDocument(), null, 0));
+  }
+
+  /** Save Recording (SPEC §13.2): the immutable record, never the scene; a running recording is stopped first. */
+  saveRecording(): Promise<boolean | null> {
+    return this.explicit('save-recording', () => this.saveRecordingNow());
+  }
+
+  /** Open Recording: a validated run replaces the current record and replays, read-only; the authored scene stays. */
+  openRecording(): Promise<boolean | null> {
+    return this.explicit('open-recording', () => this.openRecordingNow());
+  }
+
+  /** Start Recording: a new experiment from tick zero, after protecting an unsaved earlier recording. */
+  record(): Promise<boolean | null> {
+    return this.explicit('record', () => this.recordNow());
   }
 
   /**
@@ -260,6 +305,8 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost> {
       // An unexpected failure must not leave edits frozen or a candidate world allocated.
       this.uncommitted?.dispose();
       this.uncommitted = null;
+      this.uncommittedRun?.dispose();
+      this.uncommittedRun = null;
       this.app.freeze(false);
       this.fail(`Something went wrong during ${kind}: ${error instanceof Error ? error.message : String(error)}. Your scene is unchanged.`, { action: kind, outcome: 'error' });
       return null;
@@ -417,7 +464,7 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost> {
       this.app.log('document', { action, outcome: 'canceled', stage: 'guard' });
       return false;
     }
-    if (decision.kind === 'saved' && binding) {
+    if (decision.scene.kind === 'saved' && binding) {
       // The guard's save may have written the very file being opened: commit what it holds now.
       const reread = await this.reread(binding);
       candidate.dispose();
@@ -481,13 +528,47 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost> {
   }
 
   /**
-   * The shared unsaved-work guard (SPEC §15.3). Pauses, settles and freezes edits, then offers
-   * Save, Discard or Cancel for the main authored scene. A Discard is only staged here: the caller
-   * retires recovery when the whole transition commits. Null means the transition is canceled.
+   * The shared unsaved-work guard (SPEC §15.3). Pauses, settles and freezes edits; finalizes a running
+   * recording under its normal bounded policy; then asks about each artifact the transition would drop,
+   * naming it: the main authored scene (Save, Discard, Cancel) and an unsaved recording (Save Recording,
+   * Discard, Cancel). The artifact of the selected context comes first. A Discard is only staged here:
+   * the caller retires recovery or drops the recording when the whole transition commits. Any Cancel or
+   * failed save returns null, and the transition is abandoned with the selected context paused.
    */
-  private async guard(reason: string): Promise<GuardDecision | null> {
+  private async guard(reason: string, items: GuardItems = BOTH): Promise<GuardDecision | null> {
     this.app.quiesce(`guard-${reason}`);
     this.app.freeze(true);
+    const runs = this.app.runs;
+    this.app.controller.settle();
+    if (items.recording && (runs.recordingState === 'recording' || runs.recordingState === 'finalizing')) {
+      runs.stopRecording('user');
+      try {
+        await runs.settled();
+      } catch (error) {
+        this.fail(`The recording could not be finished: ${error instanceof Error ? error.message : String(error)}. Nothing was closed.`, { action: reason, outcome: 'recording-failed' });
+        return this.release();
+      }
+      this.app.log('guard', { reason, recording: 'finalized', runId: runs.record?.runId ?? null });
+    }
+    let scene: SceneDecision = { kind: 'clean' };
+    let recording: RecordingDecision = { kind: 'none' };
+    const order = runs.selected === 'replay' ? (['recording', 'scene'] as const) : (['scene', 'recording'] as const);
+    for (const item of order) {
+      if (item === 'scene' && items.scene) {
+        const decided = await this.guardScene(reason);
+        if (!decided) return null;
+        scene = decided;
+      } else if (item === 'recording' && items.recording) {
+        const decided = await this.guardRecording(reason);
+        if (!decided) return null;
+        recording = decided;
+      }
+    }
+    return { scene, recording };
+  }
+
+  /** The main authored scene's question: Save, Discard or Cancel. A Save here writes the retained main document, whatever is displayed. */
+  private async guardScene(reason: string): Promise<SceneDecision | null> {
     const controller = this.app.controller;
     controller.settle();
     if (!this.dirty) {
@@ -502,7 +583,7 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost> {
     } catch {
       choice = 'cancel';
     }
-    this.app.log('guard', { reason, choice, generation: controller.generation, revision: controller.revision });
+    this.app.log('guard', { reason, item: 'scene', choice, generation: controller.generation, revision: controller.revision });
     if (choice === 'cancel') return this.release();
     if (choice === 'discard') return { kind: 'discard', generation: controller.generation };
     const saved = await this.saveNow(false);
@@ -514,17 +595,227 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost> {
     return { kind: 'saved' };
   }
 
-  /** Retires a staged Discard; the transition proceeds only once recovery for that generation is retired. */
-  private async commitDiscard(decision: GuardDecision): Promise<boolean> {
-    if (decision.kind !== 'discard') return true;
+  /** An unsaved recording's question: Save Recording, Discard or Cancel. Recordings are not kept for recovery. */
+  private async guardRecording(reason: string): Promise<RecordingDecision | null> {
+    const runs = this.app.runs;
+    const record = runs.record;
+    if (!record || runs.exported) return { kind: 'none' };
+    const seconds = (record.finalTick / 120).toFixed(2);
+    const changes = record.commands.length;
+    const detail = `It holds ${changes} recorded ${changes === 1 ? 'change' : 'changes'} over ${seconds} s. Recordings are not kept for recovery, so it is lost if you don't save it. Saving it does not save your scene.`;
+    let choice: 'save' | 'discard' | 'cancel';
     try {
-      await this.recovery.discard(decision.generation);
+      choice = await this.io.askUnsavedRecording(record.root.metadata.title, detail);
+    } catch {
+      choice = 'cancel';
+    }
+    this.app.log('guard', { reason, item: 'recording', choice, runId: record.runId, commands: changes, finalTick: record.finalTick });
+    if (choice === 'cancel') return this.release();
+    if (choice === 'discard') return { kind: 'discard' };
+    if (!(await this.saveRecordingNow()) || !runs.exported) return this.release();
+    return { kind: 'saved' };
+  }
+
+  /** Retires a staged scene Discard; the transition proceeds only once recovery for that generation is retired. A recording's Discard needs no retirement: the commit drops it. */
+  private async commitDiscard(decision: GuardDecision): Promise<boolean> {
+    if (decision.scene.kind !== 'discard') return true;
+    try {
+      await this.recovery.discard(decision.scene.generation);
       return true;
     } catch (error) {
       this.release();
       this.fail(`Unsaved changes could not be discarded from recovery: ${describeFailure(error as IoFailure)}. Nothing was closed.`);
       return false;
     }
+  }
+
+  // ------------------------------------------------------------------ recordings
+
+  private async saveRecordingNow(): Promise<boolean> {
+    const runs = this.app.runs;
+    this.app.quiesce('save-recording');
+    if (runs.recordingState === 'recording') runs.stopRecording('user');
+    let record: RunRecord | null;
+    try {
+      record = await runs.settled();
+    } catch (error) {
+      return this.fail(`The recording could not be finished: ${error instanceof Error ? error.message : String(error)}.`, { action: 'save-recording', outcome: 'recording-failed' });
+    }
+    if (!record) {
+      this.message = { kind: 'info', text: 'There is no recording to save yet. Record from tick 0 first.' };
+      return false;
+    }
+    let choice;
+    try {
+      choice = await this.io.chooseRunDestination(suggestedRunName(record.root.metadata.title));
+    } catch (error) {
+      return this.fail(`Save Recording failed: ${describeFailure(error as IoFailure)}.`, { action: 'save-recording', error });
+    }
+    if (choice.outcome === 'canceled') {
+      this.app.log('document', { action: 'save-recording', outcome: 'canceled', runId: record.runId });
+      this.message = { kind: 'info', text: 'Save Recording canceled. Nothing was written.' };
+      return false;
+    }
+    if (choice.outcome === 'refused') {
+      this.app.log('document', { action: 'save-recording', outcome: 'refused-name', name: choice.name });
+      this.message = { kind: 'error', text: `Recordings end in ${RUN_SUFFIX}, so “${choice.name}” was not used. Nothing was written; choose Save Recording again and keep that ending.` };
+      return false;
+    }
+    const start = this.app.now();
+    try {
+      // The exact export, its size checked against the limit the reader enforces.
+      const exported = exportRun(record);
+      const { writeMs } = await this.io.writeRun(choice.token, exported.text);
+      if (runs.record === record) runs.exported = true;
+      this.app.log('document', {
+        action: 'save-recording',
+        outcome: 'saved',
+        file: choice.name,
+        runId: record.runId,
+        bytes: exported.bytes,
+        commands: record.commands.length,
+        finalTick: record.finalTick,
+        lastAppliedSequence: record.lastAppliedSequence,
+        stopped: record.stopped,
+        writeMs: round(writeMs),
+        saveMs: round(this.app.now() - start),
+      });
+      this.message = { kind: 'info', text: `Saved the recording to ${choice.name}. Your scene is saved separately.` };
+      return true;
+    } catch (error) {
+      const failure = error as IoFailure;
+      return this.fail(`Couldn't save the recording to ${choice.name}: ${failure.kind ? describeFailure(failure) : String(error)}. The recording is still here; try Save Recording again elsewhere.`, {
+        action: 'save-recording',
+        file: choice.name,
+        failure: failure.kind ?? 'export',
+        stage: failure.stage ?? null,
+        message: failure.message ?? String(error),
+      });
+    }
+  }
+
+  private async openRecordingNow(): Promise<boolean> {
+    this.app.quiesce('open-recording');
+    let outcome;
+    try {
+      outcome = await this.io.openRun();
+    } catch (error) {
+      const failure = error as IoFailure;
+      return this.fail(`The recording was not opened: ${describeFailure(failure)}. Nothing changed.`, { action: 'open-recording', failure: failure.kind, stage: failure.stage, message: failure.message });
+    }
+    if (outcome.outcome === 'canceled') {
+      this.app.log('document', { action: 'open-recording', outcome: 'canceled' });
+      return false;
+    }
+    const start = this.app.now();
+    const parsed = parseRun(outcome.text, this.app.runExpectations());
+    if (!parsed.ok) {
+      const why = parsed.incompatible ? `it cannot replay exactly here: ${parsed.error.message}` : parsed.error.message;
+      return this.fail(`${outcome.name} was not opened: ${why}. Your scene and any recording are unchanged.`, {
+        action: 'open-recording',
+        outcome: 'rejected',
+        incompatible: parsed.incompatible,
+        file: outcome.name,
+        path: parsed.error.path,
+        reason: parsed.error.reason,
+      });
+    }
+    const parseMs = this.app.now() - start;
+    return this.replaceRun(parsed.record, { token: outcome.token, name: outcome.name }, { readMs: outcome.readMs, parseMs, bytes: outcome.text.length });
+  }
+
+  /**
+   * Transactional run replacement (SPEC §15.2): one unstepped candidate replay world, the guard for an
+   * unsaved recording, then commit. A failure or cancellation disposes the candidate and leaves the
+   * selected context, the scene, the record and its replay exactly as they were.
+   */
+  private async replaceRun(chosen: RunRecord, source: { token: number; name: string }, timing: { readMs: number; parseMs: number; bytes: number }): Promise<boolean> {
+    let record = chosen;
+    const start = this.app.now();
+    let candidate: R;
+    try {
+      candidate = this.app.runCandidate(record);
+    } catch (error) {
+      return this.fail(`The recording could not be prepared: ${error instanceof Error ? error.message : String(error)}. Nothing changed.`, { action: 'open-recording', outcome: 'candidate-failed' });
+    }
+    this.uncommittedRun = candidate;
+    const candidateMs = this.app.now() - start;
+    const decision = await this.guard('open-recording', RECORDING_ONLY);
+    if (!decision) {
+      candidate.dispose();
+      this.uncommittedRun = null;
+      this.app.log('document', { action: 'open-recording', outcome: 'canceled', stage: 'guard' });
+      return false;
+    }
+    if (decision.recording.kind === 'saved') {
+      // The guard's save may have written the very file being opened: open what it holds now.
+      candidate.dispose();
+      this.uncommittedRun = null;
+      let reread: RunRecord | null = null;
+      try {
+        const { text } = await this.io.readRun(source.token);
+        const parsed = parseRun(text, this.app.runExpectations());
+        if (parsed.ok) reread = parsed.record;
+        else this.fail(`${source.name} was not opened: ${parsed.error.message}.`, { action: 'open-recording', outcome: 'rejected', path: parsed.error.path, reason: parsed.error.reason });
+      } catch (error) {
+        this.fail(`${source.name} was not opened: ${describeFailure(error as IoFailure)}.`, { action: 'open-recording', failure: (error as IoFailure).kind });
+      }
+      if (!reread) {
+        this.release();
+        return false;
+      }
+      record = reread;
+      try {
+        candidate = this.app.runCandidate(record);
+        this.uncommittedRun = candidate;
+      } catch (error) {
+        this.release();
+        return this.fail(`The recording could not be prepared: ${error instanceof Error ? error.message : String(error)}.`, { action: 'open-recording', outcome: 'candidate-failed' });
+      }
+    }
+    const commitStart = this.app.now();
+    this.uncommittedRun = null;
+    this.app.commitRun(record, candidate);
+    this.app.freeze(false);
+    this.app.log('document', {
+      action: 'open-recording',
+      outcome: 'committed',
+      file: source.name,
+      runId: record.runId,
+      commands: record.commands.length,
+      finalTick: record.finalTick,
+      lastAppliedSequence: record.lastAppliedSequence,
+      bytes: timing.bytes,
+      readMs: round(timing.readMs),
+      parseMs: round(timing.parseMs),
+      candidateMs: round(candidateMs),
+      commitMs: round(this.app.now() - commitStart),
+    });
+    this.message = { kind: 'info', text: `Opened the recording ${source.name}. It replays from tick 0, read-only; Return to authoring brings back your scene as you left it.` };
+    return true;
+  }
+
+  private async recordNow(): Promise<boolean> {
+    const runs = this.app.runs;
+    this.app.quiesce('record');
+    if (runs.selected === 'replay') {
+      this.message = { kind: 'info', text: 'Return to authoring to start a recording.' };
+      return false;
+    }
+    if (runs.recordingState === 'recording' || runs.recordingState === 'finalizing') {
+      this.message = { kind: 'info', text: 'A recording is already running.' };
+      return false;
+    }
+    if (runs.recordingAtRisk && !(await this.guard('record', RECORDING_ONLY))) return false;
+    try {
+      this.app.startRecording();
+    } catch (error) {
+      this.release();
+      return this.fail(`The recording could not start: ${error instanceof Error ? error.message : String(error)}. Nothing changed.`, { action: 'record', outcome: 'refused' });
+    }
+    this.app.freeze(false);
+    this.app.log('document', { action: 'record', outcome: 'started', runId: runs.recorder?.runId ?? null });
+    return true;
   }
 
   private release(): null {

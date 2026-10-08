@@ -186,6 +186,26 @@
       <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
     </div>
 
+    <!-- M6A: recording and replay (SPEC §11.1, §13.2). Bottom left, below the Scene panel's fold, so
+         nothing in the panel moves. Read-only progress only: no seek control before M6B. -->
+    <section id="run" aria-labelledby="run-title" data-state="idle" hidden>
+      <div class="run-head">
+        <h2 id="run-title">Recording</h2>
+        <span id="run-tag" hidden>Read-only</span>
+      </div>
+      <p id="run-status" aria-live="polite"></p>
+      <div id="run-meter" role="progressbar" aria-labelledby="run-status" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span id="run-fill"></span></div>
+      <p id="run-check" hidden></p>
+      <div class="run-actions" role="group" aria-label="Recording">
+        <button type="button" id="run-record" title="Resets the motion to tick 0, keeping your laws, and records every change you make so it can be replayed exactly">Record from tick 0</button>
+        <button type="button" id="run-stop">Stop recording</button>
+        <button type="button" id="run-replay" title="Rebuilds the recording’s starting scene and plays back what you changed, without touching your scene">Replay recording</button>
+        <button type="button" id="run-restart" title="Starts the replay again from the recording’s original tick 0">Replay from start</button>
+        <button type="button" id="run-return" title="Back to your scene as you left it, paused">Return to authoring</button>
+        <button type="button" id="run-save" title="Saves the recording, not the scene">Save recording…</button>
+        <button type="button" id="run-open">Open recording…</button>
+      </div>
+    </section>
     <div id="overlays" role="group" aria-label="What to draw" hidden>
       <div class="segmented" id="arrows-scope" role="radiogroup" aria-label="Arrows for" title="Only what is drawn changes. Every law keeps acting.">
         <button type="button" role="radio" id="arrows-every" data-scope="all" aria-checked="true">All arrows</button>

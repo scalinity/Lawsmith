@@ -4,7 +4,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Euler, Quaternion, Vector3, type Mesh, type Object3D } from 'three/webgpu';
 import { DocumentController } from './domain/document';
 import { expressionSummary, isCompound, type Edited } from './domain/ingredients';
-import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, type FieldDefinition, type Primitive, type SceneDocument, type Vec3 } from './domain/scene';
+import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, defaultLawPresentation, type FieldDefinition, type LawPresentation, type Primitive, type SceneDocument, type Vec3 } from './domain/scene';
 import { expressionStats, walk } from './fields/expression';
 import { FIELD_KERNEL_VERSION, fadeBand } from './fields/kernel';
 import { PRIMITIVES, REGIONS, primitiveDescriptor, regionDescriptor, type PrimitiveKind, type RegionKind, type ScalarControl } from './fields/registry';
@@ -31,7 +31,11 @@ import {
   trailFidelity,
   visualizationInvariance,
 } from './simulation/fixtures';
-import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation } from './simulation/host';
+import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation, resetPeakWorlds, worldCounts } from './simulation/host';
+import { RUN_LIMITS, parseRun, qualified, type QualificationIdentity, type RunRecord, type StopReason } from './persistence/runFile';
+import { RunCoordinator, type FinalCheckResult } from './simulation/contexts';
+import { SIMULATION_FINGERPRINT, exportRun } from './simulation/recorder';
+import { LinearReplay, firstDivergence as replayDivergence, observe } from './simulation/replay';
 import type { TransitionObservation } from './simulation/observation';
 import { FixedStepScheduler } from './simulation/scheduler';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
@@ -122,11 +126,54 @@ const BUSY_TEXT: Record<string, string> = {
   open: 'Opening…',
   new: 'Starting a new scene…',
   recover: 'Recovering…',
+  'save-recording': 'Saving the recording…',
+  'open-recording': 'Opening the recording…',
+  record: 'Starting a recording…',
   'discard-recovery': 'Discarding recovered work…',
   close: 'Closing…',
   quit: 'Quitting…',
 };
 const DEGREES = 180 / Math.PI;
+/** Run checkpoints for native evidence: the state digests at every 240th settled boundary of a recording and of its replay. */
+const CHECKPOINT_TICKS = 240;
+/** A replay frame's work budget: commands apply in chunks between checks, and the rest wait for the next frame. */
+const REPLAY_BUDGET_MS = 8;
+const LIMIT_TEXT: Record<'duration' | 'commands' | 'bytes', string> = {
+  duration: 'The recording stopped at its 60-second limit. The scene is paused there; editing goes on unrecorded.',
+  commands: 'The recording stopped at its limit of 50,000 recorded changes. Your last change was not applied; make it again to keep editing, unrecorded.',
+  bytes: 'The recording stopped at its 16 MiB size limit. Your last change was not applied; make it again to keep editing, unrecorded.',
+};
+
+/**
+ * The frontend bundle actually executing (SPEC §13.1): its file name and the SHA-256 of its bytes, read
+ * back from the packaged app's own asset origin. Nothing is embedded, so nothing hashes itself.
+ */
+async function frontendBundle(): Promise<string> {
+  if (mode !== 'packaged') return 'unbundled: development server';
+  try {
+    const url = new URL(import.meta.url);
+    const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
+    return `${url.pathname.split('/').pop()} sha256:${await sha256(bytes)}`;
+  } catch (error) {
+    return `unavailable: ${String(error)}`;
+  }
+}
+
+/** The qualification identity from the native runtime record and the bundle: facts observed, never guessed. */
+function qualificationIdentity(native: unknown, bundle: string): QualificationIdentity {
+  const facts = typeof native === 'object' && native !== null ? (native as Record<string, string>) : {};
+  const fact = (key: string) => facts[key] || `unavailable: ${typeof native === 'string' ? native : `no ${key}`}`;
+  const family = ['tauri', 'tauriRuntime', 'tauriRuntimeWry', 'wry', 'tao'].map(fact);
+  return Object.freeze({
+    app: fact('app'),
+    build: mode,
+    bundle,
+    tauri: family.some((v) => v.startsWith('unavailable')) ? `unavailable: ${family.join('; ')}` : `tauri ${family[0]}; tauri-runtime ${family[1]}; tauri-runtime-wry ${family[2]}; wry ${family[3]}; tao ${family[4]}`,
+    webkit: fact('webview'),
+    os: facts.macos && !facts.macos.startsWith('unavailable') ? `macOS ${facts.macos} (${fact('macosBuild')})` : fact('macos'),
+    arch: fact('arch'),
+  });
+}
 
 async function start() {
   const begin = performance.now();
@@ -135,6 +182,8 @@ async function start() {
   );
   const timerMs = timerResolutionMs();
   report('runtime', { ...facts, userAgent: navigator.userAgent, timerResolutionMs: timerMs });
+  const identity = qualificationIdentity(facts.runtime, await frontendBundle());
+  report('qualification', { identity, qualified: qualified(identity), fingerprint: SIMULATION_FINGERPRINT });
 
   const renderer = await withTimeout(createRenderer($('viewport'), fault === 'webgl'), 'WebGPU renderer initialization');
   const backend = identifyBackend(renderer);
@@ -169,8 +218,15 @@ async function start() {
   const initial = defaultDocument();
   let host = new SimulationHost(cloneFrozen(initial.semantic));
   const authoring = new DocumentController(initial, host);
+  // One coordinator owns the authoring context, the recording and the replay context (SPEC §13.2).
+  // `host` is the world displayed and advanced: the replay's while replaying, otherwise the live one.
+  const runs = new RunCoordinator({ controller: authoring, identity: () => identity, onLimit: (reason) => recordingLimited(reason) });
+  const replaying = () => runs.selected === 'replay';
   const scheduler = new FixedStepScheduler(STEP_MS);
   const appliedLaw = (id: string) => host.appliedFields().find((f) => f.id === id);
+  /** A law's names and colors in the displayed context: a replay shows its root's, never the newer authored ones. */
+  const lawPresentation = (id: string): LawPresentation =>
+    replaying() ? (runs.replay?.record.root.presentation.laws.find((p) => p.id === id) ?? defaultLawPresentation(id)) : authoring.presentationOf(id);
 
   const viewport = createViewport(renderer, report);
   const world = createWorldView(viewport.scene, initial.semantic);
@@ -204,8 +260,16 @@ async function start() {
   let cameraMoved = false;
   const applyFreeze = () => {
     frozen = guardFrozen || launchPending;
-    for (const id of ['panel', 'tools', 'transport', 'overlays']) $(id).inert = frozen;
-    viewport.gizmo.enabled = !frozen;
+    for (const id of ['panel', 'tools', 'transport', 'overlays', 'run']) $(id).inert = frozen;
+    // Replay is read-only (SPEC §13.2): its laws are inspected, never edited; playback and the camera still work.
+    const readOnly = replaying();
+    document.body.dataset.context = readOnly ? 'replay' : 'authoring';
+    for (const id of ['details', 'law-shelf']) $(id).inert = readOnly;
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) b.disabled = readOnly;
+    $<HTMLButtonElement>('reset').disabled = readOnly;
+    $('reset').title = readOnly ? 'Reset restarts your authored scene. Return to authoring to use it.' : '';
+    viewport.gizmo.enabled = !frozen && !readOnly;
+    viewport.gizmo.getHelper().visible = !readOnly;
   };
   applyFreeze();
 
@@ -225,7 +289,7 @@ async function start() {
       orbit: viewport.orbit,
       proxy: viewport.proxy,
       appliedField: (id) => appliedLaw(id),
-      pickable: () => host.appliedFields().filter((f) => authoring.presentationOf(f.id).visible),
+      pickable: () => host.appliedFields().filter((f) => lawPresentation(f.id).visible),
       submit,
       transaction: () => authoring.newTransaction(),
       onGestureEnd: (end) => gestureEnded(end),
@@ -237,7 +301,7 @@ async function start() {
         return true;
       },
       haltCamera: () => viewport.haltInertia(),
-      editable: () => !frozen,
+      editable: () => !frozen && !replaying(),
       // The ingredient being edited brings its own handles (M5).
       focus: () => ingredientPanel.focus,
       log: report,
@@ -294,10 +358,17 @@ async function start() {
   const absorb = () => {
     authoring.sync();
   };
-  /** Applies queued commands at the current boundary now (SPEC §10.2), as the next step would. */
+  /** Applies the authoring world's queued commands at its current boundary now (SPEC §10.2), as its next step would. */
   const settleNow = () => {
-    host.settleBoundary();
-    absorb();
+    authoring.settle();
+  };
+
+  /** Digests of a world's future-affecting state at a settled boundary, for comparing a recording with its replay natively. */
+  const runCheckpoint = (source: 'live' | 'replay', world: SimulationHost, runId: string) => {
+    const { tick, lastAppliedSequence: cursor, count: bodies } = world;
+    const state = JSON.stringify(world.futureState());
+    const engine = world.engineSnapshot();
+    Promise.all([sha256(state), sha256(engine)]).then(([stateSha256, engineSha256]) => report('run-checkpoint', { source, runId, tick, cursor, bodies, stateSha256, engineSha256 }));
   };
 
   // Exact-run evidence from the live loop: digests at ticks 600 and 1200 of every run.
@@ -330,7 +401,9 @@ async function start() {
 
   const setPlaying = (playing: boolean, reason: string) => {
     if (playing === scheduler.playing) return;
-    if (playing && (host.fault || frozen)) return;
+    if (playing && (host.fault || frozen || authoring.liveHost.halted)) return;
+    // A replay at its frozen end stays there: Replay from Start, not Play, begins it again.
+    if (playing && replaying() && runs.replay?.complete) return;
     if (playing) {
       scheduler.play();
       // A next-step preview is a paused view; motion shows each completed step instead.
@@ -354,12 +427,15 @@ async function start() {
   const onFault = (error: unknown) => {
     if (!(error instanceof SimulationFault)) throw error;
     setPlaying(false, 'fault');
+    // A recording ends where its world faulted, without a final check (that world no longer holds it).
+    if (!replaying() && runs.recordingState === 'recording') stopRecording('fault');
     report('simulation-fault', { tick: error.tick, entity: error.entity, reason: error.reason });
     showSimError(`${error.message}. The last valid frame is shown.`, true);
   };
 
   const stepTimes: number[] = [];
   const timedStep = () => {
+    if (runs.recordingState === 'recording' && host.tick > 0 && host.tick % CHECKPOINT_TICKS === 0) runCheckpoint('live', host, runs.recorder!.runId);
     const t0 = performance.now();
     host.step();
     const t1 = performance.now();
@@ -380,7 +456,14 @@ async function start() {
   };
 
   const stepOnce = () => {
-    if (interaction.gesture || host.fault || frozen) return;
+    if (replaying()) {
+      if (host.fault || frozen || runs.replay?.complete) return;
+      setPlaying(false, 'step');
+      driveReplay(1);
+      report('sim-control', { action: 'step', context: 'replay', tick: host.tick, cursor: host.lastAppliedSequence, partial: runs.replayPartial });
+      return;
+    }
+    if (interaction.gesture || host.fault || frozen || host.halted) return;
     setPlaying(false, 'step');
     try {
       timedStep();
@@ -392,12 +475,14 @@ async function start() {
   };
 
   const resetScene = () => {
-    if (frozen) return;
+    if (frozen || replaying()) return;
     if (interaction.gesture) {
       report('sim-control', { action: 'reset-refused', reason: 'gesture active', tick: host.tick });
       return;
     }
     setPlaying(false, 'reset');
+    // A reset begins a new configuration run: a recording in progress ends first, at its current address.
+    if (runs.recordingState === 'recording') stopRecording('reset');
     settleNow();
     authoring.reset();
     runIndex += 1;
@@ -412,15 +497,18 @@ async function start() {
 
   /** The camera framing a save records: the live camera once the user has moved it, else the document's. */
   const savedCamera = () => {
-    if (cameraMoved) {
+    // During a replay the main authored scene's framing is the one kept when the replay began (SPEC §13.2).
+    const kept = replaying() ? authoringCamera : null;
+    if (kept ? kept.moved : cameraMoved) {
       const p = viewport.camera.position;
       const t = viewport.orbit.target;
-      const camera = { position: [p.x, p.y, p.z] as const, target: [t.x, t.y, t.z] as const };
+      const camera = kept ? { position: kept.position, target: kept.target } : { position: [p.x, p.y, p.z] as const, target: [t.x, t.y, t.z] as const };
       // A framing the file reader would refuse is never saved; the previous framing is kept.
       const problem = checkCamera(camera);
       if (problem) report('control', { camera: 'not-recorded', reason: problem });
       else authoring.setCamera(camera);
-      cameraMoved = false;
+      if (kept) kept.moved = false;
+      else cameraMoved = false;
     }
     return authoring.camera;
   };
@@ -451,7 +539,8 @@ async function start() {
       const candidateHost = new SimulationHost(cloneFrozen(document.semantic));
       let view: PreparedScene;
       try {
-        view = world.prepareScene(document.semantic);
+        // While a replay is shown its view holds the displayed bodies, so the new scene gets its own.
+        view = world.prepareScene(document.semantic, replaying());
       } catch (error) {
         candidateHost.dispose();
         throw error;
@@ -467,11 +556,17 @@ async function start() {
     },
     commit: (document, candidate) => {
       setPlaying(false, 'load');
-      const displaced = host;
+      // Replacing the scene context drops the recording and its replay, which the guard has protected.
+      if (replaying() && authoringView) world.discardScene(world.swapScene(authoringView));
+      authoringView = null;
+      authoringCamera = null;
+      runs.dropRecord();
+      const displaced = authoring.liveHost;
       host = candidate.host;
       authoring.load(document, candidate.host);
       displaced.dispose();
       world.showScene(candidate.view);
+      applyFreeze();
       applyCamera(document.presentation.camera);
       ingredientPanel.reset();
       interaction.select(document.semantic.fields[0]?.id ?? null);
@@ -485,6 +580,47 @@ async function start() {
       report('sim-control', { action: 'load', tick: host.tick, playing: scheduler.playing, run: runIndex, laws: document.semantic.fields.map(lawSummary) });
       reportDigest('load');
     },
+    runs,
+    runExpectations: () => ({ fingerprint: SIMULATION_FINGERPRINT, identity }),
+    // An imported run's world and its static view, both built before anything is replaced.
+    runCandidate: (record) => {
+      const replay = runs.prepareImport(record);
+      let view: PreparedScene;
+      try {
+        view = world.prepareScene(record.root.semantic, true);
+      } catch (error) {
+        runs.discardImport(replay);
+        throw error;
+      }
+      return {
+        replay,
+        view,
+        dispose: () => {
+          runs.discardImport(replay);
+          world.discardScene(view);
+        },
+      };
+    },
+    commitRun: (record, candidate) => {
+      setPlaying(false, 'open-recording');
+      interaction.release('open-recording');
+      if (replaying()) world.discardScene(world.swapScene(candidate.view));
+      else {
+        authoringView = world.swapScene(candidate.view);
+        authoringCamera = stashCamera();
+      }
+      runs.commitImport(candidate.replay);
+      showContext('open-recording');
+      report('recording', { action: 'opened', ...recordSummary(record) });
+    },
+    startRecording: () => {
+      const recorder = runs.startRecording();
+      runIndex += 1;
+      editsSinceReset = 0;
+      if (p0) p0.invalid ??= 'recording started during capture';
+      $('sim-error').hidden = true;
+      report('recording', { action: 'start', runId: recorder.runId, tick: host.tick, cursor: host.lastAppliedSequence, bytes: recorder.bytes, qualified: qualified(identity), laws: authoring.scene.fields.map(lawSummary) });
+    },
     log: report,
     now: () => performance.now(),
     onChange: () => renderPanel(),
@@ -497,13 +633,20 @@ async function start() {
   };
 
   /** Commits a field being typed in, then runs a file workflow. */
-  const runFile = (action: 'open' | 'save' | 'saveAs' | 'newScene') => {
+  const runFile = (action: 'open' | 'save' | 'saveAs' | 'newScene' | 'saveRecording' | 'openRecording' | 'record') => {
     if (frozen) return;
+    if (replaying() && (action === 'save' || action === 'saveAs')) {
+      // SPEC §13.2: ordinary Save Scene is off during replay, so no shortcut can save the replay as the scene.
+      workflow.message = { kind: 'info', text: 'Save is off during a replay, so the replay can never be saved over your scene. Return to authoring to save it; closing still offers to.' };
+      report('file-control', { action, outcome: 'refused', reason: 'replay' });
+      renderPanel();
+      return;
+    }
     if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
     const t = host.tick;
     void workflow[action]().then((outcome) => {
       report('file-control', { action, outcome, tickBefore: t, tickAfter: host.tick, playing: scheduler.playing });
-      if (outcome && action !== 'open' && action !== 'newScene') reportDigest(action);
+      if (outcome && (action === 'save' || action === 'saveAs')) reportDigest(action);
       renderPanel();
     });
   };
@@ -719,11 +862,14 @@ async function start() {
 
   let reportedDirty: boolean | null = null;
   function renderPanel() {
-    // The native side answers Dock Quit and logout synchronously, so it keeps the dirty state too.
-    if (workflow.dirty !== reportedDirty) {
-      reportedDirty = workflow.dirty;
+    // The native side answers Dock Quit and logout synchronously, so it keeps the dirty state too: an
+    // unsaved scene, or a recording that has not been saved.
+    const atRisk = workflow.dirty || runs.recordingAtRisk;
+    if (atRisk !== reportedDirty) {
+      reportedDirty = atRisk;
       invoke('guard_state', { dirty: reportedDirty }).catch(() => {});
     }
+    renderRun();
     // Document.
     const busy = workflow.busy;
     const file = workflow.fileName;
@@ -741,7 +887,8 @@ async function start() {
         : file
           ? `Saved to ${file}`
           : 'Not saved to a file';
-    for (const id of ['file-new', 'file-open', 'file-save', 'file-save-as']) $<HTMLButtonElement>(id).disabled = busy !== null;
+    for (const id of ['file-new', 'file-open']) $<HTMLButtonElement>(id).disabled = busy !== null;
+    for (const id of ['file-save', 'file-save-as']) $<HTMLButtonElement>(id).disabled = busy !== null || replaying();
     const message = $('doc-message');
     message.hidden = workflow.message === null;
     message.textContent = workflow.message?.text ?? '';
@@ -753,19 +900,20 @@ async function start() {
       recovery.state === 'failed' ? `Recovery is unavailable: ${recovery.reason}. Save and Save As still work.` : recovery.state === 'written' ? `A recovery copy holds revision ${recovery.revision}.` : '';
 
     // History and visualization default.
-    $<HTMLButtonElement>('undo').disabled = !authoring.canUndo;
-    $<HTMLButtonElement>('redo').disabled = !authoring.canRedo;
+    $<HTMLButtonElement>('undo').disabled = !authoring.canUndo || replaying();
+    $<HTMLButtonElement>('redo').disabled = !authoring.canRedo || replaying();
     $('arrows-toggle').setAttribute('aria-pressed', String(authoring.arrows));
 
     // Laws list, rebuilt only when something it shows changed.
     const laws = host.appliedFields();
     const selectedId = interaction.selectedId;
-    const signature = JSON.stringify([selectedId, laws.map((f) => [f.id, f.enabled, f.expression, authoring.presentationOf(f.id)])]);
+    const readOnly = replaying();
+    const signature = JSON.stringify([readOnly, selectedId, laws.map((f) => [f.id, f.enabled, f.expression, lawPresentation(f.id)])]);
     if (signature !== listSignature) {
       listSignature = signature;
       lawList.replaceChildren(
         ...laws.map((f) => {
-          const p = authoring.presentationOf(f.id);
+          const p = lawPresentation(f.id);
           const item = document.createElement('li');
           item.className = 'law-row';
           item.style.setProperty('--law-color', p.color);
@@ -799,6 +947,8 @@ async function start() {
           enabled.setAttribute('aria-pressed', String(f.enabled));
           enabled.setAttribute('aria-label', `${p.label} enabled`);
           enabled.textContent = f.enabled ? 'On' : 'Off';
+          // A replay's laws are the recording's: shown, selectable, never changed from here.
+          visible.disabled = enabled.disabled = readOnly;
           item.append(select, visible, enabled);
           return item;
         }),
@@ -812,7 +962,7 @@ async function start() {
     details.hidden = !law;
     ingredientPanel.render(law, host.tick);
     if (!law) return;
-    const p = authoring.presentationOf(law.id);
+    const p = lawPresentation(law.id);
     const detailSignature = JSON.stringify([law, p]);
     if (detailSignature === detailsSignature) return;
     detailsSignature = detailSignature;
@@ -1049,6 +1199,309 @@ async function start() {
   $('reset').addEventListener('click', resetScene);
   $('sim-error-reset').addEventListener('click', resetScene);
 
+  // ------------------------------------------------------------------ recording and replay (M6A)
+
+  /** The authoring context's static view and camera, kept while a replay is displayed (SPEC §13.2). */
+  let authoringView: PreparedScene | null = null;
+  let authoringCamera: { position: Vec3; target: Vec3; moved: boolean } | null = null;
+  const stashCamera = () => {
+    const p = viewport.camera.position;
+    const t = viewport.orbit.target;
+    return { position: [p.x, p.y, p.z] as Vec3, target: [t.x, t.y, t.z] as Vec3, moved: cameraMoved };
+  };
+  /** The displayed replay's end check, once it reached its frozen address. */
+  let replayCheck: FinalCheckResult | null = null;
+  let replayEnded = false;
+  let replayCheckpoint = -1;
+
+  const recordSummary = (record: RunRecord) => ({
+    runId: record.runId,
+    title: record.root.metadata.title,
+    commands: record.commands.length,
+    finalTick: record.finalTick,
+    lastAppliedSequence: record.lastAppliedSequence,
+    stopped: record.stopped,
+    finalCheck: record.finalCheck,
+    qualified: qualified(record.qualification),
+  });
+
+  /**
+   * Displays the coordinator's selected context: its world, laws and readouts, with every view of the
+   * previous world cleared. Scheduling debt is discarded and the new context starts paused (SPEC §13.2).
+   */
+  const showContext = (reason: string) => {
+    setPlaying(false, reason);
+    scheduler.pause();
+    host = runs.shown;
+    explained = null;
+    host.explain(null);
+    ingredientPanel.reset();
+    listSignature = '';
+    detailsSignature = '';
+    clockTick = -1;
+    shownRevision = -1;
+    previewKey = '';
+    replayCheck = null;
+    replayEnded = false;
+    replayCheckpoint = -1;
+    if (interaction.selectedId !== null && !appliedLaw(interaction.selectedId)) interaction.select(null);
+    $('sim-error').hidden = true;
+    applyFreeze();
+    report('context', { reason, ...runs.counts(), tick: host.tick, cursor: host.lastAppliedSequence, runId: runs.replay?.record.runId ?? null, qualified: runs.replayQualified });
+    renderPanel();
+  };
+
+  /** Replay: the authoring world is settled and kept paused; a new world is built from the recording's frozen root. */
+  const enterReplay = () => {
+    if (frozen || replaying() || runs.recordingState !== 'recorded') return;
+    setPlaying(false, 'replay');
+    interaction.release('replay');
+    settleNow();
+    const replay = runs.enterReplay();
+    let view: PreparedScene;
+    try {
+      view = world.prepareScene(replay.record.root.semantic, true);
+    } catch (error) {
+      runs.returnToAuthoring();
+      workflow.message = { kind: 'error', text: `The replay could not be shown: ${error instanceof Error ? error.message : String(error)}. Your scene is unchanged.` };
+      report('recording', { action: 'replay-failed', error: String(error) });
+      renderPanel();
+      return;
+    }
+    authoringView = world.swapScene(view);
+    authoringCamera = stashCamera();
+    showContext('replay');
+  };
+
+  /** Replay from Start: the replay world is rebuilt from the original root; authoring is untouched. */
+  const restartReplay = () => {
+    if (frozen || !replaying()) return;
+    runs.restartReplay();
+    showContext('replay-restart');
+  };
+
+  /** Return to authoring: the replay world is freed and the kept authoring world shown again, paused, with its camera. */
+  const returnToAuthoring = () => {
+    if (frozen || !replaying()) return;
+    runs.returnToAuthoring();
+    if (authoringView) world.discardScene(world.swapScene(authoringView));
+    authoringView = null;
+    if (authoringCamera) {
+      viewport.setView(authoringCamera.position, authoringCamera.target);
+      cameraMoved = authoringCamera.moved;
+      authoringCamera = null;
+    }
+    showContext('return');
+  };
+
+  /** An ordinary stop: the gesture in progress ends and queued edits settle into the record, which then freezes. */
+  const stopRecording = (reason: string) => {
+    if (runs.recordingState !== 'recording') return;
+    setPlaying(false, `record-${reason}`);
+    interaction.release(`record-${reason}`);
+    const reservedBytes = runs.recorder!.bytes;
+    const pending = runs.stopRecording(reason === 'fault' ? 'fault' : 'user');
+    report('recording', { action: 'stop', reason, tick: authoring.liveHost.tick, cursor: authoring.liveHost.lastAppliedSequence, reservedBytes });
+    pending?.then(
+      (record) => {
+        report('recording', { action: 'stopped', ...recordSummary(record) });
+        renderPanel();
+      },
+      (error: unknown) => report('recording', { action: 'stop-failed', error: String(error) }),
+    );
+    renderPanel();
+  };
+
+  /**
+   * The recorder closed at a limit (SPEC §13.3); the coordinator has already discarded what it refused.
+   * Pause, and end a gesture at the last value the host applied, discarding its unapplied preview.
+   */
+  const recordingLimited = (reason: StopReason) => {
+    setPlaying(false, `recording-${reason}`);
+    const gesture = interaction.gesture;
+    if (gesture) interaction.release(`recording-${reason}`, authoring.lawState(gesture.start.id)?.field ?? null);
+    for (const revision of awaited) if (revision > authoring.appliedRevision) awaited.delete(revision);
+    if (reason === 'duration' || reason === 'commands' || reason === 'bytes') workflow.message = { kind: 'info', text: LIMIT_TEXT[reason] };
+    report('recording', { action: 'limit', reason, tick: authoring.liveHost.tick, cursor: authoring.liveHost.lastAppliedSequence, gestureEnded: gesture !== null });
+    void runs.settled().then((record) => {
+      if (record) report('recording', { action: 'stopped', ...recordSummary(record) });
+      renderPanel();
+    });
+    renderPanel();
+  };
+
+  /**
+   * Advances the displayed replay (SPEC §13.3): a unit cut short last frame is finished first, then up to
+   * `units` more, within the frame's work budget. Steps are observed by probes and trails like live ones.
+   */
+  const driveReplay = (units: number): number => {
+    const replay = runs.replay;
+    if (!replay) return 0;
+    const deadline = performance.now() + REPLAY_BUDGET_MS;
+    const now = () => performance.now();
+    let steps = 0;
+    const unit = (n: number) => {
+      const tick = host.tick;
+      const t0 = performance.now();
+      let result;
+      try {
+        result = runs.advanceReplay(n, deadline, now);
+      } catch (error) {
+        onFault(error);
+        return { complete: false, partial: true };
+      }
+      if (host.tick !== tick) {
+        pushBounded(stepTimes, performance.now() - t0, 480);
+        probes.advance(host);
+        trails.record(host, explained);
+        steps += 1;
+      }
+      if (!result.partial && host.tick > 0 && host.tick % CHECKPOINT_TICKS === 0 && host.tick !== replayCheckpoint) {
+        replayCheckpoint = host.tick;
+        runCheckpoint('replay', host, replay.record.runId);
+      }
+      return result;
+    };
+    let result = unit(0);
+    for (let i = 0; i < units && !result.partial && !result.complete; i++) result = unit(1);
+    if (result.complete && !replayEnded) replayReachedEnd();
+    return steps;
+  };
+
+  /** At the frozen final address: pause there, and check the state against the recorded end. */
+  const replayReachedEnd = () => {
+    replayEnded = true;
+    setPlaying(false, 'replay-end');
+    const replay = runs.replay!;
+    const state = JSON.stringify(replay.host.futureState());
+    const engine = replay.host.engineSnapshot();
+    void Promise.all([runs.checkReplay(), sha256(state), sha256(engine)]).then(([check, stateSha256, engineSha256]) => {
+      if (runs.replay !== replay) return;
+      replayCheck = check;
+      report('replay-complete', {
+        runId: replay.record.runId,
+        tick: replay.host.tick,
+        cursor: replay.host.lastAppliedSequence,
+        finalTick: replay.record.finalTick,
+        lastAppliedSequence: replay.record.lastAppliedSequence,
+        check,
+        stateSha256,
+        engineSha256,
+        recorded: replay.record.finalCheck,
+        qualified: qualified(replay.record.qualification),
+      });
+      renderPanel();
+    });
+    renderPanel();
+  };
+
+  const runParts = { root: $('run'), title: $('run-title'), tag: $('run-tag'), status: $('run-status'), meter: $('run-meter'), fill: $('run-fill'), check: $('run-check') };
+  const runButtons = {
+    record: $<HTMLButtonElement>('run-record'),
+    stop: $<HTMLButtonElement>('run-stop'),
+    replay: $<HTMLButtonElement>('run-replay'),
+    restart: $<HTMLButtonElement>('run-restart'),
+    return: $<HTMLButtonElement>('run-return'),
+    save: $<HTMLButtonElement>('run-save'),
+    open: $<HTMLButtonElement>('run-open'),
+  };
+  const STOPPED_TEXT: Partial<Record<StopReason, string>> = {
+    duration: ' It stopped at the 60 s limit.',
+    commands: ' It stopped at the 50,000-change limit.',
+    bytes: ' It stopped at the 16 MiB limit.',
+    fault: ' It ended where the simulation faulted.',
+  };
+  let runShown = '';
+
+  /** The recording controls and read-only progress, per state; rebuilt only when what they show changes. */
+  function renderRun() {
+    const state = replaying() ? 'replay' : runs.recordingState;
+    const seconds = (ticks: number) => `${(ticks / 120).toFixed(2)} s`;
+    const changes = (n: number) => `${n} ${n === 1 ? 'change' : 'changes'}`;
+    let title = 'Recording';
+    let tag = false;
+    let status: (string | [string, string])[] = [];
+    let meter: number | null = null;
+    let check: { text: string; result: string } | null = null;
+    let shown: (keyof typeof runButtons)[] = [];
+    const record = runs.record;
+    if (state === 'idle') {
+      status = ['Record from tick 0 resets the motion and records every change you make.'];
+      shown = ['record', 'open'];
+    } else if (state === 'recording') {
+      const r = runs.recorder!;
+      status = [['dot', ''], 'Recording ', ['count', seconds(r.tick)], ' of 60 s, ', ['count', changes(r.count)]];
+      meter = Math.max(r.tick / RUN_LIMITS.ticks, r.count / RUN_LIMITS.commands, r.bytes / RUN_LIMITS.fileBytes);
+      shown = ['stop'];
+    } else if (state === 'finalizing') {
+      status = ['Finishing the recording…'];
+    } else if (state === 'recorded' && record) {
+      status = ['Recorded ', ['count', seconds(record.finalTick)], ' and ', ['count', changes(record.commands.length)], `. ${runs.exported ? 'Saved.' : 'Not saved yet.'}${STOPPED_TEXT[record.stopped] ?? ''}`];
+      shown = ['replay', 'save', 'record', 'open'];
+    } else if (state === 'replay' && runs.replay) {
+      const replay = runs.replay;
+      const { finalTick, lastAppliedSequence } = replay.record;
+      title = `Replay of “${replay.record.root.metadata.title}”`;
+      tag = true;
+      const where = runs.replayPartial
+        ? ` Applying the recorded changes at tick ${host.tick}…`
+        : replay.complete
+          ? ' At the recorded end.'
+          : scheduler.playing
+            ? ' Playing.'
+            : ' Paused.';
+      status = ['tick ', ['count', String(host.tick)], ' of ', ['count', String(finalTick)], ', change ', ['count', String(host.lastAppliedSequence)], ' of ', ['count', String(lastAppliedSequence)], `.${where}`];
+      meter = replay.complete ? 1 : finalTick > 0 ? host.tick / finalTick : lastAppliedSequence > 0 ? host.lastAppliedSequence / lastAppliedSequence : 0;
+      if (replayEnded) {
+        const exactness = runs.replayQualified ? '' : ' This build is not the packaged app, so this is not a qualified exact replay.';
+        check = !replayCheck
+          ? { text: 'Checking against the recorded end…', result: 'pending' }
+          : replayCheck.kind === 'match'
+            ? { text: `Reached the recorded end exactly: state and engine match.${exactness}`, result: 'match' }
+            : replayCheck.kind === 'mismatch'
+              ? { text: `Did not reach the recorded end: the ${[replayCheck.state ? '' : 'state', replayCheck.engine ? '' : 'engine'].filter(Boolean).join(' and ')} differ${!replayCheck.state && !replayCheck.engine ? '' : 's'}.`, result: 'mismatch' }
+              : { text: 'This recording ended on a simulation fault, so it has no end state to check.', result: 'unavailable' };
+      }
+      shown = ['restart', 'return', 'save', 'open'];
+    }
+    const busy = workflow.busy !== null;
+    const signature = JSON.stringify([state, title, tag, status, meter === null ? null : Math.round(meter * 1000), check, shown, busy]);
+    if (signature === runShown) return;
+    runShown = signature;
+    runParts.root.dataset.state = state;
+    runParts.title.textContent = title; // text, never markup: titles come from files
+    runParts.tag.hidden = !tag;
+    runParts.status.replaceChildren(
+      ...status.map((part) => {
+        if (typeof part === 'string') return document.createTextNode(part);
+        const span = document.createElement('span');
+        span.className = part[0];
+        span.textContent = part[1];
+        return span;
+      }),
+    );
+    runParts.meter.hidden = meter === null;
+    if (meter !== null) {
+      runParts.fill.style.width = `${Math.min(100, meter * 100).toFixed(1)}%`;
+      runParts.meter.setAttribute('aria-valuenow', String(Math.round(meter * 100)));
+    }
+    runParts.check.hidden = check === null;
+    runParts.check.textContent = check?.text ?? '';
+    runParts.check.dataset.result = check?.result ?? '';
+    for (const [key, button] of Object.entries(runButtons)) {
+      button.hidden = !shown.includes(key as keyof typeof runButtons);
+      button.disabled = busy;
+    }
+  }
+
+  runButtons.record.addEventListener('click', () => runFile('record'));
+  runButtons.stop.addEventListener('click', () => stopRecording('control'));
+  runButtons.replay.addEventListener('click', enterReplay);
+  runButtons.restart.addEventListener('click', restartReplay);
+  runButtons.return.addEventListener('click', returnToAuthoring);
+  runButtons.save.addEventListener('click', () => runFile('saveRecording'));
+  runButtons.open.addEventListener('click', () => runFile('openRecording'));
+
   // P0 (SPEC §18.2): 10 s warmup, then a 60 s capture with every raw sample kept.
   interface P0Capture {
     run: number;
@@ -1237,6 +1690,19 @@ async function start() {
       explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
       scroll: Object.fromEntries(['panel', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: visualizationState(),
+      run: {
+        state: runParts.root.dataset.state,
+        title: runParts.title.textContent,
+        status: runParts.status.textContent,
+        check: runParts.check.hidden ? null : runParts.check.textContent,
+        meter: runParts.meter.hidden ? null : Number(runParts.meter.getAttribute('aria-valuenow')),
+        box: box(runParts.root),
+        buttons: Object.fromEntries(Object.entries(runButtons).map(([key, b]) => [key, b.hidden ? null : box(b)])),
+        recording: runs.recorder ? { runId: runs.recorder.runId, tick: runs.recorder.tick, count: runs.recorder.count, bytes: runs.recorder.bytes } : null,
+        record: runs.record ? { ...recordSummary(runs.record), exported: runs.exported } : null,
+        replay: runs.replay ? { address: runs.replay.address, complete: runs.replay.complete, partial: runs.replayPartial, check: replayCheck } : null,
+        contexts: runs.counts(),
+      },
       camera: viewport.camera.position.toArray(),
       // World → clip space, so a harness can find where any world point appears.
       viewProjection: viewport.camera.projectionMatrix.clone().multiply(viewport.camera.matrixWorldInverse).elements,
@@ -1280,6 +1746,105 @@ async function start() {
       allEqual: [...reset, ...scriptedReset, ...cadence.flatMap((c) => c.comparison), ...visualization.flatMap((v) => v.comparison), ...observedReset].every((c) => c.equal),
       t08: trailCheck.mismatches === 0 && trailCheck.samples > 0 && contributions.pass,
     });
+  };
+
+  const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  /**
+   * M6A in this runtime (Shift+M), on the finished recording: the linear oracle run twice from the root
+   * and compared at every unit (state and engine bytes) and against the recorded end; then T11's cycles
+   * through the same calls the controls make, counting worlds, contexts and render resources.
+   */
+  const runRunFixtures = async () => {
+    const record = runs.record;
+    if (frozen || replaying() || !record || runs.recordingState !== 'recorded') {
+      report('m6a-fixtures', { error: 'Shift+M needs a finished recording, from authoring' });
+      return;
+    }
+    setPlaying(false, 'fixtures');
+    await nextFrame();
+    const t0 = performance.now();
+    // 1. The oracle against itself and against the recorded end.
+    const a = new LinearReplay(record);
+    const b = new LinearReplay(record);
+    let units = 0;
+    let divergence = replayDivergence(observe(a.host), observe(b.host));
+    while (!divergence && !a.complete) {
+      a.advance();
+      b.advance();
+      units += 1;
+      divergence = replayDivergence(observe(a.host), observe(b.host));
+    }
+    const [stateSha256, engineSha256] = await Promise.all([sha256(JSON.stringify(a.host.futureState())), sha256(a.host.engineSnapshot())]);
+    const end = { address: a.address, complete: a.complete, stateSha256, engineSha256, matchesRecord: record.finalCheck !== null && stateSha256 === record.finalCheck.stateSha256 && engineSha256 === record.finalCheck.engineSha256 };
+    a.dispose();
+    b.dispose();
+    const oracleMs = performance.now() - t0;
+    // 2. T11: replay/return and restart cycles, and imports, through the control paths.
+    const exported = runs.exported;
+    const sample = () => ({ ...runs.counts(), geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, objects: sceneObjects() });
+    const before = sample();
+    resetPeakWorlds();
+    const cycles: ReturnType<typeof sample>[] = [];
+    for (let cycle = 0; cycle < 20; cycle++) {
+      enterReplay();
+      driveReplay(30);
+      await nextFrame();
+      restartReplay();
+      driveReplay(30);
+      await nextFrame();
+      returnToAuthoring();
+      await nextFrame();
+      cycles.push(sample());
+    }
+    enterReplay();
+    const restarts: ReturnType<typeof sample>[] = [];
+    for (let cycle = 0; cycle < 20; cycle++) {
+      driveReplay(40);
+      await nextFrame();
+      restartReplay();
+      await nextFrame();
+      restarts.push(sample());
+    }
+    const text = exportRun(record).text;
+    const imports: { kind: string; during: ReturnType<typeof sample>; after: ReturnType<typeof sample> }[] = [];
+    for (let cycle = 0; cycle < 20; cycle++) {
+      const kind = ['valid', 'invalid', 'canceled', 'unbuildable'][cycle % 4]!;
+      const parsed = parseRun(kind === 'invalid' ? text.replace('"sequence":1,', '"sequence":2,') : text, { fingerprint: SIMULATION_FINGERPRINT, identity });
+      let during = sample();
+      if (parsed.ok && kind !== 'unbuildable') {
+        // The same candidate the Open Recording workflow builds: an unstepped world and its view.
+        const replay = runs.prepareImport(parsed.record);
+        const view = world.prepareScene(parsed.record.root.semantic, true);
+        const candidate = { replay, view, dispose: () => (runs.discardImport(replay), world.discardScene(view)) };
+        during = sample();
+        if (kind === 'valid') {
+          world.discardScene(world.swapScene(candidate.view));
+          runs.commitImport(candidate.replay);
+          showContext('fixture-import');
+        } else candidate.dispose();
+      } else if (parsed.ok) {
+        try {
+          runs.prepareImport({ ...parsed.record, root: { ...parsed.record.root, semantic: { ...parsed.record.root.semantic, simulation: { ...parsed.record.root.semantic.simulation, profile: 'unbuildable' } } } });
+        } catch {
+          // Refused before allocating anything.
+        }
+      }
+      await nextFrame();
+      imports.push({ kind, during, after: sample() });
+    }
+    returnToAuthoring();
+    // The imported copy is the same record read from text; it was never written to a file here.
+    runs.exported = exported;
+    await nextFrame();
+    const after = sample();
+    report('m6a-fixtures', {
+      elapsedMs: Math.round(performance.now() - t0),
+      oracle: { runId: record.runId, units, divergence, end, recorded: record.finalCheck, ms: Math.round(oracleMs) },
+      lifecycle: { before, cycles, restarts, imports, after, peakWorlds: worldCounts().peak },
+      pass: divergence === null && end.matchesRecord && after.worlds === before.worlds && after.geometries === before.geometries && after.objects === before.objects && worldCounts().peak - before.worlds <= 2,
+    });
+    renderPanel();
   };
 
   window.addEventListener('keydown', (event) => {
@@ -1331,6 +1896,9 @@ async function start() {
       case 'D':
         runFixtures().catch((error: unknown) => report('fixtures', { error: String(error) }));
         return;
+      case 'M':
+        runRunFixtures().catch((error: unknown) => report('m6a-fixtures', { error: String(error) }));
+        return;
       case 'G':
         // Dev-only: a 1.5 s main-thread stall exercises the long-gap pause in the real WKWebView.
         if (import.meta.env.DEV) {
@@ -1373,8 +1941,8 @@ async function start() {
   const labelsHost = $('explain-labels');
   const labelSpans = new Map<string, HTMLSpanElement>();
   const projected = new Vector3();
-  const lawLabel = (id: string) => authoring.presentationOf(id).label;
-  const lawColor = (id: string) => authoring.presentationOf(id).color;
+  const lawLabel = (id: string) => lawPresentation(id).label;
+  const lawColor = (id: string) => lawPresentation(id).color;
 
   /** A click picks the body whose projected center is nearest, within its drawn radius or 10 px. */
   const BODY_PICK_PX = 10;
@@ -1487,9 +2055,17 @@ async function start() {
   };
 
   /** What is drawn and recorded, with the bytes of every buffer it owns (SPEC §18.2 resource accounting). */
+  /** Objects in the rendered scene, for the resource readback: a leaked world view would show here. */
+  const sceneObjects = () => {
+    let count = 0;
+    viewport.scene.traverse(() => (count += 1));
+    return count;
+  };
   const visualizationState = () => {
     const bytes = { ...probes.bytes(), ...trails.bytes(), ...explainView.bytes() };
     return {
+      contexts: runs.counts(),
+      render: { geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, objects: sceneObjects() },
       probes: { ...probes.settings, live: probes.live },
       trails: { mode: trails.mode, count: trails.count },
       explained,
@@ -1587,7 +2163,7 @@ async function start() {
 
   const drawLaws = () =>
     world.updateLaws(
-      host.appliedFields().map((field) => ({ field, compiled: host.compiledField(field.id)!, presentation: authoring.presentationOf(field.id) })),
+      host.appliedFields().map((field) => ({ field, compiled: host.compiledField(field.id)!, presentation: lawPresentation(field.id) })),
       {
         selectedId: interaction.selectedId,
         preview: interaction.previewField(),
@@ -1595,6 +2171,7 @@ async function start() {
         arrows: authoring.arrows,
         onlySelectedArrows: arrowScope === 'selected',
         handles: (() => {
+          if (replaying()) return null;
           const shown = interaction.handles();
           return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;
         })(),
@@ -1636,26 +2213,33 @@ async function start() {
         notePlaying(false, 'gap');
         interaction.cancel('gap');
       }
-      host.settleBoundary();
-      absorb();
       stepsThisFrame = 0;
       frameMaxStepMs = 0;
-      for (let i = 0; i < advance.steps; i++) {
-        try {
-          timedStep();
-          stepsThisFrame += 1;
-          frameMaxStepMs = Math.max(frameMaxStepMs, stepTimes[stepTimes.length - 1]!);
-        } catch (error) {
-          onFault(error);
-          break;
+      if (replaying()) {
+        // Only the selected context advances (SPEC §13.2): the authoring world waits, untouched.
+        stepsThisFrame = driveReplay(scheduler.playing ? advance.steps : 0);
+      } else {
+        settleNow();
+        for (let i = 0; i < advance.steps; i++) {
+          // A recording closed at a limit holds the world until the stop is resolved (SPEC §13.3).
+          if (host.halted) break;
+          try {
+            timedStep();
+            stepsThisFrame += 1;
+            frameMaxStepMs = Math.max(frameMaxStepMs, stepTimes[stepTimes.length - 1]!);
+          } catch (error) {
+            onFault(error);
+            break;
+          }
         }
+        absorb();
       }
-      absorb();
       world.updateBodies(host);
       interaction.syncProxy();
       drawLaws();
       updateExplanation();
       syncControls();
+      renderRun();
       if (host.tick !== clockTick) {
         clockTick = host.tick;
         clock.textContent = `tick ${host.tick} · ${(host.tick * STEP_SECONDS).toFixed(3)} s`;
@@ -1737,6 +2321,7 @@ async function start() {
       `step ${ms(percentile(s, 0.95))} p95 (field ${ms(host.lastFieldMs)} · engine ${ms(host.lastEngineMs)}) · edit ${e.length ? ms(percentile(e, 0.95)) : '—'} p95 ms`,
       `frame ${ms(percentile(i, 0.5))} p50 · ${ms(percentile(i, 0.95))} p95 · work ${ms(percentile(w, 0.95))} p95 · stalls ${stalls} · probes ${probes.settings.enabled ? probes.live : 'off'} · trails ${trails.mode === 'off' ? 'off' : trails.count}`,
       `document gen ${authoring.generation} rev ${authoring.revision} (applied ${authoring.appliedRevision}, stored ${workflow.stored ?? '—'}) · recovery capture ${captures.length ? `${ms(Math.max(...captures))} ms max` : '—'}`,
+      `context ${runs.selected} · recording ${runs.recordingState} · worlds ${worldCounts().allocated} · cursor ${host.lastAppliedSequence}`,
       `DPR ${window.devicePixelRatio} → ${renderer.getPixelRatio()} (cap ${MAX_PIXEL_RATIO}) · ${window.innerWidth}×${window.innerHeight} css · ${canvas.width}×${canvas.height} px · GPU errors ${gpuErrors.length}`,
       p0 ? `P0 run ${p0.run} ${p0.phase} ${Math.floor((performance.now() - p0.phaseStart) / 1000)} s${p0.invalid ? ` · invalid: ${p0.invalid}` : ''}` : '',
     ]

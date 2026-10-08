@@ -83,10 +83,19 @@ export interface PreparedScene {
 }
 
 export interface WorldView {
-  /** Builds a loaded scene's view without touching the displayed one; this is the step that can fail. */
-  prepareScene(root: SceneDefinition): PreparedScene;
+  /**
+   * Builds a loaded scene's view without touching the displayed one; this is the step that can fail.
+   * `own` gives it body instances of its own even at the displayed capacity, as a view kept beside
+   * another (a replay context's) must have.
+   */
+  prepareScene(root: SceneDefinition, own?: boolean): PreparedScene;
   /** Displays a prepared scene and releases the one it replaces. */
   showScene(prepared: PreparedScene): void;
+  /**
+   * Displays a prepared scene and returns the displaced one unreleased, so a retained context's view
+   * can be shown again (SPEC §13.2). The caller releases or keeps what it gets back.
+   */
+  swapScene(prepared: PreparedScene): PreparedScene;
   /** Releases a prepared scene that will not be shown. */
   discardScene(prepared: PreparedScene): void;
   updateBodies(host: SimulationHost): void;
@@ -191,7 +200,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   let fixed = new Group();
   let bodies: InstancedMesh | null = null;
 
-  function prepareScene(next: SceneDefinition): PreparedScene {
+  function prepareScene(next: SceneDefinition, own = false): PreparedScene {
     const built = new Group();
     for (const body of next.bodies) {
       if (body.type !== 'fixed') continue;
@@ -232,7 +241,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     }
 
     const capacity = next.simulation.maxLiveBodies;
-    if (bodies && bodies.instanceMatrix.count === capacity) return { fixed: built, bodies: null };
+    if (!own && bodies && bodies.instanceMatrix.count === capacity) return { fixed: built, bodies: null };
     const fresh = new InstancedMesh(sphereGeometry, new MeshStandardNodeMaterial({ color: tokenColor('--body'), roughness: 0.45, metalness: 0.05 }), capacity);
     fresh.castShadow = true;
     fresh.frustumCulled = false;
@@ -253,6 +262,20 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       scene.add(bodies);
     }
     bodies!.count = 0;
+  }
+
+  function swapScene(prepared: PreparedScene): PreparedScene {
+    scene.remove(fixed);
+    const displaced: PreparedScene = { fixed, bodies: prepared.bodies ? bodies : null };
+    fixed = prepared.fixed;
+    scene.add(fixed);
+    if (prepared.bodies) {
+      if (bodies) scene.remove(bodies);
+      bodies = prepared.bodies;
+      scene.add(bodies);
+    }
+    bodies!.count = 0;
+    return displaced;
   }
 
   function discardScene(prepared: PreparedScene): void {
@@ -506,6 +529,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   return {
     prepareScene,
     showScene,
+    swapScene,
     discardScene,
 
     updateBodies(host) {

@@ -22,6 +22,10 @@
   --trail-selected: #d8d3ca;
   /* The physical acceleration limiter, when it scales a step. */
   --caution: #d9a35b;
+  /* A recording in progress: its dot and its limit meter only, kept apart from errors. */
+  --recording: #e07a68;
+  /* The replay context's frame: lavender marks the recorded past, as teal marks what you edit. */
+  --replay-edge: rgb(197 138 229 / 0.55);
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --serif: ui-serif, "New York", Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
@@ -1176,4 +1180,136 @@ button.primary {
 
 #explain-labels span[data-key="velocity"] {
   color: var(--text-secondary);
+}
+
+/* M6A recording and replay: bottom left, on the transport's baseline, below the Scene panel's fold
+   (which ends 150 px above the bottom), so the panel and its controls never move. */
+#run {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(440px, calc(100vw - 474px));
+  padding: 8px 10px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: rgb(33 31 28 / 0.88);
+}
+
+#run[hidden],
+#run [hidden] {
+  display: none;
+}
+
+#run[data-state="replay"] {
+  border-color: var(--replay-edge);
+}
+
+.run-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+#run-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* The one display moment: which experiment you are looking at. */
+#run[data-state="replay"] #run-title {
+  font: 15px/1.25 var(--serif);
+  color: var(--lavender);
+}
+
+#run-tag {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+#run-status {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+#run-status .count {
+  font: 11px var(--mono);
+  color: var(--text);
+}
+
+#run-status .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--recording);
+  vertical-align: 1px;
+}
+
+#run-meter {
+  height: 2px;
+  margin: 6px 0 2px;
+  border-radius: 1px;
+  background: var(--hairline);
+  overflow: hidden;
+}
+
+#run-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--recording);
+}
+
+#run[data-state="replay"] #run-fill {
+  background: var(--lavender);
+}
+
+#run-check {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+#run-check[data-result="match"] {
+  color: var(--teal);
+}
+
+#run-check[data-result="mismatch"] {
+  color: var(--danger);
+}
+
+.run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+#run-stop {
+  color: var(--text);
+  border-color: var(--recording);
+}
+
+#run-return {
+  color: var(--text);
+  background: var(--raised);
+  border-color: var(--teal);
+}
+
+/* Replay is read-only: semantic controls stay readable but take no input. */
+body[data-context="replay"] #details,
+body[data-context="replay"] #law-shelf {
+  opacity: 0.62;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #run-fill {
+    transition: none;
+  }
 }

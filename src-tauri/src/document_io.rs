@@ -17,6 +17,16 @@ use serde::Serialize;
 
 /// SPEC §15.2 scene file limit.
 pub const SCENE_LIMIT: u64 = 5 * 1024 * 1024;
+/// SPEC §15.2 run file limit: the complete recording, 16 MiB.
+pub const RUN_LIMIT: u64 = 16 * 1024 * 1024;
+
+/// What a dialog-issued destination holds. A token serves only its own kind, so a scene's destination
+/// can never receive a recording, or the reverse (SPEC §15.3: the app never confuses the two).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Kind {
+    Scene,
+    Run,
+}
 
 /// A failed file operation, reported distinctly by kind and by the stage that failed.
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -59,18 +69,19 @@ fn classify(error: &io::Error) -> &'static str {
 #[derive(Default)]
 pub struct Destinations {
     next: AtomicU64,
-    paths: Mutex<HashMap<u64, PathBuf>>,
+    paths: Mutex<HashMap<u64, (Kind, PathBuf)>>,
 }
 
 impl Destinations {
-    pub fn issue(&self, path: PathBuf) -> u64 {
+    pub fn issue(&self, path: PathBuf, kind: Kind) -> u64 {
         let token = self.next.fetch_add(1, Ordering::Relaxed) + 1;
-        self.paths.lock().unwrap().insert(token, path);
+        self.paths.lock().unwrap().insert(token, (kind, path));
         token
     }
 
-    pub fn path(&self, token: u64) -> Option<PathBuf> {
-        self.paths.lock().unwrap().get(&token).cloned()
+    /// The path behind a token of `kind`; none for an unknown token or one issued for the other kind.
+    pub fn path(&self, token: u64, kind: Kind) -> Option<PathBuf> {
+        self.paths.lock().unwrap().get(&token).filter(|(k, _)| *k == kind).map(|(_, p)| p.clone())
     }
 }
 
@@ -82,6 +93,11 @@ pub fn display_name(path: &Path) -> String {
 /// Scene files keep the explicit `.lawsmith.json` suffix (SPEC §15.3).
 pub fn is_scene_name(name: &str) -> bool {
     name.len() > ".lawsmith.json".len() && name.ends_with(".lawsmith.json")
+}
+
+/// Recordings keep the explicit `.lawsmith-run.json` suffix (SPEC §15.1).
+pub fn is_run_name(name: &str) -> bool {
+    name.len() > ".lawsmith-run.json".len() && name.ends_with(".lawsmith-run.json")
 }
 
 /// Reads a regular file as strict UTF-8, enforcing `limit` before and during the read, so a file
@@ -304,11 +320,43 @@ pub(crate) mod tests {
     #[test]
     fn tokens_are_opaque_and_session_local() {
         let destinations = Destinations::default();
-        let a = destinations.issue(PathBuf::from("/tmp/a.lawsmith.json"));
-        let b = destinations.issue(PathBuf::from("/tmp/b.lawsmith.json"));
+        let a = destinations.issue(PathBuf::from("/tmp/a.lawsmith.json"), Kind::Scene);
+        let b = destinations.issue(PathBuf::from("/tmp/b.lawsmith.json"), Kind::Scene);
         assert_ne!(a, b);
-        assert_eq!(destinations.path(a).unwrap(), PathBuf::from("/tmp/a.lawsmith.json"));
-        assert!(destinations.path(999).is_none());
+        assert_eq!(destinations.path(a, Kind::Scene).unwrap(), PathBuf::from("/tmp/a.lawsmith.json"));
+        assert!(destinations.path(999, Kind::Scene).is_none());
         assert_eq!(display_name(Path::new("/x/y/scene.lawsmith.json")), "scene.lawsmith.json");
+    }
+
+    #[test]
+    fn a_token_serves_only_its_own_kind() {
+        let destinations = Destinations::default();
+        let scene = destinations.issue(PathBuf::from("/tmp/a.lawsmith.json"), Kind::Scene);
+        let run = destinations.issue(PathBuf::from("/tmp/a.lawsmith-run.json"), Kind::Run);
+        assert!(destinations.path(scene, Kind::Run).is_none());
+        assert!(destinations.path(run, Kind::Scene).is_none());
+        assert_eq!(destinations.path(run, Kind::Run).unwrap(), PathBuf::from("/tmp/a.lawsmith-run.json"));
+    }
+
+    #[test]
+    fn run_names_keep_their_suffix_and_never_pass_as_scenes() {
+        assert!(is_run_name("Storm bottle recording.lawsmith-run.json"));
+        assert!(!is_run_name(".lawsmith-run.json"));
+        assert!(!is_run_name("storm.lawsmith.json"));
+        assert!(!is_run_name("storm.json"));
+        assert!(!is_scene_name("storm.lawsmith-run.json"));
+    }
+
+    #[test]
+    fn a_run_reads_to_its_own_limit() {
+        let dir = scratch("run-limit");
+        let at_limit = dir.join("full.lawsmith-run.json");
+        fs::write(&at_limit, vec![b' '; RUN_LIMIT as usize]).unwrap();
+        assert_eq!(read_bounded_utf8(&at_limit, RUN_LIMIT).unwrap().len() as u64, RUN_LIMIT);
+        let over = dir.join("over.lawsmith-run.json");
+        fs::write(&over, vec![b' '; RUN_LIMIT as usize + 1]).unwrap();
+        assert_eq!(read_bounded_utf8(&over, RUN_LIMIT).unwrap_err().kind, "too-large");
+        // The scene limit stays the scene's.
+        assert_eq!(read_bounded_utf8(&at_limit, SCENE_LIMIT).unwrap_err().kind, "too-large");
     }
 }
