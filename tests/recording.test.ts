@@ -429,6 +429,8 @@ describe('T09 boundary fixtures (AC3, AC4)', () => {
       const before = replay.address;
       const result = s.coordinator.advanceReplay(1, deadline, now);
       calls += 1;
+      // The one-look check the loop relies on agrees with the full count at every address.
+      expect(replay.hasUnsettled).toBe(replay.unsettled > 0);
       if (result.partial) {
         partials += 1;
         // Mid-batch: still at tick 12, never past it, and the boundary is not reported settled.

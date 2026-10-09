@@ -26,7 +26,13 @@ export class LinearReplay {
     return { tick: this.host.tick, cursor: this.host.lastAppliedSequence };
   }
 
-  /** Included commands at the current boundary that are not applied yet. */
+  /** Whether an included command at the current boundary is not applied yet: one look, whatever the batch's size. */
+  get hasUnsettled(): boolean {
+    const command = this.record.commands[this.next];
+    return command !== undefined && command.atTick === this.host.tick;
+  }
+
+  /** How many included commands at the current boundary are not applied yet; it scans them, so it is for reporting. */
   get unsettled(): number {
     const { commands } = this.record;
     let n = 0;
@@ -48,12 +54,12 @@ export class LinearReplay {
       this.host.applyRecorded(command);
       this.next += 1;
     }
-    return this.unsettled === 0;
+    return !this.hasUnsettled;
   }
 
   /** The transition n → n+1: only from a settled boundary, and only below the final tick. */
   step(): void {
-    if (this.unsettled) throw new Error(`tick ${this.host.tick} still has ${this.unsettled} recorded commands to apply`);
+    if (this.hasUnsettled) throw new Error(`tick ${this.host.tick} still has ${this.unsettled} recorded commands to apply`);
     if (this.host.tick >= this.record.finalTick) throw new Error(`the recording ends at tick ${this.record.finalTick}`);
     this.host.step();
   }
@@ -64,7 +70,7 @@ export class LinearReplay {
    * True when the unit finished (the boundary is settled).
    */
   advance(limit = Infinity): boolean {
-    if (this.unsettled === 0) {
+    if (!this.hasUnsettled) {
       if (this.complete) return true;
       this.step();
     }

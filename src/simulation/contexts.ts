@@ -239,21 +239,21 @@ export class RunCoordinator {
         if (remaining === 0) return { complete: false, partial: false };
         remaining -= 1;
         this.unitOpen = true;
-        if (replay.unsettled === 0) {
+        if (!replay.hasUnsettled) {
           replay.step();
           stepped?.();
         }
       }
       do replay.settle(CHUNK);
-      while (replay.unsettled > 0 && now() < deadline);
-      if (replay.unsettled > 0) return { complete: false, partial: true };
+      while (replay.hasUnsettled && now() < deadline);
+      if (replay.hasUnsettled) return { complete: false, partial: true };
       this.unitOpen = false;
     }
   }
 
   /** True while a replay unit's boundary is only partly settled: its address is not a recorded state to show as final. */
   get replayPartial(): boolean {
-    return this.unitOpen && (this.replay?.unsettled ?? 0) > 0;
+    return this.unitOpen && (this.replay?.hasUnsettled ?? false);
   }
 
   /** At the frozen endpoint: the replay's state and engine digests against the recorded final check. */
