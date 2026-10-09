@@ -209,6 +209,9 @@ describe('strict reading: a precise refusal, never a partly accepted run (SPEC Â
     expect(refusal(mutated(r, (j) => (j.lastAppliedSequence = (j.lastAppliedSequence as number) - 1)))).toMatchObject({ path: 'lastAppliedSequence' });
     expect(refusal(mutated(r, (j) => (j.finalTick = 5))).path).toMatch(/^commands\[\d+\]\.atTick$/);
     expect(refusal(mutated(r, (j) => (j.stopped = 'tired'))).path).toBe('stopped');
+    // A limit's stop reason must agree with the endpoint that limit produces.
+    expect(refusal(mutated(r, (j) => (j.stopped = 'duration')))).toMatchObject({ path: 'stopped', reason: expect.stringContaining('tick 7200') });
+    expect(refusal(mutated(r, (j) => (j.stopped = 'commands')))).toMatchObject({ path: 'stopped', reason: expect.stringContaining('50000 commands') });
     expect(refusal(mutated(r, (j) => delete j.finalCheck))).toMatchObject({ path: 'finalCheck', reason: 'is required' });
     expect(refusal(mutated(r, (j) => (j.stopped = 'fault')))).toMatchObject({ path: 'finalCheck' });
     expect(refusal(mutated(r, (j) => ((j.finalCheck as Record<string, string>).stateSha256 = 'ABC'))).path).toBe('finalCheck.stateSha256');

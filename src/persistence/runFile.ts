@@ -384,6 +384,7 @@ export function parseRun(text: string, expected: RunExpectations): RunParse {
     const lastAppliedSequence = integer(o.lastAppliedSequence, 'lastAppliedSequence', 0, RUN_LIMITS.commands);
     if (typeof o.stopped !== 'string' || !STOP_REASONS.includes(o.stopped as StopReason)) throw new ImportError('stopped', `must be one of ${STOP_REASONS.map((r) => JSON.stringify(r)).join(', ')}`);
     const stopped = o.stopped as StopReason;
+    if (stopped === 'duration' && finalTick !== RUN_LIMITS.ticks) throw new ImportError('stopped', `a recording stopped at its duration limit ends at tick ${RUN_LIMITS.ticks}`);
     let finalCheck: FinalCheck | null = null;
     if (o.finalCheck !== undefined) {
       const c = object(o.finalCheck, 'finalCheck', ['engineSha256', 'stateSha256']);
@@ -394,6 +395,7 @@ export function parseRun(text: string, expected: RunExpectations): RunParse {
     const commands = readCommands(o.commands, 'commands', root, finalTick);
     const last = commands.length ? commands[commands.length - 1]!.sequence : 0;
     if (lastAppliedSequence !== last) throw new ImportError('lastAppliedSequence', `must be ${last}, the last included sequence`);
+    if (stopped === 'commands' && commands.length !== RUN_LIMITS.commands) throw new ImportError('stopped', `a recording stopped at its command limit holds ${RUN_LIMITS.commands} commands`);
     // Every object here is new, built by this reader: freezing in place is enough, no copy of the log.
     const record: RunRecord = deepFreeze({
       format: RUN_FORMAT,
