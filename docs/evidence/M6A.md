@@ -1,6 +1,6 @@
 # M6A qualification record
 
-**Status:** IMPLEMENTED / REVIEW PENDING. The acceptance review of `6903cf4` required remediation (Review): three medium findings at a recording's count/byte limit and in the replay guard's wording, one test gap and eleven suggestions. Every one is resolved on `m6a`, with two owner decisions after the review: the identity stays as it is, and a recording now carries the names of laws it creates (run schema 2). Every headless check passes on `2c79d2d`. Those changes are application code, so the native results below are `6903cf4`'s; re-qualifying the packaged `2c79d2d` is pending, as is the owner's inspection of the playback controls (Owner checks). M6A is not accepted.
+**Status:** ACCEPTED by the owner on 2026-10-08, on the acceptance review and its remediation (Review), and merged to `main`. The accepted code is `2c79d2d`: every finding fixed, with two owner decisions after the review (the identity stays as it is, and a recording carries the names of laws it creates, run schema 2), and every headless check passing. By the owner's decision, two checks did not run before acceptance. The first is the native re-qualification of `2c79d2d`: one attempt was stopped by the guard before its first click, and the native results below are `6903cf4`'s. The second is the owner's inspection of the playback controls. The native re-run carries into M6B's first native window (Owner checks).
 **Candidate:** branch `m6a`, application code at commit `2c79d2d` (the reviewed code `6903cf4` with the review's fixes and the owner's follow-up). Every native result below ran on the packaged app built from `6903cf4` at 14:29:12 on 2026-10-08 (Evidence provenance); none has run on `2c79d2d` yet. Base: `1796676f89cd8033252619b1540d88484c0209ce` (M5 accepted and merged, on `main`, unchanged throughout).
 **Scope:** M6A only. **M6B NOT STARTED.**
 
@@ -390,11 +390,11 @@ Two facts came up along the way:
 - **Rapier's WASM reads `performance` from `window` whenever a `window` global exists.** A stand-in window without it made every later step panic (`unreachable`) and broke the instance for the rest of the test file. Only tests are affected, since the app has a real window. `AGENTS.md` now lists it among the stack facts.
 - **The pinned three.js `TransformControls.pointerUp(null)` dispatches only `mouseUp`.** So a release at a limit sends no trailing sample.
 
-**Independent review:** GPT-6.1 Sol, as ORCHESTRATION assigns. PENDING; whether it still runs after the acceptance review above is the owner's call.
+**Independent review:** GPT-6.1 Sol's review did not run. The owner accepted M6A on the acceptance review above.
 
 ## Owner checks
 
-- **The playback controls, inspected by someone who did not implement them** (MILESTONES M6A Visual QA). PENDING. Steps:
+- **The playback controls, inspected by someone who did not implement them** (MILESTONES M6A Visual QA). Not run before acceptance, by the owner's decision; optional now, and any wording change is a small follow-up. Steps:
   1. Open `Lawsmith.app` (packaged `6903cf4`).
   2. Open `examples/storm-bottle.lawsmith.json` (or any scene).
   3. Press **Record from tick 0**, drag the bottle into the stream for a few seconds, turn it off and on in the Laws list, press **Stop recording**.
@@ -403,7 +403,7 @@ Two facts came up along the way:
   6. Judge whether each label says what it does. Can you always tell which experiment you are looking at (your scene, or the replay of the recording)? Is it clear that replay is read-only, and that **Save recording…** saves the recording and not the scene?
 
   Note anything ambiguous; any wording change is a small follow-up. From replay, the close guard's scene alert now reads "Do you want to save your main authored scene “…”?" with Save Main Scene (Review, F3); include it.
-- **Native re-qualification of the remediated candidate** (`2c79d2d`). PENDING. It needs an agreed hands-off window. Steps:
+- **Native re-qualification of the remediated candidate** (`2c79d2d`). Not run before acceptance, by the owner's decision. It carries into M6B's first native window: on M6B's own build, run `m6a-legible`, `m6a-record`, `m6a-guard` and `m6a-pace`, which also covers M6A's run format and its replay as M6B's regression. Steps as written for `2c79d2d`:
   1. `npm run build` and `npx tauri build --bundles app` from `2c79d2d`. Record the bundle and binary hashes, and confirm the fault strings are absent from `dist/assets`.
   2. Run `m6a-legible`, `m6a-record`, `m6a-guard` (it now answers the from-replay scene alert by Save Main Scene, and checks that a replay names a law its recording created) and `m6a-pace`, then the M1–M5 regression chain, each counted run on that one build.
   3. Replace the native sections of this record with those runs.
