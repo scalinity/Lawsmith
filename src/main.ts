@@ -1533,7 +1533,8 @@ async function start() {
    * Resolves when this request ends; null when there was nothing to do.
    */
   const requestSeek = (target: Address, reason: string): Promise<SeekOutcome | null> => {
-    if (frozen || !replaying() || !runs.replay) return Promise.resolve(null);
+    // Not while a file workflow runs: its candidate world and a seek's must never coexist.
+    if (frozen || workflow.busy !== null || !replaying() || !runs.replay) return Promise.resolve(null);
     setPlaying(false, 'seek');
     const previous = pendingSeek;
     let job: SeekJob | null;

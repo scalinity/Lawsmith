@@ -732,6 +732,9 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
    */
   private async replaceRun(chosen: RunRecord, source: { token: number; name: string }, timing: { readMs: number; parseMs: number; bytes: number }): Promise<boolean> {
     let record = chosen;
+    // Quiet again after the panel's wait, as a scene replacement is: nothing that began meanwhile (a seek's
+    // offscreen world) may coexist with the candidate.
+    this.app.quiesce('open-recording');
     const start = this.app.now();
     let candidate: R;
     try {

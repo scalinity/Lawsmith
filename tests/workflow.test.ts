@@ -1064,6 +1064,27 @@ describe('transactional Open Recording (SPEC §15.2; AC6, AC10)', () => {
     expect(t.runs.counts()).toMatchObject({ candidates: 0, replay: 1 });
   });
 
+  it('quiets the app again once the panel returns, before the candidate is built, so no seek world can sit beside it', async () => {
+    const t = await withRecording();
+    t.io.runChooseQueue.push('a.lawsmith-run.json');
+    await t.workflow.saveRecording();
+    let atPanel = -1;
+    let atCandidate = -1;
+    const open = t.io.openRun.bind(t.io);
+    t.io.openRun = async () => {
+      atPanel = t.quiesced.length;
+      return open();
+    };
+    const prepare = t.runs.prepareImport.bind(t.runs);
+    t.runs.prepareImport = (record) => {
+      atCandidate = t.quiesced.length;
+      return prepare(record);
+    };
+    t.io.runOpenQueue.push(runOpened(t.io, 'a.lawsmith-run.json', t.io.disk.get('a.lawsmith-run.json')!));
+    expect(await t.workflow.openRecording()).toBe(true);
+    expect(t.quiesced.slice(atPanel, atCandidate)).toEqual(['open-recording']);
+  });
+
   it('invalid, incompatible, scene-shaped and unbuildable files change nothing, from authoring or from replay', async () => {
     const t = await withRecording();
     const valid = runText(t.record);
