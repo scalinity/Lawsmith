@@ -1267,15 +1267,16 @@ async function start() {
 
   /**
    * Shows the coordinator's displayed world, paused, with scheduling debt discarded and every view of the
-   * previous world cleared: the explained body, the ingredient focus, the readouts' signatures, the end
-   * check, a selection the new world does not hold, and a fault that belonged to another world.
+   * previous world cleared: the ingredient focus, the readouts' signatures, the end check, a selection the
+   * new world does not hold, and a fault that belonged to another world. The explained body is `keep` if
+   * the new world holds a body with that stable ID, otherwise none; its explanation starts with the next step.
    */
-  const showWorld = (reason: string) => {
+  const showWorld = (reason: string, keep: string | null = null) => {
     setPlaying(false, reason);
     scheduler.pause();
     host = runs.shown;
-    explained = null;
-    host.explain(null);
+    explained = keep !== null && host.ids.includes(keep) ? keep : null;
+    host.explain(explained);
     ingredientPanel.reset();
     listSignature = '';
     detailsSignature = '';
@@ -1590,7 +1591,8 @@ async function start() {
    */
   const seekCommitted = (pending: PendingSeek) => {
     pendingSeek = null;
-    showWorld('seek');
+    // The same experiment at another time: the explained body stays explained if it lives there.
+    showWorld('seek', explained);
     seekedTrails = true;
     endSeek(pending, 'committed', { address: runs.replay!.address, generation: host.generation });
     renderPanel();
@@ -1679,7 +1681,7 @@ async function start() {
               ? ' Playing.'
               : ' Paused.';
       // A seek's world has no trail history: trails start again at its address rather than pretend to reach back.
-      const trailNote = seekedTrails && !seek && trails.mode !== 'off' ? ' Trails start again from here.' : '';
+      const trailNote = seekedTrails && !seek && (trails.mode === 'all' || (trails.mode === 'selected' && explained !== null)) ? ' Trails start again from here.' : '';
       status = ['tick ', ['count', String(host.tick)], ' of ', ['count', String(finalTick)], ', change ', ['count', String(host.lastAppliedSequence)], ' of ', ['count', String(lastAppliedSequence)], `.${where}${trailNote}`];
       timeline = { value: seek ? seek.job.target.tick : host.tick, max: finalTick };
       if (replayEnded) {
