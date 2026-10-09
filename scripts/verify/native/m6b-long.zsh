@@ -1,9 +1,9 @@
 # M6B long reconstructions in the packaged app (MILESTONES M6B Visual QA and performance gate; AC5, AC7,
 # AC8): the P1 workshop at a 1600×1000 CSS viewport under More Space, recorded while a law is dragged until
-# the 60 s limit closes it. In its replay an uncached seek to the end shows its progress and Cancel seek
-# after 100 ms, and Cancel leaves the displayed replay exactly as it was. Another uncached seek is left
-# pending while Return to authoring is pressed: it never commits, and the retained authoring world's
-# digests are those it had when the replay began. In a new replay, a scrub across the timeline makes newer
+# the 60 s limit closes it. In its replay an uncached seek to the end is left pending while Return to
+# authoring is pressed: it never commits, and the retained authoring world's digests are those it had when
+# the replay began. In a new replay a long seek shows its progress and Cancel seek after 100 ms, and Cancel
+# leaves the displayed replay exactly as it was. Then a scrub across the timeline makes newer
 # requests supersede older ones: each commit is the newest request, and the last is shown. Then, with
 # screen recording off, the app's M6B fixtures
 # (Shift+C) on this recording: every target against the checkpoint-free oracle, cached seek latency
@@ -83,7 +83,9 @@ expect recording "the P1 recording closed itself at exactly 60 s" "e['action']==
 run_id=${$(field recording runId)//\"/}
 final_tick=$(field recording finalTick)
 
-segment "an uncached seek shows progress and is canceled; another is left pending at Return to authoring"
+# Return first, on an empty cache: a full reconstruction (about 5 s) is still pending when Return lands. A
+# canceled seek keeps the checkpoints it passed, so the later cancel case starts from one of them.
+segment "a seek left pending at Return to authoring; another canceled once its progress shows"
 n=$(count context)
 lives=$(count context-live)
 press_expect run-replay context
@@ -93,17 +95,7 @@ wait_log context-live $(( lives + 1 )) 5
 live_at_entry=$(logq last $APP_LOG context-live)
 record_start m6b-long 100
 seek_click $final_tick
-progress_shown
-expect layout "seeking: the status names the requested tick and its progress, the replay still shows tick 0" "'Seeking to tick $final_tick' in e['run']['status'] and '%' in e['run']['status'] and e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==1"
-shot long-01-progress
-press_expect run-cancel seek
-expect seek "Cancel seek ended it, with its progress shown after 100 ms" "e['action']=='canceled' and e['reason']=='cancel' and e['progressShownAfterMs'] >= 100 and e['source']['kind']=='root'"
-layout
-expect layout "after Cancel: the same replay at tick 0, no seek world, the timeline back at 0" "e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==0 and e['run']['contexts']['worlds']==2 and e['run']['timeline']['value']==0 and e['run']['seeking'] is None"
-shot long-02-canceled
-seek_click $(( final_tick * 9 / 10 ))
 pending_id=$(field seek id)
-progress_shown
 n=$(count context)
 press_expect run-return context
 wait_log context $(( n + 1 )) 10
@@ -120,12 +112,21 @@ print('PASS' if same else 'FAIL', {k: (entry[k], back[k]) for k in ('tick', 'cur
 " "$(logq last $APP_LOG context-live)" | read result rest
 say "$result  [context-live] the retained authoring world is exactly as it was when the replay began: $rest"
 [[ $result == PASS ]] || fail "the retained authoring world changed"
-shot long-03-returned
-
-segment "scrub the P1 replay: newer requests supersede older ones"
+shot long-01-returned
 n=$(count context)
 press_expect run-replay context
 wait_log context $(( n + 1 )) 10
+seek_click $final_tick
+progress_shown
+expect layout "seeking: the status names the requested tick and its progress, the replay still shows tick 0" "'Seeking to tick $final_tick' in e['run']['status'] and '%' in e['run']['status'] and e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==1"
+shot long-02-progress
+press_expect run-cancel seek
+expect seek "Cancel seek ended it, with its progress shown after 100 ms" "e['action']=='canceled' and e['reason']=='cancel' and e['progressShownAfterMs'] >= 100"
+layout
+expect layout "after Cancel: the same replay at tick 0, no seek world, the timeline back at 0" "e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==0 and e['run']['contexts']['worlds']==2 and e['run']['timeline']['value']==0 and e['run']['seeking'] is None"
+shot long-03-canceled
+
+segment "scrub the P1 replay: newer requests supersede older ones"
 # Every 240th tick cached first, so each request of the scrub is a cached seek of 100 ms or more.
 seek_click $final_tick
 deadline=$(( EPOCHREALTIME + 60 ))
