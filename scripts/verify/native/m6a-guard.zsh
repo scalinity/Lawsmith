@@ -125,7 +125,8 @@ shot guard-03-imports
 segment "Quit from replay saves the main authored scene, never the replay"
 activate
 keys kd:cmd t:q ku:cmd
-alert_for scene "Save"
+# From replay the scene's alert names the main authored scene (SPEC §15.3).
+alert_for scene "Save Main Scene"
 wait_exit
 python3 -I - $SCENES/m6a-lab.lawsmith.json <<'EOF' | tee -a $QA_OUT/qa-steps.log
 import json, sys

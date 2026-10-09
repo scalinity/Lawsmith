@@ -126,8 +126,11 @@ class FakeIo implements DocumentIo {
     for (const slot of this.earlier) this.recovery[slot] = null;
     this.earlier.clear();
   }
-  async askUnsaved(title: string) {
+  /** Whether each scene question was asked from replay, naming the main authored scene. */
+  askedInReplay: boolean[] = [];
+  async askUnsaved(title: string, replay: boolean) {
     this.asked.push(title);
+    this.askedInReplay.push(replay);
     this.questions.push('scene');
     return this.askQueue.shift() ?? 'cancel';
   }
@@ -1138,6 +1141,12 @@ describe('the guard protects two artifacts, transactionally (SPEC §15.3; AC9)',
     b.io.recordingAskQueue.push('cancel');
     expect(await b.workflow.requestExit('close')).toBe(false);
     expect(b.io.questions).toEqual(['recording']);
+    // From replay the scene question names the main authored scene; from authoring it does not.
+    b.io.recordingAskQueue.push('discard');
+    b.io.askQueue.push('cancel');
+    expect(await b.workflow.requestExit('close')).toBe(false);
+    expect(b.io.questions).toEqual(['recording', 'recording', 'scene']);
+    expect([a.io.askedInReplay, b.io.askedInReplay]).toEqual([[false, false], [true]]);
   });
 
   it('Save main scene → Cancel recording: the scene stays saved, the recording kept unsaved, nothing closed', async () => {

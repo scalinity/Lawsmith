@@ -28,7 +28,11 @@ export interface DocumentIo {
   recoveryDiscard(generation: number): Promise<void>;
   /** Deletes only the snapshots an earlier session left. */
   recoveryDiscardEarlier(): Promise<void>;
-  askUnsaved(title: string): Promise<'save' | 'discard' | 'cancel'>;
+  /**
+   * The guard's question for the main authored scene: Save, Don't Save or Cancel. From replay it names
+   * the main authored scene explicitly, since the replay on screen is not part of it (SPEC §15.3).
+   */
+  askUnsaved(title: string, replay: boolean): Promise<'save' | 'discard' | 'cancel'>;
   /** Recordings (SPEC §15.3): the same narrow path with the `.lawsmith-run.json` kind and its 16 MiB bound. */
   openRun(): Promise<OpenOutcome>;
   readRun(token: number): Promise<{ text: string; readMs: number }>;
@@ -50,7 +54,7 @@ export const nativeIo: DocumentIo = {
   recoveryCurrentValid: () => invoke('recovery_current_valid'),
   recoveryDiscard: (generation) => invoke('recovery_discard', { generation }),
   recoveryDiscardEarlier: () => invoke('recovery_discard_earlier'),
-  askUnsaved: (title) => invoke('ask_unsaved', { title }),
+  askUnsaved: (title, replay) => invoke('ask_unsaved', { title, replay }),
   openRun: () => invoke('open_run'),
   readRun: (token) => invoke('read_run', { token }),
   chooseRunDestination: (suggestedName) => invoke('choose_run_destination', { suggestedName }),

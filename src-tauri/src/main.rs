@@ -280,19 +280,29 @@ async fn recovery_discard_earlier(store: State<'_, std::sync::Arc<RecoveryStore>
     blocking(move || store.discard_earlier()).await?
 }
 
-/// The unsaved-work guard's native alert: Save, Don't Save (⌘D) or Cancel (Esc).
+/// The unsaved-work guard's native alert: Save, Don't Save (⌘D) or Cancel (Esc). From replay it names the
+/// main authored scene, which the replay on screen is not part of (SPEC §15.3).
 #[tauri::command]
-async fn ask_unsaved(window: WebviewWindow, title: String) -> Result<&'static str, IoFailure> {
+async fn ask_unsaved(window: WebviewWindow, title: String, replay: bool) -> Result<&'static str, IoFailure> {
+    let (heading, message, save) = if replay {
+        (
+            format!("Do you want to save your main authored scene “{title}”?"),
+            "The replay on screen is not part of it. Your changes to the scene will be lost if you don't save them.",
+            "Save Main Scene",
+        )
+    } else {
+        (format!("Do you want to save the changes you made to “{title}”?"), "Your changes will be lost if you don't save them.", "Save")
+    };
     let dialog = window
         .dialog()
-        .message("Your changes will be lost if you don't save them.")
-        .title(format!("Do you want to save the changes you made to “{title}”?"))
+        .message(message)
+        .title(heading)
         .kind(MessageDialogKind::Warning)
-        .buttons(MessageDialogButtons::YesNoCancelCustom("Save".into(), "Don't Save".into(), "Cancel".into()))
+        .buttons(MessageDialogButtons::YesNoCancelCustom(save.into(), "Don't Save".into(), "Cancel".into()))
         .parent(&window);
     let result = blocking(move || dialog.blocking_show_with_result()).await?;
     Ok(match result {
-        MessageDialogResult::Custom(label) if label == "Save" => "save",
+        MessageDialogResult::Custom(label) if label == save => "save",
         MessageDialogResult::Custom(label) if label == "Don't Save" => "discard",
         _ => "cancel",
     })

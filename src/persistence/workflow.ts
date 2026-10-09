@@ -580,7 +580,7 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
     }
     let choice: 'save' | 'discard' | 'cancel';
     try {
-      choice = await this.io.askUnsaved(controller.metadata.title);
+      choice = await this.io.askUnsaved(controller.metadata.title, this.app.runs.selected === 'replay');
     } catch {
       choice = 'cancel';
     }
