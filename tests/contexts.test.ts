@@ -344,6 +344,17 @@ describe('T11: bounded worlds through replay, restart, return and import cycles 
     s.coordinator.startRecording();
     expect(s.coordinator.record).toBeNull();
     expect(worldCounts().allocated).toBe(base);
+    // A new recording whose rebuild fails leaves the previous record in place.
+    await s.coordinator.stopRecording();
+    const previous = s.coordinator.record;
+    const reset = s.controller.reset;
+    s.controller.reset = () => {
+      throw new Error('the world could not be allocated');
+    };
+    expect(() => s.coordinator.startRecording()).toThrow(/allocated/);
+    s.controller.reset = reset;
+    expect(s.coordinator.record).toBe(previous);
+    s.coordinator.startRecording();
     // A running recording refuses an import before any candidate exists.
     expect(() => s.coordinator.prepareImport(read.record)).toThrow(/running recording/);
     expect([s.coordinator.counts().candidates, worldCounts().allocated]).toEqual([0, base]);

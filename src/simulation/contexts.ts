@@ -99,9 +99,10 @@ export class RunCoordinator {
     // The size check precedes the reset, so a root too large to record leaves the live world as it was.
     const runId = this.options.runId?.() ?? `run-${crypto.randomUUID()}`;
     RunRecorder.check(root, this.options.identity(), runId);
-    this.dropRecord();
     controller.reset(semantic);
     const recorder = new RunRecorder(this.live, root, this.options.identity(), runId);
+    // Only now is the previous record replaced: a rebuild that failed has left it as it was.
+    this.dropRecord();
     recorder.onLimit = (reason) =>
       queueMicrotask(() => {
         this.resolveStop();
