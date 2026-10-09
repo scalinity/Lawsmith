@@ -126,8 +126,8 @@ segment "the app's M6B fixtures on the P1 recording (Shift+C), screen recording 
 activate
 keys kd:shift t:c ku:shift
 wait_log m6b-fixtures 1 900
-say "fixtures: $(logq last $APP_LOG m6b-fixtures | python3 -I -c "import json,sys; e=json.load(sys.stdin); print('compared', e.get('compared'), e.get('sources'), 'cached ms (p50 p95 p99 max)', e['cached']['elapsedMs'], 'work', e['cached']['workMs'], 'steps', e['cached']['steps'], 'uncached', e['uncached'], 'cancel', e['cancel'], 'peak worlds', e['lifecycle']['peakWorlds'], 'error', e.get('error'))")"
-expect m6b-fixtures "the M6B fixtures pass on P1: exact at every target, cached p95 within 250 ms, bounded cycles" "e['pass'] is True and not e['divergent']"
+say "fixtures: $(logq last $APP_LOG m6b-fixtures | python3 -I -c "import json,sys; e=json.load(sys.stdin); print('compared', e.get('compared'), e.get('sources'), 'cached drawn ms (p50 p95 p99 max)', e['cached']['drawnMs'], 'committed', e['cached']['committedMs'], 'work', e['cached']['workMs'], 'steps', e['cached']['steps'], e['latencyGate'], 'uncached', e['uncached'], e['uncachedGate'], 'cancel', e['cancel'], 'peak worlds', e['lifecycle']['peakWorlds'], 'error', e.get('error'))")"
+expect m6b-fixtures "the M6B fixtures pass on P1: exact at every target, cached p95 to the drawn frame within 250 ms on this 60 s recording, ~8 ms batches, progress at 100 ms, cancel, bounded cycles" "e['pass'] is True and not e['divergent'] and e['latencyGate']['applies'] is True"
 activate
 keys kd:cmd t:q ku:cmd
 sleep 1

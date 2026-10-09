@@ -190,7 +190,7 @@ keys kd:shift t:c ku:shift
 wait_log m6b-fixtures 1 300
 expect m6b-fixtures "the M6B fixtures in this runtime pass" "e['pass'] is True and not e['divergent'] and e['compared'] > 40"
 verdict "the retained authoring world's digests, at every switch since the replay began, never changed" retained $APP_LOG
-say "fixtures: $(logq last $APP_LOG m6b-fixtures | python3 -I -c "import json,sys; e=json.load(sys.stdin); print('compared', e['compared'], e['sources'], 'cached ms', e['cached']['elapsedMs'], 'uncached', e['uncached'], 'cancel', e['cancel'], 'peak worlds', e['lifecycle']['peakWorlds'])")"
+say "fixtures: $(logq last $APP_LOG m6b-fixtures | python3 -I -c "import json,sys; e=json.load(sys.stdin); print('compared', e['compared'], e['sources'], 'cached drawn ms (p50 p95 p99 max)', e['cached']['drawnMs'], e['latencyGate'], 'uncached', e['uncached'], e['uncachedGate'], 'cancel', e['cancel'], 'peak worlds', e['lifecycle']['peakWorlds'])")"
 activate
 keys kd:cmd t:q ku:cmd
 sleep 1

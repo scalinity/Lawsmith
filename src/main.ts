@@ -144,8 +144,23 @@ const SEEK_PROGRESS_MS = 100;
 /** How a requested seek ended, for whoever asked for it. */
 interface SeekOutcome {
   readonly action: 'committed' | 'canceled' | 'superseded' | 'failed';
+  /** From the request to its end (for a commit, to the world's swap). */
   readonly elapsedMs: number;
   readonly job: SeekJob;
+  /** Each batch's time on the main thread, ms. */
+  readonly batches: readonly number[];
+  /** When progress and Cancel became visible, ms after the request; null if they never did. */
+  readonly progressShownAfter: number | null;
+  /** For a commit: ms from the request to the first frame submitted with its world; null if another world was shown first. */
+  readonly drawn: Promise<number | null>;
+}
+
+/** A committed seek waiting for its first frame (SPEC §18's frame submission), by its world's generation. */
+interface DrawWait {
+  readonly id: number;
+  readonly generation: number;
+  readonly requestedAt: number;
+  readonly resolve: (ms: number | null) => void;
 }
 
 /** A seek the app is waiting on (SPEC §14.2): when it was asked for, and how its batches went. */
@@ -284,6 +299,8 @@ async function start() {
   let guardFrozen = false;
   /** The seek the replay is reconstructing out of sight, if any (SPEC §14.2); see requestSeek. */
   let pendingSeek: PendingSeek | null = null;
+  /** The last committed seek, until a frame is submitted with its world. */
+  let drawWait: DrawWait | null = null;
   let launchPending = true;
   let cameraMoved = false;
   const applyFreeze = () => {
@@ -1282,6 +1299,10 @@ async function start() {
     setPlaying(false, reason);
     scheduler.pause();
     host = runs.shown;
+    if (drawWait && drawWait.generation !== host.generation) {
+      drawWait.resolve(null);
+      drawWait = null;
+    }
     explained = keep !== null && host.ids.includes(keep) ? keep : null;
     host.explain(explained);
     ingredientPanel.reset();
@@ -1560,7 +1581,7 @@ async function start() {
   };
 
   /** Reports how a pending seek ended and tells its requester; it is no longer pending. */
-  function endSeek(pending: PendingSeek, action: SeekOutcome['action'], extra: Record<string, unknown> = {}) {
+  function endSeek(pending: PendingSeek, action: SeekOutcome['action'], extra: Record<string, unknown> = {}, drawn: Promise<number | null> = Promise.resolve(null)) {
     if (pendingSeek === pending) pendingSeek = null;
     const elapsedMs = performance.now() - pending.requestedAt;
     const { job } = pending;
@@ -1581,7 +1602,7 @@ async function start() {
       ...extra,
       ...cacheCounts(),
     });
-    pending.done({ action, elapsedMs, job });
+    pending.done({ action, elapsedMs, job, batches: pending.batches, progressShownAfter: pending.progressShownAfter, drawn });
   }
 
   /** Gives up the pending seek: its world is freed and the displayed replay stays exactly as it was. */
@@ -1602,7 +1623,10 @@ async function start() {
     // The same experiment at another time: the explained body stays explained if it lives there.
     showWorld('seek', explained);
     seekedTrails = true;
-    endSeek(pending, 'committed', { address: runs.replay!.address, generation: host.generation });
+    const drawn = new Promise<number | null>((resolve) => {
+      drawWait = { id: pending.job.id, generation: host.generation, requestedAt: pending.requestedAt, resolve };
+    });
+    endSeek(pending, 'committed', { address: runs.replay!.address, generation: host.generation }, drawn);
     renderPanel();
     if (runs.replay!.complete) replayReachedEnd();
     else if (pending.playOnCommit) setPlaying(true, 'seek');
@@ -2122,8 +2146,10 @@ async function start() {
    * the timeline's seek request, Cancel, Replay from start and Return to authoring.
    *   1. Every target (special addresses, every same-tick group's inner cursors, seeded random ticks) in a
    *      seeded order against the uninterrupted checkpoint-free oracle, state and engine bytes.
-   *   2. Cached seek latency: 100 seeded targets with every 240th tick cached.
-   *   3. An uncached seek to the end (its batches and when progress showed), and a long one canceled.
+   *   2. Cached seek latency to the first frame drawn with the target: 100 seeded targets with every 240th
+   *      tick cached, gated at p95 ≤ 250 ms on a 60-second recording and reported on any other.
+   *   3. An uncached seek to the end, gated on ~8 ms batches and progress shown at 100 ms, and a long one
+   *      canceled once its progress shows.
    *   4. T11: 20 seek/reset cycles, counting worlds, checkpoint bytes and render resources.
    */
   const runSeekFixtures = async () => {
@@ -2176,27 +2202,47 @@ async function start() {
       const divergence = shownAt.tick === target.tick && shownAt.cursor === target.cursor ? replayDivergence(expected.get(key(target))!, observe(host)) : { entity: 'address', observed: shownAt };
       compared.push({ target, action: outcome?.action ?? 'shown', source: outcome?.job.source?.kind ?? null, bodies: host.count, divergence });
     }
-    // 2. Cached latency, with every 240th tick held.
+    // 2. Cached latency, with every 240th tick held: from the request to the first frame submitted with the
+    // target's world, as edit latency is measured (SPEC §18), and to the swap alone.
     await requestSeek(at(last), 'fixture');
-    const cached: { elapsedMs: number; workMs: number; steps: number; source: string | null }[] = [];
+    const cached: { drawnMs: number; committedMs: number; workMs: number; steps: number; source: string | null }[] = [];
     for (let i = 0; i < 100; i++) {
       const outcome = await requestSeek(at(random(last + 1)), 'fixture-cached');
-      if (outcome?.action === 'committed') cached.push({ elapsedMs: round3(outcome.elapsedMs), workMs: round3(outcome.job.workMs), steps: outcome.job.steps, source: outcome.job.source?.kind ?? null });
-      await nextFrame();
+      const drawnMs = outcome?.action === 'committed' ? await outcome.drawn : null;
+      if (outcome && drawnMs !== null) cached.push({ drawnMs: round3(drawnMs), committedMs: round3(outcome.elapsedMs), workMs: round3(outcome.job.workMs), steps: outcome.job.steps, source: outcome.job.source?.kind ?? null });
     }
-    // 3. Uncached: from the root to the end, then a long one canceled after 300 ms.
+    // 3. Uncached, from the root to the end: its batches and when its progress showed.
     restartReplay();
     runs.checkpoints.discardHistory(scope.historyContextId);
     const full = await requestSeek(at(last), 'fixture-uncached');
-    const uncached = full ? { action: full.action, elapsedMs: round3(full.elapsedMs), workMs: round3(full.job.workMs), steps: full.job.steps, batches: full.job.batches } : null;
+    const batchMs = full ? percentiles(full.batches.slice(1)) : null;
+    const uncached = full
+      ? {
+          action: full.action,
+          elapsedMs: round3(full.elapsedMs),
+          workMs: round3(full.job.workMs),
+          steps: full.job.steps,
+          batches: full.batches.length,
+          firstBatchMs: round3(full.batches[0] ?? 0),
+          batchMs,
+          progressShownAfterMs: full.progressShownAfter === null ? null : round3(full.progressShownAfter),
+        }
+      : null;
+    // About 8 ms per batch: the 95th percentile within one unit of work over it. Progress within a frame or so of 100 ms.
+    const uncachedGate = {
+      batches: full !== null && (batchMs === null || batchMs[1]! <= REPLAY_BUDGET_MS + 2),
+      progress: full !== null && (full.elapsedMs < SEEK_PROGRESS_MS || (full.progressShownAfter !== null && full.progressShownAfter >= SEEK_PROGRESS_MS && full.progressShownAfter <= SEEK_PROGRESS_MS + 50)),
+    };
+    // A long one canceled once its progress and Cancel are visible.
     restartReplay();
     runs.checkpoints.discardHistory(scope.historyContextId);
     const shownBefore = observe(host);
     const pending = requestSeek(at(last), 'fixture-cancel');
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    cancelPendingSeek('fixture-cancel');
+    for (let frame = 0; frame < 600 && pendingSeek && pendingSeek.progressShownAfter === null; frame++) await nextFrame();
+    const exercised = pendingSeek !== null && pendingSeek.progressShownAfter !== null;
+    if (exercised) cancelPendingSeek('fixture-cancel');
     const canceled = await pending;
-    const cancel = { action: canceled?.action ?? null, elapsedMs: canceled ? round3(canceled.elapsedMs) : null, shownUnchanged: replayDivergence(shownBefore, observe(host)) === null, worlds: runs.counts().worlds };
+    const cancel = { exercised, action: canceled?.action ?? null, elapsedMs: canceled ? round3(canceled.elapsedMs) : null, shownUnchanged: !exercised || replayDivergence(shownBefore, observe(host)) === null, worlds: runs.counts().worlds };
     // 4. T11 cycles through the controls.
     await requestSeek(at(last), 'fixture');
     resetPeakWorlds();
@@ -2218,7 +2264,9 @@ async function start() {
     await nextFrame();
     const after = sample();
     const divergent = compared.filter((c) => c.divergence !== null);
-    const latency = percentiles(cached.map((c) => c.elapsedMs));
+    const latency = percentiles(cached.map((c) => c.drawnMs));
+    // The gate is for a 60-second recording (SPEC §18.2); on a shorter one the figures are reported, not gated.
+    const latencyGate = { recordingSeconds: last / 120, applies: last === RUN_LIMITS.ticks, drawnP95Ms: latency?.[1] ?? null, pass: latency !== null && latency[1]! <= 250 };
     report('m6b-fixtures', {
       elapsedMs: Math.round(performance.now() - t0),
       runId: record.runId,
@@ -2229,14 +2277,28 @@ async function start() {
       sources: compared.reduce<Record<string, number>>((n, c) => ((n[c.source ?? 'shown'] = (n[c.source ?? 'shown'] ?? 0) + 1), n), {}),
       divergent,
       targets: compared.map((c) => [c.target.tick, c.target.cursor, c.source, c.bodies]),
-      cached: { percentiles: 'p50, p95, p99, max', elapsedMs: latency, workMs: percentiles(cached.map((c) => c.workMs)), steps: percentiles(cached.map((c) => c.steps)), sources: [...new Set(cached.map((c) => c.source))], raw: cached },
+      cached: {
+        percentiles: 'p50, p95, p99, max',
+        drawnMs: latency,
+        committedMs: percentiles(cached.map((c) => c.committedMs)),
+        workMs: percentiles(cached.map((c) => c.workMs)),
+        steps: percentiles(cached.map((c) => c.steps)),
+        sources: [...new Set(cached.map((c) => c.source))],
+        raw: cached,
+      },
+      latencyGate,
       uncached,
+      uncachedGate,
       cancel,
       lifecycle: { outside, cycles, after, peakWorlds: worldCounts().peak },
       pass:
         divergent.length === 0 &&
-        latency !== null &&
-        latency[1]! <= 250 &&
+        cached.length > 0 &&
+        (!latencyGate.applies || latencyGate.pass) &&
+        uncachedGate.batches &&
+        uncachedGate.progress &&
+        cancel.exercised &&
+        cancel.action === 'canceled' &&
         cancel.shownUnchanged &&
         after.worlds === outside.worlds &&
         after.geometries === outside.geometries &&
@@ -2661,6 +2723,12 @@ async function start() {
     },
     after(interval, frameWork) {
       const submitted = performance.now();
+      if (drawWait && host.generation === drawWait.generation) {
+        const elapsedMs = submitted - drawWait.requestedAt;
+        report('seek', { action: 'drawn', id: drawWait.id, elapsedMs: round3(elapsedMs) });
+        drawWait.resolve(elapsedMs);
+        drawWait = null;
+      }
       for (const latency of editLatency.frameSubmitted(authoring.appliedRevision, submitted)) {
         pushBounded(edits, latency, 240);
         if (p0?.phase === 'measure') p0.edits.push(latency);
