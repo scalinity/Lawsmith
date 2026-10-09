@@ -418,6 +418,8 @@ Two facts came up along the way:
   The chain started at 21:00:34, in the hands-off window the owner agreed. `m6a-legible` launched the app and switched to More Space. Before its first click, the hit test found another session's screenshot interface covering the whole screen: `screencaptureui`, a full-screen window at layer 24, the menu-bar level that interactive capture uses. It refused the input (exit 3). Nothing was clicked. The display was restored to 1168×755, and the run counts for nothing. That window stayed up throughout the session, and the owner closed the session with the re-run pending. It is not a recording overlay: those sit above layer 1000, and the hit test skips only its own. Skipping this one would have sent clicks into the other session's capture.
 
   The build above stays valid for the re-run while no application input changes.
+
+  **Run on M6B's build** (application code `d6966fd`, which contains `2c79d2d`; built 2026-10-08 23:16:39): `m6a-legible` 7 checks, `m6a-record` 35, `m6a-guard` 19 (Save Main Scene from replay; a replay names a law its recording created) and `m6a-pace` 3, then the M1–M5 chain, every one passing. The results and their provenance are in [M6B.md](M6B.md) (M6A, carried; M1–M5 regression).
 - Carried: M4's moving-body trackpad check and M5's Storm Bottle trackpad feel.
 
 ## Evidence provenance

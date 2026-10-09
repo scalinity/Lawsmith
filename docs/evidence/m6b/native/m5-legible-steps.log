@@ -1,0 +1,14 @@
+[qa 03:28:01] segment: 1280×800 with the Storm Bottle's ingredient editor open, under More Space
+[qa 03:28:17] display → 1728×1117: set 1728x1117@120
+[qa 03:28:24] launched pid 4323, window at 224,104, log legible5.log
+[qa 03:28:27] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] the content viewport is 1280×800 CSS
+[qa 03:28:27] one-leaf law (the recipe): the ingredient rows add 60 px below its fade field; panel scroll height 1210 of 596 visible
+[qa 03:28:27] captured m5-1280x800-one-leaf.png
+[qa 03:28:38] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "storm-bottle.lawsmith.json", "generation": 2, "title": "Storm Bottle", "bytes": 3493, "readMs": 0.079, "parseMs": 1, "candidateMs": 2, "commitMs": 4, "openMs": 7.079, "mode": "packaged", "t": 13137}  [document] Storm Bottle opened
+[qa 03:29:05] PASS {"kind": "layout", "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo": [783.8, 5, 81.1, 28], "frame-view": [1098.3, 5, 74.3, 28], "reset-view": [1180.7, 5, 87.3, 28], "panel": [12, 52, 284, 598],  [layout] the bottle, its support and the explained body are clear of the panels, tools, transport and switches; nothing scrolls sideways; the opened editor's top is in view; the transport and history are in view and Save is in the panel's width
+[qa 03:29:05] captured m5-1280x800-storm.png
+[qa 03:29:05] rects: {'panel': [12, 52, 284, 598], 'explain': [956, 150, 312, 526], 'tools': [704, 5, 564, 30], 'transport': [830.2, 746, 437.8, 42], 'overlays': [853.8, 692, 414.2, 44]} support [376, 229, 680, 572] body [582, 425] detail [25, 144.3, 258, 505]
+[qa 03:29:10] display → 1168×755: set 1168x755@120
+[qa 03:29:13] display restored to 1168x755@120
+[qa 03:29:13] m5-legible complete
+[qa 03:29:13] display restored to 1168x755@120

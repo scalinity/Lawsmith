@@ -1,0 +1,35 @@
+[qa 03:14:48] segment: a recording and a dirty scene; Quit from authoring
+[qa 03:15:07] launched pid 86705, window at 0,21, log m6a-guard.log
+[qa 03:15:22] PASS {"kind": "control", "duplicate": "push", "created": "push-2", "reason": null, "laws": 4, "mode": "packaged", "t": 18149}  [control] a law created during the recording
+[qa 03:15:34] PASS {"kind": "control", "law": "calm", "enabled": false, "revision": 4, "mode": "packaged", "t": 30319}  [control] the scene is edited after the recording: dirty
+[qa 03:15:37] the guard asks about the scene
+[qa 03:15:38] the guard asks about the recording
+[qa 03:15:40] PASS  [guard] the scene was asked first (Discard, staged), then the recording (Cancel): [["scene", "discard"], ["recording", "cancel"]]
+[qa 03:15:41] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the recording is kept, unsaved, in authoring
+[qa 03:15:41] PASS  [recovery] the staged Discard was not committed: the recovery snapshots are still there (current.lawsmith-recovery.json
+previous.lawsmith-recovery.json)
+[qa 03:15:41] captured guard-01-canceled.png
+[qa 03:15:41] segment: from replay: Save Recording, then Cancel the scene
+[qa 03:16:09] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the replay names the law the recording created as its record carries it, not by its ID
+[qa 03:16:10] the guard asks about the recording
+[qa 03:16:15] the guard asks about the scene
+[qa 03:16:17] PASS  [guard] from replay the recording was asked first (Save Recording), then the scene (Cancel): [["recording", "save"], ["scene", "cancel"]]
+[qa 03:16:17] PASS {"kind": "document", "action": "save-recording", "outcome": "saved", "file": "guard-run.lawsmith-run.json", "runId": "run-81d10bf4-35ce-4034-ba38-db623e14703f", "bytes": 7623, "commands": 3, "finalTick": 836, "lastAppliedSequence": 3, "stopped": "user", "writeMs": 6.139, "saveMs": 12, "mode": "packa  [document] the guard saved the recording
+[qa 03:16:18] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the same paused replay, at the same address; the recording now saved
+[qa 03:16:18] captured guard-02-replay-kept.png
+[qa 03:16:18] segment: files opened from replay: invalid, foreign and scene-shaped ones change nothing
+[qa 03:16:43] PASS {"kind": "document", "outcome": "rejected", "action": "open-recording", "incompatible": false, "file": "broken.lawsmith-run.json", "path": "commands[1].sequence", "reason": "must be 2: sequences start at 1 and increase by one", "mode": "packaged", "t": 97656}  [document] a malformed run is refused at its path
+[qa 03:16:44] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] after broken.lawsmith-run.json: the same replay, run and address, and no candidate left
+[qa 03:16:53] PASS {"kind": "document", "outcome": "rejected", "action": "open-recording", "incompatible": true, "file": "foreign.lawsmith-run.json", "path": "qualification", "reason": "it was recorded by a different Lawsmith build or runtime: webkit \"22625.2.5.11.1.1\" (here \"22625.2.5.11.1\"). Exact replay is qual  [document] a run from another runtime is refused as incompatible, never replayed as exact
+[qa 03:16:54] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] after foreign.lawsmith-run.json: the same replay, run and address, and no candidate left
+[qa 03:17:03] PASS {"kind": "document", "outcome": "rejected", "action": "open-recording", "incompatible": false, "file": "m6a-lab.lawsmith.json", "path": "format", "reason": "this is a Lawsmith scene, not a recording; open it with Open Scene", "mode": "packaged", "t": 117825}  [document] a scene opened as a recording is refused with the right command named
+[qa 03:17:04] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] after m6a-lab.lawsmith.json: the same replay, run and address, and no candidate left
+[qa 03:17:13] PASS {"kind": "document", "action": "open-recording", "outcome": "committed", "file": "guard-run.lawsmith-run.json", "runId": "run-81d10bf4-35ce-4034-ba38-db623e14703f", "commands": 3, "finalTick": 836, "lastAppliedSequence": 3, "bytes": 7623, "readMs": 2.216, "parseMs": 7, "candidateMs": 9, "commitMs":   [document] the saved run opened from replay, with no question (it is saved)
+[qa 03:17:14] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] a fresh replay of it, from tick 0
+[qa 03:17:14] captured guard-03-imports.png
+[qa 03:17:15] segment: Quit from replay saves the main authored scene, never the replay
+[qa 03:17:32] the guard asks about the scene
+PASS  [file] the saved scene is the authored one (calm disabled), not the replay's root
+[qa 03:17:37] launched pid 90146, window at 0,21, log m6a-guard-relaunch.log
+[qa 03:17:37] PASS {"kind": "recovery", "action": "launch", "current": "absent", "previous": "absent", "mode": "packaged", "t": 3573}  [recovery] the relaunch finds no recovery to offer: the saved scene retired it
+[qa 03:17:40] m6a-guard complete

@@ -1,0 +1,15 @@
+[qa 03:17:40] segment: P1 recorded with drags, then replayed, at 1600×1000 under More Space (about 3 minutes)
+[qa 03:17:56] display → 1728×1117: set 1728x1117@120
+[qa 03:18:03] launched pid 90760, window at 224,104, log m6a-pace.log
+[qa 03:18:16] PASS {"kind": "layout", "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "redo": [1103.8, 5, 81.1, 28], "frame-view": [1418.3, 5, 74.3, 28], "reset-view": [1500.7, 5, 87.3, 28], "panel": [12, 52, 284,   [layout] the content viewport is 1600×1000 CSS, drag-0 selected
+[qa 03:18:47] the synthetic release was lost; sending it again
+[qa 03:19:01] PASS {"kind": "recording", "action": "stopped", "runId": "run-5bb69179-3f4b-4456-8de8-c4d1f73f0795", "title": "P1 Workshop", "commands": 97, "finalTick": 4953, "lastAppliedSequence": 97, "stopped": "user", "finalCheck": {"stateSha256": "9d9bfbd2bd6201690416862bbadc0d683c59c6a31e5f7dd64126118794ac8257", "  [recording] P1 recorded with its drags, stopped by the user
+[qa 03:19:01] while recording: {"lines": 8, "intervalP95Max": 18, "intervalP99Max": 18, "stepP95Max": 2, "stepP99Max": 2, "editP95Max": 19, "simWallMin": 0.977, "droppedMs": 0, "bodies": 200}
+[qa 03:19:45] PASS {"kind": "replay-complete", "runId": "run-5bb69179-3f4b-4456-8de8-c4d1f73f0795", "tick": 4953, "cursor": 97, "finalTick": 4953, "lastAppliedSequence": 97, "check": {"kind": "match"}, "stateSha256": "9d9bfbd2bd6201690416862bbadc0d683c59c6a31e5f7dd64126118794ac8257", "engineSha256": "d77f69f07f86923d5  [replay-complete] the P1 replay reached the recorded end exactly
+[qa 03:19:45] while replaying: {"lines": 8, "intervalP95Max": 18, "intervalP99Max": 18, "stepP95Max": 2, "stepP99Max": 2, "editP95Max": 17, "simWallMin": 1, "droppedMs": 0, "bodies": 200}
+[qa 03:19:50] the guard asks about the scene
+[qa 03:19:52] the guard asks about the recording
+[qa 03:19:54] display → 1168×755: set 1168x755@120
+[qa 03:19:57] display restored to 1168x755@120
+[qa 03:19:57] m6a-pace complete
+[qa 03:19:57] display restored to 1168x755@120

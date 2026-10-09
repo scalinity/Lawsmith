@@ -1,0 +1,67 @@
+[qa 03:43:02] segment: a body entering and leaving a drag pocket
+[qa 03:43:22] launched pid 24366, window at 0,21, log explain4.log
+[qa 03:43:34] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "drag-pocket.lawsmith.json", "generation": 2, "title": "Drag Pocket", "bytes": 2507, "readMs": 0.111, "parseMs": 1, "candidateMs": 1, "commitMs": 3, "openMs": 5.111, "mode": "packaged", "t": 11464}  [document] drag-pocket opened transactionally
+[qa 03:43:36] recording m4-drag for 75 s (overlay windows skipped by the hit test: 30325)
+[qa 03:43:44] PASS {"kind": "explain-select", "body": "stream:57", "reason": "click", "tick": 489, "playing": false, "trails": "selected", "mode": "packaged", "t": 25484}  [explain-select] a click explains stream:57
+[qa 03:43:44] captured drag-00-chosen.png
+[qa 03:44:06] PASS tick 524→525 λ 1 β 0.9999189319304561 contacts []  [explanation] inside the pocket the drag share is −λβK·v at the sampled velocity, and the shares sum to force/mass
+[qa 03:44:06] captured drag-01-inside.png
+[qa 03:44:09] PASS tick 524→525 λ 1 β 0.9999189319304561 contacts []  [explanation] the readout shows a next-step preview
+[qa 03:44:17] the synthetic release was lost; sending it again
+[qa 03:44:17] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "scale", "handle": "coefficient", "samples": 27, "rejected": 0, "pointer": [565, 228, 565, 139.3046875], "firstRevision": 1, "lastRevision": 27, "field": {"enabled": true, "position": [-1, 2.8, 0], "rotation": [0, 0,   [gesture] a paused drag of the coefficient gauge raised the drag
+[qa 03:44:19] PASS tick 524→525 λ 1 β 0.9999189319304561 contacts []  [explanation] after the paused edit the next-step preview changed and the last step did not
+[qa 03:44:19] captured drag-02-preview-after-edit.png
+[qa 03:44:27] PASS tick 929→930 λ 1 β 1 contacts ['floor']  [explanation] the body left the pocket with less sideways velocity, its trail behind it
+[qa 03:44:27] captured drag-03-left.png
+[qa 03:44:27] waiting for m4-drag to finish
+[qa 03:44:53] recording m4-drag.mp4 written
+[qa 03:44:53] segment: a body under three overlapping laws
+[qa 03:45:05] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "overlap.lawsmith.json", "generation": 3, "title": "Overlap", "bytes": 3556, "readMs": 2.538, "parseMs": 5, "candidateMs": 2, "commitMs": 1, "openMs": 10.538, "mode": "packaged", "t": 106585}  [document] overlap opened transactionally
+[qa 03:45:07] recording m4-overlap for 40 s (overlay windows skipped by the hit test: 30333)
+[qa 03:45:15] PASS {"kind": "explain-select", "body": "stream:56", "reason": "nearest", "tick": 546, "playing": false, "trails": "selected", "mode": "packaged", "t": 116268}  [explain-select] B explains the body nearest the laws' center
+[qa 03:45:16] PASS tick 546→547 λ 1 β 0.9950166250831947 contacts []  [explanation] the pull, swirl and drag act together; every share uses the step's one β and λ
+[qa 03:45:16] captured overlap-01-shares.png
+[qa 03:45:24] captured overlap-02-later.png
+[qa 03:45:24] waiting for m4-overlap to finish
+[qa 03:45:48] recording m4-overlap.mp4 written
+[qa 03:45:48] segment: a collision: law shares and contacts kept apart
+[qa 03:46:00] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "why-it-moves.lawsmith.json", "generation": 4, "title": "Why It Moves", "bytes": 3630, "readMs": 2.194, "parseMs": 2, "candidateMs": 2, "commitMs": 6, "openMs": 12.194, "mode": "packaged", "t": 157892}  [document] why-it-moves opened transactionally
+[qa 03:46:13] PASS {"kind": "explain-select", "body": "stream:101", "reason": "click", "tick": 1022, "playing": false, "trails": "selected", "mode": "packaged", "t": 174809}  [explain-select] a click explains stream:101
+[qa 03:46:15] recording m4-collision for 70 s (overlay windows skipped by the hit test: 30340)
+[qa 03:47:10] PASS tick 1114→1115 λ 1 β 0.9998849469100448 contacts []  [explanation] on the way the pull and the drag pocket act in one step: two shares under one β and λ
+[qa 03:47:10] captured collision-00-overlap.png
+[qa 03:47:30] PASS tick 1174→1175 λ 1 β 1 contacts ['stream:99']  [explanation] the landed body names its contact, and the law acceleration alone misses its velocity after the step
+[qa 03:47:30] captured collision-01-contact.png
+[qa 03:47:37] captured collision-02-heap.png
+[qa 03:47:37] waiting for m4-collision to finish
+[qa 03:47:40] recording m4-collision.mp4 written
+[qa 03:47:41] segment: the limiter against a capped arrow
+[qa 03:48:08] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "m4-limiter.lawsmith.json", "generation": 5, "title": "M4 Limiter", "bytes": 3149, "readMs": 2.249, "parseMs": 2, "candidateMs": 2, "commitMs": 3, "openMs": 9.249, "mode": "packaged", "t": 285705}  [document] m4-limiter opened transactionally
+[qa 03:48:11] recording m4-limiter for 70 s (overlay windows skipped by the hit test: 30351)
+[qa 03:48:16] PASS {"kind": "explain-select", "body": "stream:26", "reason": "click", "tick": 274, "playing": false, "trails": "selected", "mode": "packaged", "t": 298142}  [explain-select] a click explains stream:26
+[qa 03:48:28] PASS tick 285→286 λ 1 β 1 contacts []  [explanation] in the push the drawn arrow is capped (∥) while the limiter is idle (λ = 1)
+[qa 03:48:28] captured limiter-01-capped.png
+[qa 03:49:03] PASS tick 325→326 λ 0.2333742346470963 β 0.6784821497915061 contacts []  [explanation] in the thick drag the limiter is active (λ < 1) and every share is scaled by it
+[qa 03:49:03] captured limiter-02-limited.png
+[qa 03:49:03] waiting for m4-limiter to finish
+[qa 03:49:23] recording m4-limiter.mp4 written
+[qa 03:49:23] segment: probes, trails and the selected-law arrow filter
+[qa 03:49:35] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "overlap.lawsmith.json", "generation": 6, "title": "Overlap", "bytes": 3556, "readMs": 2.025, "parseMs": 1, "candidateMs": 2, "commitMs": 2, "openMs": 7.025, "mode": "packaged", "t": 372860}  [document] overlap opened transactionally
+[qa 03:49:37] recording m4-probes for 45 s (overlay windows skipped by the hit test: 30358)
+[qa 03:49:42] PASS {"kind": "visualization", "change": "probes", "contexts": {"worlds": 1, "peakWorlds": 2, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle"}, "render": {"geometries": 40, "textures": 5, "objects": 140}, "pr  [visualization] 2,000 probes are on, as visualization state: no revision, nothing dirty
+[qa 03:49:46] captured probes-01-on.png
+[qa 03:49:48] PASS {"kind": "visualization", "change": "trails", "contexts": {"worlds": 1, "peakWorlds": 2, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle"}, "render": {"geometries": 40, "textures": 5, "objects": 140}, "pr  [visualization] 32 trails are on
+[qa 03:49:53] captured trails-01-all.png
+[qa 03:49:54] PASS {"kind": "visualization", "change": "arrows", "contexts": {"worlds": 1, "peakWorlds": 2, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle"}, "render": {"geometries": 40, "textures": 5, "objects": 140}, "pr  [visualization] only the selected law draws arrows
+[qa 03:49:55] PASS {"kind": "layout", "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo": [671.8, 5, 81.1, 28], "frame-view": [986.3, 5, 74.3, 28], "reset-view": [1068.7, 5, 87.3, 28], "panel": [12, 52, 284, 532],   [layout] the filter draws only the selected law's samples, and every law is still enabled
+[qa 03:49:56] captured filter-01-selected-law.png
+[qa 03:50:00] PASS {"kind": "visualization", "change": "trails", "contexts": {"worlds": 1, "peakWorlds": 2, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle"}, "render": {"geometries": 40, "textures": 5, "objects": 140}, "pr  [visualization] probes and trails are off again without touching a law
+[qa 03:50:00] waiting for m4-probes to finish
+[qa 03:50:24] recording m4-probes.mp4 written
+[qa 03:50:24] segment: bounded buffers through toggles, resets and loads (T11)
+[qa 03:51:53] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "why-it-moves.lawsmith.json", "generation": 7, "title": "Why It Moves", "bytes": 3630, "readMs": 1.994, "parseMs": 1, "candidateMs": 2, "commitMs": 2, "openMs": 6.994, "mode": "packaged", "t": 510037}  [document] why-it-moves opened transactionally
+[qa 03:52:00] PASS {"kind": "visual-resources", "contexts": {"worlds": 1, "peakWorlds": 2, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle"}, "render": {"geometries": 41, "textures": 5, "objects": 134}, "probes": {"enabled"  [visual-resources] after 10 toggle-and-reset cycles and two loads the buffers are the ones allocated at start
+[qa 03:52:03] segment: the runtime's own fixtures: invariance (AC6), reset (T04), trails and shares (T08)
+[qa 03:52:31] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "overlap.lawsmith.json", "generation": 8, "title": "Overlap", "bytes": 3556, "readMs": 1.963, "parseMs": 1, "candidateMs": 2, "commitMs": 3, "openMs": 7.963, "mode": "packaged", "t": 548559}  [document] overlap opened transactionally
+[qa 03:52:35] PASS {"kind": "fixtures", "elapsedMs": 3414, "root": [{"id": "drag", "enabled": true, "position": [0, 2.5, 0], "rotation": [0, 0, 0, 1], "region": {"kind": "sphere", "radius": 2.2}, "edgeFade": 0.25, "expression": {"kind": "linearDrag", "coefficient": 1.2}}, {"id": "pull", "enabled": true, "position": [0  [fixtures] quiet and busy views, and a reset across a view change, agree exactly; trails and shares check out
+[qa 03:52:38] m4-explain complete
