@@ -71,6 +71,13 @@ export class DocumentController {
   revision = 0;
   /** Revision of the last semantic edit the host acknowledged, i.e. the one its laws now include. */
   appliedRevision = 0;
+  /** Revision of the last presentation edit: accepted at once, with no host command. */
+  private presentationRevision = 0;
+  /**
+   * Revisions a recording limit discarded unapplied, `(held, top]` (SPEC §13.3). They were issued
+   * when their commands were submitted and changed nothing, so the document at `top` equals `held`.
+   */
+  private discarded: { held: number; top: number } | null = null;
   /**
    * Observes every batch of acknowledgments as the document adopts it, whichever call settled it
    * (an edit, undo, a digest or a save settles too), so accounting such as edit latency sees each
@@ -135,6 +142,8 @@ export class DocumentController {
     this.generation += 1;
     this.revision = 0;
     this.appliedRevision = 0;
+    this.presentationRevision = 0;
+    this.discarded = null;
   }
 
   /**
@@ -209,6 +218,19 @@ export class DocumentController {
     this.sync();
     this.host.discardPending();
     this.submitted = new Map();
+    const held = Math.max(this.appliedRevision, this.presentationRevision);
+    if (this.revision > held) this.discarded = { held, top: this.revision };
+  }
+
+  /**
+   * Whether the document still holds what it held at `revision` (SPEC §15.3: only accepted edits make
+   * it unsaved). Revisions discarded unapplied at a recording limit changed nothing; any later edit
+   * moves past them.
+   */
+  unchangedSince(revision: number): boolean {
+    if (revision === this.revision) return true;
+    const d = this.discarded;
+    return d !== null && d.top === this.revision && revision >= d.held && revision <= d.top;
   }
 
   /** SPEC §15.2's scene-wide leaf budget with `field` in place of its law's latest submitted value. */
@@ -306,6 +328,7 @@ export class DocumentController {
     if (arrows === this.view.arrows) return;
     this.view = { ...this.view, arrows };
     this.revision += 1;
+    this.presentationRevision = this.revision;
   }
 
   /** Records the camera framing that a save captures. Not a document edit: it never dirties the scene. */
@@ -441,6 +464,7 @@ export class DocumentController {
   private applyPresentation(id: string, presentation: LawPresentation): void {
     this.lawPresentation.set(id, presentation);
     this.revision += 1;
+    this.presentationRevision = this.revision;
   }
 
   private idInUse(id: string): boolean {

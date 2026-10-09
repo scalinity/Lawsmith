@@ -134,7 +134,7 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
   }
 
   get dirty(): boolean {
-    return this.savedRevision !== this.app.controller.revision;
+    return this.savedRevision === null || !this.app.controller.unchangedSince(this.savedRevision);
   }
 
   get stored(): number | null {
@@ -376,7 +376,8 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
       this.recovered = false;
       // The save is complete only when recovery through its revision is retired too.
       const retired = await this.recovery.retireThrough(captured.generation, captured.revision);
-      const later = this.app.controller.revision - captured.revision;
+      // Revisions a recording limit discarded after the capture changed nothing.
+      const later = this.app.controller.unchangedSince(captured.revision) ? 0 : this.app.controller.revision - captured.revision;
       this.app.log('document', {
         action,
         outcome: 'saved',

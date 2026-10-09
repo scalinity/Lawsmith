@@ -3,7 +3,7 @@
 // same ordering rules as the Rust store. Real document controller and real candidate worlds. A
 // browser-free fake proves only this boundary; native dialogs and files are qualified in the app.
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DocumentController } from '../src/domain/document';
+import { DocumentController, NOT_APPLIED } from '../src/domain/document';
 import { type SceneDocument } from '../src/domain/scene';
 import { DEFAULT_SCENE_TEXT, defaultDocument } from '../src/persistence/defaultScene';
 import type { ChooseOutcome, DocumentIo, IoFailure, OpenOutcome, RecoverySlot } from '../src/persistence/io';
@@ -998,7 +998,7 @@ async function withRecording(options: { dirty?: boolean } = {}) {
 const runOpened = (io: FakeIo, name: string, text: string): OpenOutcome => ({ outcome: 'opened', token: io.issue(name), name, text, readMs: 0.3 });
 const runText = (r: import('../src/persistence/runFile').RunRecord) => exportRun(r).text;
 import { exportRun } from '../src/simulation/recorder';
-import { parseRun } from '../src/persistence/runFile';
+import { RUN_LIMITS, parseRun } from '../src/persistence/runFile';
 import { worldCounts } from '../src/simulation/host';
 
 describe('Save Recording (SPEC §13.2)', () => {
@@ -1311,5 +1311,38 @@ describe('recovery stays the main scene’s (SPEC §15.3)', () => {
     const envelope = parseRecovery(t.io.recovery.current!.text);
     expect(envelope.ok && envelope.envelope.document.semantic).toEqual(t.controller.scene);
     expect(t.io.recovery.current!.text).not.toContain('lawsmith.run');
+  });
+});
+
+describe('a change refused at a recording limit leaves the scene as saved (SPEC §13.3, §15.3; AC7)', () => {
+  it('a saved scene stays clean: no dirty state, no recovery copy, no scene question at close', { timeout: 120_000 }, async () => {
+    const t = await setup();
+    expect(await t.workflow.record()).toBe(true);
+    for (let i = 0; i < 3; i++) t.controller.liveHost.step();
+    for (let k = 0; k < RUN_LIMITS.commands; k++) expect(t.controller.setAmbient([0, k % 2 ? -9.8 : -9.81, 0]).ok).toBe(true);
+    t.io.chooseQueue.push('a.lawsmith.json');
+    expect(await t.workflow.save()).toBe(true);
+    const scene = t.controller.scene;
+    // The 50,001st change is refused before it applies, and the limit's resolution discards it.
+    expect(t.controller.editField('sideways', 'Toggle', (f) => ({ ...f, enabled: !f.enabled }))).toEqual({ ok: false, reason: NOT_APPLIED, path: '' });
+    await new Promise((r) => setTimeout(r, 0));
+    expect((await t.runs.settled())!.stopped).toBe('commands');
+    expect(t.controller.scene).toBe(scene);
+    expect(t.controller.canUndo).toBe(false);
+    expect(t.workflow.dirty).toBe(false);
+    // Nothing unsaved, so no recovery copy, even when an ended gesture asks for one.
+    t.workflow.edited();
+    await t.workflow.recovery.writeNow();
+    expect(t.io.recovery.current).toBeNull();
+    // With the recording saved too, closing asks nothing.
+    t.io.runChooseQueue.push('a.lawsmith-run.json');
+    expect(await t.workflow.saveRecording()).toBe(true);
+    const asked = t.io.questions.length;
+    expect(await t.workflow.requestExit('close')).toBe(true);
+    expect(t.io.questions.slice(asked)).toEqual([]);
+    expect(t.io.exited).toBe(1);
+    // A later accepted change is unsaved again.
+    t.edit();
+    expect(t.workflow.dirty).toBe(true);
   });
 });
