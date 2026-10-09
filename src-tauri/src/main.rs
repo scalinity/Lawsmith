@@ -229,6 +229,10 @@ async fn choose_run_destination(window: WebviewWindow, destinations: State<'_, D
 #[tauri::command]
 async fn write_run(destinations: State<'_, Destinations>, writes: State<'_, WriteLock>, token: u64, text: String) -> Result<Written, IoFailure> {
     let path = destinations.path(token, Kind::Run).ok_or_else(|| IoFailure::new("unknown-destination", "write", "this destination was not chosen in this session"))?;
+    // Open Recording issues run tokens for any chosen file; only a recording's own name is ever replaced.
+    if !is_run_name(&display_name(&path)) {
+        return Err(IoFailure::new("refused-name", "write", "only a file named .lawsmith-run.json can hold a recording"));
+    }
     if text.len() as u64 > RUN_LIMIT {
         return Err(IoFailure::new("too-large", "write", "the recording exceeds 16 MiB"));
     }
