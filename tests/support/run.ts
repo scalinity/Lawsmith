@@ -3,7 +3,7 @@
 // LawInteraction does (one transaction, samples that coalesce until a boundary consumes them).
 import { DocumentController } from '../../src/domain/document';
 import { cloneFrozen, type FieldDefinition, type SceneDocument } from '../../src/domain/scene';
-import { RUN_FORMAT, type QualificationIdentity, type RunExpectations } from '../../src/persistence/runFile';
+import { RUN_FORMAT, type QualificationIdentity, type RunExpectations, type RunRecord } from '../../src/persistence/runFile';
 import { parseScene } from '../../src/persistence/sceneFile';
 import { RunCoordinator } from '../../src/simulation/contexts';
 import { SimulationHost } from '../../src/simulation/host';
@@ -126,4 +126,40 @@ export class Trajectory {
     const o = observe(host);
     this.at.set(`${o.address.tick}:${o.address.cursor}`, o);
   }
+}
+
+/**
+ * M6B's recorded fixture: the laboratory over 1,100 ticks, so the stream's births (every 8th tick), its
+ * deaths (from tick 512) and its contacts with the floor run through four 240-tick checkpoints. It holds
+ * a drag over five boundaries, an ambient change, three paused edits at tick 500, two at tick 720 (a
+ * checkpoint tick), a law created at 800 and removed at 900, and two edits at the final tick.
+ */
+export async function interventionRecord(): Promise<{ record: RunRecord; session: Session }> {
+  const s = session();
+  const { controller, coordinator } = s;
+  const ok = (result: { ok: boolean }) => {
+    if (!result.ok) throw new Error('fixture edit refused');
+  };
+  coordinator.startRecording();
+  s.steps(100);
+  drag(s, 'push', [moveTo(-1.2), moveTo(-0.9), moveTo(-0.6), moveTo(-0.3), moveTo(0)], () => s.step());
+  s.steps(195);
+  ok(controller.setAmbient([0.5, -9, 0]));
+  s.steps(200);
+  ok(controller.editField('push', 'Strength', (f) => ({ ...f, expression: { kind: 'directional', direction: [1, 0, 0], strength: 18 } })));
+  ok(controller.editField('calm', 'Disable law', (f) => ({ ...f, enabled: false })));
+  ok(controller.editField('storm-bottle', 'Move law', moveTo(2.6, 1.6)));
+  s.steps(220);
+  ok(controller.editField('calm', 'Enable law', (f) => ({ ...f, enabled: true })));
+  ok(controller.editField('push', 'Move law', moveTo(0.4)));
+  s.steps(80);
+  const created = controller.create('vortexY', [0, 2, 0]);
+  if (!created.ok) throw new Error('fixture create refused');
+  s.steps(100);
+  ok(controller.remove(created.value.id));
+  s.steps(200);
+  ok(controller.editField('push', 'Strength', (f) => ({ ...f, expression: { kind: 'directional', direction: [1, 0, 0], strength: 9 } })));
+  ok(controller.editField('storm-bottle', 'Move law', moveTo(2.2, 1.6)));
+  const record = (await coordinator.stopRecording())!;
+  return { record, session: s };
 }

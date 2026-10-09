@@ -207,6 +207,62 @@ export interface FutureState extends CanonicalState {
   simulation: SimulationSettings;
 }
 
+/** A living dynamic body in a checkpointed world (SPEC §14.1): its stable ID, the snapshot's handles and its rendered radius. */
+export interface BodyHandleMapping {
+  readonly id: string;
+  readonly body: number;
+  readonly collider: number;
+  readonly radius: number;
+}
+
+/** When a living dynamic body expires: null for an authored body, which has no implicit lifetime. */
+export interface BodyLifetime {
+  readonly id: string;
+  readonly deathTick: number | null;
+}
+
+/** An emitter's runtime state; its schedule follows from its definition in the root, the tick and the ordinal. */
+export interface EmitterRuntimeState {
+  readonly id: string;
+  readonly prngState: number;
+  readonly ordinal: number;
+}
+
+/** Which body a collider belongs to, fixed ones included: how contact partners are named. */
+export interface ColliderIdentity {
+  readonly collider: number;
+  readonly id: string;
+}
+
+/**
+ * The host's complete state at a settled boundary (SPEC §14.1): the engine snapshot and every value
+ * beyond it that a later step reads. Captured in one synchronous call between steps, with nothing
+ * queued, so lifecycle for `tick` has not run yet (`settled-before-lifecycle`). Everything else a
+ * step reads is the immutable run root: body and emitter definitions and the other settings.
+ */
+export interface HostCheckpoint {
+  readonly tick: number;
+  readonly lastAppliedSequence: number;
+  readonly phase: 'settled-before-lifecycle';
+  readonly engineBytes: Uint8Array;
+  /** Applied laws in stable ID order. */
+  readonly activeFields: readonly FieldDefinition[];
+  readonly ambientAcceleration: Vec3;
+  readonly emitterStates: readonly EmitterRuntimeState[];
+  /** Living dynamic bodies in the host's order: authored by ID, then emitted in spawn order. */
+  readonly bodyIdentityMap: readonly BodyHandleMapping[];
+  /** The same bodies, in the same order. */
+  readonly bodyLifetimes: readonly BodyLifetime[];
+  readonly colliderIdentity: readonly ColliderIdentity[];
+  readonly skippedEmissions: number;
+  /** What the last step left for diagnostics: the fastest body's speed, and limited body-steps since the root. */
+  readonly maxSpeed: number;
+  readonly limitedSteps: number;
+}
+
+/** A checkpoint the host cannot restore: inconsistent with its root or with its own engine snapshot. */
+export class CheckpointRejected extends Error {}
+
 /** Authoritative body state at a settled boundary, ordered by stable ID (SPEC §13.4). */
 export interface CanonicalState {
   tick: number;
@@ -354,8 +410,10 @@ export class SimulationHost {
   private readonly accel = [0, 0, 0, 0, 0];
   private readonly force = { x: 0, y: 0, z: 0 };
 
-  constructor(root: SceneDefinition) {
-    this.reset(root);
+  /** A world built from `root` at tick 0, or, with a checkpoint, restored from it under that same root (SPEC §14.1). */
+  constructor(root: SceneDefinition, from?: HostCheckpoint) {
+    if (from) this.restore(root, from);
+    else this.reset(root);
   }
 
   /** Rebuilds the world from a frozen run root at tick 0 (SPEC §13.2). Pending commands are dropped. */
@@ -401,6 +459,104 @@ export class SimulationHost {
       const { position, rotation } = def.initialPose;
       const { body, collider } = this.createBody(def.id, position, rotation, def.initialLinearVelocity, def.initialAngularVelocity, def.collider, def.material, def.collisionMode, mass);
       if (mass !== null) this.bodies.push({ id: def.id, body, collider, radius: radiusOf(def.collider), deathTick: Infinity });
+    }
+    this.publish();
+  }
+
+  /**
+   * Restores a checkpoint under its run root (SPEC §14.1): a new world from the engine snapshot, then
+   * every lookup the host keeps rebuilt from the sidecar and checked against that world. Nothing is
+   * rebuilt from poses or velocities: contacts, solver state and handles come from the snapshot.
+   */
+  private restore(root: SceneDefinition, from: HostCheckpoint): void {
+    if (root.simulation.profile !== SIMULATION_PROFILE.id) {
+      throw new Error(`Scene requires profile ${root.simulation.profile}; this build provides ${SIMULATION_PROFILE.id}.`);
+    }
+    const reject = (reason: string): never => {
+      throw new CheckpointRejected(`The checkpoint at (${from.tick}, ${from.lastAppliedSequence}) ${reason}.`);
+    };
+    const tick = from.tick;
+    if (from.phase !== 'settled-before-lifecycle') reject(`was not captured at a settled boundary (${String(from.phase)})`);
+    if (!Number.isSafeInteger(tick) || tick < 0 || !Number.isSafeInteger(from.lastAppliedSequence) || from.lastAppliedSequence < 0) reject('has no valid address');
+    const emitterDefs = [...root.emitters].sort(byId);
+    const states = from.emitterStates;
+    if (states.length !== emitterDefs.length || states.some((s, i) => s.id !== emitterDefs[i]!.id || !Number.isInteger(s.prngState) || s.prngState < 0 || s.prngState > 0xffffffff || !Number.isSafeInteger(s.ordinal) || s.ordinal < 0)) {
+      reject('does not hold this root’s emitters');
+    }
+    const fields = from.activeFields;
+    if (fields.length > MAX_LAWS || fields.some((f, i) => i > 0 && !(fields[i - 1]!.id < f.id))) reject('does not hold its laws in stable ID order');
+    const mappings = from.bodyIdentityMap;
+    const lifetimes = from.bodyLifetimes;
+    const authored = new Set(root.bodies.filter((b) => b.type === 'dynamic').map((b) => b.id));
+    const fixed = root.bodies.filter((b) => b.type === 'fixed').map((b) => b.id);
+    if (mappings.length > root.simulation.maxLiveBodies || lifetimes.length !== mappings.length) reject('holds more bodies than its root allows');
+    for (let i = 0; i < mappings.length; i++) {
+      const { id } = mappings[i]!;
+      const death = lifetimes[i]!;
+      // Lifecycle for `tick` has not run: a body dying at `tick` is still alive, an earlier death is gone.
+      const lives = death.id === id && (death.deathTick === null ? authored.has(id) : Number.isSafeInteger(death.deathTick) && death.deathTick >= tick && !authored.has(id));
+      if (!lives) reject(`has an inconsistent lifetime for body ${id}`);
+    }
+    if (mappings.filter((m) => authored.has(m.id)).length !== authored.size) reject('is missing an authored body');
+
+    const world = RAPIER.World.restoreSnapshot(from.engineBytes);
+    if (!world) reject('holds engine bytes that do not deserialize');
+    allocatedWorlds += 1;
+    peakWorlds = Math.max(peakWorlds, allocatedWorlds);
+    try {
+      const effective = readProfile(world);
+      for (const [key, expected] of Object.entries(SIMULATION_PROFILE.effective)) {
+        if (!Object.is(effective[key as keyof EffectiveProfile], expected)) reject(`restores ${key} ${effective[key as keyof EffectiveProfile]}, not the profile’s ${expected}`);
+      }
+      const g = world.gravity;
+      if (g.x !== 0 || g.y !== 0 || g.z !== 0) reject('restores engine gravity');
+      const bodies: LiveBody[] = [];
+      for (const m of mappings) {
+        const body = world.getRigidBody(m.body);
+        const collider = world.getCollider(m.collider);
+        if (!body || !collider || !body.isDynamic() || body.numColliders() !== 1 || body.collider(0).handle !== m.collider || Math.fround(m.radius) !== collider.radius()) {
+          reject(`does not match its engine snapshot for body ${m.id}`);
+        }
+        const deathTick = lifetimes[bodies.length]!.deathTick;
+        bodies.push({ id: m.id, body, collider, radius: m.radius, deathTick: deathTick ?? Infinity });
+      }
+      const named = new Set(from.colliderIdentity.map((c) => c.id));
+      const expectedNames = [...mappings.map((m) => m.id), ...fixed];
+      const colliderIds = new Map(from.colliderIdentity.map((c) => [c.collider, c.id] as const));
+      const total = mappings.length + fixed.length;
+      if (world.bodies.len() !== total || world.colliders.len() !== total || colliderIds.size !== total || named.size !== total || expectedNames.some((id) => !named.has(id))) {
+        reject('does not account for every body and collider in its engine snapshot');
+      }
+      for (const m of mappings) if (colliderIds.get(m.collider) !== m.id) reject(`names collider ${m.collider} differently from body ${m.id}`);
+      for (const handle of colliderIds.keys()) if (!world.getCollider(handle)) reject(`names collider ${handle}, which its engine snapshot lacks`);
+      const compiled = fields.map(compileField);
+
+      this.world = world;
+      this.generation = ++worldsBuilt;
+      this.explanation = null;
+      this.colliderIds = colliderIds;
+      this.root = root;
+      this.live = Object.freeze({ ...root.simulation, ambientAcceleration: from.ambientAcceleration });
+      this.halted = false;
+      this.tick = tick;
+      this.lastAppliedSequence = from.lastAppliedSequence;
+      this.skippedEmissions = from.skippedEmissions;
+      this.fault = null;
+      this.maxSpeed = from.maxSpeed;
+      this.limitedSteps = from.limitedSteps;
+      this.pending = [];
+      this.acks = [];
+      this.fieldDefs = [...fields];
+      this.compiled = compiled;
+      this.emitters = emitterDefs.map((def, i) => ({ def, prng: states[i]!.prngState, ordinal: states[i]!.ordinal }));
+      const capacity = root.simulation.maxLiveBodies;
+      this.positions = new Float32Array(capacity * 3);
+      this.radii = new Float32Array(capacity);
+      this.forces = new Float64Array(capacity * 3);
+      this.bodies = bodies;
+    } catch (error) {
+      freeWorld(world);
+      throw error;
     }
     this.publish();
   }
@@ -740,10 +896,36 @@ export class SimulationHost {
 
   /**
    * Engine snapshot bytes, for same-environment comparison only (SPEC §13.4). Taking one observes the
-   * world; nothing in Lawsmith restores one.
+   * world. These bytes are never restored: a restorable state is a complete `checkpoint()`.
    */
   engineSnapshot(): Uint8Array {
     return this.world!.takeSnapshot();
+  }
+
+  /**
+   * The complete checkpoint at this boundary (SPEC §14.1): the engine snapshot and the sidecar, taken in
+   * one synchronous call between steps. Refused with commands queued, while halted or after a fault, so
+   * what it holds is always a settled boundary before its lifecycle.
+   */
+  checkpoint(): HostCheckpoint {
+    if (this.fault) throw new Error(`A faulted world has no checkpoint: ${this.fault.message}.`);
+    if (this.halted || this.pending.length > 0) throw new Error('A checkpoint is captured at a settled boundary, with nothing queued.');
+    const bodies = this.bodies;
+    return Object.freeze({
+      tick: this.tick,
+      lastAppliedSequence: this.lastAppliedSequence,
+      phase: 'settled-before-lifecycle' as const,
+      engineBytes: this.world!.takeSnapshot(),
+      activeFields: Object.freeze([...this.fieldDefs]),
+      ambientAcceleration: Object.freeze([...this.live.ambientAcceleration]) as unknown as Vec3,
+      emitterStates: Object.freeze(this.emitters.map((e) => Object.freeze({ id: e.def.id, prngState: e.prng, ordinal: e.ordinal }))),
+      bodyIdentityMap: Object.freeze(bodies.map((b) => Object.freeze({ id: b.id, body: b.body.handle, collider: b.collider.handle, radius: b.radius }))),
+      bodyLifetimes: Object.freeze(bodies.map((b) => Object.freeze({ id: b.id, deathTick: Number.isFinite(b.deathTick) ? b.deathTick : null }))),
+      colliderIdentity: Object.freeze([...this.colliderIds].map(([collider, id]) => Object.freeze({ collider, id }))),
+      skippedEmissions: this.skippedEmissions,
+      maxSpeed: this.maxSpeed,
+      limitedSteps: this.limitedSteps,
+    });
   }
 
   /** True once disposed: the world is freed and the host must not be used again. */
