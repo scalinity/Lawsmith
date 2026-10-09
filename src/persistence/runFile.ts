@@ -54,6 +54,27 @@ export interface QualificationIdentity {
 
 const IDENTITY_KEYS = ['app', 'arch', 'build', 'bundle', 'os', 'tauri', 'webkit'] as const;
 
+/**
+ * The qualification identity from the native runtime record and the bundle: facts observed, never
+ * guessed. A composite fact (the Tauri family, the macOS version and build) is unavailable as a whole
+ * when any part is, so `qualified` sees it.
+ */
+export function qualificationIdentity(native: unknown, bundle: string, build: string): QualificationIdentity {
+  const facts = typeof native === 'object' && native !== null ? (native as Record<string, string>) : {};
+  const fact = (key: string) => facts[key] || `unavailable: ${typeof native === 'string' ? native : `no ${key}`}`;
+  const family = ['tauri', 'tauriRuntime', 'tauriRuntimeWry', 'wry', 'tao'].map(fact);
+  const system = ['macos', 'macosBuild'].map(fact);
+  return Object.freeze({
+    app: fact('app'),
+    build,
+    bundle,
+    tauri: family.some((v) => v.startsWith('unavailable')) ? `unavailable: ${family.join('; ')}` : `tauri ${family[0]}; tauri-runtime ${family[1]}; tauri-runtime-wry ${family[2]}; wry ${family[3]}; tao ${family[4]}`,
+    webkit: fact('webview'),
+    os: system.some((v) => v.startsWith('unavailable')) ? `unavailable: ${system.join('; ')}` : `macOS ${system[0]} (${system[1]})`,
+    arch: fact('arch'),
+  });
+}
+
 /** True when every fact is known and the build is the shipped one: only then is a replay an exactness claim. */
 export function qualified(identity: QualificationIdentity): boolean {
   return identity.build === 'packaged' && IDENTITY_KEYS.every((k) => identity[k] !== '' && !identity[k].startsWith('unavailable'));

@@ -7,6 +7,7 @@ import {
   RUN_LIMITS,
   commandText,
   parseRun,
+  qualificationIdentity,
   qualified,
   reservedEnvelopeBytes,
   runBytes,
@@ -265,5 +266,48 @@ describe('strict reading: a precise refusal, never a partly accepted run (SPEC ย
     const result = parseRun(mutated(r, (j) => (j.commands[1]!.sequence = 5)), EXPECT);
     expect(result).toMatchObject({ ok: false, incompatible: false });
     expect('record' in result).toBe(false);
+  });
+});
+
+describe('the qualification identity (SPEC ยง13.1)', () => {
+  // The packaged app's native runtime record and the identity its saved recording carries
+  // (docs/evidence/m6a/m6a-qa.lawsmith-run.json): the format exact replay compares, byte for byte.
+  const native = {
+    app: 'Lawsmith 0.0.0',
+    arch: 'aarch64',
+    build: 'release',
+    macos: '27.2',
+    macosBuild: '26B5091g',
+    recovery: 'override',
+    tao: '0.37.1',
+    tauri: '3.0.0-alpha.4',
+    tauriRuntime: '3.0.0-alpha.3',
+    tauriRuntimeWry: '3.0.0-alpha.4',
+    webview: '22625.2.5.11.1',
+    wry: '0.57.0',
+  };
+  const bundle = 'index-_JsT4sJa.js sha256:4414b3375cbbf6aeb3eecf052045d3d0943018c0bfc34ad0fafdaf17e1e1e9c6';
+
+  it('builds the identity a packaged recording carries, and it is qualified', () => {
+    const identity = qualificationIdentity(native, bundle, 'packaged');
+    expect(identity).toEqual({
+      app: 'Lawsmith 0.0.0',
+      arch: 'aarch64',
+      build: 'packaged',
+      bundle,
+      os: 'macOS 27.2 (26B5091g)',
+      tauri: 'tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.37.1',
+      webkit: '22625.2.5.11.1',
+    });
+    expect(qualified(identity)).toBe(true);
+  });
+
+  it('a macOS version or build that could not be read leaves the identity unqualified', () => {
+    const noBuild = qualificationIdentity({ ...native, macosBuild: 'unavailable: no ProductBuildVersion' }, bundle, 'packaged');
+    expect(noBuild.os).toBe('unavailable: 27.2; unavailable: no ProductBuildVersion');
+    expect(qualified(noBuild)).toBe(false);
+    const { macos: _, ...noVersion } = native;
+    expect(qualified(qualificationIdentity(noVersion, bundle, 'packaged'))).toBe(false);
+    expect(qualified(qualificationIdentity('unavailable: timed out', bundle, 'packaged'))).toBe(false);
   });
 });

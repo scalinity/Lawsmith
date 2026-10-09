@@ -32,7 +32,7 @@ import {
   visualizationInvariance,
 } from './simulation/fixtures';
 import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation, resetPeakWorlds, worldCounts } from './simulation/host';
-import { RUN_LIMITS, parseRun, qualified, type QualificationIdentity, type RunRecord, type StopReason } from './persistence/runFile';
+import { RUN_LIMITS, parseRun, qualificationIdentity, qualified, type RunRecord, type StopReason } from './persistence/runFile';
 import { RunCoordinator, type FinalCheckResult } from './simulation/contexts';
 import { SIMULATION_FINGERPRINT, exportRun } from './simulation/recorder';
 import { LinearReplay, firstDivergence as replayDivergence, observe } from './simulation/replay';
@@ -159,22 +159,6 @@ async function frontendBundle(): Promise<string> {
   }
 }
 
-/** The qualification identity from the native runtime record and the bundle: facts observed, never guessed. */
-function qualificationIdentity(native: unknown, bundle: string): QualificationIdentity {
-  const facts = typeof native === 'object' && native !== null ? (native as Record<string, string>) : {};
-  const fact = (key: string) => facts[key] || `unavailable: ${typeof native === 'string' ? native : `no ${key}`}`;
-  const family = ['tauri', 'tauriRuntime', 'tauriRuntimeWry', 'wry', 'tao'].map(fact);
-  return Object.freeze({
-    app: fact('app'),
-    build: mode,
-    bundle,
-    tauri: family.some((v) => v.startsWith('unavailable')) ? `unavailable: ${family.join('; ')}` : `tauri ${family[0]}; tauri-runtime ${family[1]}; tauri-runtime-wry ${family[2]}; wry ${family[3]}; tao ${family[4]}`,
-    webkit: fact('webview'),
-    os: facts.macos && !facts.macos.startsWith('unavailable') ? `macOS ${facts.macos} (${fact('macosBuild')})` : fact('macos'),
-    arch: fact('arch'),
-  });
-}
-
 async function start() {
   const begin = performance.now();
   facts.runtime = await withTimeout(invoke<Record<string, string>>('runtime_identity'), 'Native runtime identity').catch(
@@ -182,7 +166,7 @@ async function start() {
   );
   const timerMs = timerResolutionMs();
   report('runtime', { ...facts, userAgent: navigator.userAgent, timerResolutionMs: timerMs });
-  const identity = qualificationIdentity(facts.runtime, await frontendBundle());
+  const identity = qualificationIdentity(facts.runtime, await frontendBundle(), mode);
   report('qualification', { identity, qualified: qualified(identity), fingerprint: SIMULATION_FINGERPRINT });
 
   const renderer = await withTimeout(createRenderer($('viewport'), fault === 'webgl'), 'WebGPU renderer initialization');
