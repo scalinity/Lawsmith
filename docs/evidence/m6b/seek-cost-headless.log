@@ -1,0 +1,2 @@
+# VITE_LAWSMITH_MEASURE=1 npx vitest run tests/seekCost.test.ts --silent=false  (Node v26.10.0, headless V8; candidate d6966fd, 2026-10-08 23:15)
+{"record":{"finalTick":7200,"commands":600},"checkpoint":{"count":30,"bytes":389553,"engineBytes":356022,"bodies":200,"cacheBytes":11695624},"restoreMs":{"p50":0.48,"p95":0.96,"p99":6.14,"max":6.14},"uncached":{"ms":5382.7,"steps":7200,"batches":630},"cachedSeekMs":{"p50":100.08,"p95":169.98,"p99":182.87,"max":185.32},"cachedSteps":{"p50":129,"p95":226,"p99":232,"max":239}}
