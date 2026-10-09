@@ -202,9 +202,11 @@ export class DocumentController {
 
   /**
    * Drops every command still queued and unapplied (SPEC §13.3: a recording closed at a limit). The
-   * authored scene already holds everything the host applied, so nothing else changes.
+   * acknowledgments are adopted first, so the authored scene holds everything the host applied and
+   * nothing else changes.
    */
   discardPending(): void {
+    this.sync();
     this.host.discardPending();
     this.submitted = new Map();
   }
