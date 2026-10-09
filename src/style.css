@@ -1272,13 +1272,14 @@ button.primary {
   background: var(--lavender);
 }
 
-/* The replay timeline (M6B): a hairline track with a lavender thumb, quiet until it is used. */
+/* The replay timeline (M6B): the played part in lavender, the rest in tertiary ink (about 5:1 on the
+   panel), a 14 px thumb on a 24 px hit area. --timeline-fill is the thumb's position, set by renderRun. */
 #run-timeline {
   display: block;
   width: 100%;
   min-width: 240px;
-  height: 18px;
-  margin: 4px 0 0;
+  height: 24px;
+  margin: 2px 0 0;
   background: transparent;
   -webkit-appearance: none;
   appearance: none;
@@ -1286,15 +1287,15 @@ button.primary {
 }
 
 #run-timeline::-webkit-slider-runnable-track {
-  height: 2px;
-  border-radius: 1px;
-  background: var(--divider);
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--lavender) 0 var(--timeline-fill, 0%), var(--text-tertiary) var(--timeline-fill, 0%) 100%);
 }
 
 #run-timeline::-webkit-slider-thumb {
-  width: 12px;
-  height: 12px;
-  margin-top: -5px;
+  width: 14px;
+  height: 14px;
+  margin-top: -5.5px;
   border: 1px solid var(--shell);
   border-radius: 50%;
   background: var(--lavender);

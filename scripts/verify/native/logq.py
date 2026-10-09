@@ -12,7 +12,7 @@
   logq.py lawhandleworld LOG NAME DX DY DZ   that handle's world point plus a world offset
   logq.py project LOG OX OY X Y Z            screen point of a world point, by the last `layout` camera
   logq.py timeline LOG OX OY TICK            screen point of TICK on the replay timeline in the last `layout`
-                                             (its 12 px thumb's center travels the track inside its ends)
+                                             (its 14 px thumb's center travels the track inside its ends)
 """
 import json
 import sys
@@ -84,7 +84,7 @@ def main(argv):
             raise SystemExit('no replay timeline in the last layout')
         x, y, w, h = timeline['box']
         fraction = min(1.0, max(0.0, float(argv[5]) / timeline['max'])) if timeline['max'] else 0.0
-        print(round(float(argv[3]) + x + 6 + (w - 12) * fraction), round(float(argv[4]) + y + h / 2))
+        print(round(float(argv[3]) + x + 7 + (w - 14) * fraction), round(float(argv[4]) + y + h / 2))
     else:
         raise SystemExit(f'unknown command {command}')
 

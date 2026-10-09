@@ -1692,6 +1692,8 @@ async function start() {
       const trailNote = seekedTrails && !seek && (trails.mode === 'all' || (trails.mode === 'selected' && explained !== null)) ? ' Trails start again from here.' : '';
       status = ['tick ', ['count', String(host.tick)], ' of ', ['count', String(finalTick)], ', change ', ['count', String(host.lastAppliedSequence)], ' of ', ['count', String(lastAppliedSequence)], `.${where}${trailNote}`];
       timeline = { value: seek ? seek.job.target.tick : host.tick, max: finalTick };
+      // While a seek shows its progress, the progressbar carries it for assistive technology and the eye alike.
+      meter = seekShown ? runs.seekProgress(seek.job) : null;
       if (replayEnded) {
         const recorded = replay.record.qualification;
         const unknown = Object.entries(recorded).filter(([, v]) => v.startsWith('unavailable')).map(([k]) => k);
@@ -1737,6 +1739,7 @@ async function start() {
       runParts.timeline.max = String(timeline.max);
       if (runParts.timeline.value !== String(timeline.value)) runParts.timeline.value = String(timeline.value);
       runParts.timeline.setAttribute('aria-valuetext', `tick ${timeline.value} of ${timeline.max}`);
+      runParts.timeline.style.setProperty('--timeline-fill', `${timeline.max > 0 ? ((100 * timeline.value) / timeline.max).toFixed(2) : 0}%`);
       runParts.timeline.disabled = busy || timeline.max === 0;
     }
     runParts.check.hidden = check === null;
