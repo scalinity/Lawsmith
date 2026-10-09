@@ -2,7 +2,8 @@
 // linearly from that root to exactly the same authoritative state at every settled boundary and at the
 // frozen final address. Real host, document controller, recorder, coordinator and replay world; no
 // checkpoint is captured or restored anywhere.
-import { beforeAll, describe, expect, it } from 'vitest';
+import RAPIER from '@dimforge/rapier3d-compat';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { cloneFrozen, type FieldDefinition, type FieldExpression } from '../src/domain/scene';
 import { compactJson, parseRun, serializeRun, type RunRecord } from '../src/persistence/runFile';
 import { initSimulation, type AppliedCommand } from '../src/simulation/host';
@@ -579,5 +580,43 @@ describe('the native QA scene', () => {
     if (!parsed.ok) return;
     expect(serialize(parsed.document)).toBe(text);
     expect(parsed.document.semantic.fields.map((f) => f.id)).toEqual(['calm', 'push', 'storm-bottle']);
+  });
+});
+
+describe('production replay restores no snapshot (MILESTONES M6A: checkpoint-free)', () => {
+  it('direct, paced, restarted and imported replays never call World.restoreSnapshot', async () => {
+    const restore = vi.spyOn(RAPIER.World, 'restoreSnapshot');
+    try {
+      const s = session();
+      s.coordinator.startRecording();
+      s.steps(20);
+      s.controller.editField('push', 'Move law', moveTo(0));
+      s.steps(20);
+      s.controller.editField('storm-bottle', 'Disable law', (f) => ({ ...f, enabled: false }));
+      const record = (await s.coordinator.stopRecording())!;
+      const direct = new LinearReplay(record);
+      direct.runToEnd();
+      direct.dispose();
+      const paced = () => {
+        while (!s.coordinator.replay!.complete) s.coordinator.advanceReplay(1000, Infinity, () => 0);
+      };
+      s.coordinator.enterReplay();
+      paced();
+      expect(await s.coordinator.checkReplay()).toEqual({ kind: 'match' });
+      s.coordinator.restartReplay();
+      paced();
+      const read = parseRun(exportRun(record).text, EXPECT);
+      if (!read.ok) throw read.error;
+      s.coordinator.commitImport(s.coordinator.prepareImport(read.record));
+      paced();
+      expect(await s.coordinator.checkReplay()).toEqual({ kind: 'match' });
+      s.coordinator.returnToAuthoring();
+      expect(restore).not.toHaveBeenCalled();
+      // The spy sees a restoration when one happens.
+      RAPIER.World.restoreSnapshot(s.live().engineSnapshot()).free();
+      expect(restore).toHaveBeenCalledTimes(1);
+    } finally {
+      restore.mockRestore();
+    }
   });
 });
