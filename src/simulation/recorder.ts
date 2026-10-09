@@ -65,7 +65,6 @@ export class RunRecorder implements CommandRecorder {
   private logBytes = 0;
   /** Size of the admitted command, between `admit` and its `append`. */
   private admitted = 0;
-  private readonly envelopeBytes: number;
   closed: Closing | null = null;
   /** Told, synchronously, when the recorder closes itself at a limit (the host is then halted). */
   onLimit: ((reason: StopReason) => void) | null = null;
@@ -80,11 +79,12 @@ export class RunRecorder implements CommandRecorder {
     readonly qualification: QualificationIdentity,
     readonly runId: string,
     readonly fingerprint: SimulationFingerprint = SIMULATION_FINGERPRINT,
+    /** The reserved envelope's size: `check`'s answer for these same arguments, when the caller already asked it. */
+    private readonly envelopeBytes: number = RunRecorder.check(root, qualification, runId, fingerprint),
   ) {
     if (host.tick !== 0 || host.lastAppliedSequence !== 0 || host.pendingCount !== 0 || host.recorder || host.halted) {
       throw new Error('A recording starts from a freshly rebuilt world at (0, 0) with nothing queued.');
     }
-    this.envelopeBytes = RunRecorder.check(root, qualification, runId, fingerprint);
     host.recorder = this;
   }
 
