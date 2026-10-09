@@ -3,13 +3,13 @@
 // qualify exact replay. Writing is canonical and its exact UTF-8 size is computable from parts, so a
 // recorder can hold the complete-file budget incrementally. Reading is strict and transactional:
 // a candidate record or a precise error, never a partly accepted log.
-import { ID_PATTERN, RUN_FORMAT, SCENE_FORMAT, SCENE_LIMITS, deepFreeze, validateField, type FieldDefinition, type SceneDocument, type Vec3 } from '../domain/scene';
+import { ID_PATTERN, RUN_FORMAT, SCENE_FORMAT, SCENE_LIMITS, checkLawPresentation, deepFreeze, validateField, type FieldDefinition, type LawPresentation, type SceneDocument, type Vec3 } from '../domain/scene';
 import { expressionStats } from '../fields/expression';
 import type { AppliedCommand, CommandPayload, EffectiveProfile } from '../simulation/host';
 import { ImportError, canonicalJson, readField, readSceneValue } from './sceneFile';
 
 export { RUN_FORMAT };
-export const RUN_SCHEMA_VERSION = 1;
+export const RUN_SCHEMA_VERSION = 2;
 export const RUN_SUFFIX = '.lawsmith-run.json';
 
 /** SPEC §13.3 recording limits: 60 simulated seconds, 50,000 commands, 16 MiB of complete UTF-8 run data. */
@@ -106,6 +106,29 @@ export interface RunRecord {
   /** Absent only for a run ended by a simulation fault, whose world no longer holds the final state. */
   readonly finalCheck: FinalCheck | null;
   readonly stopped: StopReason;
+  /**
+   * How the authored scene presented the laws the recording created and still held at its end, in ID
+   * order (SPEC §13.3). Presentation is not a command: it names those laws in replay and never affects it.
+   */
+  readonly createdLaws: readonly LawPresentation[];
+}
+
+/**
+ * The laws a log creates (puts of an ID its root has no law for) that still exist after it, in ID
+ * order: the laws whose presentation a record carries. The recorder and the reader share this rule.
+ */
+export function createdLawIds(root: SceneDocument, commands: readonly AppliedCommand[]): string[] {
+  const rootLaws = new Set(root.semantic.fields.map((f) => f.id));
+  const existing = new Set(rootLaws);
+  const created = new Set<string>();
+  for (const { payload } of commands) {
+    if (payload.kind === 'removeField') existing.delete(payload.id);
+    else if (payload.kind === 'putField') {
+      existing.add(payload.field.id);
+      if (!rootLaws.has(payload.field.id)) created.add(payload.field.id);
+    }
+  }
+  return [...created].filter((id) => existing.has(id)).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 // ---------------------------------------------------------------- canonical writing and its size
@@ -164,19 +187,33 @@ export const runBytes = (envelopeBytes: number, commandBytes: number, count: num
 
 /**
  * The envelope at its largest endpoint (SPEC §13.3 reservation): the most digits a final tick and
- * cursor can take, a final check present and the longest stop reason. Advancing time or stopping can
- * then never grow the file past what a recorder has already admitted.
+ * cursor can take, a final check present and the longest stop reason, with no created law yet (each
+ * reserves its own entry, `createdLawReserve`). Advancing time or stopping can then never grow the
+ * file past what a recorder has already admitted.
  */
-export function reservedEnvelopeBytes(run: Omit<RunEnvelope, 'finalTick' | 'lastAppliedSequence' | 'finalCheck' | 'stopped'>): number {
+export function reservedEnvelopeBytes(run: Omit<RunEnvelope, 'finalTick' | 'lastAppliedSequence' | 'finalCheck' | 'stopped' | 'createdLaws'>): number {
   return utf8Bytes(
     envelopeText({
       ...run,
+      createdLaws: [],
       finalTick: RUN_LIMITS.ticks,
       lastAppliedSequence: RUN_LIMITS.commands,
       finalCheck: { stateSha256: '0'.repeat(64), engineSha256: '0'.repeat(64) },
       stopped: 'duration',
     }),
   );
+}
+
+/** The longest label a created law's entry can carry: six bytes a character, as `\u0000` escapes it. */
+const WIDEST_LABEL = '\u0000'.repeat(SCENE_LIMITS.textLength);
+
+/**
+ * The most one created law's presentation entry can add to the file: its ID with the widest label,
+ * the longer boolean and the array's framing (`[` and `]` lines for the first entry, `,` for later ones).
+ * A recorder reserves it when a command first creates that law, since the label may change until the end.
+ */
+export function createdLawReserve(id: string): number {
+  return utf8Bytes(canonicalJson({ color: '#000000', id, label: WIDEST_LABEL, visible: false }, '    ')) + 8;
 }
 
 /** The run file's exact text: the canonical envelope with one compact command per line. */
@@ -347,6 +384,25 @@ function readCommands(value: unknown, path: string, root: SceneDocument, finalTi
   return commands;
 }
 
+/** Reads the created laws' presentation: entries in ID order, each for a law the log creates and keeps. */
+function readCreatedLaws(value: unknown, path: string, root: SceneDocument, commands: readonly AppliedCommand[]): LawPresentation[] {
+  if (!Array.isArray(value)) throw new ImportError(path, 'must be an array');
+  const created = new Set(createdLawIds(root, commands));
+  let previous = '';
+  return value.map((entry, i) => {
+    const p = at(path, i);
+    const o = object(entry, p, ['color', 'id', 'label', 'visible']);
+    if (typeof o.visible !== 'boolean') throw new ImportError(at(p, 'visible'), 'must be true or false');
+    const law: LawPresentation = { id: id(o.id, at(p, 'id')), label: string(o.label, at(p, 'label'), SCENE_LIMITS.textLength), color: string(o.color, at(p, 'color'), 7), visible: o.visible };
+    if (!created.has(law.id)) throw new ImportError(at(p, 'id'), `no law ${JSON.stringify(law.id)} is created by this recording and held at its end`);
+    if (law.id <= previous) throw new ImportError(at(p, 'id'), 'must follow the previous entry in ID order, once');
+    previous = law.id;
+    const error = checkLawPresentation(law);
+    if (error) throw new ImportError(p, error);
+    return law;
+  });
+}
+
 /**
  * Parses a run file (SPEC §13.3, §15.2): size, JSON, format, schema, simulation fingerprint and
  * qualified identity, then the root, endpoint and every command. Nothing is executed or merged.
@@ -370,7 +426,7 @@ export function parseRun(text: string, expected: RunExpectations): RunParse {
     const o = object(
       value,
       '',
-      ['commands', 'finalTick', 'format', 'lastAppliedSequence', 'qualification', 'root', 'runId', 'schemaVersion', 'simulationFingerprint', 'stopped'],
+      ['commands', 'createdLaws', 'finalTick', 'format', 'lastAppliedSequence', 'qualification', 'root', 'runId', 'schemaVersion', 'simulationFingerprint', 'stopped'],
       ['finalCheck'],
     );
     // Compatibility first: a run from another simulation or runtime is refused before anything else is read.
@@ -396,6 +452,7 @@ export function parseRun(text: string, expected: RunExpectations): RunParse {
     const last = commands.length ? commands[commands.length - 1]!.sequence : 0;
     if (lastAppliedSequence !== last) throw new ImportError('lastAppliedSequence', `must be ${last}, the last included sequence`);
     if (stopped === 'commands' && commands.length !== RUN_LIMITS.commands) throw new ImportError('stopped', `a recording stopped at its command limit holds ${RUN_LIMITS.commands} commands`);
+    const createdLaws = readCreatedLaws(o.createdLaws, 'createdLaws', root, commands);
     // Every object here is new, built by this reader: freezing in place is enough, no copy of the log.
     const record: RunRecord = deepFreeze({
       format: RUN_FORMAT,
@@ -409,6 +466,7 @@ export function parseRun(text: string, expected: RunExpectations): RunParse {
       lastAppliedSequence,
       finalCheck,
       stopped,
+      createdLaws,
     });
     return { ok: true, record };
   } catch (error) {

@@ -41,6 +41,10 @@ n=$(count document)
 open_panel m6a-lab.lawsmith.json
 wait_log document $(( n + 1 )) 15
 press_expect run-record recording
+# A law created during the recording, at tick 0: replay names it as the record carries it (SPEC §13.3).
+law push select
+press_expect law-duplicate control
+expect control "a law created during the recording" "e.get('duplicate')=='push' and e['created']=='push-2'"
 press_expect play sim-control
 sleep 1.2
 law storm-bottle enabled
@@ -78,6 +82,7 @@ sleep 1.5
 pause
 layout
 address=$(logq field $APP_LOG layout run.replay.address)
+expect layout "the replay names the law the recording created as its record carries it, not by its ID" "any(l['id']=='push-2' and l['label']=='Push 2' for l in e['laws'])"
 keys kd:cmd t:w ku:cmd
 alert_for recording "Save Recording…"
 save_panel $SCENES guard-run.lawsmith-run.json

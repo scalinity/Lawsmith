@@ -2,10 +2,12 @@
 // known from its parts, and a strict, transactional reader that refuses anything this build would not
 // replay exactly, naming the path. Valid inputs come from real recordings.
 import { beforeAll, describe, expect, it } from 'vitest';
-import { deepFreeze } from '../src/domain/scene';
+import { SCENE_LIMITS, deepFreeze } from '../src/domain/scene';
 import {
   RUN_LIMITS,
+  RUN_SCHEMA_VERSION,
   commandText,
+  createdLawReserve,
   parseRun,
   qualificationIdentity,
   qualified,
@@ -155,8 +157,10 @@ describe('strict reading: a precise refusal, never a partly accepted run (SPEC �
     expect(refusal('[]').reason).toMatch(/not a JSON object/);
     expect(refusal(DEFAULT_SCENE_TEXT)).toMatchObject({ path: 'format', reason: 'this is a Lawsmith scene, not a recording; open it with Open Scene' });
     expect(refusal(mutated(r, (j) => (j.format = 'lawsmith.other'))).path).toBe('format');
-    expect(refusal(mutated(r, (j) => (j.schemaVersion = 2))).reason).toMatch(/newer than this build/);
+    expect(refusal(mutated(r, (j) => (j.schemaVersion = RUN_SCHEMA_VERSION + 1))).reason).toMatch(/newer than this build/);
     expect(refusal(mutated(r, (j) => (j.schemaVersion = 0))).reason).toMatch(/not supported/);
+    // Schema 1 had no created laws' presentation; every such file came from a build this one refuses anyway.
+    expect(refusal(mutated(r, (j) => (j.schemaVersion = 1))).reason).toMatch(/schema 1 is not supported/);
     // And the scene reader refuses a recording with the reverse hint.
     const asScene = parseScene(text(r));
     expect(!asScene.ok && asScene.error.reason).toBe('this is a Lawsmith recording, not a scene; open it with Open Recording');
@@ -312,5 +316,59 @@ describe('the qualification identity (SPEC §13.1)', () => {
     const { macos: _, ...noVersion } = native;
     expect(qualified(qualificationIdentity(noVersion, bundle, 'packaged'))).toBe(false);
     expect(qualified(qualificationIdentity('unavailable: timed out', bundle, 'packaged'))).toBe(false);
+  });
+});
+
+describe('the presentation of laws a recording creates (SPEC §13.3)', () => {
+  /** A recording that creates two laws, names one, and deletes the other before it stops. */
+  async function creating() {
+    const s = session();
+    s.coordinator.startRecording();
+    const recorder = s.coordinator.recorder!;
+    s.steps(5);
+    const kept = s.controller.duplicate('push');
+    const gone = s.controller.duplicate('calm');
+    if (!kept.ok || !gone.ok) throw new Error('duplicate failed');
+    expect(s.controller.setLawPresentation(kept.value.id, { label: 'Breeze', color: '#336699' }).ok).toBe(true);
+    s.steps(5);
+    expect(s.controller.remove(gone.value.id).ok).toBe(true);
+    const record = (await s.coordinator.stopRecording())!;
+    return { s, recorder, record, id: kept.value.id };
+  }
+
+  it('carries the names and colors the scene gives them at the end, and reads them back', async () => {
+    const { s, record, id } = await creating();
+    expect(record.createdLaws).toEqual([{ id, label: 'Breeze', color: '#336699', visible: true }]);
+    // A rename after the stop cannot reach the frozen record.
+    s.controller.setLawPresentation(id, { label: 'Later' });
+    expect(record.createdLaws[0]!.label).toBe('Breeze');
+    expect(Object.isFrozen(record.createdLaws[0])).toBe(true);
+    const read = parseRun(text(record), EXPECT);
+    expect(read.ok && read.record.createdLaws).toEqual(record.createdLaws);
+  });
+
+  it('refuses an entry the log does not create and keep, out of order, or malformed', async () => {
+    const { record, id } = await creating();
+    const laws = (j: Json) => j.createdLaws as Record<string, unknown>[];
+    expect(refusal(mutated(record, (j) => laws(j).push({ id: 'push', label: 'Push', color: '#336699', visible: true })))).toMatchObject({ path: 'createdLaws[1].id' });
+    expect(refusal(mutated(record, (j) => (laws(j)[0]!.id = 'nowhere'))).reason).toMatch(/no law "nowhere" is created by this recording/);
+    expect(refusal(mutated(record, (j) => laws(j).push({ ...laws(j)[0] })))).toMatchObject({ path: 'createdLaws[1].id', reason: 'must follow the previous entry in ID order, once' });
+    expect(refusal(mutated(record, (j) => (laws(j)[0]!.color = '#ABCDEF'))).path).toBe('createdLaws[0]');
+    expect(refusal(mutated(record, (j) => (laws(j)[0]!.visible = 'yes'))).path).toBe('createdLaws[0].visible');
+    expect(refusal(mutated(record, (j) => (laws(j)[0]!.camera = 1))).path).toBe('createdLaws[0].camera');
+    expect(refusal(mutated(record, (j) => delete j.createdLaws))).toMatchObject({ path: 'createdLaws', reason: 'is required' });
+    expect(id).toBe('push-2');
+  });
+
+  it('a created law reserves exactly its widest entry, so the file never outgrows what the recorder admitted', async () => {
+    const { recorder, record, id } = await creating();
+    const widest = (laws: RunRecord['createdLaws']): RunRecord => deepFreeze({ ...structuredClone(record), createdLaws: laws });
+    const entry = (law: string) => ({ id: law, label: '\u0000'.repeat(SCENE_LIMITS.textLength), color: '#000000', visible: false });
+    const none = utf8Bytes(serializeRun(widest([])));
+    expect(utf8Bytes(serializeRun(widest([entry(id)]))) - none).toBe(createdLawReserve(id));
+    expect(utf8Bytes(serializeRun(widest([entry(id), entry('push-3')]))) - none).toBeLessThanOrEqual(createdLawReserve(id) + createdLawReserve('push-3'));
+    // Both created laws reserved, though only one is carried: the file is within what was admitted.
+    expect(exportRun(record).bytes).toBeLessThanOrEqual(recorder.bytes);
+    expect(recorder.bytes - exportRun(record).bytes).toBeGreaterThan(createdLawReserve('calm-2'));
   });
 });

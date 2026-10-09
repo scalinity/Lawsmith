@@ -6,7 +6,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NOT_APPLIED } from '../src/domain/document';
 import { type FieldDefinition, type FieldExpression } from '../src/domain/scene';
-import { RUN_LIMITS, commandText, parseRun, utf8Bytes } from '../src/persistence/runFile';
+import { RUN_LIMITS, commandText, createdLawReserve, parseRun, utf8Bytes } from '../src/persistence/runFile';
 import { RunCoordinator } from '../src/simulation/contexts';
 import { initSimulation, type AppliedCommand } from '../src/simulation/host';
 import { RecordingTooLarge, exportRun } from '../src/simulation/recorder';
@@ -168,6 +168,28 @@ describe('complete UTF-8 bytes: 16 MiB', () => {
     expect(bytes).toBeGreaterThan(RUN_LIMITS.fileBytes - 16);
     expect(bytes).toBe(new TextEncoder().encode(text).length);
     expect(parseRun(text, EXPECT).ok).toBe(true);
+  });
+
+  it('a law created near the limit is refused when its reserved presentation does not fit; an edit of that size fits', { timeout: 120_000 }, async () => {
+    const s = session();
+    s.coordinator.startRecording();
+    const recorder = s.coordinator.recorder!;
+    s.steps(4);
+    let k = 0;
+    const big = putSize(s, heavy('calm', 0), 'tx-fill');
+    const reserve = createdLawReserve('push-2');
+    const left = () => RUN_LIMITS.fileBytes - recorder.bytes;
+    while (left() > big + reserve) s.controller.editField('calm', 'Fill', () => heavy('calm', (k++ % 5) * 0.5));
+    while (left() > reserve - 2000) s.controller.setAmbient([0, k++ % 2 ? -9.8 : -9.81, 0]);
+    // Only a creation reserves an entry: an edit as large as the duplicate's command still fits.
+    expect(s.controller.editField('push', 'Move law', moveTo(0)).ok).toBe(true);
+    expect(s.controller.duplicate('push')).toEqual({ ok: false, reason: NOT_APPLIED, path: '' });
+    await flush();
+    expect(s.limits).toEqual(['bytes']);
+    const record = (await s.coordinator.settled())!;
+    expect(record.createdLaws).toEqual([]);
+    expect(s.controller.lawState('push-2')).toBeNull();
+    expect(exportRun(record).bytes).toBeLessThanOrEqual(RUN_LIMITS.fileBytes);
   });
 
   it('refuses to start a recording whose envelope alone cannot fit, leaving the live world as it was', () => {

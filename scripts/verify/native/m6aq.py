@@ -110,6 +110,7 @@ def runfile(path):
         "disableCommands": [c["sequence"] for c in enabled],
         "terminalCommands": ticks.get(r["finalTick"], []),
         "rootLaws": [f["id"] for f in r["root"]["semantic"]["fields"]],
+        "createdLaws": r["createdLaws"],
         "qualification": r["qualification"],
     }
     ok = seq_ok and order_ok and endpoint_ok and multi and same_tick and triangle and undone and enabled and r["format"] == "lawsmith.run"

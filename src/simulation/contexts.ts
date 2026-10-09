@@ -148,7 +148,10 @@ export class RunCoordinator {
   private finish(recorder: RunRecorder): void {
     this.stopReason = recorder.closed!.reason;
     this.context += 1;
-    this.finalizing = recorder.record().then(
+    // Presentation is not a command: the laws the recording created keep the names and colors the
+    // authored scene gives them now, at the record's end, so a replay can show them (SPEC §13.3).
+    const createdLaws = recorder.createdLaws().map((id) => this.controller.presentationOf(id));
+    this.finalizing = recorder.record(createdLaws).then(
       (record) => {
         this.record = record;
         this.exported = false;

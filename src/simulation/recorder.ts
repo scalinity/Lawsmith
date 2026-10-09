@@ -1,13 +1,15 @@
 // The run recorder (SPEC §13.3): it observes the commands the live host actually consumes, from a
 // frozen tick-zero root, and closes at the first limit with its prefix intact. It never fabricates a
 // command from input events: the host offers it each resolved command before applying it.
-import { deepFreeze, type SceneDocument } from '../domain/scene';
+import { deepFreeze, type LawPresentation, type SceneDocument } from '../domain/scene';
 import { FIELD_KERNEL_VERSION } from '../fields/kernel';
 import {
   RUN_FORMAT,
   RUN_LIMITS,
   RUN_SCHEMA_VERSION,
   commandText,
+  createdLawIds,
+  createdLawReserve,
   reservedEnvelopeBytes,
   runBytes,
   serializeRun,
@@ -65,6 +67,12 @@ export class RunRecorder implements CommandRecorder {
   private logBytes = 0;
   /** Size of the admitted command, between `admit` and its `append`. */
   private admitted = 0;
+  /** The law the admitted command first creates, if any, and the presentation entry reserved for it. */
+  private admittedCreation: { id: string; bytes: number } | null = null;
+  private readonly rootLaws: ReadonlySet<string>;
+  /** Laws the log has created, each with its presentation entry reserved once (SPEC §13.3). */
+  private readonly created = new Set<string>();
+  private createdBytes = 0;
   closed: Closing | null = null;
   /** Told, synchronously, when the recorder closes itself at a limit (the host is then halted). */
   onLimit: ((reason: StopReason) => void) | null = null;
@@ -85,6 +93,7 @@ export class RunRecorder implements CommandRecorder {
     if (host.tick !== 0 || host.lastAppliedSequence !== 0 || host.pendingCount !== 0 || host.recorder || host.halted) {
       throw new Error('A recording starts from a freshly rebuilt world at (0, 0) with nothing queued.');
     }
+    this.rootLaws = new Set(root.semantic.fields.map((f) => f.id));
     host.recorder = this;
   }
 
@@ -105,9 +114,9 @@ export class RunRecorder implements CommandRecorder {
     return this.log.length;
   }
 
-  /** The complete file's size so far, with the endpoint reserved at its largest. */
+  /** The complete file's size so far, with the endpoint and each created law's entry reserved at their largest. */
   get bytes(): number {
-    return runBytes(this.envelopeBytes, this.logBytes, this.log.length);
+    return runBytes(this.envelopeBytes + this.createdBytes, this.logBytes, this.log.length);
   }
 
   /** The completed tick the live world has reached. */
@@ -123,11 +132,15 @@ export class RunRecorder implements CommandRecorder {
       return false;
     }
     const size = utf8Bytes(commandText(command));
-    if (runBytes(this.envelopeBytes, this.logBytes + size, this.log.length + 1) > RUN_LIMITS.fileBytes) {
+    const { payload } = command;
+    const creates = payload.kind === 'putField' && !this.rootLaws.has(payload.field.id) && !this.created.has(payload.field.id);
+    const creation = creates ? { id: payload.field.id, bytes: createdLawReserve(payload.field.id) } : null;
+    if (runBytes(this.envelopeBytes + this.createdBytes + (creation?.bytes ?? 0), this.logBytes + size, this.log.length + 1) > RUN_LIMITS.fileBytes) {
       this.close('bytes');
       return false;
     }
     this.admitted = size;
+    this.admittedCreation = creation;
     return true;
   }
 
@@ -135,6 +148,16 @@ export class RunRecorder implements CommandRecorder {
     // The log is append-only and immutable once consumed; the payload is the resolved, frozen value.
     this.log.push(Object.freeze({ atTick: command.atTick, sequence: command.sequence, transactionId: command.transactionId, payload: deepFreeze(command.payload) }));
     this.logBytes += this.admitted;
+    if (this.admittedCreation) {
+      this.created.add(this.admittedCreation.id);
+      this.createdBytes += this.admittedCreation.bytes;
+      this.admittedCreation = null;
+    }
+  }
+
+  /** The laws the log created and still holds at its end, in ID order: those whose presentation the record carries. */
+  createdLaws(): string[] {
+    return createdLawIds(this.root, this.log);
   }
 
   /** After a completed transition: the record closes on reaching 60 simulated seconds. */
@@ -171,9 +194,10 @@ export class RunRecorder implements CommandRecorder {
 
   /**
    * The immutable RunRecord, once closed: the final check is the SHA-256 of the state and engine bytes
-   * captured at the final address. Its exact size is checked against what the recorder reserved.
+   * captured at the final address. `createdLaws` is the presentation of `createdLaws()`, captured when
+   * the recording closed; each entry fits what its creation reserved.
    */
-  async record(): Promise<RunRecord> {
+  async record(createdLaws: readonly LawPresentation[] = []): Promise<RunRecord> {
     const closed = this.closed;
     if (!closed) throw new Error('the recording is still running');
     const last = this.log.length ? this.log[this.log.length - 1]!.sequence : 0;
@@ -191,6 +215,7 @@ export class RunRecorder implements CommandRecorder {
       lastAppliedSequence: closed.sequence,
       finalCheck,
       stopped: closed.reason,
+      createdLaws: createdLaws.map(({ id, label, color, visible }) => ({ id, label, color, visible })),
     });
     return record;
   }

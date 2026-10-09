@@ -208,9 +208,15 @@ async function start() {
   const replaying = () => runs.selected === 'replay';
   const scheduler = new FixedStepScheduler(STEP_MS);
   const appliedLaw = (id: string) => host.appliedFields().find((f) => f.id === id);
-  /** A law's names and colors in the displayed context: a replay shows its root's, never the newer authored ones. */
-  const lawPresentation = (id: string): LawPresentation =>
-    replaying() ? (runs.replay?.record.root.presentation.laws.find((p) => p.id === id) ?? defaultLawPresentation(id)) : authoring.presentationOf(id);
+  /**
+   * A law's names and colors in the displayed context: a replay shows its root's, and for laws the
+   * recording created the ones its record carries, never the newer authored ones.
+   */
+  const lawPresentation = (id: string): LawPresentation => {
+    if (!replaying()) return authoring.presentationOf(id);
+    const record = runs.replay?.record;
+    return record?.root.presentation.laws.find((p) => p.id === id) ?? record?.createdLaws.find((p) => p.id === id) ?? defaultLawPresentation(id);
+  };
 
   const viewport = createViewport(renderer, report);
   const world = createWorldView(viewport.scene, initial.semantic);
@@ -1621,6 +1627,7 @@ async function start() {
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
     const laws = [...lawList.querySelectorAll('.law-row')].map((row) => ({
       id: row.querySelector<HTMLElement>('.law-select')!.dataset.id,
+      label: row.querySelector('.law-name')!.textContent,
       select: box(row.querySelector('.law-select')),
       visible: box(row.querySelector('.law-visible')),
       enabled: box(row.querySelector('.law-enabled')),
