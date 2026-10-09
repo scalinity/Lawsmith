@@ -428,7 +428,8 @@ async function start() {
     // A recording ends where its world faulted, without a final check (that world no longer holds it).
     if (!replaying() && runs.recordingState === 'recording') stopRecording('fault');
     report('simulation-fault', { tick: error.tick, entity: error.entity, reason: error.reason });
-    showSimError(`${error.message}. The last valid frame is shown.`, true);
+    // Reset restarts the authored scene, so a replay's fault does not offer it (as showContext does).
+    showSimError(`${error.message}. The last valid frame is shown.`, !replaying());
   };
 
   const stepTimes: number[] = [];
