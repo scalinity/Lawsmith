@@ -1272,6 +1272,52 @@ button.primary {
   background: var(--lavender);
 }
 
+/* The replay timeline (M6B): a hairline track with a lavender thumb, quiet until it is used. */
+#run-timeline {
+  display: block;
+  width: 100%;
+  min-width: 240px;
+  height: 18px;
+  margin: 4px 0 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+#run-timeline::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 1px;
+  background: var(--divider);
+}
+
+#run-timeline::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -5px;
+  border: 1px solid var(--shell);
+  border-radius: 50%;
+  background: var(--lavender);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#run-timeline:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+#run-timeline:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+#run-cancel {
+  color: var(--text);
+  border-color: var(--lavender);
+}
+
 #run-check {
   margin: 4px 0 0;
   font-size: 12px;

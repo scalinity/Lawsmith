@@ -31,11 +31,11 @@ import {
   trailFidelity,
   visualizationInvariance,
 } from './simulation/fixtures';
-import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation, resetPeakWorlds, worldCounts } from './simulation/host';
+import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation, resetPeakWorlds, worldCounts, xorshift32 } from './simulation/host';
 import { RUN_LIMITS, parseRun, qualificationIdentity, qualified, type RunRecord, type StopReason } from './persistence/runFile';
-import { RunCoordinator, type FinalCheckResult } from './simulation/contexts';
+import { RunCoordinator, type CheckpointEvent, type FinalCheckResult, type SeekJob, type SeekStatus } from './simulation/contexts';
 import { SIMULATION_FINGERPRINT, exportRun } from './simulation/recorder';
-import { LinearReplay, firstDivergence as replayDivergence, observe } from './simulation/replay';
+import { LinearReplay, firstDivergence as replayDivergence, observe, type Address, type Observed } from './simulation/replay';
 import type { TransitionObservation } from './simulation/observation';
 import { FixedStepScheduler } from './simulation/scheduler';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
@@ -136,8 +136,42 @@ const BUSY_TEXT: Record<string, string> = {
 const DEGREES = 180 / Math.PI;
 /** Run checkpoints for native evidence: the state digests at every 240th settled boundary of a recording and of its replay. */
 const CHECKPOINT_TICKS = 240;
-/** A replay frame's work budget: commands apply in chunks between checks, and the rest wait for the next frame. */
+/** A replay frame's work budget, and a seek batch's: commands apply in chunks between checks, and the rest wait. */
 const REPLAY_BUDGET_MS = 8;
+/** A seek shows its progress, and can be canceled, once it has run this long (SPEC §14.2). */
+const SEEK_PROGRESS_MS = 100;
+
+/** How a requested seek ended, for whoever asked for it. */
+interface SeekOutcome {
+  readonly action: 'committed' | 'canceled' | 'superseded' | 'failed';
+  readonly elapsedMs: number;
+  readonly job: SeekJob;
+}
+
+/** A seek the app is waiting on (SPEC §14.2): when it was asked for, and how its batches went. */
+interface PendingSeek {
+  readonly job: SeekJob;
+  readonly reason: string;
+  readonly requestedAt: number;
+  /** Each batch's time on the main thread, ms. */
+  readonly batches: number[];
+  /** When progress and Cancel became visible, ms after the request; null before. */
+  progressShownAfter: number | null;
+  readonly done: (outcome: SeekOutcome) => void;
+}
+
+/** The address the timeline means by tick n: after the commands the record includes at n (SPEC §13.3). */
+function tickAddress(record: RunRecord, n: number): Address {
+  // The first command after tick n, by binary search: commands are in tick order.
+  let lo = 0;
+  let hi = record.commands.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (record.commands[mid]!.atTick <= n) lo = mid + 1;
+    else hi = mid;
+  }
+  return { tick: n, cursor: lo };
+}
 const LIMIT_TEXT: Record<'duration' | 'commands' | 'bytes', string> = {
   duration: 'The recording stopped at its 60-second limit. The scene is paused there; editing goes on unrecorded.',
   commands: 'The recording stopped at its limit of 50,000 recorded changes. Your last change was not applied; make it again to keep editing, unrecorded.',
@@ -204,7 +238,7 @@ async function start() {
   const authoring = new DocumentController(initial, host);
   // One coordinator owns the authoring context, the recording and the replay context (SPEC §13.2).
   // `host` is the world displayed and advanced: the replay's while replaying, otherwise the live one.
-  const runs = new RunCoordinator({ controller: authoring, identity: () => identity, onLimit: (reason) => recordingLimited(reason) });
+  const runs = new RunCoordinator({ controller: authoring, identity: () => identity, onLimit: (reason) => recordingLimited(reason), onCheckpoint: (event) => reportCheckpoint(event) });
   const replaying = () => runs.selected === 'replay';
   const scheduler = new FixedStepScheduler(STEP_MS);
   const appliedLaw = (id: string) => host.appliedFields().find((f) => f.id === id);
@@ -246,6 +280,8 @@ async function start() {
    */
   let frozen = false;
   let guardFrozen = false;
+  /** The seek the replay is reconstructing out of sight, if any (SPEC §14.2); see requestSeek. */
+  let pendingSeek: PendingSeek | null = null;
   let launchPending = true;
   let cameraMoved = false;
   const applyFreeze = () => {
@@ -392,6 +428,8 @@ async function start() {
     if (playing && (host.fault || frozen || authoring.liveHost.halted)) return;
     // A replay at its frozen end stays there: Replay from Start, not Play, begins it again.
     if (playing && replaying() && runs.replay?.complete) return;
+    // Play continues from what is displayed: a seek still reconstructing is given up first.
+    if (playing && pendingSeek) cancelPendingSeek('play');
     if (playing) {
       scheduler.play();
       // A next-step preview is a paused view; motion shows each completed step instead.
@@ -451,6 +489,7 @@ async function start() {
     if (replaying()) {
       if (host.fault || frozen || runs.replay?.complete) return;
       setPlaying(false, 'step');
+      if (pendingSeek) cancelPendingSeek('step');
       driveReplay(1);
       report('sim-control', { action: 'step', context: 'replay', tick: host.tick, cursor: host.lastAppliedSequence, partial: runs.replayPartial });
       return;
@@ -517,6 +556,7 @@ async function start() {
     controller: authoring,
     quiesce: (reason) => {
       setPlaying(false, reason);
+      if (pendingSeek) cancelPendingSeek(reason);
       interaction.release(reason);
       settleNow();
     },
@@ -555,6 +595,7 @@ async function start() {
       authoringView = null;
       authoringCamera = null;
       runs.dropRecord();
+      if (pendingSeek) endSeek(pendingSeek, 'canceled', { reason: 'load' });
       const displaced = authoring.liveHost;
       host = candidate.host;
       authoring.load(document, candidate.host);
@@ -1210,6 +1251,8 @@ async function start() {
   let replayCheck: FinalCheckResult | null = null;
   let replayEnded = false;
   let replayCheckpoint = -1;
+  /** Set when a seek replaced the displayed world, until it steps: its trails start again there (SPEC §14.2). */
+  let seekedTrails = false;
 
   const recordSummary = (record: RunRecord) => ({
     runId: record.runId,
@@ -1229,6 +1272,8 @@ async function start() {
   const showContext = (reason: string) => {
     setPlaying(false, reason);
     scheduler.pause();
+    // A context change cancels a pending seek inside the coordinator; its end is reported here.
+    if (pendingSeek && runs.seeking !== pendingSeek.job) endSeek(pendingSeek, 'canceled', { reason });
     host = runs.shown;
     explained = null;
     host.explain(null);
@@ -1241,6 +1286,7 @@ async function start() {
     replayCheck = null;
     replayEnded = false;
     replayCheckpoint = -1;
+    seekedTrails = false;
     if (interaction.selectedId !== null && !appliedLaw(interaction.selectedId)) interaction.select(null);
     // A fault belongs to its world: shown again when that world is, hidden otherwise.
     if (host.fault) showSimError(`${host.fault.message}. The last valid frame is shown.`, !replaying());
@@ -1363,6 +1409,7 @@ async function start() {
     const stepped = () => {
       probes.advance(host);
       trails.record(host, explained);
+      seekedTrails = false;
       steps += 1;
     };
     const unit = (n: number) => {
@@ -1415,13 +1462,151 @@ async function start() {
     renderPanel();
   };
 
-  const runParts = { root: $('run'), title: $('run-title'), tag: $('run-tag'), status: $('run-status'), meter: $('run-meter'), fill: $('run-fill'), check: $('run-check') };
+  // ------------------------------------------------------------------ seeking (M6B)
+
+  /** The checkpoint cache and worlds now, for seek and checkpoint diagnostics. */
+  function cacheCounts() {
+    const { worlds, checkpoints, checkpointBytes } = runs.counts();
+    return { worlds, checkpoints, checkpointBytes };
+  }
+
+  function reportCheckpoint(event: CheckpointEvent) {
+    if (event.kind === 'rejected') {
+      report('checkpoint', { action: 'rejected', reason: event.reason, discarded: event.discarded, ...cacheCounts() });
+      return;
+    }
+    const c = event.checkpoint;
+    report('checkpoint', {
+      action: event.kind,
+      runId: c.runId,
+      tick: c.tick,
+      cursor: c.lastAppliedSequence,
+      bytes: c.bytes,
+      engineBytes: c.engineBytes.byteLength,
+      bodies: c.bodyIdentityMap.length,
+      evicted: event.kind === 'captured' ? event.evicted.map((e) => [e.tick, e.lastAppliedSequence]) : [],
+      ...cacheCounts(),
+    });
+  }
+
+  // Each batch runs as its own task, so frames and input come between batches; a frame-paced batch would
+  // leave half of every 60 Hz frame idle.
+  const seekChannel = new MessageChannel();
+  let seekQueued = false;
+  const pumpSeek = () => {
+    if (seekQueued || !pendingSeek) return;
+    seekQueued = true;
+    seekChannel.port2.postMessage(null);
+  };
+  seekChannel.port1.onmessage = () => {
+    seekQueued = false;
+    const pending = pendingSeek;
+    if (!pending || runs.seeking !== pending.job) return;
+    const start = performance.now();
+    const status: SeekStatus = runs.seekWork(start + REPLAY_BUDGET_MS, () => performance.now());
+    pending.batches.push(performance.now() - start);
+    if (status.kind === 'working') pumpSeek();
+    else if (status.kind === 'committed') seekCommitted(pending);
+    else if (status.kind === 'failed') seekFailed(pending, status.error);
+  };
+
+  /**
+   * Asks for the replay's state at `target` (SPEC §14.2). Playback pauses, and a seek still pending is
+   * superseded. The displayed world stays exactly as it is until the reconstruction holds the target.
+   * Resolves when this request ends; null when there was nothing to do.
+   */
+  const requestSeek = (target: Address, reason: string): Promise<SeekOutcome | null> => {
+    if (frozen || !replaying() || !runs.replay) return Promise.resolve(null);
+    setPlaying(false, 'seek');
+    const previous = pendingSeek;
+    let job: SeekJob | null;
+    try {
+      job = runs.seek(target);
+    } catch (error) {
+      report('seek', { action: 'refused', reason, target, error: String(error) });
+      return Promise.resolve(null);
+    }
+    if (previous) endSeek(previous, 'superseded', { by: job?.id ?? null });
+    if (!job) {
+      report('seek', { action: 'shown', reason, target });
+      renderPanel();
+      return Promise.resolve(null);
+    }
+    const requested = job;
+    return new Promise((resolve) => {
+      pendingSeek = { job: requested, reason, requestedAt: performance.now(), batches: [], progressShownAfter: null, done: resolve };
+      report('seek', { action: 'request', id: requested.id, reason, target, shown: runs.replay!.address, ...cacheCounts() });
+      pumpSeek();
+      renderPanel();
+    });
+  };
+
+  /** Reports how a pending seek ended and tells its requester; it is no longer pending. */
+  function endSeek(pending: PendingSeek, action: SeekOutcome['action'], extra: Record<string, unknown> = {}) {
+    if (pendingSeek === pending) pendingSeek = null;
+    const elapsedMs = performance.now() - pending.requestedAt;
+    const { job } = pending;
+    report('seek', {
+      action,
+      id: job.id,
+      reason: pending.reason,
+      target: job.target,
+      elapsedMs: round3(elapsedMs),
+      source: job.source,
+      steps: job.steps,
+      batches: pending.batches.length,
+      maxBatchMs: round3(pending.batches.reduce((a, b) => Math.max(a, b), 0)),
+      workMs: round3(job.workMs),
+      restoreMs: round3(job.restoreMs),
+      progressShownAfterMs: pending.progressShownAfter === null ? null : round3(pending.progressShownAfter),
+      rejected: job.rejected,
+      ...extra,
+      ...cacheCounts(),
+    });
+    pending.done({ action, elapsedMs, job });
+  }
+
+  /** Gives up the pending seek: its world is freed and the displayed replay stays exactly as it was. */
+  function cancelPendingSeek(reason: string) {
+    const pending = pendingSeek;
+    if (!pending) return;
+    runs.cancelSeek();
+    endSeek(pending, 'canceled', { reason });
+    renderPanel();
+  }
+
+  /** The reconstruction holds the target: it is now the displayed replay, paused at that address, with fresh views. */
+  const seekCommitted = (pending: PendingSeek) => {
+    pendingSeek = null;
+    showContext('seek');
+    seekedTrails = true;
+    endSeek(pending, 'committed', { address: runs.replay!.address, generation: host.generation });
+    if (runs.replay!.complete) replayReachedEnd();
+  };
+
+  const seekFailed = (pending: PendingSeek, error: unknown) => {
+    endSeek(pending, 'failed', { error: String(error) });
+    workflow.message = { kind: 'error', text: `The seek could not finish: ${error instanceof Error ? error.message : String(error)}. The replay still shows where it was.` };
+    renderPanel();
+  };
+
+  const runParts = {
+    root: $('run'),
+    title: $('run-title'),
+    tag: $('run-tag'),
+    status: $('run-status'),
+    meter: $('run-meter'),
+    fill: $('run-fill'),
+    timeline: $<HTMLInputElement>('run-timeline'),
+    check: $('run-check'),
+  };
   const runButtons = {
     record: $<HTMLButtonElement>('run-record'),
     stop: $<HTMLButtonElement>('run-stop'),
     replay: $<HTMLButtonElement>('run-replay'),
     restart: $<HTMLButtonElement>('run-restart'),
     return: $<HTMLButtonElement>('run-return'),
+    cancel: $<HTMLButtonElement>('run-cancel'),
     save: $<HTMLButtonElement>('run-save'),
     open: $<HTMLButtonElement>('run-open'),
   };
@@ -1442,6 +1627,7 @@ async function start() {
     let tag = false;
     let status: (string | [string, string])[] = [];
     let meter: number | null = null;
+    let timeline: { value: number; max: number } | null = null;
     let check: { text: string; result: string } | null = null;
     let shown: (keyof typeof runButtons)[] = [];
     const record = runs.record;
@@ -1463,15 +1649,26 @@ async function start() {
       const { finalTick, lastAppliedSequence } = replay.record;
       title = `Replay of “${replay.record.root.metadata.title}”`;
       tag = true;
-      const where = runs.replayPartial
-        ? ` Applying the recorded changes at tick ${host.tick}…`
-        : replay.complete
-          ? ' At the recorded end.'
-          : scheduler.playing
-            ? ' Playing.'
-            : ' Paused.';
-      status = ['tick ', ['count', String(host.tick)], ' of ', ['count', String(finalTick)], ', change ', ['count', String(host.lastAppliedSequence)], ' of ', ['count', String(lastAppliedSequence)], `.${where}`];
-      meter = replay.complete ? 1 : finalTick > 0 ? host.tick / finalTick : lastAppliedSequence > 0 ? host.lastAppliedSequence / lastAppliedSequence : 0;
+      // A pending seek is named as a request: the displayed address stays the one actually shown (SPEC §14.2).
+      const seek = pendingSeek;
+      const seekShown = seek !== null && performance.now() - seek.requestedAt >= SEEK_PROGRESS_MS;
+      if (seek && seekShown && seek.progressShownAfter === null) {
+        seek.progressShownAfter = performance.now() - seek.requestedAt;
+        report('seek', { action: 'progress-shown', id: seek.job.id, afterMs: round3(seek.progressShownAfter), progress: round3(runs.seekProgress(seek.job)) });
+      }
+      const where = seek
+        ? ` Seeking to tick ${seek.job.target.tick}, change ${seek.job.target.cursor}…${seekShown ? ` ${Math.floor(runs.seekProgress(seek.job) * 100)}%` : ''}`
+        : runs.replayPartial
+          ? ` Applying the recorded changes at tick ${host.tick}…`
+          : replay.complete
+            ? ' At the recorded end.'
+            : scheduler.playing
+              ? ' Playing.'
+              : ' Paused.';
+      // A seek's world has no trail history: trails start again at its address rather than pretend to reach back.
+      const trailNote = seekedTrails && !seek && trails.mode !== 'off' ? ' Trails start again from here.' : '';
+      status = ['tick ', ['count', String(host.tick)], ' of ', ['count', String(finalTick)], ', change ', ['count', String(host.lastAppliedSequence)], ' of ', ['count', String(lastAppliedSequence)], `.${where}${trailNote}`];
+      timeline = { value: seek ? seek.job.target.tick : host.tick, max: finalTick };
       if (replayEnded) {
         const recorded = replay.record.qualification;
         const unknown = Object.entries(recorded).filter(([, v]) => v.startsWith('unavailable')).map(([k]) => k);
@@ -1488,10 +1685,10 @@ async function start() {
               ? { text: `Did not reach the recorded end: the ${[replayCheck.state ? '' : 'state', replayCheck.engine ? '' : 'engine'].filter(Boolean).join(' and ')} differ${!replayCheck.state && !replayCheck.engine ? '' : 's'}.`, result: 'mismatch' }
               : { text: 'This recording ended on a simulation fault, so it has no end state to check.', result: 'unavailable' };
       }
-      shown = ['restart', 'return', 'save', 'open'];
+      shown = seekShown ? ['cancel', 'restart', 'return', 'save', 'open'] : ['restart', 'return', 'save', 'open'];
     }
     const busy = workflow.busy !== null;
-    const signature = JSON.stringify([runParts.root.hidden, state, title, tag, status, meter === null ? null : Math.round(meter * 1000), check, shown, busy]);
+    const signature = JSON.stringify([runParts.root.hidden, state, title, tag, status, meter === null ? null : Math.round(meter * 1000), timeline, check, shown, busy]);
     if (signature === runShown) return;
     runShown = signature;
     runParts.root.dataset.state = state;
@@ -1511,6 +1708,14 @@ async function start() {
       runParts.fill.style.width = `${Math.min(100, meter * 100).toFixed(1)}%`;
       runParts.meter.setAttribute('aria-valuenow', String(Math.round(meter * 100)));
     }
+    runParts.timeline.hidden = timeline === null;
+    if (timeline) {
+      // The maximum first: a value beyond the old maximum would be clamped.
+      runParts.timeline.max = String(timeline.max);
+      if (runParts.timeline.value !== String(timeline.value)) runParts.timeline.value = String(timeline.value);
+      runParts.timeline.setAttribute('aria-valuetext', `tick ${timeline.value} of ${timeline.max}`);
+      runParts.timeline.disabled = busy || timeline.max === 0;
+    }
     runParts.check.hidden = check === null;
     runParts.check.textContent = check?.text ?? '';
     runParts.check.dataset.result = check?.result ?? '';
@@ -1528,6 +1733,12 @@ async function start() {
   runButtons.replay.addEventListener('click', enterReplay);
   runButtons.restart.addEventListener('click', restartReplay);
   runButtons.return.addEventListener('click', returnToAuthoring);
+  runButtons.cancel.addEventListener('click', () => cancelPendingSeek('cancel'));
+  // Every movement of the timeline is a request; only the latest one becomes visible (SPEC §14.2).
+  runParts.timeline.addEventListener('input', () => {
+    const record = runs.replay?.record;
+    if (record) void requestSeek(tickAddress(record, Number(runParts.timeline.value)), 'timeline');
+  });
   runButtons.save.addEventListener('click', () => runFile('saveRecording'));
   runButtons.open.addEventListener('click', () => runFile('openRecording'));
 
@@ -1730,7 +1941,9 @@ async function start() {
         buttons: Object.fromEntries(Object.entries(runButtons).map(([key, b]) => [key, b.hidden ? null : box(b)])),
         recording: runs.recorder ? { runId: runs.recorder.runId, tick: runs.recorder.tick, count: runs.recorder.count, bytes: runs.recorder.bytes } : null,
         record: runs.record ? { ...recordSummary(runs.record), exported: runs.exported } : null,
-        replay: runs.replay ? { address: runs.replay.address, complete: runs.replay.complete, partial: runs.replayPartial, check: replayCheck } : null,
+        replay: runs.replay ? { address: runs.replay.address, complete: runs.replay.complete, partial: runs.replayPartial, check: replayCheck, generation: host.generation } : null,
+        timeline: runParts.timeline.hidden ? null : { box: box(runParts.timeline), value: Number(runParts.timeline.value), max: Number(runParts.timeline.max) },
+        seeking: pendingSeek ? { id: pendingSeek.job.id, target: pendingSeek.job.target, progress: round3(runs.seekProgress(pendingSeek.job)), elapsedMs: round3(performance.now() - pendingSeek.requestedAt), shown: pendingSeek.progressShownAfter !== null } : null,
         contexts: runs.counts(),
       },
       camera: viewport.camera.position.toArray(),
@@ -1877,8 +2090,139 @@ async function start() {
     renderPanel();
   };
 
+  /**
+   * M6B in this runtime (Shift+C), on the finished recording, through the controls' own paths: Replay,
+   * the timeline's seek request, Cancel, Replay from start and Return to authoring.
+   *   1. Every target (special addresses, every same-tick group's inner cursors, seeded random ticks) in a
+   *      seeded order against the uninterrupted checkpoint-free oracle, state and engine bytes.
+   *   2. Cached seek latency: 100 seeded targets with every 240th tick cached.
+   *   3. An uncached seek to the end (its batches and when progress showed), and a long one canceled.
+   *   4. T11: 20 seek/reset cycles, counting worlds, checkpoint bytes and render resources.
+   */
+  const runSeekFixtures = async () => {
+    const record = runs.record;
+    if (frozen || replaying() || !record || runs.recordingState !== 'recorded') {
+      report('m6b-fixtures', { error: 'Shift+C needs a finished recording, from authoring' });
+      return;
+    }
+    setPlaying(false, 'fixtures');
+    await nextFrame();
+    const t0 = performance.now();
+    const last = record.finalTick;
+    const key = (a: Address) => `${a.tick}:${a.cursor}`;
+    let seed = 0x5eed1234;
+    const random = (n: number) => {
+      seed = xorshift32(seed);
+      return seed % n;
+    };
+    const at = (n: number) => tickAddress(record, n);
+    // 1. Targets.
+    const inner: Address[] = [];
+    for (let i = 1; i < record.commands.length && inner.length < 40; i++) {
+      if (record.commands[i]!.atTick === record.commands[i - 1]!.atTick) inner.push({ tick: record.commands[i]!.atTick, cursor: i });
+    }
+    const before = (n: number) => ({ tick: n, cursor: at(n - 1).cursor });
+    const special = [{ tick: 0, cursor: 0 }, at(Math.min(1, last)), at(Math.min(239, last)), last >= 240 ? before(240) : at(last), at(Math.min(241, last)), last > 0 ? before(last) : at(last), at(last)];
+    const ticks = Array.from({ length: 40 }, () => at(random(last + 1)));
+    const targets = [...new Map([...special, ...inner, ...ticks].map((a) => [key(a), a])).values()];
+    const expected = new Map<string, Observed>();
+    const oracle = new LinearReplay(record);
+    for (const a of [...targets].sort((x, y) => x.tick - y.tick || x.cursor - y.cursor)) {
+      oracle.runTo(a);
+      expected.set(key(a), observe(oracle.host));
+    }
+    oracle.dispose();
+    const oracleMs = performance.now() - t0;
+    const sample = () => ({ ...runs.counts(), geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, objects: sceneObjects() });
+    const outside = sample();
+    const scope = runs.scope(record);
+    runs.checkpoints.discardHistory(scope.historyContextId);
+    enterReplay();
+    const compared: { target: Address; action: string; source: string | null; bodies: number; divergence: unknown }[] = [];
+    for (let i = targets.length - 1; i > 0; i--) {
+      const j = random(i + 1);
+      [targets[i], targets[j]] = [targets[j]!, targets[i]!];
+    }
+    for (const target of targets) {
+      const outcome = await requestSeek(target, 'fixture');
+      const shownAt = runs.replay!.address;
+      const divergence = shownAt.tick === target.tick && shownAt.cursor === target.cursor ? replayDivergence(expected.get(key(target))!, observe(host)) : { entity: 'address', observed: shownAt };
+      compared.push({ target, action: outcome?.action ?? 'shown', source: outcome?.job.source?.kind ?? null, bodies: host.count, divergence });
+    }
+    // 2. Cached latency, with every 240th tick held.
+    await requestSeek(at(last), 'fixture');
+    const cached: { elapsedMs: number; workMs: number; steps: number; source: string | null }[] = [];
+    for (let i = 0; i < 100; i++) {
+      const outcome = await requestSeek(at(random(last + 1)), 'fixture-cached');
+      if (outcome?.action === 'committed') cached.push({ elapsedMs: round3(outcome.elapsedMs), workMs: round3(outcome.job.workMs), steps: outcome.job.steps, source: outcome.job.source?.kind ?? null });
+      await nextFrame();
+    }
+    // 3. Uncached: from the root to the end, then a long one canceled after 300 ms.
+    restartReplay();
+    runs.checkpoints.discardHistory(scope.historyContextId);
+    const full = await requestSeek(at(last), 'fixture-uncached');
+    const uncached = full ? { action: full.action, elapsedMs: round3(full.elapsedMs), workMs: round3(full.job.workMs), steps: full.job.steps, batches: full.job.batches } : null;
+    restartReplay();
+    runs.checkpoints.discardHistory(scope.historyContextId);
+    const shownBefore = observe(host);
+    const pending = requestSeek(at(last), 'fixture-cancel');
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    cancelPendingSeek('fixture-cancel');
+    const canceled = await pending;
+    const cancel = { action: canceled?.action ?? null, elapsedMs: canceled ? round3(canceled.elapsedMs) : null, shownUnchanged: replayDivergence(shownBefore, observe(host)) === null, worlds: runs.counts().worlds };
+    // 4. T11 cycles through the controls.
+    await requestSeek(at(last), 'fixture');
+    resetPeakWorlds();
+    const cycles: ReturnType<typeof sample>[] = [];
+    for (let cycle = 0; cycle < 20; cycle++) {
+      await requestSeek(at(random(last + 1)), 'fixture-cycle');
+      const superseded = requestSeek(at(random(last + 1)), 'fixture-cycle');
+      await requestSeek(at(random(last + 1)), 'fixture-cycle');
+      await superseded;
+      restartReplay();
+      void requestSeek(at(random(last + 1)), 'fixture-cycle');
+      await nextFrame();
+      returnToAuthoring();
+      await nextFrame();
+      cycles.push(sample());
+      enterReplay();
+    }
+    returnToAuthoring();
+    await nextFrame();
+    const after = sample();
+    const divergent = compared.filter((c) => c.divergence !== null);
+    const latency = percentiles(cached.map((c) => c.elapsedMs));
+    report('m6b-fixtures', {
+      elapsedMs: Math.round(performance.now() - t0),
+      runId: record.runId,
+      finalTick: last,
+      commands: record.commands.length,
+      oracleMs: Math.round(oracleMs),
+      compared: compared.length,
+      sources: compared.reduce<Record<string, number>>((n, c) => ((n[c.source ?? 'shown'] = (n[c.source ?? 'shown'] ?? 0) + 1), n), {}),
+      divergent,
+      targets: compared.map((c) => [c.target.tick, c.target.cursor, c.source, c.bodies]),
+      cached: { percentiles: 'p50, p95, p99, max', elapsedMs: latency, workMs: percentiles(cached.map((c) => c.workMs)), steps: percentiles(cached.map((c) => c.steps)), sources: [...new Set(cached.map((c) => c.source))], raw: cached },
+      uncached,
+      cancel,
+      lifecycle: { outside, cycles, after, peakWorlds: worldCounts().peak },
+      pass:
+        divergent.length === 0 &&
+        latency !== null &&
+        latency[1]! <= 250 &&
+        cancel.shownUnchanged &&
+        after.worlds === outside.worlds &&
+        after.geometries === outside.geometries &&
+        after.objects === outside.objects &&
+        cycles.every((c) => c.worlds === outside.worlds && c.checkpointBytes === cycles[0]!.checkpointBytes) &&
+        worldCounts().peak - outside.worlds <= 2,
+    });
+    renderPanel();
+  };
+
   window.addEventListener('keydown', (event) => {
-    const typing = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
+    // The replay timeline takes no text: Play, Step and the other keys still work while it has focus.
+    const typing = (event.target instanceof HTMLInputElement && event.target.type !== 'range') || event.target instanceof HTMLTextAreaElement;
     if (event.metaKey && !event.ctrlKey && !event.altKey) {
       const key = event.key.toLowerCase();
       if (key === 'o' || key === 's') {
@@ -1928,6 +2272,9 @@ async function start() {
         return;
       case 'M':
         runRunFixtures().catch((error: unknown) => report('m6a-fixtures', { error: String(error) }));
+        return;
+      case 'C':
+        runSeekFixtures().catch((error: unknown) => report('m6b-fixtures', { error: String(error) }));
         return;
       case 'G':
         // Dev-only: a 1.5 s main-thread stall exercises the long-gap pause in the real WKWebView.

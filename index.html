@@ -186,8 +186,8 @@
       <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
     </div>
 
-    <!-- M6A: recording and replay (SPEC §11.1, §13.2). Bottom left, below the Scene panel's fold, so
-         nothing in the panel moves. Read-only progress only: no seek control before M6B. -->
+    <!-- Recording and replay (SPEC §11.1, §13.2, §14.2). Top right, over the scene's open sky. A replay
+         has a timeline: moving it seeks, and the replay stays read-only. -->
     <section id="run" aria-labelledby="run-title" data-state="idle" hidden>
       <div class="run-head">
         <h2 id="run-title">Recording</h2>
@@ -195,11 +195,13 @@
       </div>
       <p id="run-status" aria-live="polite"></p>
       <div id="run-meter" role="progressbar" aria-labelledby="run-status" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span id="run-fill"></span></div>
+      <input type="range" id="run-timeline" min="0" max="0" step="1" value="0" aria-label="Seek the replay to a tick" title="Drag or click to seek; the replay shows the recorded state at that tick" hidden />
       <p id="run-check" hidden></p>
       <div class="run-actions" role="group" aria-label="Recording">
         <button type="button" id="run-record" title="Resets the motion to tick 0, keeping your laws, and records every change you make so it can be replayed exactly">Record from tick 0</button>
         <button type="button" id="run-stop">Stop recording</button>
         <button type="button" id="run-replay" title="Rebuilds the recording’s starting scene and plays back what you changed, without touching your scene">Replay recording</button>
+        <button type="button" id="run-cancel" title="Stops seeking; the replay stays where it is">Cancel seek</button>
         <button type="button" id="run-restart" title="Starts the replay again from the recording’s original tick 0">Replay from start</button>
         <button type="button" id="run-return" title="Back to your scene as you left it, paused">Return to authoring</button>
         <button type="button" id="run-save" title="Saves the recording, not the scene">Save recording…</button>
