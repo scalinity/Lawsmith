@@ -9,7 +9,7 @@
 # app's own M6B fixtures (Shift+C) on this recording.
 # Usage: QA_STATE=… QA_OUT=… scripts/verify/verify.sh native m6b-seek
 source ${0:A:h}/lib.zsh
-trap '[[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; gui_unlock' EXIT
+trap '[[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; running && kill $APP_PID; gui_unlock' EXIT
 RECOVERY=$QA_STATE/recovery-m6b-seek-$EPOCHSECONDS
 mkdir -p $RECOVERY $QA_STATE/scenes
 cp ${NATIVE:h}/scenes/m6a-lab.lawsmith.json $QA_STATE/scenes/
