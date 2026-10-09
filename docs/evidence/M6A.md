@@ -407,6 +407,17 @@ Two facts came up along the way:
   1. `npm run build` and `npx tauri build --bundles app` from `2c79d2d`. Record the bundle and binary hashes, and confirm the fault strings are absent from `dist/assets`.
   2. Run `m6a-legible`, `m6a-record`, `m6a-guard` (it now answers the from-replay scene alert by Save Main Scene, and checks that a replay names a law its recording created) and `m6a-pace`, then the M1–M5 regression chain, each counted run on that one build.
   3. Replace the native sections of this record with those runs.
+
+  **One attempt, stopped by the guard.** The packaged app was built from `5653cf6` (application code `2c79d2d`; the later commits change only this record) at 20:59:53–21:00:11 on 2026-10-08:
+  - `index-zUdDidmO.js`: SHA-256 `013c3d6c89e4d4b02403d3e601990a32562db5b4e92a1c98973a343a818b4947`.
+  - `index-C1BU_RcZ.css`: `d8d11549ba23057ef1059ceb3a7fcc3f44ad36a0f3f29dc9afaa517fa8608db5`, unchanged.
+  - `index.html`: `9e5ca47f4ce58a511b3a3a4a98de5939f06b82970ae3930a5d23fafe172f533f`.
+  - Shell binary: `a4908a8804903986242929492dd4f5172b87701c877a8b0ff140f7f16aee6f0b`. `Lawsmith.app` is 13.53 MiB.
+  - No fault strings are in `dist/assets`.
+
+  The chain started at 21:00:34, in the hands-off window the owner agreed. `m6a-legible` launched the app and switched to More Space. Before its first click, the hit test found another session's screenshot interface covering the whole screen: `screencaptureui`, a full-screen window at layer 24, the menu-bar level that interactive capture uses. It refused the input (exit 3). Nothing was clicked. The display was restored to 1168×755, and the run counts for nothing. That window stayed up throughout the session, and the owner closed the session with the re-run pending. It is not a recording overlay: those sit above layer 1000, and the hit test skips only its own. Skipping this one would have sent clicks into the other session's capture.
+
+  The build above stays valid for the re-run while no application input changes.
 - Carried: M4's moving-body trackpad check and M5's Storm Bottle trackpad feel.
 
 ## Evidence provenance
