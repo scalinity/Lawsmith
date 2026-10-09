@@ -178,7 +178,9 @@ expect layout "steps rebuild trails from the seek's address on" "e['visualizatio
 shot seek-05-trails-rebuilt
 press trails-selected
 
-segment "scrub: newer requests supersede older ones; only the newest becomes visible"
+# On this light scene a cached seek ends between two pointer moves, so a scrub commits request after
+# request; m6b-long scrubs P1, where newer requests supersede older ones.
+segment "scrub: every commit is the newest request, and the last one is shown"
 layout
 since=$(last_seek_id)
 from=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick / 5 )))})
@@ -196,7 +198,7 @@ print(any(e['action'] == 'committed' and e['id'] == last for e in burst))") != T
   sleep 0.2
 done
 layout
-verdict "every commit was the newest request; the last request is shown" latest $APP_LOG $since
+verdict "every commit was the newest request; the last request is shown" latest $APP_LOG $since 0
 shot seek-06-scrubbed
 
 segment "play on to the recorded end"

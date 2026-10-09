@@ -3,7 +3,9 @@
 # the 60 s limit closes it. In its replay an uncached seek to the end shows its progress and Cancel seek
 # after 100 ms, and Cancel leaves the displayed replay exactly as it was. Another uncached seek is left
 # pending while Return to authoring is pressed: it never commits, and the retained authoring world's
-# digests are those it had when the replay began. Then, with screen recording off, the app's M6B fixtures
+# digests are those it had when the replay began. In a new replay, a scrub across the timeline makes newer
+# requests supersede older ones: each commit is the newest request, and the last is shown. Then, with
+# screen recording off, the app's M6B fixtures
 # (Shift+C) on this recording: every target against the checkpoint-free oracle, cached seek latency
 # (p95 ≤ 250 ms), an uncached and a canceled seek, and 20 seek/reset cycles.
 # Usage: QA_STATE=… QA_OUT=… scripts/verify/verify.sh native m6b-long
@@ -89,7 +91,7 @@ wait_log context $(( n + 1 )) 10
 # The retained world's digests are hashed asynchronously; each switch logs them once.
 wait_log context-live $(( lives + 1 )) 5
 live_at_entry=$(logq last $APP_LOG context-live)
-record_start m6b-long 60
+record_start m6b-long 100
 seek_click $final_tick
 progress_shown
 expect layout "seeking: the status names the requested tick and its progress, the replay still shows tick 0" "'Seeking to tick $final_tick' in e['run']['status'] and '%' in e['run']['status'] and e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==1"
@@ -119,6 +121,39 @@ print('PASS' if same else 'FAIL', {k: (entry[k], back[k]) for k in ('tick', 'cur
 say "$result  [context-live] the retained authoring world is exactly as it was when the replay began: $rest"
 [[ $result == PASS ]] || fail "the retained authoring world changed"
 shot long-03-returned
+
+segment "scrub the P1 replay: newer requests supersede older ones"
+n=$(count context)
+press_expect run-replay context
+wait_log context $(( n + 1 )) 10
+# Every 240th tick cached first, so each request of the scrub is a cached seek of 100 ms or more.
+seek_click $final_tick
+deadline=$(( EPOCHREALTIME + 60 ))
+until [[ $(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(any(json.loads(l)['action']=='committed' for l in sys.stdin))") == True ]]; do
+  (( EPOCHREALTIME > deadline )) && fail "the uncached seek to the end did not commit"
+  sleep 0.3
+done
+layout
+since=$(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(max(json.loads(l).get('id', 0) for l in sys.stdin))")
+from=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick / 6 )))})
+to=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick * 5 / 6 )))})
+n=$(count seek)
+drag $from[1] $from[2] $to[1] $to[2] 40
+deadline=$(( EPOCHREALTIME + 30 ))
+while [[ $(logq all $APP_LOG seek | python3 -I -c "
+import json, sys
+burst = [e for e in map(json.loads, list(sys.stdin)[$n:])]
+last = [e for e in burst if e['action'] == 'request'][-1]['id']
+print(any(e['action'] == 'committed' and e['id'] == last for e in burst))") != True ]]; do
+  (( EPOCHREALTIME > deadline )) && fail "the scrub's last seek did not commit"
+  sleep 0.2
+done
+layout
+verdict "newer requests superseded older ones; every commit was the newest request; the last is shown" latest $APP_LOG $since 1
+shot long-04-scrubbed
+n=$(count context)
+press_expect run-return context
+wait_log context $(( n + 1 )) 10
 record_stop
 verdict "no superseded or canceled seek ever committed" seeks $APP_LOG
 

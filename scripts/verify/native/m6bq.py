@@ -8,8 +8,10 @@
   m6bq.py retained LOG             every digest of the retained authoring world logged at a context switch since
                                    the first replay (entering it, Return, Replay from start, the fixtures'
                                    switches) is the same: the seeks and cancels between them never touched it
-  m6bq.py latest LOG SINCE_ID      over the requests after SINCE_ID: each commit is the newest request at that
-                                   moment, some were superseded, and the last request is committed and shown
+  m6bq.py latest LOG SINCE_ID [MIN_SUPERSEDED]
+                                   over the requests after SINCE_ID: each commit is the newest request at that
+                                   moment, at least MIN_SUPERSEDED (default 0) were superseded, and the last
+                                   request is committed and shown
 """
 import json
 import sys
@@ -80,7 +82,7 @@ def seeks(path, since=0):
     return ('FAIL', '; '.join(problems)) if problems else ('PASS', summary)
 
 
-def latest(path, since):
+def latest(path, since, min_superseded=0):
     """Over the seeks after ID `since` (a burst): each commit is the newest request at that moment; the last request commits and is shown."""
     events = ordered(path)
     newest = None
@@ -101,7 +103,7 @@ def latest(path, since):
         return 'FAIL', f'{len(requests)} requests after {since}: not a burst'
     last = requests[-1]
     shown = [e for e in events if e.get('kind') == 'layout'][-1]['run']['replay']['address']
-    ok = not stale and commits and commits[-1] == last['id'] and shown == last['target'] and superseded > 0
+    ok = not stale and commits and commits[-1] == last['id'] and shown == last['target'] and superseded >= min_superseded
     return ('PASS' if ok else 'FAIL'), f"{len(requests)} requests, {superseded} superseded, {len(commits)} committed (stale {stale}); the last {last['id']} at {last['target']}, shown {shown}"
 
 
@@ -130,7 +132,7 @@ def main(argv):
     elif command == 'retained':
         verdict, detail = retained(args[0])
     elif command == 'latest':
-        verdict, detail = latest(args[0], int(args[1]))
+        verdict, detail = latest(args[0], int(args[1]), int(args[2]) if len(args) > 2 else 0)
     else:
         raise SystemExit(f'unknown command {command}')
     print(verdict, detail)
