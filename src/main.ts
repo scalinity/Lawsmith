@@ -1708,7 +1708,7 @@ async function start() {
               ? { text: `Did not reach the recorded end: the ${[replayCheck.state ? '' : 'state', replayCheck.engine ? '' : 'engine'].filter(Boolean).join(' and ')} differ${!replayCheck.state && !replayCheck.engine ? '' : 's'}.`, result: 'mismatch' }
               : { text: 'This recording ended on a simulation fault, so it has no end state to check.', result: 'unavailable' };
       }
-      shown = seekShown ? ['cancel', 'restart', 'return', 'save', 'open'] : ['restart', 'return', 'save', 'open'];
+      shown = seekShown ? ['restart', 'return', 'save', 'open', 'cancel'] : ['restart', 'return', 'save', 'open'];
     }
     const busy = workflow.busy !== null;
     const signature = JSON.stringify([runParts.root.hidden, state, title, tag, status, meter === null ? null : Math.round(meter * 1000), timeline, check, shown, busy]);
