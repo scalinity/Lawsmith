@@ -452,7 +452,7 @@ describe('the bounded cache (AC7)', () => {
   it('a changed byte anywhere fails the checksum', () => {
     const c = captured.get(480)!;
     const bytes = new Uint8Array(c.engineBytes);
-    bytes[bytes.length >> 1] ^= 1;
+    bytes[bytes.length >> 1] = bytes[bytes.length >> 1]! ^ 1;
     expect(intact({ ...c, engineBytes: bytes })).toBe(false);
     expect(intact({ ...c, emitterStates: [{ ...c.emitterStates[0]!, prngState: c.emitterStates[0]!.prngState ^ 1 }] })).toBe(false);
     expect(intact({ ...c, lastAppliedSequence: c.lastAppliedSequence + 1 })).toBe(false);

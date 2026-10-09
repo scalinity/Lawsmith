@@ -515,7 +515,9 @@ export class RunCoordinator {
       } catch (error) {
         const reason = `checkpoint at (${checkpoint.tick}, ${checkpoint.lastAppliedSequence}): ${error instanceof Error ? error.message : String(error)}`;
         job.rejected.push(reason);
-        this.options.onCheckpoint?.({ kind: 'rejected', reason, discarded: this.checkpoints.discardHistory(scope.historyContextId) });
+        // Discarded whether or not anyone listens: the loop ends only once no checkpoint of this record is left to try.
+        const discarded = this.checkpoints.discardHistory(scope.historyContextId);
+        this.options.onCheckpoint?.({ kind: 'rejected', reason, discarded });
       }
     }
     if (!job.work) {
