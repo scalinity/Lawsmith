@@ -132,9 +132,16 @@ shot long-03-canceled
 # a time, each waiting for the page's reply; M6B.md finding.)
 segment "a newer request supersedes a long reconstruction; only the newer one is shown"
 since=$(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(max(json.loads(l).get('id', 0) for l in sys.stdin))")
-seek_click $final_tick
-progress_shown
-seek_click $(( final_tick * 3 / 10 ))
+# Both points from one readback (a readback during a seek takes most of a second), then two hit-tested
+# clicks 300 ms apart: the second lands while the first still reconstructs.
+layout
+pa=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $final_tick)})
+pb=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick * 3 / 10 )))})
+guard_point $pa[1] $pa[2]
+guard_point $pb[1] $pb[2]
+idle_gate
+cliclick -e 0 -w 300 c:$pa[1],$pa[2] c:$pb[1],$pb[2]
+touched
 deadline=$(( EPOCHREALTIME + 30 ))
 while [[ $(logq all $APP_LOG seek | python3 -I -c "
 import json, sys
