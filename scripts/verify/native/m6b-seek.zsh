@@ -51,7 +51,25 @@ reveal() {
 law() { reveal "next(l['$2'] for l in e['laws'] if l['id']=='$1')" $([[ $2 == select ]] && print selection || print control) }
 select_law() { layout; [[ $(logq field $APP_LOG layout selected) == "\"$1\"" ]] || law $1 select }
 pause() { [[ $(field sim-control action) == '"play"' ]] && press_expect play sim-control; sleep 0.3 }
-last_seek_id() { [[ $(count seek) == 0 ]] && print 0 || logq field $APP_LOG seek id }
+last_seek_id() { logq all $APP_LOG seek | python3 -I -c "import json,sys; print(max([json.loads(l).get('id', 0) for l in sys.stdin] or [0]))" }
+# The end of the seek events after the first N: committed, shown (nothing to do), failed or refused; empty
+# while none has ended. A commit is followed by its `drawn` event, so the last event is not the end.
+seek_end_since() {
+  logq all $APP_LOG seek | python3 -I -c "
+import json, sys
+ends = [e for e in map(json.loads, list(sys.stdin)[$1:]) if e['action'] in ('committed', 'shown', 'failed', 'refused')]
+print(ends[-1]['action'] if ends else '')"
+}
+# expect_committed DESCRIPTION EXPRESSION: as expect, over the last committed seek.
+expect_committed() {
+  local verdict=$(logq all $APP_LOG seek | python3 -I -c "
+import json, sys
+e = [x for x in map(json.loads, sys.stdin) if x['action'] == 'committed'][-1]
+print('PASS' if ($2) else 'FAIL', json.dumps(e)[:300])")
+  say "$verdict  [seek] $1"
+  [[ $verdict == PASS* ]] || fail "expectation failed: $1"
+}
+committed_target() { logq all $APP_LOG seek | python3 -I -c "import json,sys; print(json.dumps([e for e in map(json.loads, sys.stdin) if e['action']=='committed'][-1]['target']))" }
 # seek_to TICK [TIMEOUT_S]: clicks the replay timeline at TICK (resent once if no request follows) and
 # waits for that request to end: committed, or nothing to do because the replay already shows it.
 seek_to() {
@@ -65,13 +83,16 @@ seek_to() {
   fi
   local deadline=$(( EPOCHREALTIME + ${2:-30} ))
   while :; do
-    action=$(logq field $APP_LOG seek action)
-    [[ $action == '"committed"' || $action == '"shown"' ]] && break
-    [[ $action == '"failed"' || $action == '"refused"' ]] && fail "the seek to $1 ended $action"
+    action=$(seek_end_since $n)
+    [[ $action == committed || $action == shown ]] && break
+    [[ $action == failed || $action == refused ]] && fail "the seek to $1 ended $action"
     (( EPOCHREALTIME > deadline )) && fail "the seek to $1 did not end"
     sleep 0.2
   done
-  say "seek: $(logq last $APP_LOG seek | python3 -I -c "import json,sys; e=json.load(sys.stdin); print(e['action'], e.get('target'), 'from', (e.get('source') or {}).get('kind'), e.get('source', {}) and (e.get('source') or {}).get('address'), 'steps', e.get('steps'), 'ms', e.get('elapsedMs'))")"
+  say "seek: $(logq all $APP_LOG seek | python3 -I -c "
+import json, sys
+e = [x for x in map(json.loads, list(sys.stdin)[$n:]) if x['action'] in ('committed', 'shown')][-1]
+print(e['action'], e.get('target'), 'from', (e.get('source') or {}).get('kind'), (e.get('source') or {}).get('address'), 'steps', e.get('steps'), 'ms', e.get('elapsedMs'))")"
 }
 
 seed_folder $QA_STATE/scenes
@@ -122,18 +143,18 @@ layout
 expect layout "the replay offers a timeline over the whole recording" "e['run']['state']=='replay' and e['run']['timeline'] is not None and e['run']['timeline']['max']==$final_tick and e['run']['timeline']['value']==0"
 shot seek-01-replay
 seek_to $(( before_tick - 120 ))
-expect seek "before the intervention: nothing cached yet, so rebuilt from the root, out of sight" "e['action']=='committed' and e['source']['kind']=='root' and e['address']==e['target']"
+expect_committed "before the intervention: nothing cached yet, so rebuilt from the root, out of sight" "e['source']['kind']=='root' and e['address']==e['target']"
 layout
-expect layout "the replay shows the requested address, paused, read-only" "e['run']['replay']['address']==$(field seek target) and e['run']['state']=='replay' and not e['run']['seeking']"
+expect layout "the replay shows the requested address, paused, read-only" "e['run']['replay']['address']==$(committed_target) and e['run']['state']=='replay' and not e['run']['seeking']"
 shot seek-02-before-intervention
 press_expect play sim-control
 sleep 5
 pause
 seek_to $(( after_tick + 200 ))
-expect seek "forward to the intervention's result, from a checkpoint" "e['action']=='committed' and e['source']['kind']=='checkpoint' and e['address']==e['target']"
+expect_committed "forward to the intervention's result, from a checkpoint" "e['source']['kind']=='checkpoint' and e['address']==e['target']"
 shot seek-03-after-intervention
 seek_to $(( before_tick + 30 ))
-expect seek "back before it again, restored from a checkpoint at or before the target" "e['action']=='committed' and e['source']['kind']=='checkpoint' and e['source']['address']['tick'] <= e['target']['tick']"
+expect_committed "back before it again, restored from a checkpoint at or before the target" "e['source']['kind']=='checkpoint' and e['source']['address']['tick'] <= e['target']['tick']"
 press_expect play sim-control
 sleep 4
 pause
@@ -162,9 +183,15 @@ layout
 since=$(last_seek_id)
 from=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick / 5 )))})
 to=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick * 4 / 5 )))})
+n=$(count seek)
 drag $from[1] $from[2] $to[1] $to[2] 40
 deadline=$(( EPOCHREALTIME + 30 ))
-while [[ $(logq field $APP_LOG seek action) != '"committed"' ]]; do
+# Settled once the newest request has committed.
+while [[ $(logq all $APP_LOG seek | python3 -I -c "
+import json, sys
+burst = [e for e in map(json.loads, list(sys.stdin)[$n:])]
+last = [e for e in burst if e['action'] == 'request'][-1]['id']
+print(any(e['action'] == 'committed' and e['id'] == last for e in burst))") != True ]]; do
   (( EPOCHREALTIME > deadline )) && fail "the scrub's last seek did not commit"
   sleep 0.2
 done

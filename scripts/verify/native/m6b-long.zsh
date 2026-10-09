@@ -45,7 +45,7 @@ progress_shown() {
   for i in {1..20}; do
     layout
     [[ $(logq last $APP_LOG layout | python3 -I -c "import json,sys; r=json.load(sys.stdin)['run']; print(bool(r['seeking'] and r['seeking']['shown'] and r['buttons']['cancel']))") == True ]] && return 0
-    [[ $(logq field $APP_LOG seek action) == '"committed"' ]] && fail "the seek committed before its progress could be shown"
+    [[ $(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(any(json.loads(l)['action']=='committed' for l in sys.stdin))") == True ]] && fail "the seek committed before its progress could be shown"
     sleep 0.3
   done
   fail "no progress or Cancel seek was shown"
