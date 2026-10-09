@@ -4,7 +4,8 @@
 # authoring is pressed: it never commits, and the retained authoring world's digests are those it had when
 # the replay began. In a new replay a long seek shows its progress and Cancel seek after 100 ms, and Cancel
 # leaves the displayed replay exactly as it was. Then a scrub across the timeline makes newer
-# requests supersede older ones: each commit is the newest request, and the last is shown. Then, with
+# requests supersede older ones (six clicks 25 ms apart): each commit is the newest request, and the last
+# is shown. Then, with
 # screen recording off, the app's M6B fixtures
 # (Shift+C) on this recording: every target against the checkpoint-free oracle, cached seek latency
 # (p95 ≤ 250 ms), an uncached and a canceled seek, and 20 seek/reset cycles.
@@ -136,10 +137,18 @@ until [[ $(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(any(js
 done
 layout
 since=$(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(max(json.loads(l).get('id', 0) for l in sys.stdin))")
-from=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick / 6 )))})
-to=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick * 5 / 6 )))})
+# Six timeline clicks 25 ms apart in one un-eased burst, each hit-tested first: every P1 seek takes 100 ms
+# or more, so each later request arrives while an earlier one still reconstructs.
+burst=(-e 0 -w 25)
+for k in 1 2 3 4 5 6; do
+  p=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick * k / 7 + 97 )))})
+  guard_point $p[1] $p[2]
+  burst+=(c:$p[1],$p[2])
+done
+idle_gate
 n=$(count seek)
-drag $from[1] $from[2] $to[1] $to[2] 40
+cliclick $burst
+touched
 deadline=$(( EPOCHREALTIME + 30 ))
 while [[ $(logq all $APP_LOG seek | python3 -I -c "
 import json, sys
