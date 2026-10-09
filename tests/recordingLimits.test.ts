@@ -11,7 +11,7 @@ import { RunCoordinator } from '../src/simulation/contexts';
 import { initSimulation, type AppliedCommand } from '../src/simulation/host';
 import { RecordingTooLarge, exportRun } from '../src/simulation/recorder';
 import { LinearReplay, firstDivergence, observe } from '../src/simulation/replay';
-import { EXPECT, TEST_IDENTITY, moveTo, session, type Session } from './support/run';
+import { EXPECT, TEST_IDENTITY, drag, moveTo, session, type Session } from './support/run';
 
 beforeAll(async () => {
   await initSimulation();
@@ -223,10 +223,10 @@ describe('a limit halfway through a live gesture', () => {
         expect(s.live().halted).toBe(true);
       }
     }
-    // The UI's limit handler (main.ts): the gesture ends at the last value the host applied.
+    // The UI's limit handler (main.ts) releases the gesture, which the controller ends at the last value the host applied.
     await flush();
+    controller.endGesture('Move law', start.field, tx);
     const applied = controller.lawState('push')!.field;
-    controller.record({ label: 'Move law', id: 'push', transactionId: tx, before: start, after: { field: applied, presentation: start.presentation } });
     return { start: start.field, tx, submitted, latest, applied };
   }
 
@@ -284,5 +284,60 @@ describe('a limit halfway through a live gesture', () => {
     while (RUN_LIMITS.fileBytes - recorder.bytes > big + 5 * sample) s.controller.editField('calm', 'Fill', () => heavy('calm', (k++ % 5) * 0.5));
     while (RUN_LIMITS.fileBytes - recorder.bytes > 5 * sample) s.controller.setAmbient([0, k++ % 2 ? -9.8 : -9.81, 0]);
     await check(s, 'bytes');
+  });
+});
+
+describe('a gesture ended before the limit refuses its last sample (SPEC §13.3; AC7)', () => {
+  const x = (s: Session) => s.controller.lawState('push')!.field.pose.position[0];
+  /** A recording one command short of its count limit. */
+  function nearlyFull(): Session {
+    const s = session();
+    s.coordinator.startRecording();
+    s.steps(3);
+    for (let k = 0; k < RUN_LIMITS.commands - 1; k++) expect(s.controller.setAmbient([0, k % 2 ? -9.8 : -9.81, 0]).ok).toBe(true);
+    return s;
+  }
+
+  it('a release with its last sample still queued keeps undo at the applied value', { timeout: 120_000 }, async () => {
+    const s = nearlyFull();
+    // The first sample is the 50,000th command; the second is still queued when the drag ends.
+    drag(s, 'push', [moveTo(-1), moveTo(-0.5)], (i) => i === 0 && s.boundary());
+    await flush();
+    expect(s.limits).toEqual(['commands']);
+    expect((await s.coordinator.settled())!.commands.length).toBe(RUN_LIMITS.commands);
+    expect(x(s)).toBe(-1);
+    expect(s.controller.undo().ok).toBe(true);
+    expect(x(s)).toBe(-1.5);
+    expect(s.controller.redo().ok).toBe(true);
+    expect(x(s)).toBe(-1);
+  });
+
+  it('a cancel whose restore is refused leaves its applied samples undoable', { timeout: 120_000 }, async () => {
+    const s = nearlyFull();
+    const start = s.controller.lawState('push')!.field;
+    const tx = s.controller.newTransaction();
+    expect(s.controller.putField(moveTo(-1)(start), tx).ok).toBe(true);
+    s.boundary();
+    // LawInteraction's cancel restores the start through the same transaction; the limit refuses it.
+    expect(s.controller.putField(start, tx).ok).toBe(true);
+    s.controller.endGesture('Move law', start, tx);
+    await flush();
+    expect(s.limits).toEqual(['commands']);
+    expect(x(s)).toBe(-1);
+    const undone = s.controller.undo();
+    expect(undone.ok && undone.value.transactionId).toBe(tx);
+    expect(x(s)).toBe(-1.5);
+  });
+
+  it('a cancel whose restore applied records nothing', () => {
+    const s = session();
+    const start = s.controller.lawState('push')!.field;
+    const tx = s.controller.newTransaction();
+    expect(s.controller.putField(moveTo(-1)(start), tx).ok).toBe(true);
+    s.boundary();
+    expect(s.controller.putField(start, tx).ok).toBe(true);
+    s.controller.endGesture('Move law', start, tx);
+    expect(x(s)).toBe(-1.5);
+    expect(s.controller.canUndo).toBe(false);
   });
 });

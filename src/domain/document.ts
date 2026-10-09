@@ -287,6 +287,18 @@ export class DocumentController {
     return field ? { field, presentation: this.presentationOf(id) } : null;
   }
 
+  /**
+   * Ends a gesture as one undo entry (SPEC §10.3). Its last sample, or a cancel's restore, applies at
+   * the current boundary first, and the entry ends at what the host applied: a sample a recording
+   * limit refused never reaches undo, and a refused restore leaves its applied samples undoable
+   * (SPEC §13.3). A cancel whose restore applied records nothing.
+   */
+  endGesture(label: string, start: FieldDefinition, transactionId: string): void {
+    this.settle();
+    const after = this.lawState(start.id);
+    if (after) this.record({ label, id: start.id, transactionId, before: { field: start, presentation: after.presentation }, after });
+  }
+
   /** Records a completed user action as one undo entry; a later redo history is discarded. */
   record(transaction: Transaction): void {
     if (sameState(transaction.before, transaction.after)) return;

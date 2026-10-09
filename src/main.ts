@@ -310,13 +310,10 @@ async function start() {
     initial.semantic.fields[0]?.id ?? null,
   );
 
-  /** One completed drag is one author-undo entry; a cancel restored its start and records nothing. */
+  /** One completed drag is one author-undo entry, ending at what the host applied; a cancel restored its start and records nothing. */
   const gestureEnded = (end: GestureEnd) => {
+    authoring.endGesture(end.label, end.start, end.transactionId);
     awaitApplied(end.revision);
-    if (!end.cancelled && end.latest) {
-      const presentation = authoring.presentationOf(end.start.id);
-      authoring.record({ label: end.label, id: end.start.id, transactionId: end.transactionId, before: { field: end.start, presentation }, after: { field: end.latest, presentation } });
-    }
     edited();
   };
 

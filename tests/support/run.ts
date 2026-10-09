@@ -98,7 +98,8 @@ export function session(document: SceneDocument = laboratory(), runIds = ['run-t
 /**
  * A drag as LawInteraction performs it: every sample is a complete law value submitted through the
  * document under the gesture's one transaction; `between` runs after each sample (a frame boundary
- * or a step). At release one undo entry records the gesture's endpoints.
+ * or a step). At release the controller ends it as main.ts does: one undo entry from its start to
+ * what the host applied.
  */
 export function drag(s: Session, id: string, samples: readonly ((f: FieldDefinition) => FieldDefinition)[], between: (i: number) => void): { transactionId: string; latest: FieldDefinition } {
   const { controller } = s;
@@ -112,7 +113,7 @@ export function drag(s: Session, id: string, samples: readonly ((f: FieldDefinit
     latest = result.value.field;
     between(i);
   });
-  controller.record({ label: 'Move law', id, transactionId, before, after: { field: latest, presentation: before.presentation } });
+  controller.endGesture('Move law', before.field, transactionId);
   return { transactionId, latest };
 }
 
