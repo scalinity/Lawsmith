@@ -3,9 +3,8 @@
 # the 60 s limit closes it. In its replay an uncached seek to the end is left pending while Return to
 # authoring is pressed: it never commits, and the retained authoring world's digests are those it had when
 # the replay began. In a new replay a long seek shows its progress and Cancel seek after 100 ms, and Cancel
-# leaves the displayed replay exactly as it was. Then a scrub across the timeline makes newer
-# requests supersede older ones (six clicks 25 ms apart): each commit is the newest request, and the last
-# is shown. Then, with
+# leaves the displayed replay exactly as it was. A newer request made while a long reconstruction runs
+# supersedes it: only the newer one commits and is shown. Then, with
 # screen recording off, the app's M6B fixtures
 # (Shift+C) on this recording: every target against the checkpoint-free oracle, cached seek latency
 # (p95 ≤ 250 ms), an uncached and a canceled seek, and 20 seek/reset cycles.
@@ -127,40 +126,27 @@ layout
 expect layout "after Cancel: the same replay at tick 0, no seek world, the timeline back at 0" "e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==0 and e['run']['contexts']['worlds']==2 and e['run']['timeline']['value']==0 and e['run']['seeking'] is None"
 shot long-03-canceled
 
-segment "scrub the P1 replay: newer requests supersede older ones"
-# Every 240th tick cached first, so each request of the scrub is a cached seek of 100 ms or more.
-seek_click $final_tick
-deadline=$(( EPOCHREALTIME + 60 ))
-until [[ $(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(any(json.loads(l)['action']=='committed' for l in sys.stdin))") == True ]]; do
-  (( EPOCHREALTIME > deadline )) && fail "the uncached seek to the end did not commit"
-  sleep 0.3
-done
-layout
+# A newer request while a long reconstruction runs: the canceled seeks left checkpoints only partway, so a
+# seek to the end still takes seconds, and the second click lands while it works. (A click that comes
+# during a short cached seek reaches the page only after that seek ends: WebKit sends mouse events one at
+# a time, each waiting for the page's reply; M6B.md finding.)
+segment "a newer request supersedes a long reconstruction; only the newer one is shown"
 since=$(logq all $APP_LOG seek | python3 -I -c "import json,sys; print(max(json.loads(l).get('id', 0) for l in sys.stdin))")
-# Six timeline clicks 25 ms apart in one un-eased burst, each hit-tested first: every P1 seek takes 100 ms
-# or more, so each later request arrives while an earlier one still reconstructs.
-burst=(-e 0 -w 25)
-for k in 1 2 3 4 5 6; do
-  p=(${=$(logq timeline $APP_LOG $WIN_X $WIN_Y $(( final_tick * k / 7 + 97 )))})
-  guard_point $p[1] $p[2]
-  burst+=(c:$p[1],$p[2])
-done
-idle_gate
-n=$(count seek)
-cliclick $burst
-touched
+seek_click $final_tick
+progress_shown
+seek_click $(( final_tick * 3 / 10 ))
 deadline=$(( EPOCHREALTIME + 30 ))
 while [[ $(logq all $APP_LOG seek | python3 -I -c "
 import json, sys
-burst = [e for e in map(json.loads, list(sys.stdin)[$n:])]
+burst = [e for e in map(json.loads, sys.stdin) if e.get('id', 0) > $since]
 last = [e for e in burst if e['action'] == 'request'][-1]['id']
 print(any(e['action'] == 'committed' and e['id'] == last for e in burst))") != True ]]; do
-  (( EPOCHREALTIME > deadline )) && fail "the scrub's last seek did not commit"
+  (( EPOCHREALTIME > deadline )) && fail "the newer request did not commit"
   sleep 0.2
 done
 layout
-verdict "newer requests superseded older ones; every commit was the newest request; the last is shown" latest $APP_LOG $since 1
-shot long-04-scrubbed
+verdict "the long reconstruction was superseded; only the newer request committed and is shown" latest $APP_LOG $since 1
+shot long-04-superseded
 n=$(count context)
 press_expect run-return context
 wait_log context $(( n + 1 )) 10
