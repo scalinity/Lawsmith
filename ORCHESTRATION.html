@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-08 against <code>main</code>: M6A accepted and merged (code <code>2c79d2d</code>); M6B is next</span>
+    <span>Realigned 2026-10-09 against <code>m6b</code>, pushed and not merged: M6B implemented (code <code>d6966fd</code>), review pending</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Start M6B on Opus 5.5.</h1>
-    <p class="lede">M6A is accepted and merged (code <code>2c79d2d</code>). A recording now replays from its frozen root to exactly the state it recorded, with no checkpoint, and that linear replay is the oracle M6B’s restoration must match. You accepted it on the acceptance review and its fixes, without Sol’s review. The native re-run of the fixed build and your playback inspection did not run, by your decision. M6B is next: complete checkpoints, restore and seek, authored by Opus 5.5 on a fresh <code>m6b</code> branch. Its first native window also re-runs M6A’s four scenarios on the new build.</p>
-    <cite><code>docs/evidence/M6A.md</code> Status, Review, Owner checks; <code>docs/MILESTONES.md</code> M6B</cite>
+    <h1>Review M6B’s complete state before M7.</h1>
+    <p class="lede">M6B is implemented and waits on review (code <code>d6966fd</code>, branch <code>m6b</code>, not merged). A checkpoint restored into a new world and replayed forward lands exactly where M6A’s checkpoint-free replay lands: in the packaged app, 93 targets on two recordings matched in state and engine bytes, and a cached seek in a 60 s P1 recording reached its first drawn frame at p95 209 ms. M6A’s four scenarios and the M1–M5 chain passed on the same build. Next, the independent complete-state review MILESTONES strongly recommends before M7 (GPT-6.1 Sol), then your acceptance and the merge. M7 stays locked until then.</p>
+    <cite><code>docs/evidence/M6B.md</code> Status, Acceptance criteria, Performance, Owner checks; <code>docs/MILESTONES.md</code> M6B Evidence required for review</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -604,8 +604,8 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m6a</code>. Before any native run, one read-only Opus 5.5 reviewer checked the app integration, the part with no automated coverage, and its nine findings were fixed in <code>fd4cab8</code>. The acceptance review you requested (two read-only Opus 5.5 reviewers) of <code>6903cf4</code> found 3 medium findings, 1 low and 11 suggestions, and required remediation (AC7, AC9). All were addressed, and by your decision the run format now carries created laws’ names (schema 2), at <code>2c79d2d</code>. You accepted it on that review; Sol’s review did not run.</dd>
-              <dt>Graph permits</dt><dd class="soft">Done: code at <code>2c79d2d</code>, accepted by you on 2026-10-08. Its native results are <code>6903cf4</code>’s.</dd>
-              <dt>Should run</dt><dd class="run">Nothing. M6A is accepted. The native re-run of its fixed build moves to M6B’s first native window (open thread).</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: code at <code>2c79d2d</code>, accepted by you on 2026-10-08. Its four native scenarios then ran on M6B’s build, which contains that code, and passed, with Save Main Scene and a created law’s name.</dd>
+              <dt>Should run</dt><dd class="run">Nothing. M6A is accepted and its native re-run is done.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M5, accepted on 2026-10-08. Contracts C5–C8.</dd>
@@ -614,12 +614,12 @@
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/evidence/M6A.md</code> Status, Acceptance criteria, Performance, Recording controls, Findings, Review, Owner checks; <code>docs/MILESTONES.md</code> M6A</cite>
+          <cite class="src"><code>docs/evidence/M6A.md</code> Status, Acceptance criteria, Performance, Recording controls, Findings, Review, Owner checks; <code>docs/evidence/M6B.md</code> M6A, carried; <code>docs/MILESTONES.md</code> M6A</cite>
         </div>
       </article>
 
       <!-- REALIGN M6B -->
-      <article class="unit" id="m6b" data-gate="M6B" data-state="not-started" data-tier="scarce">
+      <article class="unit" id="m6b" data-gate="M6B" data-state="implemented" data-tier="scarce">
         <div class="gate">M6B</div>
         <div>
           <div class="unit-head">
@@ -628,18 +628,18 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors, and M6B waits for it rather than falling back. GPT-6.1 Sol runs the complete-state review before M7, checking the linear oracle and the restored result separately.</dd>
-              <dt>Graph permits</dt><dd class="soft">Eligible: M6A was accepted on 2026-10-08.</dd>
-              <dt>Should run</dt><dd class="run">Now, alone, on a fresh <code>m6b</code> branch from <code>main</code>, in an Opus 5.5 session. Nothing else runs beside it, since it extends <code>simulation</code> and <code>ui</code>. Its first native window also re-runs M6A’s four scenarios on its build. M7 stays locked until M6B is accepted.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m6b</code>. Before any native run, one read-only Opus 5.5 reviewer checked the seek driver, the part with no automated coverage: 1 medium, 4 low, 3 suggestions, every one fixed. GPT-6.1 Sol runs the complete-state review before M7, checking the linear oracle and the restored result separately; it has not run.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented, review pending: code at <code>d6966fd</code>, every acceptance criterion passing headless and natively on one build (bundle <code>a0c4f337…</code>). Not merged.</dd>
+              <dt>Should run</dt><dd class="run">Sol’s complete-state review of <code>d6966fd</code> against <code>321d9e1</code>, then your acceptance and the merge. Nothing else runs meanwhile: M7 forks from M6B’s checkpoints and stays locked until M6B is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M6A, accepted on 2026-10-08. Contracts C5–C8.</dd>
-              <dt>Destroys</dt><dd>Nothing beyond publishing. Checkpoint caches stay in memory.</dd>
-              <dt>Your part</dt><dd>Hands-off windows for the native seek video.</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. Checkpoint caches stay in memory. Native QA used disposable folders, per-run recovery directories and a 1 MiB disk image, switched the display to More Space only for the 1600×1000 and 1280×800 checks, and re-imported the panel preferences from their pre-QA export. By your decision it quit another session’s screenshot interface that covered the screen. The published seek video drops a notification banner’s first 2 s.</dd>
+              <dt>Your part</dt><dd>Request Sol’s review, then accept and merge, or not. Optionally, scrub a P1 replay on a real trackpad (thread below; <code>M6B.md</code> Owner checks).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M6B Out of scope, Evidence required for review, Failure / rollback conditions</cite>
+          <cite class="src"><code>docs/evidence/M6B.md</code> Status, Acceptance criteria, Review, Owner checks, Evidence provenance; <code>docs/MILESTONES.md</code> M6B Evidence required for review</cite>
         </div>
       </article>
 
@@ -1142,7 +1142,7 @@
 
   <section id="open-threads" aria-labelledby="h-threads">
     <h2 id="h-threads">Open threads</h2>
-    <p class="intro">Every thread the record leaves open, each with the unit that owns it. M1 closed M0 findings 1, 6 and 7, and M3’s review remediation closed M3 findings 1 and 2. Close a thread by deleting its row, and record the closing evidence in that unit’s evidence file.</p>
+    <p class="intro">Every thread the record leaves open, each with the unit that owns it. M1 closed M0 findings 1, 6 and 7, M3’s review remediation closed M3 findings 1 and 2, and M6B’s native window closed M6A’s native re-run. Close a thread by deleting its row, and record the closing evidence in that unit’s evidence file.</p>
 
     <!-- REALIGN: open threads live only here. data-owner = owning unit id; data-short = the label shown on that unit's strip. -->
     <table class="rows" id="threads">
@@ -1188,15 +1188,15 @@
         </tr>
         <tr id="t-m6a-minimum" data-owner="m8" data-short="Minimum window">
           <td data-label="Thread" class="lead">M6A finding 4: the recording controls at the minimum window</td>
-          <td data-label="What the record says">At the 900×600 minimum window, the replay cluster’s lower edge (y 206) meets the top of the selected Storm Bottle’s projected support (from y 184) in the QA scene’s framing. It is clear of every UI region. SPEC §11.1 sets the selected law’s clearance at 1280×800, where every state passes. For M8’s narrow-window layout.</td>
+          <td data-label="What the record says">At the 900×600 minimum window, the replay cluster’s lower edge (y 224 with M6B’s timeline; y 206 in M6A) overlaps the top of the selected Storm Bottle’s projected support (from y 184) in the QA scene’s framing. It is clear of every UI region. SPEC §11.1 sets the selected law’s clearance at 1280×800, where every state passes. For M8’s narrow-window layout.</td>
           <td data-label="Owner"><a href="#m8">M8</a></td>
-          <td data-label="Source"><cite><code>M6A.md</code> Recording controls, finding 4</cite></td>
+          <td data-label="Source"><cite><code>M6A.md</code> Recording controls, finding 4; <code>M6B.md</code> M6A, carried</cite></td>
         </tr>
-        <tr id="t-m6a-requalify" data-owner="m6b" data-short="M6A native re-run">
-          <td data-label="Thread" class="lead">M6A’s remediated build has not run natively</td>
-          <td data-label="What the record says">The acceptance review’s fixes and the run-format change (<code>6903cf4</code> to <code>2c79d2d</code>) change application code, including a native alert and a native write command. Every headless check passes on <code>2c79d2d</code>. Every native result in the record is <code>6903cf4</code>’s, so the packaged build, the four M6A scenarios and the M1–M5 regression chain need to run again before acceptance. The build is ready: <code>2c79d2d</code>, built at 21:00:11 on 2026-10-08. One attempt stopped before its first click, because another session’s screenshot interface covered the screen. You accepted M6A without it, so it runs in M6B’s first native window, on M6B’s build, when no other session is using the screen.</td>
+        <tr id="t-m6b-scrub" data-owner="m6b" data-short="Scrub feel on P1">
+          <td data-label="Thread" class="lead">M6B finding 1: a click during a short seek</td>
+          <td data-label="What the record says">WebKit sends a page one mouse event at a time, each waiting for the page’s reply, and the seek’s batches run between them. So a click made during a cached P1 seek (100–200 ms) reaches the page after that seek commits, and scrubbing P1 shows the intermediate targets in turn rather than skipping them. During long reconstructions, input lands between batches, and a newer request supersedes the old one. No criterion is affected. How it feels on a real trackpad is an owner check.</td>
           <td data-label="Owner"><a href="#m6b">M6B</a></td>
-          <td data-label="Source"><cite><code>M6A.md</code> Status, Review, Owner checks</cite></td>
+          <td data-label="Source"><cite><code>M6B.md</code> finding 1, Owner checks</cite></td>
         </tr>
         <tr id="t-m4-contacts" data-owner="deferred" data-short="Contact readback">
           <td data-label="Thread" class="lead">M4 finding 2: contact naming on the pinned engine</td>
