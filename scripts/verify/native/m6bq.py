@@ -6,8 +6,8 @@
   m6bq.py seeks LOG [SINCE_ID]     every committed seek has a request and holds exactly its target; no request
                                    that was superseded or canceled ever commits; counts and timings
   m6bq.py retained LOG             every digest of the retained authoring world logged at a context switch since
-                                   the first replay (each seek's commit included) is the same: seeking, canceling
-                                   and returning never touched it
+                                   the first replay (entering it, Return, Replay from start, the fixtures'
+                                   switches) is the same: the seeks and cancels between them never touched it
   m6bq.py latest LOG SINCE_ID      over the requests after SINCE_ID: each commit is the newest request at that
                                    moment, some were superseded, and the last request is committed and shown
 """

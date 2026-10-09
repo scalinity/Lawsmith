@@ -1266,14 +1266,13 @@ async function start() {
   });
 
   /**
-   * Displays the coordinator's selected context: its world, laws and readouts, with every view of the
-   * previous world cleared. Scheduling debt is discarded and the new context starts paused (SPEC §13.2).
+   * Shows the coordinator's displayed world, paused, with scheduling debt discarded and every view of the
+   * previous world cleared: the explained body, the ingredient focus, the readouts' signatures, the end
+   * check, a selection the new world does not hold, and a fault that belonged to another world.
    */
-  const showContext = (reason: string) => {
+  const showWorld = (reason: string) => {
     setPlaying(false, reason);
     scheduler.pause();
-    // A context change cancels a pending seek inside the coordinator; its end is reported here.
-    if (pendingSeek && runs.seeking !== pendingSeek.job) endSeek(pendingSeek, 'canceled', { reason });
     host = runs.shown;
     explained = null;
     host.explain(null);
@@ -1291,6 +1290,16 @@ async function start() {
     // A fault belongs to its world: shown again when that world is, hidden otherwise.
     if (host.fault) showSimError(`${host.fault.message}. The last valid frame is shown.`, !replaying());
     else $('sim-error').hidden = true;
+  };
+
+  /**
+   * Displays the coordinator's selected context: its world, laws and readouts, with every view of the
+   * previous world cleared. Scheduling debt is discarded and the new context starts paused (SPEC §13.2).
+   */
+  const showContext = (reason: string) => {
+    // A context change cancels a pending seek inside the coordinator; its end is reported here.
+    if (pendingSeek && runs.seeking !== pendingSeek.job) endSeek(pendingSeek, 'canceled', { reason });
+    showWorld(reason);
     applyFreeze();
     report('context', { reason, ...runs.counts(), tick: host.tick, cursor: host.lastAppliedSequence, runId: runs.replay?.record.runId ?? null, qualified: runs.replayQualified });
     // The retained authoring world's digests at every switch: a replay must leave them exactly as they were.
@@ -1575,12 +1584,16 @@ async function start() {
     renderPanel();
   }
 
-  /** The reconstruction holds the target: it is now the displayed replay, paused at that address, with fresh views. */
+  /**
+   * The reconstruction holds the target: it is now the displayed replay, paused at that address, with fresh
+   * views. A seek stays in the same replay context, so it takes no context switch's reports or snapshots.
+   */
   const seekCommitted = (pending: PendingSeek) => {
     pendingSeek = null;
-    showContext('seek');
+    showWorld('seek');
     seekedTrails = true;
     endSeek(pending, 'committed', { address: runs.replay!.address, generation: host.generation });
+    renderPanel();
     if (runs.replay!.complete) replayReachedEnd();
   };
 
