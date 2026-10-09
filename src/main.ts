@@ -157,6 +157,8 @@ interface PendingSeek {
   readonly batches: number[];
   /** When progress and Cancel became visible, ms after the request; null before. */
   progressShownAfter: number | null;
+  /** Play was pressed while it reconstructed: it plays from its target once it holds it. */
+  playOnCommit: boolean;
   readonly done: (outcome: SeekOutcome) => void;
 }
 
@@ -424,12 +426,17 @@ async function start() {
   };
 
   const setPlaying = (playing: boolean, reason: string) => {
+    // Play during a seek plays from its target once it holds it; a pause, or a lifecycle pause, withdraws that.
+    if (pendingSeek && playing !== pendingSeek.playOnCommit && !scheduler.playing) {
+      pendingSeek.playOnCommit = playing;
+      report('seek', { action: playing ? 'play-on-commit' : 'pause-on-commit', id: pendingSeek.job.id, reason });
+      renderPanel();
+      return;
+    }
     if (playing === scheduler.playing) return;
     if (playing && (host.fault || frozen || authoring.liveHost.halted)) return;
     // A replay at its frozen end stays there: Replay from Start, not Play, begins it again.
     if (playing && replaying() && runs.replay?.complete) return;
-    // Play continues from what is displayed: a seek still reconstructing is given up first.
-    if (playing && pendingSeek) cancelPendingSeek('play');
     if (playing) {
       scheduler.play();
       // A next-step preview is a paused view; motion shows each completed step instead.
@@ -1544,7 +1551,7 @@ async function start() {
     }
     const requested = job;
     return new Promise((resolve) => {
-      pendingSeek = { job: requested, reason, requestedAt: performance.now(), batches: [], progressShownAfter: null, done: resolve };
+      pendingSeek = { job: requested, reason, requestedAt: performance.now(), batches: [], progressShownAfter: null, playOnCommit: false, done: resolve };
       report('seek', { action: 'request', id: requested.id, reason, target, shown: runs.replay!.address, ...cacheCounts() });
       pumpSeek();
       renderPanel();
@@ -1597,6 +1604,7 @@ async function start() {
     endSeek(pending, 'committed', { address: runs.replay!.address, generation: host.generation });
     renderPanel();
     if (runs.replay!.complete) replayReachedEnd();
+    else if (pending.playOnCommit) setPlaying(true, 'seek');
   };
 
   const seekFailed = (pending: PendingSeek, error: unknown) => {
@@ -1672,7 +1680,7 @@ async function start() {
         report('seek', { action: 'progress-shown', id: seek.job.id, afterMs: round3(seek.progressShownAfter), progress: round3(runs.seekProgress(seek.job)) });
       }
       const where = seek
-        ? ` Seeking to tick ${seek.job.target.tick}, change ${seek.job.target.cursor}…${seekShown ? ` ${Math.floor(runs.seekProgress(seek.job) * 100)}%` : ''}`
+        ? ` Seeking to tick ${seek.job.target.tick}, change ${seek.job.target.cursor}…${seekShown ? ` ${Math.floor(runs.seekProgress(seek.job) * 100)}%` : ''}${seek.playOnCommit ? ' Then playing.' : ''}`
         : runs.replayPartial
           ? ` Applying the recorded changes at tick ${host.tick}…`
           : replay.complete
