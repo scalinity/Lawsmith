@@ -2281,7 +2281,9 @@ async function start() {
       case 'Delete':
         return deleteSelected();
       case 'Escape':
-        // A gesture first, then the explained body, then the law selection.
+        // A pending seek first; then the focused timeline lets go; then a gesture, the explained body, the law selection.
+        if (pendingSeek) return cancelPendingSeek('escape');
+        if (event.target === runParts.timeline) return runParts.timeline.blur();
         if (interaction.cancel('escape')) return;
         if (explained !== null) setExplained(null, 'escape');
         else interaction.select(null);
