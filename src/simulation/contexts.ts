@@ -275,9 +275,13 @@ export class RunCoordinator {
 
   // ------------------------------------------------------------------ import (SPEC §15.2)
 
-  /** Builds one unstepped candidate replay world for a validated record; throws, allocating nothing, if it cannot. */
+  /**
+   * Builds one unstepped candidate replay world for a validated record; throws, allocating nothing, if it
+   * cannot. A running recording refuses here, while the import is still transactional, not at commit.
+   */
   prepareImport(record: RunRecord): LinearReplay {
     if (this.candidates > 0) throw new Error('An import is already being prepared.');
+    if (this.recordingState === 'recording' || this.recordingState === 'finalizing') throw new Error('Finish the running recording before opening another.');
     const candidate = new LinearReplay(record);
     this.candidates += 1;
     return candidate;

@@ -608,12 +608,14 @@ async function start() {
     commitRun: (record, candidate) => {
       setPlaying(false, 'open-recording');
       interaction.release('open-recording');
-      if (replaying()) world.discardScene(world.swapScene(candidate.view));
+      // The coordinator commits first: it is the only step that can refuse, and then no view has moved.
+      const fromReplay = replaying();
+      runs.commitImport(candidate.replay);
+      if (fromReplay) world.discardScene(world.swapScene(candidate.view));
       else {
         authoringView = world.swapScene(candidate.view);
         authoringCamera = stashCamera();
       }
-      runs.commitImport(candidate.replay);
       showContext('open-recording');
       report('recording', { action: 'opened', ...recordSummary(record) });
     },

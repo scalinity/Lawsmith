@@ -344,6 +344,9 @@ describe('T11: bounded worlds through replay, restart, return and import cycles 
     s.coordinator.startRecording();
     expect(s.coordinator.record).toBeNull();
     expect(worldCounts().allocated).toBe(base);
+    // A running recording refuses an import before any candidate exists.
+    expect(() => s.coordinator.prepareImport(read.record)).toThrow(/running recording/);
+    expect([s.coordinator.counts().candidates, worldCounts().allocated]).toEqual([0, base]);
     void cloneFrozen;
   });
 });
