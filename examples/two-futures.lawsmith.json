@@ -1,0 +1,128 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "title": "Two Futures",
+    "description": "Pause, Compare from here, compute A, then change Sideways strength from 0 to 2 and Play. At one second, the same body separates by at least 0.5 m."
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [
+        10,
+        9,
+        18
+      ],
+      "target": [
+        3,
+        2,
+        0
+      ]
+    },
+    "laws": [
+      {
+        "id": "sideways",
+        "label": "Sideways",
+        "color": "#55aaa4",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": [
+    "primitive.directional.v1",
+    "region.box.v1"
+  ],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "id": "traveler",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          1,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      }
+    ],
+    "emitters": [],
+    "fields": [
+      {
+        "id": "sideways",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            50,
+            10,
+            10
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [
+        0,
+        0,
+        0
+      ],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

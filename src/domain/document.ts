@@ -88,6 +88,8 @@ export class DocumentController {
   constructor(
     document: SceneDocument,
     private host: SimulationHost,
+    private readonly historyLimit = Infinity,
+    private readonly historyByteLimit = Infinity,
   ) {
     this.adopt(document);
   }
@@ -281,6 +283,17 @@ export class DocumentController {
     return this.host;
   }
 
+  /** Comparison replay reattaches the reconstructed end without rewriting its local undo. */
+  reattach(host: SimulationHost): void {
+    if (this.host.pendingCount) throw new Error('Cannot detach queued edits.');
+    this.host = host;
+  }
+
+  /** Conservative managed history accounting, including object and string storage. */
+  get historyBytes(): number {
+    return [...this.undoStack, ...this.redoStack].reduce((n, t) => n + JSON.stringify(t).length * 8 + 1024, 0);
+  }
+
   /** A law's settled authored state, or null if it does not exist. */
   lawState(id: string): LawState | null {
     const field = this.authored.fields.find((f) => f.id === id);
@@ -304,6 +317,7 @@ export class DocumentController {
     if (sameState(transaction.before, transaction.after)) return;
     this.undoStack.push(transaction);
     this.redoStack = [];
+    while (this.undoStack.length > this.historyLimit || (Number.isFinite(this.historyByteLimit) && this.historyBytes > this.historyByteLimit)) this.undoStack.shift();
   }
 
   /**

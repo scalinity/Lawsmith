@@ -1,0 +1,3914 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "title": "P3 \u2014 Two Futures",
+    "description": "100 dynamic spheres, four active directional laws; ambient cancels their common drive. Shift+K computes the full horizon; Shift+P warms, restores the fork and captures active P3."
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [
+        9,
+        7,
+        15
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    "laws": [
+      {
+        "id": "push-0",
+        "label": "push-0",
+        "color": "#55aaa4",
+        "visible": true
+      },
+      {
+        "id": "push-1",
+        "label": "push-1",
+        "color": "#55aaa4",
+        "visible": true
+      },
+      {
+        "id": "push-2",
+        "label": "push-2",
+        "color": "#55aaa4",
+        "visible": true
+      },
+      {
+        "id": "push-3",
+        "label": "push-3",
+        "color": "#55aaa4",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": [
+    "primitive.directional.v1",
+    "region.box.v1"
+  ],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "id": "body-000",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-001",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-002",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-003",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-004",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-005",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-006",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-007",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-008",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-009",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            -2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-010",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-011",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-012",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-013",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-014",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-015",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-016",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-017",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-018",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-019",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            -1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-020",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-021",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-022",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-023",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-024",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-025",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-026",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-027",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-028",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-029",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            -1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-030",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-031",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-032",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-033",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-034",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-035",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-036",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-037",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-038",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-039",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            -0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-040",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-041",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-042",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-043",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-044",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-045",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-046",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-047",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-048",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-049",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            -0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-050",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-051",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-052",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-053",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-054",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-055",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-056",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-057",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-058",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-059",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            0.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-060",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-061",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-062",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-063",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-064",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-065",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-066",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-067",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-068",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-069",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            0.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-070",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-071",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-072",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-073",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-074",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-075",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-076",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-077",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-078",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-079",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            1.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-080",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-081",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-082",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-083",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-084",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-085",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-086",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-087",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-088",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-089",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            1.75,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-090",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -2.25,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-091",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.75,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-092",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -1.25,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-093",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.75,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-094",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            -0.25,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-095",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.25,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-096",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0.75,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-097",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.25,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-098",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            1.75,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      },
+      {
+        "id": "body-099",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            2.25,
+            2.25,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0.5,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      }
+    ],
+    "emitters": [],
+    "fields": [
+      {
+        "id": "push-0",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            100,
+            100,
+            100
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0.1
+        }
+      },
+      {
+        "id": "push-1",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            100,
+            100,
+            100
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0.1
+        }
+      },
+      {
+        "id": "push-2",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            100,
+            100,
+            100
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0.1
+        }
+      },
+      {
+        "id": "push-3",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            100,
+            100,
+            100
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0.1
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [
+        0,
+        -0.4,
+        0
+      ],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

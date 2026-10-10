@@ -11,8 +11,9 @@ import { CHECKPOINT_TICKS, CheckpointCache, PrefixIdentities, RestoredReplay, ca
 import { worldCounts, type SimulationHost } from './host';
 import { RunRecorder, SIMULATION_FINGERPRINT, sha256Hex } from './recorder';
 import { LinearReplay, type Address } from './replay';
+import { Comparison } from './comparison';
 
-export type Selected = 'authoring' | 'replay';
+export type Selected = 'authoring' | 'replay' | 'comparison';
 
 /** The displayed replay: built from the record's root, or restored from a checkpoint by a seek. */
 export type ReplayWorld = LinearReplay | RestoredReplay;
@@ -88,6 +89,8 @@ export class RunCoordinator {
   stopReason: StopReason | null = null;
   replay: ReplayWorld | null = null;
   selected: Selected = 'authoring';
+  comparison: Comparison | null = null;
+  private comparisonEntry: 'authoring' | 'replay' = 'authoring';
   /** Checkpoints of the records replayed in this session (SPEC §14.2); never persisted. */
   readonly checkpoints: CheckpointCache;
   /** The seek in progress, if any: only the latest request has one. */
@@ -121,7 +124,34 @@ export class RunCoordinator {
 
   /** The world displayed and advanced: the replay's when replay is selected. */
   get shown(): SimulationHost {
+    if (this.selected === 'comparison' && this.comparison) return this.comparison.host;
     return this.selected === 'replay' && this.replay ? this.replay.host : this.live;
+  }
+
+  /** Paused caller only: refuse recording/seek/partial settlement before allocating either future. */
+  enterComparison(): Comparison {
+    if (this.comparison || this.selected === 'comparison') throw new Error('Close the current comparison first.');
+    if (this.recordingState === 'recording' || this.recordingState === 'finalizing') throw new Error('Stop the recording before comparing.');
+    if (this.job || this.replayPartial || this.candidates) throw new Error('Finish seeking or replacing the context before comparing.');
+    if (this.shown.pendingCount) throw new Error('Finish the queued edits before comparing.');
+    if (this.selected === 'authoring') this.controller.settle();
+    const source = this.shown;
+    const record = this.selected === 'replay' ? this.replay!.record : null;
+    const snapshot = this.controller.snapshot(this.controller.camera);
+    const root = record ? cloneFrozen({ ...record.root, presentation: { ...record.root.presentation, laws: [...record.root.presentation.laws, ...record.createdLaws] } }) : createDocument(source.frozenRoot, snapshot.metadata, snapshot.presentation);
+    const identity = record ? `${record.runId}:${this.scope(record).prefixes.at(source.lastAppliedSequence)}` : `live-${this.context}-${source.generation}`;
+    const comparison = new Comparison(source, root, `${identity}:${compactJson(SIMULATION_FINGERPRINT)}:${compactJson(this.options.identity())}`);
+    this.comparisonEntry = this.selected;
+    this.comparison = comparison;
+    this.selected = 'comparison';
+    return comparison;
+  }
+
+  closeComparison(): void {
+    if (!this.comparison) return;
+    this.comparison.dispose();
+    this.comparison = null;
+    this.selected = this.comparisonEntry;
   }
 
   get recordingState(): RecordingState {
@@ -232,6 +262,7 @@ export class RunCoordinator {
 
   /** Forgets the finalized record, its replay and its checkpoints; the caller has protected it if it was unexported. */
   dropRecord(): void {
+    this.closeComparison();
     this.disposeReplay();
     this.selected = 'authoring';
     this.forgetCheckpoints(this.record);
@@ -249,6 +280,7 @@ export class RunCoordinator {
    * it is; a separate world is built from the record's frozen root at (0, 0), paused.
    */
   enterReplay(): LinearReplay {
+    if (this.comparison) throw new Error('Close comparison before replaying the source recording.');
     if (!this.record) throw new Error('There is no finished recording to replay.');
     if (this.recordingState !== 'recorded') throw new Error('Stop the recording before replaying it.');
     this.controller.settle();
@@ -272,6 +304,7 @@ export class RunCoordinator {
 
   /** Return to authoring: the replay world is freed and the retained authoring context selected again, paused. */
   returnToAuthoring(): void {
+    this.closeComparison();
     this.disposeReplay();
     this.selected = 'authoring';
   }
@@ -351,6 +384,7 @@ export class RunCoordinator {
   prepareImport(record: RunRecord): LinearReplay {
     if (this.candidates > 0) throw new Error('An import is already being prepared.');
     if (this.recordingState === 'recording' || this.recordingState === 'finalizing') throw new Error('Finish the running recording before opening another.');
+    this.comparison?.cancel();
     const candidate = new LinearReplay(record);
     this.candidates += 1;
     return candidate;
@@ -366,6 +400,7 @@ export class RunCoordinator {
   commitImport(candidate: LinearReplay): void {
     if (this.recordingState === 'recording' || this.recordingState === 'finalizing') throw new Error('Finish the running recording before opening another.');
     this.candidates -= 1;
+    this.closeComparison();
     this.disposeReplay();
     if (this.record !== candidate.record) this.forgetCheckpoints(this.record);
     this.replay = candidate;
@@ -387,6 +422,7 @@ export class RunCoordinator {
     checkpointBytes: number;
     selected: Selected;
     recording: RecordingState;
+    comparison: ReturnType<Comparison['counts']> | null;
   } {
     const { allocated, peak } = worldCounts();
     return {
@@ -400,6 +436,7 @@ export class RunCoordinator {
       checkpointBytes: this.checkpoints.bytes,
       selected: this.selected,
       recording: this.recordingState,
+      comparison: this.comparison?.counts() ?? null,
     };
   }
 

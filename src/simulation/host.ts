@@ -577,6 +577,22 @@ export class SimulationHost {
     return this.pending.length;
   }
 
+  /** Frozen body/emitter definitions of this world, including a replay's original root. */
+  get frozenRoot(): SceneDefinition {
+    return this.root;
+  }
+
+  /** Actual completed poses in published ID order; no prediction or extrapolation. */
+  writePoses(target: Float32Array, offset: number): void {
+    if (offset < 0 || target.length - offset < this.count * 7) throw new Error('Pose buffer too small.');
+    for (let i = 0; i < this.bodies.length; i++) {
+      const b = this.bodies[i]!.body;
+      const p = b.translation();
+      const q = b.rotation();
+      target.set([p.x, p.y, p.z, q.x, q.y, q.z, q.w], offset + i * 7);
+    }
+  }
+
   /**
    * Applies queued commands at the current boundary n, in sequence order, without advancing (SPEC §10.2).
    * An active recorder preflights each resolved command before it changes anything; a refusal halts
