@@ -13,7 +13,7 @@ dist/index.html                    16.38 kB │ gzip:     4.39 kB
 dist/assets/index-BlGEIOdO.css     17.74 kB │ gzip:     4.25 kB
 dist/assets/index-DAN-URlm.js   5,578.01 kB │ gzip: 2,020.69 kB
 
-[plugin builtin:vite-reporter] 
+[plugin builtin:vite-reporter]
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
@@ -25,4 +25,3 @@ dist/assets/index-DAN-URlm.js   5,578.01 kB │ gzip: 2,020.69 kB
     Bundling Lawsmith.app (<checkout>/src-tauri/target/release/bundle/macos/Lawsmith.app)
     Finished 1 bundle at:
         <checkout>/src-tauri/target/release/bundle/macos/Lawsmith.app (13.54 MiB)
-

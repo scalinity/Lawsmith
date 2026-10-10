@@ -26,4 +26,3 @@ AssertionError: expected 7 to be greater than 7
       Tests  1 failed | 20 skipped (21)
    Start at  05:15:08
    Duration  1.12s (tests 78%, transform 14%, import 7%)
-

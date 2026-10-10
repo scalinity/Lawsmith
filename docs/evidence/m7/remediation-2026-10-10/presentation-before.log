@@ -39,4 +39,3 @@ AssertionError: expected { id: 'push', label: 'push', …(2) } to deeply equal {
       Tests  1 failed | 15 skipped (16)
    Start at  05:15:11
    Duration  382ms (transform 50%, tests 33%, import 16%, worker 1%)
-
