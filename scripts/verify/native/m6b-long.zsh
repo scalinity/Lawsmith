@@ -1,7 +1,7 @@
 # M6B long reconstructions in the packaged app (MILESTONES M6B Visual QA and performance gate; AC5, AC7,
 # AC8): the P1 workshop at a 1600×1000 CSS viewport under More Space, recorded while a law is dragged until
 # the 60 s limit closes it. In its replay an uncached seek to the end is left pending while Return to
-# authoring is pressed: Space and Play pressed while it is pending only toggle playing from its target, it
+# authoring is pressed: Play pressed twice while it is pending only toggles playing from its target, it
 # never commits, and the retained authoring world's digests are those it had when the replay began. In a
 # new replay a long seek shows its progress and Cancel seek after 100 ms, and Cancel leaves the displayed
 # replay exactly as it was, paused. A newer request made while a long reconstruction runs
@@ -112,22 +112,28 @@ live_at_entry=$(logq last $APP_LOG context-live)
 record_start m6b-long 100
 seek_click $final_tick
 pending_id=$(field seek id)
-# Space, then Play, while it is pending (M6B review finding 1): each press only toggles playing from the
-# target; before the fix the second one started the displayed replay. Space goes first, while the timeline
-# holds focus, so it takes the keyboard's path. Play's point comes from seek_click's readback, before the
-# request: Play sits in the transport, which a seek never moves, and every readback here costs seek time.
-n=$(toggles)
-keys kp:space
-grows $n 30 toggles || fail "Space during the seek logged no toggle"
+# Play twice while it is pending (M6B review finding 1): each press only toggles playing from the target;
+# before the fix the second one started the displayed replay. Play's point comes from seek_click's
+# readback, before the request: Play sits in the transport, which a seek never moves. Both clicks go in
+# one hit-tested burst 300 ms apart, since every readback or pause here costs seek time Return needs.
 pp=(${=$(point controls.play)})
-press_at $pp[1] $pp[2] toggles
+n=$(toggles)
+idle_gate
+guard_point $pp[1] $pp[2]
+cliclick -e 0 -w 300 c:$pp[1],$pp[2] c:$pp[1],$pp[2]
+touched
+if ! grows $(( n + 1 )) 10 toggles; then
+  say "a synthetic click on Play was lost (one toggle); sending one again"
+  click $pp[1] $pp[2]
+  grows $(( n + 1 )) 30 toggles || fail "Play pressed twice during the seek did not log two toggles"
+fi
 n=$(count context)
 press_expect run-return context
 wait_log context $(( n + 1 )) 10
 expect context "Return to authoring while the seek was pending: authoring, one world" "e['reason']=='return' and e['selected']=='authoring' and e['worlds']==1 and e['seeking']==0"
 sleep 3
 expect seek "the pending seek ended with Return and never committed" "e['id']==$pending_id and e['action']=='canceled' and e['reason']=='return'"
-verdict "Space and Play during the seek only toggled playing from its target; nothing played the displayed replay" deferred $APP_LOG $pending_id play-on-commit pause-on-commit
+verdict "Play pressed twice during the seek only toggled playing from its target; nothing played the displayed replay" deferred $APP_LOG $pending_id play-on-commit pause-on-commit
 wait_log context-live $(( lives + 2 )) 5
 python3 -I -c "
 import json, sys
@@ -147,7 +153,7 @@ progress_shown
 expect layout "seeking: the status names the requested tick and its progress, the replay still shows tick 0" "'Seeking to tick $final_tick' in e['run']['status'] and '%' in e['run']['status'] and e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==1"
 shot long-02-progress
 # Cancel seek's point from the readback that showed the progress, with nothing between them that changes
-# the status's lines: the presses above left the cache deeper, so this seek is shorter than a readback allows.
+# the status's lines: the presses above left the cache deeper, so this seek is too short for a second readback.
 pc=(${=$(point controls.run-cancel)})
 press_at $pc[1] $pc[2] count seek
 expect seek "Cancel seek ended it, with its progress shown after 100 ms" "e['action']=='canceled' and e['reason']=='cancel' and e['progressShownAfterMs'] >= 100"

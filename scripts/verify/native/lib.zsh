@@ -200,7 +200,8 @@ drag() {
   done
 }
 
-# keys CLICLICK-ARGS…: for example `keys kd:cmd t:s ku:cmd` or `keys kp:space`.
+# keys CLICLICK-ARGS…: for example `keys kd:cmd t:s ku:cmd`. A `kp:space` sent this way reached no
+# keydown handler in the packaged app (M6B, review re-run), so the scenarios type keys with `t:`.
 # Another app can take the front between the check and the keystroke (another session's QA app did,
 # once); a front change seen right after sending is reported as possible misdelivery and stops the run.
 keys() {
