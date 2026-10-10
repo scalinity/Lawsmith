@@ -1,6 +1,6 @@
 // The main display's mode, for checks that need a larger content area (P0 at 1600×1000).
 //   display.js get                → "WIDTHxHEIGHT@HZ" of the current mode, in points
-//   display.js set WIDTH HEIGHT   → switches to that HiDPI mode at the current refresh rate, for this
+//   display.js set WIDTH HEIGHT [HZ] → switches to that HiDPI mode at HZ (default current), for this
 //                                   login session only: the saved display preference is untouched
 ObjC.import('CoreGraphics');
 ObjC.bindFunction('CGDisplayModeGetWidth', ['unsigned long', ['void *']]);
@@ -20,7 +20,7 @@ function run(argv) {
   const current = $.CGDisplayCopyDisplayMode(display);
   if (argv[0] === 'get') return describe(current);
   const [width, height] = [Number(argv[1]), Number(argv[2])];
-  const hz = Math.round(Number($.CGDisplayModeGetRefreshRate(current)));
+  const hz = argv[3] === undefined ? Math.round(Number($.CGDisplayModeGetRefreshRate(current))) : Number(argv[3]);
   const options = $.NSDictionary.dictionaryWithObjectForKey($.NSNumber.numberWithBool(true), ObjC.castRefToObject($.kCGDisplayShowDuplicateLowResolutionModes));
   const modes = ObjC.castRefToObject($.CGDisplayCopyAllDisplayModes(display, options));
   for (let i = 0; i < modes.count; i++) {

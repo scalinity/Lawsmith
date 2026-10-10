@@ -16,9 +16,13 @@ import { createDocument, semanticDigest } from './persistence/sceneFile';
 import { DocumentWorkflow, type RecoveryOffer } from './persistence/workflow';
 import { identifyBackend, isQualifiedWebGPU, probeRenderedPixels, watchGPUErrors } from './rendering/backend';
 import { createRenderer, createViewport, MAX_PIXEL_RATIO } from './rendering/viewport';
+import { createComparisonView } from './rendering/comparisonView';
+import { comparisonQualification } from './simulation/comparisonFixtures';
+import { COMPARISON_LIMITS, type BaselineJob } from './simulation/comparison';
 import { createWorldView, type PreparedScene } from './rendering/worldView';
 import { checkProbeSettings, ProbeField, type ProbeSettings } from './observation/probes';
 import { TrailRecorder, type TrailMode } from './observation/trails';
+import { pairedBody } from './observation/comparison';
 import { createExplainView, type ExplainLabel } from './rendering/explainView';
 import {
   compareRuns,
@@ -257,6 +261,9 @@ async function start() {
   // `host` is the world displayed and advanced: the replay's while replaying, otherwise the live one.
   const runs = new RunCoordinator({ controller: authoring, identity: () => identity, onLimit: (reason) => recordingLimited(reason), onCheckpoint: (event) => reportCheckpoint(event) });
   const replaying = () => runs.selected === 'replay';
+  const comparing = () => runs.selected === 'comparison';
+  const editor = () => runs.comparison?.controller ?? authoring;
+  const readOnly = () => replaying() || !!runs.comparison?.replaying;
   const scheduler = new FixedStepScheduler(STEP_MS);
   const appliedLaw = (id: string) => host.appliedFields().find((f) => f.id === id);
   /**
@@ -264,7 +271,7 @@ async function start() {
    * recording created the ones its record carries, never the newer authored ones.
    */
   const lawPresentation = (id: string): LawPresentation => {
-    if (!replaying()) return authoring.presentationOf(id);
+    if (!replaying()) return editor().presentationOf(id);
     const record = runs.replay?.record;
     return record?.root.presentation.laws.find((p) => p.id === id) ?? record?.createdLaws.find((p) => p.id === id) ?? defaultLawPresentation(id);
   };
@@ -286,7 +293,7 @@ async function start() {
   /** Final revisions of gestures and toggles, reported once the host applies them. */
   const awaited = new Set<number>();
   const submit = (candidate: FieldDefinition, transactionId: string) => {
-    const result = authoring.putField(candidate, transactionId);
+    const result = editor().putField(candidate, transactionId);
     if (result.ok) editLatency.accept(result.value.revision, performance.now());
     return result;
   };
@@ -305,17 +312,17 @@ async function start() {
   let cameraMoved = false;
   const applyFreeze = () => {
     frozen = guardFrozen || launchPending;
-    for (const id of ['panel', 'tools', 'transport', 'overlays', 'run']) $(id).inert = frozen;
+    for (const id of ['panel', 'tools', 'transport', 'overlays', 'run', 'comparison']) $(id).inert = frozen;
     // Replay is read-only (SPEC §13.2): its laws are inspected, never edited; playback and the camera still work.
-    const readOnly = replaying();
-    document.body.dataset.context = readOnly ? 'replay' : 'authoring';
-    for (const id of ['details', 'law-shelf']) $(id).inert = readOnly;
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) b.disabled = readOnly;
-    $<HTMLButtonElement>('reset').disabled = readOnly;
-    $<HTMLButtonElement>('arrows-toggle').disabled = readOnly;
-    $('reset').title = readOnly ? 'Reset restarts your authored scene. Return to authoring to use it.' : '';
-    viewport.gizmo.enabled = !frozen && !readOnly;
-    viewport.gizmo.getHelper().visible = !readOnly;
+    const locked = readOnly();
+    document.body.dataset.context = comparing() ? 'comparison' : replaying() ? 'replay' : 'authoring';
+    for (const id of ['details', 'law-shelf']) $(id).inert = locked;
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) b.disabled = locked;
+    $<HTMLButtonElement>('reset').disabled = locked || comparing();
+    $<HTMLButtonElement>('arrows-toggle').disabled = locked;
+    $('reset').title = locked ? 'Reset restarts your authored scene. Return to authoring to use it.' : '';
+    viewport.gizmo.enabled = !frozen && !locked;
+    viewport.gizmo.getHelper().visible = !locked;
   };
   applyFreeze();
 
@@ -337,7 +344,7 @@ async function start() {
       appliedField: (id) => appliedLaw(id),
       pickable: () => host.appliedFields().filter((f) => lawPresentation(f.id).visible),
       submit,
-      transaction: () => authoring.newTransaction(),
+      transaction: () => editor().newTransaction(),
       onGestureEnd: (end) => gestureEnded(end),
       onSelectionChange: () => renderPanel(),
       clickBody: (x, y) => {
@@ -347,7 +354,7 @@ async function start() {
         return true;
       },
       haltCamera: () => viewport.haltInertia(),
-      editable: () => !frozen && !replaying(),
+      editable: () => !frozen && !readOnly(),
       // The ingredient being edited brings its own handles (M5).
       focus: () => ingredientPanel.focus,
       log: report,
@@ -357,7 +364,7 @@ async function start() {
 
   /** One completed drag is one author-undo entry, ending at what the host applied; a cancel restored its start and records nothing. */
   const gestureEnded = (end: GestureEnd) => {
-    authoring.endGesture(end.label, end.start, end.transactionId);
+    editor().endGesture(end.label, end.start, end.transactionId);
     awaitApplied(end.revision);
     edited();
   };
@@ -365,8 +372,8 @@ async function start() {
   /** Reports a change once the host has applied it; a gesture's last preview may already be applied at release. */
   const awaitApplied = (revision: number | null) => {
     if (revision === null) return;
-    if (revision <= authoring.appliedRevision) {
-      report('law-applied', { revision, appliedRevision: authoring.appliedRevision, tick: host.tick, sequence: host.lastAppliedSequence });
+    if (revision <= editor().appliedRevision) {
+      report('law-applied', { revision, appliedRevision: editor().appliedRevision, tick: host.tick, sequence: host.lastAppliedSequence });
     } else {
       awaited.add(revision);
     }
@@ -399,11 +406,12 @@ async function start() {
   };
   /** Adopts acknowledged edits into the authored scene; `onAcks` accounts for them. */
   const absorb = () => {
-    authoring.sync();
+    if (!runs.comparison?.replaying) editor().sync();
   };
   /** Applies the authoring world's queued commands at its current boundary now (SPEC §10.2), as its next step would. */
   const settleNow = () => {
-    authoring.settle();
+    if (runs.comparison) runs.comparison.settle();
+    else authoring.settle();
   };
 
   /** Digests of a world's future-affecting state at a settled boundary, for comparing a recording with its replay natively. */
@@ -429,8 +437,8 @@ async function start() {
 
   /** The semantic digest of the settled document, so the log shows what a presentation edit did not change. */
   const reportDigest = (reason: string) => {
-    const snapshot = authoring.snapshot(authoring.camera);
-    const generation = authoring.generation;
+    const snapshot = editor().snapshot(editor().camera);
+    const generation = editor().generation;
     semanticDigest(createDocument(snapshot.semantic, snapshot.metadata, snapshot.presentation)).then((semantic) =>
       report('digest', { reason, generation, revision: snapshot.revision, semanticSha256: semantic }),
     );
@@ -457,7 +465,7 @@ async function start() {
       return;
     }
     if (playing === scheduler.playing) return;
-    if (playing && (host.fault || frozen || authoring.liveHost.halted)) return;
+    if (playing && (host.fault || frozen || host.halted || (comparing() && !runs.comparison!.canAdvance))) return;
     // A replay at its frozen end stays there: Replay from Start, not Play, begins it again.
     if (playing && replaying() && runs.replay?.complete) return;
     if (playing) {
@@ -469,7 +477,7 @@ async function start() {
   };
   /** Records a play-state change, including the scheduler's own pause on a gap. */
   const notePlaying = (playing: boolean, reason: string) => {
-    if (p0 && !playing) p0.invalid ??= `paused: ${reason}`;
+    if (p0 && !playing && !(p0.comparison && reason === 'comparison-horizon')) p0.invalid ??= `paused: ${reason}`;
     report('sim-control', { action: playing ? 'play' : 'pause', reason, tick: host.tick });
     syncControls();
   };
@@ -495,7 +503,14 @@ async function start() {
     if (runs.recordingState === 'recording' && host.tick > 0 && host.tick % CHECKPOINT_TICKS === 0) runCheckpoint('live', host, runs.recorder!.runId);
     const t0 = performance.now();
     const before = host.tick;
-    host.step();
+    if (comparing()) runs.comparison!.advance();
+    else host.step();
+    if (comparing() && (runs.comparison!.atHorizon || !runs.comparison!.replaying && alternateWasReplaying)) {
+      alternateWasReplaying = false;
+      setPlaying(false, runs.comparison!.atHorizon ? 'comparison-horizon' : 'alternate-replayed');
+      applyFreeze();
+      renderPanel();
+    }
     // Halted at a recording limit: nothing stepped, so nothing is observed (SPEC §13.3).
     if (host.tick === before) return;
     const t1 = performance.now();
@@ -512,10 +527,11 @@ async function start() {
       if (trails.mode !== 'off') p0.trails.push(t3 - t2);
       p0.ticks.push(t3 - t0);
     }
-    if (host.tick === 600 || host.tick === 1200) captureDigest();
+    if (!comparing() && (host.tick === 600 || host.tick === 1200)) captureDigest();
   };
 
   const stepOnce = () => {
+    if (comparing() && !runs.comparison!.canAdvance) return;
     if (replaying()) {
       if (host.fault || frozen || runs.replay?.complete) return;
       setPlaying(false, 'step');
@@ -538,7 +554,7 @@ async function start() {
   };
 
   const resetScene = () => {
-    if (frozen || replaying()) return;
+    if (frozen || replaying() || comparing()) return;
     if (interaction.gesture) {
       report('sim-control', { action: 'reset-refused', reason: 'gesture active', tick: host.tick });
       return;
@@ -561,7 +577,7 @@ async function start() {
   /** The camera framing a save records: the live camera once the user has moved it, else the document's. */
   const savedCamera = () => {
     // During a replay the main authored scene's framing is the one kept when the replay began (SPEC §13.2).
-    const kept = replaying() ? authoringCamera : null;
+    const kept = comparing() ? (authoringCamera ?? comparisonCamera) : replaying() ? authoringCamera : null;
     if (kept ? kept.moved : cameraMoved) {
       const p = viewport.camera.position;
       const t = viewport.orbit.target;
@@ -587,6 +603,7 @@ async function start() {
     quiesce: (reason) => {
       setPlaying(false, reason);
       if (pendingSeek) cancelPendingSeek(reason);
+      runs.comparison?.cancel();
       interaction.release(reason);
       settleNow();
     },
@@ -604,7 +621,7 @@ async function start() {
       let view: PreparedScene;
       try {
         // While a replay is shown its view holds the displayed bodies, so the new scene gets its own.
-        view = world.prepareScene(document.semantic, replaying());
+        view = world.prepareScene(document.semantic, replaying() || comparing());
       } catch (error) {
         candidateHost.dispose();
         throw error;
@@ -620,6 +637,8 @@ async function start() {
     },
     commit: (document, candidate) => {
       setPlaying(false, 'load');
+      restoreComparisonView();
+      runs.closeComparison();
       // Replacing the scene context drops the recording and its replay, which the guard has protected.
       if (replaying() && authoringView) world.discardScene(world.swapScene(authoringView));
       authoringView = null;
@@ -670,6 +689,8 @@ async function start() {
       setPlaying(false, 'open-recording');
       interaction.release('open-recording');
       // The coordinator commits first: it is the only step that can refuse, and then no view has moved.
+      restoreComparisonView();
+      runs.closeComparison();
       const fromReplay = replaying();
       runs.commitImport(candidate.replay);
       if (fromReplay) world.discardScene(world.swapScene(candidate.view));
@@ -695,16 +716,16 @@ async function start() {
 
   /** After any accepted authored edit: recovery follows after a short debounce, and the panel refreshes. */
   const edited = () => {
-    workflow.edited();
+    if (!comparing()) workflow.edited();
     renderPanel();
   };
 
   /** Commits a field being typed in, then runs a file workflow. */
   const runFile = (action: 'open' | 'save' | 'saveAs' | 'newScene' | 'saveRecording' | 'openRecording' | 'record') => {
     if (frozen) return;
-    if (replaying() && (action === 'save' || action === 'saveAs')) {
+    if ((replaying() || comparing()) && (action === 'save' || action === 'saveAs' || action === 'record')) {
       // SPEC §13.2: ordinary Save Scene is off during replay, so no shortcut can save the replay as the scene.
-      workflow.message = { kind: 'info', text: 'Save is off during a replay, so the replay can never be saved over your scene. Return to authoring to save it; closing still offers to.' };
+      workflow.message = { kind: 'info', text: 'Return to authoring to save the main scene or start a recording. Export Alternate Setup saves a comparison setup.' };
       report('file-control', { action, outcome: 'refused', reason: 'replay' });
       renderPanel();
       return;
@@ -722,20 +743,20 @@ async function start() {
 
   const selectedLaw = () => (interaction.selectedId === null ? undefined : appliedLaw(interaction.selectedId));
   /** Authoring commands wait: edits frozen, a gesture in progress, or a replay displayed (read-only, SPEC §13.2). */
-  const blocked = () => frozen || interaction.gesture !== null || replaying();
+  const blocked = () => frozen || interaction.gesture !== null || readOnly();
 
   /** The note a refused undo or redo left, cleared by the next one that applies. */
   let historyRefusal: typeof workflow.message = null;
   const undo = (redo: boolean) => {
     if (blocked()) return;
-    const result = redo ? authoring.redo() : authoring.undo();
+    const result = redo ? editor().redo() : editor().undo();
     if (result.ok) {
       if (workflow.message === historyRefusal) workflow.message = null;
       settleNow();
       if (appliedLaw(result.value.id)) interaction.select(result.value.id);
-      else if (interaction.selectedId === result.value.id) interaction.select(authoring.scene.fields[0]?.id ?? null);
+      else if (interaction.selectedId === result.value.id) interaction.select(editor().scene.fields[0]?.id ?? null);
       edited();
-    } else if (redo ? authoring.canRedo : authoring.canUndo) {
+    } else if (redo ? editor().canRedo : editor().canUndo) {
       // The step stays available but cannot apply now (the scene's leaf budget, an ID taken since): say why.
       workflow.message = historyRefusal = { kind: 'error', text: `${redo ? 'Redo' : 'Undo'} was not applied: ${result.reason}. Nothing changed.` };
     }
@@ -745,7 +766,7 @@ async function start() {
       label: result.ok ? result.value.label : null,
       law: result.ok ? result.value.id : null,
       reason: result.ok ? null : result.reason,
-      revision: authoring.revision,
+      revision: editor().revision,
       tick: host.tick,
       laws: host.appliedFields().map(lawSummary),
     });
@@ -756,7 +777,7 @@ async function start() {
     if (blocked()) return;
     const law = appliedLaw(id);
     if (!law) return;
-    const result = authoring.editField(id, law.enabled ? 'Disable law' : 'Enable law', (f) => ({ ...f, enabled: !f.enabled }));
+    const result = editor().editField(id, law.enabled ? 'Disable law' : 'Enable law', (f) => ({ ...f, enabled: !f.enabled }));
     if (result.ok) {
       editLatency.accept(result.value.revision, performance.now());
       awaitApplied(result.value.revision);
@@ -768,8 +789,8 @@ async function start() {
 
   const toggleVisible = (id: string) => {
     if (blocked()) return;
-    const visible = !authoring.presentationOf(id).visible;
-    const result = authoring.setLawPresentation(id, { visible });
+    const visible = !editor().presentationOf(id).visible;
+    const result = editor().setLawPresentation(id, { visible });
     report('control', { law: id, visible, revision: result.ok ? result.value.revision : null });
     if (result.ok) {
       edited();
@@ -780,7 +801,7 @@ async function start() {
   const duplicateSelected = () => {
     const law = selectedLaw();
     if (blocked() || !law) return;
-    const result = authoring.duplicate(law.id);
+    const result = editor().duplicate(law.id);
     if (result.ok) {
       settleNow();
       interaction.select(result.value.id);
@@ -792,10 +813,10 @@ async function start() {
   const deleteSelected = () => {
     const law = selectedLaw();
     if (blocked() || !law) return;
-    const result = authoring.remove(law.id);
+    const result = editor().remove(law.id);
     if (result.ok) {
       settleNow();
-      interaction.select(authoring.scene.fields[0]?.id ?? null);
+      interaction.select(editor().scene.fields[0]?.id ?? null);
       edited();
     }
     report('control', { delete: law.id, ok: result.ok, laws: host.appliedFields().length });
@@ -806,7 +827,7 @@ async function start() {
     if (blocked()) return;
     const t = viewport.orbit.target;
     const place = (v: number) => Math.round(Math.min(1000, Math.max(-1000, v)) * 100) / 100;
-    const result = authoring.create(kind, [place(t.x), place(t.y), place(t.z)]);
+    const result = editor().create(kind, [place(t.x), place(t.y), place(t.z)]);
     if (result.ok) {
       editLatency.accept(result.value.revision, performance.now());
       awaitApplied(result.value.revision);
@@ -822,7 +843,7 @@ async function start() {
   const setSupport = (kind: RegionKind) => {
     const law = selectedLaw();
     if (!law || blocked() || law.region.kind === kind) return;
-    const result = authoring.editField(law.id, 'Change support shape', (f) => ({ ...f, region: REGIONS[kind].fromBounds(regionDescriptor(f.region.kind).bounds(f.region)) }));
+    const result = editor().editField(law.id, 'Change support shape', (f) => ({ ...f, region: REGIONS[kind].fromBounds(regionDescriptor(f.region.kind).bounds(f.region)) }));
     if (result.ok) {
       editLatency.accept(result.value.revision, performance.now());
       awaitApplied(result.value.revision);
@@ -834,8 +855,8 @@ async function start() {
 
   const setArrows = () => {
     if (blocked()) return;
-    authoring.setArrows(!authoring.arrows);
-    report('control', { arrows: authoring.arrows, revision: authoring.revision });
+    editor().setArrows(!editor().arrows);
+    report('control', { arrows: editor().arrows, revision: editor().revision });
     edited();
     reportDigest('arrows');
   };
@@ -938,10 +959,12 @@ async function start() {
       invoke('guard_state', { dirty: reportedDirty }).catch(() => {});
     }
     renderRun();
+    renderComparison();
     // Document.
     const busy = workflow.busy;
     const file = workflow.fileName;
-    $('doc-title').textContent = authoring.metadata.title;
+    $('doc-title').textContent = editor().metadata.title;
+    $('doc-invitation').hidden = editor().metadata.title !== 'Two Futures';
     const state = $('doc-state');
     state.dataset.dirty = String(workflow.dirty);
     state.textContent = busy
@@ -956,7 +979,7 @@ async function start() {
           ? `Saved to ${file}`
           : 'Not saved to a file';
     for (const id of ['file-new', 'file-open']) $<HTMLButtonElement>(id).disabled = busy !== null;
-    for (const id of ['file-save', 'file-save-as']) $<HTMLButtonElement>(id).disabled = busy !== null || replaying();
+    for (const id of ['file-save', 'file-save-as']) $<HTMLButtonElement>(id).disabled = busy !== null || readOnly() || comparing();
     const message = $('doc-message');
     message.hidden = workflow.message === null;
     message.textContent = workflow.message?.text ?? '';
@@ -968,15 +991,15 @@ async function start() {
       recovery.state === 'failed' ? `Recovery is unavailable: ${recovery.reason}. Save and Save As still work.` : recovery.state === 'written' ? `A recovery copy holds revision ${recovery.revision}.` : '';
 
     // History and visualization default.
-    $<HTMLButtonElement>('undo').disabled = !authoring.canUndo || replaying();
-    $<HTMLButtonElement>('redo').disabled = !authoring.canRedo || replaying();
-    $('arrows-toggle').setAttribute('aria-pressed', String(authoring.arrows));
+    $<HTMLButtonElement>('undo').disabled = !editor().canUndo || readOnly();
+    $<HTMLButtonElement>('redo').disabled = !editor().canRedo || readOnly();
+    $('arrows-toggle').setAttribute('aria-pressed', String(editor().arrows));
 
     // Laws list, rebuilt only when something it shows changed.
     const laws = host.appliedFields();
     const selectedId = interaction.selectedId;
-    const readOnly = replaying();
-    const signature = JSON.stringify([readOnly, selectedId, laws.map((f) => [f.id, f.enabled, f.expression, lawPresentation(f.id)])]);
+    const locked = readOnly();
+    const signature = JSON.stringify([locked, selectedId, laws.map((f) => [f.id, f.enabled, f.expression, lawPresentation(f.id)])]);
     if (signature !== listSignature) {
       listSignature = signature;
       lawList.replaceChildren(
@@ -1016,7 +1039,7 @@ async function start() {
           enabled.setAttribute('aria-label', `${p.label} enabled`);
           enabled.textContent = f.enabled ? 'On' : 'Off';
           // A replay's laws are the recording's: shown, selectable, never changed from here.
-          visible.disabled = enabled.disabled = readOnly;
+          visible.disabled = enabled.disabled = locked;
           item.append(select, visible, enabled);
           return item;
         }),
@@ -1093,7 +1116,7 @@ async function start() {
     const law = selectedLaw();
     if (!law || blocked()) return;
     const value = input.value.trim() === '' ? NaN : Number(input.value);
-    const result = authoring.editField(law.id, label, (f) => change(f, value));
+    const result = editor().editField(law.id, label, (f) => change(f, value));
     if (!result.ok) {
       showDetailsError(`${result.reason[0]!.toUpperCase()}${result.reason.slice(1)}. The last valid value is kept.`, input);
       report('control', { law: law.id, precise: label, rejected: result.reason });
@@ -1116,7 +1139,7 @@ async function start() {
     const law = selectedLaw();
     if (!law || blocked()) return null;
     settleNow();
-    const current = authoring.lawState(law.id)?.field;
+    const current = editor().lawState(law.id)?.field;
     if (!current) return null;
     const next = change(current);
     const refuse = (reason: string) => {
@@ -1133,7 +1156,7 @@ async function start() {
       showDetailsError(null);
       return next;
     }
-    const result = authoring.editField(law.id, label, (f) => ({ ...f, expression: next.expression }));
+    const result = editor().editField(law.id, label, (f) => ({ ...f, expression: next.expression }));
     if (!result.ok) return refuse(result.path ? `${result.path}: ${result.reason}` : result.reason);
     showDetailsError(null);
     editLatency.accept(result.value.revision, performance.now());
@@ -1185,7 +1208,7 @@ async function start() {
   labelInput.addEventListener('change', () => {
     const law = selectedLaw();
     if (!law || blocked()) return;
-    const result = authoring.setLawPresentation(law.id, { label: labelInput.value.trim() });
+    const result = editor().setLawPresentation(law.id, { label: labelInput.value.trim() });
     if (!result.ok) {
       showDetailsError(`The name ${result.reason.replace(/^label /, '')}. The last valid name is kept.`, labelInput);
       detailsSignature = '';
@@ -1200,7 +1223,7 @@ async function start() {
     const color = (event.target as HTMLElement).closest<HTMLButtonElement>('.swatch')?.dataset.color;
     const law = selectedLaw();
     if (!color || !law || blocked()) return;
-    const result = authoring.setLawPresentation(law.id, { color });
+    const result = editor().setLawPresentation(law.id, { color });
     report('control', { law: law.id, color, revision: result.ok ? result.value.revision : null });
     if (result.ok) {
       edited();
@@ -1277,6 +1300,171 @@ async function start() {
     const t = viewport.orbit.target;
     return { position: [p.x, p.y, p.z] as Vec3, target: [t.x, t.y, t.z] as Vec3, moved: cameraMoved };
   };
+
+  let comparisonView: PreparedScene | null = null;
+  let comparisonCamera: ReturnType<typeof stashCamera> | null = null;
+  let comparisonSelection: string | null = null;
+  let comparisonExplained: string | null = null;
+  let ghosts: ReturnType<typeof createComparisonView> | null = null;
+  let ghostsShown = true;
+  let alternateWasReplaying = false;
+  const comparisonChannel = new MessageChannel();
+  let calculation: { comparison: NonNullable<typeof runs.comparison>; job: BaselineJob } | null = null;
+  const restoreComparisonView = () => {
+    calculation = null;
+    runShown = '';
+    runs.comparison?.cancel();
+    ghosts?.dispose();
+    ghosts = null;
+    if (comparisonView) world.discardScene(world.swapScene(comparisonView));
+    comparisonView = null;
+    if (comparisonCamera) {
+      viewport.setView(comparisonCamera.position, comparisonCamera.target);
+      cameraMoved = comparisonCamera.moved;
+    }
+    comparisonCamera = null;
+  };
+  const comparisonFailed = (error: unknown) => {
+    workflow.message = { kind: 'error', text: error instanceof Error ? error.message : String(error) };
+    report('comparison', { action: 'failed', error: String(error), ...runs.counts() });
+    renderPanel();
+  };
+  const computeBaseline = (ticks: number) => {
+    const comparison = runs.comparison;
+    if (!comparison || frozen || workflow.busy) return;
+    setPlaying(false, 'baseline');
+    interaction.release('baseline');
+    try {
+      const job = comparison.begin(ticks);
+      calculation = { comparison, job };
+      report('comparison', { action: 'baseline-start', fork: comparison.address, target: job.target, ...comparison.counts() });
+      comparisonChannel.port2.postMessage(null);
+      renderPanel();
+    } catch (error) { comparisonFailed(error); }
+  };
+  comparisonChannel.port1.onmessage = () => {
+    const active = calculation;
+    if (!active || active.comparison !== runs.comparison) return;
+    try {
+      const result = active.comparison.batch(active.job);
+      if (result === 'working') comparisonChannel.port2.postMessage(null);
+      else {
+        calculation = null;
+        const metrics = active.comparison.metrics;
+        report('comparison', { action: `baseline-${result}`, ...active.comparison.counts(), metrics: metrics ? { ...metrics, batches: metrics.batches.length, batchMs: percentiles(metrics.batches) } : null });
+        renderPanel();
+      }
+    } catch (error) { calculation = null; comparisonFailed(error); }
+  };
+  $('compare-from').addEventListener('click', () => {
+    if (frozen || scheduler.playing || workflow.busy || interaction.gesture || explainMode === 'preview' || pendingSeek) return;
+    try {
+      const comparison = runs.enterComparison();
+      let view: PreparedScene;
+      try { view = world.prepareScene(comparison.root.semantic, true); ghosts = createComparisonView(viewport.scene, comparison.root.semantic.simulation.maxLiveBodies); }
+      catch (error) { runs.closeComparison(); throw error; }
+      comparisonCamera = stashCamera();
+      comparisonSelection = interaction.selectedId;
+      comparisonExplained = explained;
+      comparisonView = world.swapScene(view);
+      comparison.controller.onAcks = authoring.onAcks;
+      editLatency = new EditLatency();
+      awaited.clear();
+      showContext('compare');
+      report('comparison', { action: 'fork', identity: comparison.identity, address: comparison.address, ...comparison.counts() });
+    } catch (error) { comparisonFailed(error); }
+  });
+  $('baseline-compute').addEventListener('click', () => computeBaseline(COMPARISON_LIMITS.initialTicks));
+  $('baseline-extend').addEventListener('click', () => {
+    const c = runs.comparison;
+    if (c) computeBaseline(Math.min(COMPARISON_LIMITS.ticks, c.horizon - c.address.tick + COMPARISON_LIMITS.initialTicks));
+  });
+  $('baseline-cancel').addEventListener('click', () => {
+    const start = performance.now();
+    calculation = null;
+    runs.comparison?.cancel();
+    report('comparison', { action: 'baseline-canceled', latencyMs: performance.now() - start, ...runs.counts() });
+    renderPanel();
+  });
+  $('alternate-replay').addEventListener('click', () => {
+    const c = runs.comparison;
+    if (!c || frozen || workflow.busy || interaction.gesture) return;
+    setPlaying(false, 'alternate-replay');
+    try {
+      c.replayAlternate();
+      alternateWasReplaying = c.replaying;
+      editLatency = new EditLatency();
+      awaited.clear();
+      showWorld('alternate-replay');
+      applyFreeze();
+      report('comparison', { action: 'alternate-replay', ...c.counts() });
+      renderPanel();
+      if (c.replaying) setPlaying(true, 'alternate-replay');
+    } catch (error) { comparisonFailed(error); }
+  });
+  $('alternate-new').addEventListener('click', () => {
+    const c = runs.comparison;
+    if (!c || frozen || workflow.busy || interaction.gesture) return;
+    setPlaying(false, 'alternate-new');
+    try {
+      c.newAlternate();
+      alternateWasReplaying = false;
+      editLatency = new EditLatency();
+      awaited.clear();
+      showWorld('alternate-new');
+      applyFreeze();
+      report('comparison', { action: 'alternate-new', ...c.counts() });
+      renderPanel();
+    } catch (error) { comparisonFailed(error); }
+  });
+  $('baseline-ghosts').addEventListener('click', () => {
+    ghostsShown = !ghostsShown;
+    $('baseline-ghosts').setAttribute('aria-pressed', String(ghostsShown));
+    report('comparison', { action: 'ghosts', shown: ghostsShown, tick: host.tick, cursor: host.lastAppliedSequence, renderer: ghosts?.counts() });
+  });
+  $('alternate-export').addEventListener('click', () => {
+    const c = runs.comparison;
+    if (!c || c.replaying || workflow.busy || frozen) return;
+    setPlaying(false, 'alternate-export');
+    interaction.release('alternate-export');
+    try { void workflow.exportAlternate(c.alternateSetup()).then(() => renderPanel()); } catch (error) { comparisonFailed(error); }
+  });
+  $('comparison-close').addEventListener('click', () => {
+    if (frozen || workflow.busy) return;
+    setPlaying(false, 'comparison-close');
+    interaction.release('comparison-close');
+    restoreComparisonView();
+    runs.closeComparison();
+    editLatency = new EditLatency(); awaited.clear();
+    showContext('comparison-close');
+    interaction.select(comparisonSelection);
+    setExplained(comparisonExplained, 'comparison-close');
+    report('comparison', { action: 'closed', ...runs.counts() });
+    renderPanel();
+  });
+  function renderComparison() {
+    const c = runs.comparison;
+    $('comparison').hidden = !c;
+    const enabled = !frozen && !scheduler.playing && !workflow.busy && !interaction.gesture && explainMode !== 'preview' && !pendingSeek && !runs.replayPartial && (runs.recordingState === 'idle' || runs.recordingState === 'recorded');
+    $<HTMLButtonElement>('compare-from').disabled = !enabled || !!c;
+    if (!c) return;
+    const suffix = c.suffixCount ? `${c.suffixCount} recorded changes` : 'No intervention · no-op alternate';
+    $('comparison-status').textContent = `Fork tick ${c.address.tick}, change ${c.address.cursor}. Equal tick ${host.tick}. A computed through ${c.horizon} (${((c.horizon - c.address.tick) / 120).toFixed(1)} s). ${suffix}. ${c.working ? 'Computing… B is paused.' : c.replaying ? 'Replaying retained changes; editing resumes at its end.' : c.atHorizon ? 'At the horizon. Extend to play.' : 'Edit B, then Play.'}${c.message ? ` ${c.message}` : ''}`;
+    const frame = c.frame(host.tick);
+    const id = explained ?? host.ids[0] ?? frame?.ids[0] ?? null;
+    const pair = id === null ? null : pairedBody(id, frame, host);
+    const pa = pair?.baseline ?? null;
+    const pb = pair?.alternate ?? null;
+    const shown = (p: readonly number[] | null) => p ? `[${p.map((n) => n.toFixed(3)).join(', ')}] m` : 'absent';
+    const separation = pair?.separation != null ? `${pair.separation.toFixed(3)} m` : 'unavailable · counterpart absent';
+    $('comparison-inspect').textContent = `${id ?? 'No living body'}\nA ${frame ? shown(pa) : 'not computed at this tick'} · B ${shown(pb)}\nSeparation ${separation}`;
+    $<HTMLButtonElement>('baseline-compute').disabled = !!c.working || c.horizon > c.address.tick || !!workflow.busy;
+    $<HTMLButtonElement>('baseline-cancel').hidden = !c.working;
+    $<HTMLButtonElement>('baseline-extend').disabled = !!c.working || c.horizon === c.address.tick || c.horizon - c.address.tick >= COMPARISON_LIMITS.ticks || !!workflow.busy;
+    $<HTMLButtonElement>('alternate-export').disabled = c.replaying || !!workflow.busy;
+    for (const id of ['alternate-replay', 'alternate-new', 'comparison-close']) $<HTMLButtonElement>(id).disabled = !!workflow.busy || !!interaction.gesture;
+    document.documentElement.style.setProperty('--run-reserve', `${$('comparison').offsetHeight + 8}px`);
+  }
   /** The displayed replay's end check, once it reached its frozen address. */
   let replayCheck: FinalCheckResult | null = null;
   let replayEnded = false;
@@ -1348,7 +1536,7 @@ async function start() {
 
   /** Replay: the authoring world is settled and kept paused; a new world is built from the recording's frozen root. */
   const enterReplay = () => {
-    if (frozen || replaying() || runs.recordingState !== 'recorded') return;
+    if (frozen || replaying() || comparing() || runs.recordingState !== 'recorded') return;
     setPlaying(false, 'replay');
     interaction.release('replay');
     settleNow();
@@ -1674,6 +1862,9 @@ async function start() {
 
   /** The recording controls and read-only progress, per state; rebuilt only when what they show changes. */
   function renderRun() {
+    renderComparison();
+    runParts.root.hidden = comparing() || launchPending;
+    if (comparing()) return;
     const state = replaying() ? 'replay' : runs.recordingState;
     const seconds = (ticks: number) => `${(ticks / 120).toFixed(2)} s`;
     const changes = (n: number) => `${n} ${n === 1 ? 'change' : 'changes'}`;
@@ -1802,6 +1993,7 @@ async function start() {
   // P0 (SPEC §18.2): 10 s warmup, then a 60 s capture with every raw sample kept.
   interface P0Capture {
     run: number;
+    comparison: boolean;
     phase: 'warmup' | 'measure';
     phaseStart: number;
     tickStart: number;
@@ -1819,14 +2011,17 @@ async function start() {
   }
   const startP0 = () => {
     if (p0 || frozen) return;
+    if (comparing() && (runs.comparison!.horizon - runs.comparison!.address.tick !== 7200 || runs.comparison!.replaying || runs.comparison!.working)) return;
+    if (comparing()) { runs.comparison!.newAlternate(); showWorld('p3-warmup'); applyFreeze(); }
     setPlaying(true, 'p0');
-    p0 = { run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], probes: [], trails: [], ticks: [], invalid: null };
+    p0 = { comparison: comparing(), run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], probes: [], trails: [], ticks: [], invalid: null };
     report('p0', { phase: 'warmup', run: p0.run });
   };
   const finishP0 = (capture: P0Capture, now: number) => {
     const wallMs = now - capture.phaseStart;
     const canvas = renderer.domElement;
-    report('p0-run', {
+    report(capture.comparison ? 'p3-run' : 'p0-run', {
+      comparison: runs.comparison?.counts() ?? null,
       run: capture.run,
       invalid: capture.invalid,
       // A gate with no samples was not measured; its percentiles are null, never zero.
@@ -1839,7 +2034,7 @@ async function start() {
       arrows: world.arrowCount(),
       // The measured workload (SPEC §18.1): the protocol is P0's; the scene decides P0 or P1.
       workload: {
-        title: authoring.metadata.title,
+        title: editor().metadata.title,
         laws: host.appliedFields().length,
         lawKinds: [...new Set(host.appliedFields().flatMap((f) => {
           const kinds: string[] = [f.region.kind];
@@ -1847,13 +2042,13 @@ async function start() {
           return kinds;
         }))].sort(),
         primitiveLeaves: host.appliedFields().reduce((n, f) => n + expressionStats(f.expression).leaves, 0),
-        fixedColliders: authoring.scene.bodies.filter((b) => b.type === 'fixed').length,
-        authoredDynamic: authoring.scene.bodies.filter((b) => b.type === 'dynamic').length,
-        allBodyContacts: authoring.scene.bodies.some((b) => b.type === 'dynamic' && b.collisionMode === 'all') || authoring.scene.emitters.some((e) => e.template.collisionMode === 'all'),
+        fixedColliders: editor().scene.bodies.filter((b) => b.type === 'fixed').length,
+        authoredDynamic: editor().scene.bodies.filter((b) => b.type === 'dynamic').length,
+        allBodyContacts: editor().scene.bodies.some((b) => b.type === 'dynamic' && b.collisionMode === 'all') || editor().scene.emitters.some((e) => e.template.collisionMode === 'all'),
         limitedSteps: host.limitedSteps,
       },
       // The optional visualization during the capture (M4): P0 runs with all of it off, P2 with it on.
-      visualization: visualizationState(),
+      visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
       viewport: { css: [window.innerWidth, window.innerHeight], devicePixelRatio: window.devicePixelRatio, pixelRatio: renderer.getPixelRatio(), canvas: [canvas.width, canvas.height] },
       timerResolutionMs: timerMs,
       percentiles: 'p50, p95, p99, max',
@@ -1889,7 +2084,7 @@ async function start() {
       return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
     };
     const controls: Record<string, number[] | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, #run, #diagnostics, button[id], input[id]')) {
+    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, #run, #comparison, #diagnostics, button[id], input[id]')) {
       controls[element.id] = box(element);
     }
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
@@ -1987,7 +2182,8 @@ async function start() {
       // The explained body's center now, and the panel's scroll extent (it must not scroll sideways).
       explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
       scroll: Object.fromEntries(['panel', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
-      visualization: visualizationState(),
+      visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
+      comparison: runs.comparison ? { ...runs.comparison.counts(), address: runs.comparison.address, tick: host.tick, cursor: host.lastAppliedSequence, replaying: runs.comparison.replaying, working: !!runs.comparison.working, status: $('comparison-status').textContent, inspect: $('comparison-inspect').textContent, box: box($('comparison')) } : null,
       run: {
         state: runParts.root.dataset.state,
         title: runParts.title.textContent,
@@ -2057,7 +2253,7 @@ async function start() {
    */
   const runRunFixtures = async () => {
     const record = runs.record;
-    if (frozen || replaying() || !record || runs.recordingState !== 'recorded') {
+    if (frozen || replaying() || comparing() || !record || runs.recordingState !== 'recorded') {
       report('m6a-fixtures', { error: 'Shift+M needs a finished recording, from authoring' });
       return;
     }
@@ -2162,7 +2358,7 @@ async function start() {
    */
   const runSeekFixtures = async () => {
     const record = runs.record;
-    if (frozen || replaying() || !record || runs.recordingState !== 'recorded') {
+    if (frozen || replaying() || comparing() || !record || runs.recordingState !== 'recorded') {
       report('m6b-fixtures', { error: 'Shift+C needs a finished recording, from authoring' });
       return;
     }
@@ -2428,6 +2624,14 @@ async function start() {
       case 'C':
         runSeekFixtures().catch((error: unknown) => report('m6b-fixtures', { error: String(error) }));
         return;
+      case 'J':
+        if (comparing() || workflow.busy || scheduler.playing || interaction.gesture) return;
+        guardFrozen = true; applyFreeze();
+        void comparisonQualification(identity, (data) => report('m7-fixtures', data)).then(() => report('m7-fixtures', { complete: true }), (error) => report('m7-fixtures', { error: String(error) })).finally(() => { guardFrozen = false; applyFreeze(); renderPanel(); });
+        return;
+      case 'K':
+        if (comparing()) computeBaseline(COMPARISON_LIMITS.ticks);
+        return;
       case 'G':
         // Dev-only: a 1.5 s main-thread stall exercises the long-gap pause in the real WKWebView.
         if (import.meta.env.DEV) {
@@ -2631,7 +2835,7 @@ async function start() {
       now: i < 0 ? null : [host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!],
       trail: trail?.slice(-8) ?? null,
       trailSamples: trail?.length ?? 0,
-      visualization: visualizationState(),
+      visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
     });
   };
 
@@ -2698,10 +2902,10 @@ async function start() {
         preview: interaction.previewField(),
         throttle: interaction.gesture !== null,
         // The arrows default is the displayed document's: a replay shows its root's.
-        arrows: replaying() ? (runs.replay?.record.root.presentation.arrows ?? true) : authoring.arrows,
+        arrows: replaying() ? (runs.replay?.record.root.presentation.arrows ?? true) : editor().arrows,
         onlySelectedArrows: arrowScope === 'selected',
         handles: (() => {
-          if (replaying()) return null;
+          if (readOnly()) return null;
           const shown = interaction.handles();
           return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;
         })(),
@@ -2765,6 +2969,7 @@ async function start() {
         absorb();
       }
       world.updateBodies(host);
+      if (runs.comparison) { ghosts?.update(runs.comparison, ghostsShown); renderComparison(); }
       interaction.syncProxy();
       drawLaws();
       updateExplanation();
@@ -2776,8 +2981,8 @@ async function start() {
         ingredientPanel.refreshLive(host.tick);
       }
       // The panel follows applied changes without a per-frame rebuild, and not during a drag.
-      if (authoring.appliedRevision !== shownRevision && !interaction.gesture) {
-        shownRevision = authoring.appliedRevision;
+      if (editor().appliedRevision !== shownRevision && !interaction.gesture) {
+        shownRevision = editor().appliedRevision;
         renderPanel();
       }
       frameBeforeMs = performance.now() - beforeStart;
@@ -2790,7 +2995,7 @@ async function start() {
         drawWait.resolve(elapsedMs);
         drawWait = null;
       }
-      for (const latency of editLatency.frameSubmitted(authoring.appliedRevision, submitted)) {
+      for (const latency of editLatency.frameSubmitted(editor().appliedRevision, submitted)) {
         pushBounded(edits, latency, 240);
         if (p0?.phase === 'measure') p0.edits.push(latency);
       }
@@ -2822,14 +3027,26 @@ async function start() {
       pushBounded(work, frameWork, 240);
       pushBounded(frameSteps, stepsThisFrame, 240);
       if (p0) {
-        if (!scheduler.playing) p0.invalid ??= 'paused during capture';
+        if (!scheduler.playing && !(p0.comparison && runs.comparison?.atHorizon)) p0.invalid ??= 'paused during capture';
         if (p0.phase === 'warmup' && submitted - p0.phaseStart >= 10_000) {
+          if (p0.comparison) {
+            const capture = p0; p0 = null;
+            runs.comparison!.newAlternate(); showWorld('p3-restore-fork'); applyFreeze(); setPlaying(true, 'p3-measure');
+            p0 = capture;
+            editLatency = new EditLatency();
+          }
           Object.assign(p0, { phase: 'measure', phaseStart: submitted, tickStart: host.tick, droppedStart: scheduler.droppedMs, supersededStart: editLatency.superseded });
           report('p0', { phase: 'measure', run: p0.run });
         } else if (p0.phase === 'measure') {
+          if (p0.comparison && !runs.comparison!.atHorizon && host.tick % 120 < 2) {
+            const law = host.appliedFields()[0]!;
+            const strength = Math.floor(host.tick / 120) % 2 ? 0.09 : 0.11;
+            const next = { ...law, expression: { kind: 'directional' as const, direction: [0, 1, 0] as const, strength } };
+            submit(next, editor().newTransaction());
+          }
           p0.intervals.push(interval);
           p0.work.push(frameWork);
-          if (submitted - p0.phaseStart >= 60_000) {
+          if (submitted - p0.phaseStart >= 60_000 || p0.comparison && runs.comparison!.atHorizon) {
             finishP0(p0, submitted);
             p0 = null;
           }

@@ -236,6 +236,31 @@ const opened = (io: FakeIo, name: string, text: string): OpenOutcome => ({ outco
 const savedText = (io: FakeIo, name: string) => parseScene(io.disk.get(name)!);
 
 describe('Save and Save As', () => {
+  it('alternate export never rebinds/cleans main or retires recovery; cancel preserves the comparison', async () => {
+    const t = await setup();
+    t.io.chooseQueue.push('main.lawsmith.json');
+    await t.workflow.save();
+    t.edit();
+    const c = t.runs.enterComparison();
+    const main = t.controller.snapshot(t.controller.camera);
+    const revision = t.workflow.stored;
+    const recovery = JSON.stringify(t.io.recovery);
+    t.io.chooseQueue.push('alternate.lawsmith.json');
+    expect(await t.workflow.exportAlternate(c.alternateSetup())).toBe(true);
+    expect(t.workflow.fileName).toBe('main.lawsmith.json');
+    expect(t.workflow.stored).toBe(revision); expect(t.workflow.dirty).toBe(true);
+    expect(t.controller.snapshot(t.controller.camera)).toEqual(main);
+    expect(JSON.stringify(t.io.recovery)).toBe(recovery);
+    t.io.askQueue.push('cancel');
+    expect(await t.workflow.newScene()).toBe(false);
+    expect(t.runs.comparison).toBe(c); expect(t.runs.selected).toBe('comparison');
+    expect(t.io.askedInReplay.at(-1)).toBe(true); expect(t.frozen()).toBe(false);
+    t.io.askQueue.push('discard');
+    expect(await t.workflow.newScene()).toBe(true);
+    expect(t.runs.comparison).toBeNull(); expect(c.bytes).toBe(0);
+    t.host().dispose();
+  });
+
   it('Save without a destination is Save As; the destination binds only after the write succeeds', async () => {
     const t = await setup();
     t.edit();

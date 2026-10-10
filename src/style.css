@@ -26,6 +26,8 @@
   --recording: #e07a68;
   /* The replay context's frame: lavender marks the recorded past, as teal marks what you edit. */
   --replay-edge: rgb(197 138 229 / 0.55);
+  --baseline: #55aaa4;
+  --comparison-edge: rgb(85 170 164 / 0.55);
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --serif: ui-serif, "New York", Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
@@ -1185,7 +1187,7 @@ button.primary {
 /* M6A recording and replay: top right, below the tools and above the body readout, over the scene's
    open sky. The bottom left belongs to the diagnostics overlay and the bottom right to the switches and
    transport; the readout moves down by this cluster's height (--run-reserve), so neither covers the other. */
-#run {
+#run, #comparison {
   position: fixed;
   top: 52px;
   right: 12px;
@@ -1199,10 +1201,16 @@ button.primary {
   background: rgb(33 31 28 / 0.88);
 }
 
-#run[hidden],
+#comparison[hidden], #comparison [hidden], #run[hidden],
 #run [hidden] {
   display: none;
 }
+
+#comparison { border-color: var(--comparison-edge); width: 390px; }
+#comparison h2 { margin: 0; font: 500 15px var(--serif); }
+#comparison p { margin: 6px 0; }
+#comparison-inspect { font: 11px/1.5 var(--mono); white-space: pre-line; }
+#comparison .note, #comparison .run-head span { color: var(--text-secondary); font-size: 11px; }
 
 #run[data-state="replay"] {
   border-color: var(--replay-edge);

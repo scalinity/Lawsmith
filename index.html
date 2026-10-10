@@ -43,6 +43,7 @@
         </div>
         <p class="note">Save keeps the setup: laws, bodies and emitters, not the current motion. A scene opens paused at tick 0.</p>
         <p id="doc-message" role="status" hidden></p>
+        <p id="doc-invitation" class="note" hidden>Compare, compute A, change Sideways strength to 2, then Play.</p>
         <p id="doc-recovery" hidden></p>
       </section>
 
@@ -207,6 +208,23 @@
         <button type="button" id="run-open">Open recording…</button>
         <!-- Last, so its coming and going moves no other button under the pointer. -->
         <button type="button" id="run-cancel" title="Stops seeking; the replay stays where it is">Cancel seek</button>
+      </div>
+      <button type="button" id="compare-from">Compare from here</button>
+    </section>
+    <section id="comparison" aria-labelledby="comparison-title" hidden>
+      <div class="run-head"><h2 id="comparison-title">Two futures</h2><span>Session only</span></div>
+      <p class="note">A · outlined baseline &nbsp; B · solid alternate</p>
+      <p id="comparison-status" role="status"></p>
+      <p id="comparison-inspect"></p>
+      <div class="run-actions" role="group" aria-label="Comparison">
+        <button type="button" id="baseline-compute">Compute baseline</button>
+        <button type="button" id="baseline-cancel">Cancel baseline</button>
+        <button type="button" id="baseline-extend">Extend baseline +5 s</button>
+        <button type="button" id="alternate-replay">Replay Alternate</button>
+        <button type="button" id="alternate-new">New Alternate — clear edits</button>
+        <button type="button" id="baseline-ghosts" aria-pressed="true">A outlines</button>
+        <button type="button" id="alternate-export">Export Alternate Setup…</button>
+        <button type="button" id="comparison-close">Close comparison</button>
       </div>
     </section>
     <div id="overlays" role="group" aria-label="What to draw" hidden>

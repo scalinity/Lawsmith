@@ -291,7 +291,7 @@ async fn ask_unsaved(window: WebviewWindow, title: String, replay: bool) -> Resu
     let (heading, message, save) = if replay {
         (
             format!("Do you want to save your main authored scene “{title}”?"),
-            "The replay on screen is not part of it. Your changes to the scene will be lost if you don't save them.",
+            "The experiment on screen is not part of it. Your changes to the scene will be lost if you don't save them.",
             "Save Main Scene",
         )
     } else {

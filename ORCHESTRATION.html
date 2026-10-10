@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-10 against <code>main</code>: M6B accepted and merged (code <code>66bd5bf</code>); M7 is next, not started</span>
+    <span>Realigned 2026-10-10 against <code>main</code>: M6B accepted and merged (code <code>66bd5bf</code>); M7 implementation in progress on <code>m7</code>; M8 remains locked</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Start M7 on Opus 5.5.</h1>
-    <p class="lede">M6B is accepted and merged (code <code>66bd5bf</code>). A complete checkpoint restored into a new world and replayed forward lands exactly where M6A’s checkpoint-free replay lands, and a seek shows only the latest request’s exact result. You accepted it on the independent complete-state review and its bounded remediation. The review’s two pending-seek findings were fixed, and M6B’s native scenarios re-ran on the repaired build. By your bounded exception, the M6A, M1–M5 and P0–P2 native results carry forward from the reviewed build <code>d6966fd</code>. M7 is eligible and not started: preserve a future and change a law. Opus 5.5 authors it in a fresh session, on a fresh <code>m7</code> branch from <code>main</code>.</p>
-    <cite><code>docs/evidence/M6B.md</code> Status, Owner acceptance, Review, Owner checks; <code>docs/MILESTONES.md</code> M7</cite>
+    <h1>M7 is in progress on GPT-6.1 Sol.</h1>
+    <p class="lede">M6B is accepted and merged (code <code>66bd5bf</code>; accepted base <code>075c1d5</code>). M7 is being implemented alone on <code>m7</code> by Codex GPT-6.1 Sol. GPT-6 Pro will perform the external, read-only independent review of an immutable candidate. Claude is optional only under separate authorization. This session preserves <code>main</code>, stops with a pushed review candidate, and does not start M8. Native results must be captured on the M7 candidate; the bounded M6B carry-forward exception does not apply.</p>
+    <cite><code>docs/evidence/M6B.md</code> Owner acceptance; <code>docs/evidence/M7.md</code> Status and session allocation; <code>docs/MILESTONES.md</code> M7</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -644,7 +644,7 @@
       </article>
 
       <!-- REALIGN M7 -->
-      <article class="unit" id="m7" data-gate="M7" data-state="not-started" data-tier="near">
+      <article class="unit" id="m7" data-gate="M7" data-state="in-progress" data-tier="near">
         <div class="gate">M7</div>
         <div>
           <div class="unit-head">
@@ -653,15 +653,15 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the independent review gate: two continuations of the same state, not similar-looking unrelated runs. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">Eligible: M6B was accepted on 2026-10-10. Not started.</dd>
-              <dt>Should run</dt><dd class="run">Now, alone, on a fresh <code>m7</code> branch from <code>main</code>, in a fresh Opus 5.5 session. Nothing else runs beside it, since it extends <code>simulation</code>, <code>rendering</code> and <code>ui</code>. M8 stays locked until M7 is accepted.</dd>
+              <dt>Models</dt><dd>Codex GPT-6.1 Sol implements and remediates. GPT-6 Pro performs the external read-only independent review. Claude is optional only with separate authorization; M7 uses this session-specific allocation.</dd>
+              <dt>Graph permits</dt><dd class="soft">M6B accepted; M7 implementation in progress from <code>075c1d5</code>.</dd>
+              <dt>Should run</dt><dd class="run">Continue M7 alone on <code>m7</code>. The session owns comparison simulation, rendering, UI and qualification paths. It stops at a clean pushed immutable review candidate; no merge or acceptance. M8 stays locked until M7 is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M6B, accepted on 2026-10-10. Contracts C4, C7, C9.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
-              <dt>Your part</dt><dd>Hands-off windows for the comparison recording.</dd>
-              <dt>Open threads</dt><dd class="thread-list"></dd>
+              <dt>Your part</dt><dd>Agreed hands-off window for packaged native qualification; external GPT-6 Pro review and owner acceptance.</dd>
+              <dt>Open threads</dt><dd>Packaged native qualification and independent complete-state review remain pending. See <code>docs/evidence/M7.md</code>.</dd>
             </dl>
           </div>
           <cite class="src"><code>docs/MILESTONES.md</code> M7 Evidence required for review, Visual QA</cite>
@@ -944,8 +944,8 @@
           <td data-label="Nothing to copy"><span class="c partly"></span>Partly<span class="why">Fork, baseline and ghosts are new; complete checkpoints come from M6B.</span></td>
           <td data-label="Later gates inherit"><span class="c partly"></span>Partly<span class="why">M8 clarifies it and M10 demonstrates it; nothing computes from it.</span></td>
           <td data-label="Cannot be undone"><span class="c"></span>No<span class="why">Revertible.</span></td>
-          <td data-label="Author / reviewer">Opus / Sol</td>
-          <td data-label="If Claude limits bind">Astra / Opus</td>
+          <td data-label="Author / reviewer">GPT-6.1 Sol / GPT-6 Pro</td>
+          <td data-label="If Claude limits bind">Separate authorization only</td>
         </tr>
         <tr>
           <td data-label="Unit">M8</td>

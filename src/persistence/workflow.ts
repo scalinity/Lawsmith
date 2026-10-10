@@ -155,6 +155,22 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
     return this.explicit('save-as', () => this.saveNow(true));
   }
 
+  /** Session-local alternate export: never binds or cleans the main scene or retires its recovery. */
+  exportAlternate(document: SceneDocument): Promise<boolean | null> {
+    const text = serializeScene(document);
+    return this.explicit('export-alternate', async () => {
+      this.app.quiesce('export-alternate');
+      try {
+        const choice = await this.io.chooseDestination(suggestedName(document.metadata.title));
+        if (choice.outcome !== 'chosen') return false;
+        await this.io.writeScene(choice.token, text);
+        this.message = { kind: 'info', text: `Alternate setup saved to ${choice.name}. It starts at tick zero; interventions are session-local.` };
+        this.app.log('document', { action: 'export-alternate', outcome: 'saved', file: choice.name });
+        return true;
+      } catch (error) { return this.fail(`Alternate export failed: ${describeFailure(error as IoFailure)}.`, { action: 'export-alternate', error }); }
+    });
+  }
+
   open(): Promise<boolean | null> {
     return this.explicit('open', () => this.openNow());
   }
@@ -580,7 +596,7 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
     }
     let choice: 'save' | 'discard' | 'cancel';
     try {
-      choice = await this.io.askUnsaved(controller.metadata.title, this.app.runs.selected === 'replay');
+      choice = await this.io.askUnsaved(controller.metadata.title, this.app.runs.selected !== 'authoring');
     } catch {
       choice = 'cancel';
     }
@@ -802,7 +818,7 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
   private async recordNow(): Promise<boolean> {
     const runs = this.app.runs;
     this.app.quiesce('record');
-    if (runs.selected === 'replay') {
+    if (runs.selected !== 'authoring') {
       this.message = { kind: 'info', text: 'Return to authoring to start a recording.' };
       return false;
     }
