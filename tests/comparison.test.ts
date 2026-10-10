@@ -143,9 +143,20 @@ describe('T10 shared fork and actual continuation', () => {
     expect(JSON.stringify(s.controller.snapshot(s.controller.camera))).toBe(mainText);
     expect(firstDivergence(source, observe(s.coordinator.replay!.host))).toBeNull();
     // Negative control: consuming the recorded tail is observably a different future.
+    const uncontaminated = keep(new SimulationHost(c.root.semantic, c.forkCheckpoint()));
     const contaminated = keep(new SimulationHost(c.root.semantic, c.forkCheckpoint()));
     for (const command of record.commands.filter((v) => v.atTick === target.atTick && v.sequence > target.sequence)) contaminated.applyRecorded(command);
-    expect(firstDivergence(observe(c.host), observe(contaminated))).not.toBeNull();
+    expect(contaminated.tick).toBe(uncontaminated.tick);
+    expect(contaminated.lastAppliedSequence).toBeGreaterThan(uncontaminated.lastAppliedSequence);
+    expect(contaminated.appliedFields()).not.toEqual(uncontaminated.appliedFields());
+    expect(firstDivergence(observe(uncontaminated), observe(contaminated))?.component).toBe('cursor');
+    for (let i = 0; i < 600; i++) { uncontaminated.step(); contaminated.step(); }
+    expect(contaminated.tick).toBe(uncontaminated.tick);
+    expect(contaminated.canonicalState().bodies).not.toEqual(uncontaminated.canonicalState().bodies);
+    // Without the injection, equal clocks and all future state remain equal; clock mismatch is no oracle.
+    const withoutInjection = keep(new SimulationHost(c.root.semantic, c.forkCheckpoint()));
+    for (let i = 0; i < 600; i++) withoutInjection.step();
+    expect(firstDivergence(observe(uncontaminated), observe(withoutInjection))).toBeNull();
     s.coordinator.closeComparison(); s.coordinator.returnToAuthoring();
     expect(r.host.pendingCount).toBe(0);
   }, 60_000);
