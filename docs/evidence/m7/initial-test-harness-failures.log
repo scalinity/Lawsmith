@@ -1,0 +1,43 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparison.test.ts
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparison.test.ts (11 tests | 2 failed) 1219ms
+   ❯ T10 shared fork and actual continuation (10)
+     × C: independent analytic directional oracle exceeds 0.5 m at one second with no limiting 6ms
+     × D/E: fork inside a recording omits its tail, including later edits at the same tick 87ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparison.test.ts > T10 shared fork and actual continuation > C: independent analytic directional oracle exceeds 0.5 m at one second with no limiting
+TypeError: Cannot read properties of undefined (reading '1')
+ ❯ tests/comparison.test.ts:74:14
+     72|     const baseline = c.frame(120)!;
+     73|     const h = c.host.settings.stepNumerator / c.host.settings.stepDeno…
+     74|     expect(b.linearVelocity[1]).toBeCloseTo(2, 4);
+       |              ^
+     75|     expect(Math.abs(b.position[1] - 1)).toBeLessThan(2 * h + 1e-4);
+     76|     expect(b.position[1] - baseline.poses[1]!).toBeGreaterThanOrEqual(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/comparison.test.ts > T10 shared fork and actual continuation > D/E: fork inside a recording omits its tail, including later edits at the same tick
+TypeError: now is not a function
+ ❯ RunCoordinator.seekWork src/simulation/contexts.ts:510:19
+    508|     const job = this.job;
+    509|     if (!job) return { kind: 'idle' };
+    510|     const start = now();
+       |                   ^
+    511|     try {
+    512|       if (!job.work) this.beginSeek(job, now);
+ ❯ tests/comparison.test.ts:86:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 9 passed (11)
+   Start at  00:43:44
+   Duration  1.44s (tests 92%, transform 6%, import 2%)
+

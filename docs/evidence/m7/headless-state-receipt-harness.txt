@@ -1,0 +1,69 @@
+import { it, expect } from '<checkout>/node_modules/vitest/dist/index.js';
+import { writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { initSimulation, SimulationHost, worldCounts } from '<checkout>/src/simulation/host.ts';
+import { DocumentController } from '<checkout>/src/domain/document.ts';
+import { RunCoordinator } from '<checkout>/src/simulation/contexts.ts';
+import { Comparison } from '<checkout>/src/simulation/comparison.ts';
+import { PrefixIdentities } from '<checkout>/src/simulation/checkpoints.ts';
+import { computeBaseline, twoFuturesDocument } from '<checkout>/src/simulation/comparisonFixtures.ts';
+import { observe, firstDivergence, LinearReplay } from '<checkout>/src/simulation/replay.ts';
+import { SIMULATION_FINGERPRINT } from '<checkout>/src/simulation/recorder.ts';
+import { serializeRun } from '<checkout>/src/persistence/runFile.ts';
+import { TEST_IDENTITY } from '<checkout>/tests/support/run.ts';
+import { defaultDocument } from '<checkout>/src/persistence/defaultScene.ts';
+import { cloneFrozen } from '<checkout>/src/domain/scene.ts';
+import { createDocument } from '<checkout>/src/persistence/sceneFile.ts';
+const out = '<checkout>/docs/evidence/m7/';
+const sha = (x: string | Uint8Array) => createHash('sha256').update(x).digest('hex');
+const save = (name: string, value: unknown) => writeFileSync(out + name, JSON.stringify(value, null, 2) + '\n');
+function checkpoint(c: ReturnType<SimulationHost['checkpoint']>) {
+ const {engineBytes, ...sidecar} = c;
+ return {engineEncoding:'base64', engineBytes:Buffer.from(engineBytes).toString('base64'), engineLength:engineBytes.byteLength, engineSha256:sha(engineBytes), sidecarSha256:sha(JSON.stringify(sidecar)), sidecar};
+}
+it('retain actual synthetic complete forks, source record, alternate suffix and baseline trace', async () => {
+ await initSimulation();
+ const host = new SimulationHost(twoFuturesDocument().semantic);
+ const controller = new DocumentController(twoFuturesDocument(), host);
+ const runs = new RunCoordinator({controller, identity:()=>TEST_IDENTITY, runId:()=> 'm7-evidence-synthetic-source'});
+ let linear: LinearReplay | null = null;
+ try {
+  runs.startRecording(); for(let i=0;i<60;i++)host.step();
+  controller.editField('sideways','Disable at fork', f=>({...f,enabled:false}));
+  controller.editField('sideways','Source tail', f=>({...f,enabled:true}));
+  for(let i=0;i<120;i++)host.step();
+  await runs.stopRecording(); const record = runs.record!;
+  const text = serializeRun(record); writeFileSync(out+'headless-source.lawsmith-run.json',text);
+  const main = observe(host); const document = JSON.stringify(controller.snapshot(controller.camera));
+  runs.enterReplay(); runs.seek({tick:60,cursor:1}); while(runs.seekWork(Infinity,()=>0).kind==='working'){}
+  const source = observe(runs.shown); const c = runs.enterComparison();
+  linear = new LinearReplay({...record,commands:record.commands.slice(0,1),finalTick:60,lastAppliedSequence:1});
+  while(linear.address.tick<60){linear.settle();linear.step();} linear.settle();
+  expect(firstDivergence(observe(linear.host),observe(c.host))).toBeNull();
+  const fork = checkpoint(c.forkCheckpoint());
+  await computeBaseline(c,600);
+  const frames = Array.from({length:601},(_,i)=>{const f=c.frame(c.address.tick+i)!;return {tick:f.tick,ids:f.ids,poses:Array.from(f.poses)};});
+  const traceHash = sha(JSON.stringify(frames));
+  c.controller.editField('sideways','Alternate up',f=>({...f,enabled:true,expression:{kind:'directional',direction:[0,1,0],strength:2}}));
+  for(let i=0;i<120;i++)c.advance();
+  const end = observe(c.host), suffix = JSON.stringify(c.suffix);
+  const alternate = checkpoint(c.host.checkpoint());
+  c.replayAlternate(); while(c.replaying)c.advance();
+  expect(firstDivergence(end,observe(c.host))).toBeNull(); expect(JSON.stringify(c.suffix)).toBe(suffix);
+  const replay = checkpoint(c.host.checkpoint()); c.newAlternate();
+  expect(c.suffixCount).toBe(0); expect(c.controller.canUndo).toBe(false);
+  expect(firstDivergence(source,observe(c.host))).toBeNull();
+  expect(sha(JSON.stringify(Array.from({length:601},(_,i)=>{const f=c.frame(60+i)!;return {tick:f.tick,ids:f.ids,poses:Array.from(f.poses)};})))).toBe(traceHash);
+  save('headless-fork-trace.json',{purpose:'Synthetic local qualification evidence; not an application checkpoint/alternate export format',environment:TEST_IDENTITY,codeCandidate:'ccdcf4ef0b4ecb5228d6b36338bdc57a6169dfd7',fingerprint:SIMULATION_FINGERPRINT,sourceIdentity:c.sourceIdentity,forkIdentity:c.identity,address:c.address,sourcePrefixIdentity:new PrefixIdentities(record).at(1),sourceRecordSha256:sha(text),root:c.root,fork,baselineEndpoint:checkpoint(c.endpointCheckpoint()!),baselineTrace:{encoding:'actual Float32 seven-component pose arrays in host ID order, all 601 frames',sha256:traceHash,frames},alternateSuffix:JSON.parse(suffix),alternateEnd:alternate,replayedEnd:replay,proofs:{independentLinearPrefixEqual:true,replayExact:true,newClearedSuffixAndUndo:true,newEqualsFork:true,traceUnchanged:true,sourceTailExcluded:true}});
+  runs.closeComparison(); runs.returnToAuthoring();
+  expect(serializeRun(record)).toBe(text); expect(firstDivergence(main,observe(host))).toBeNull(); expect(JSON.stringify(controller.snapshot(controller.camera))).toBe(document);
+ } finally {linear?.host.dispose();runs.closeComparison();runs.returnToAuthoring();host.dispose();}
+ const root=defaultDocument(), first=root.semantic.fields[0]!;
+ const contacts=cloneFrozen(createDocument({...root.semantic,fields:[{...first,expression:{kind:'gain',gain:{kind:'triangle',min:0.1,max:1,periodTicks:240,phaseTicks:13},child:first.expression}},...root.semantic.fields.slice(1)]},root.metadata,root.presentation));
+ const original=new SimulationHost(contacts.semantic); let c:Comparison|null=null;
+ try {for(let i=0;i<519;i++)original.step();c=new Comparison(original,contacts,'m7-evidence-contacts-519');
+  expect(firstDivergence(observe(original),observe(c.host))).toBeNull();
+  save('headless-contact-fork.json',{purpose:'Complete synthetic contacts/emitter/triangle fork evidence, settled before lifecycle',environment:TEST_IDENTITY,codeCandidate:'ccdcf4ef0b4ecb5228d6b36338bdc57a6169dfd7',fingerprint:SIMULATION_FINGERPRINT,sourceIdentity:c.sourceIdentity,forkIdentity:c.identity,address:c.address,root:c.root,fork:checkpoint(c.forkCheckpoint()),proofs:{originalForwardEqualsRestoredB:true}});
+ } finally {c?.dispose();original.dispose();}
+ expect(worldCounts().allocated).toBe(0);
+});

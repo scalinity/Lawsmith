@@ -1,0 +1,11 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run --config <private-state-receipts-config>
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  01:12:57
+   Duration  373ms (tests 49%, transform 37%, import 13%, worker 1%)
+

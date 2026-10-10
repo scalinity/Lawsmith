@@ -1,0 +1,29 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparison.test.ts
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparison.test.ts (21 tests | 1 failed) 5177ms
+   ❯ T10 shared fork and actual continuation (18)
+     × M: constructing, drawing, hiding and disposing A outlines cannot enter B physics 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparison.test.ts > T10 shared fork and actual continuation > M: constructing, drawing, hiding and disposing A outlines cannot enter B physics
+AssertionError: expected 1.1706072092056274 to be close to 1.1944061988830565, received difference is 0.023798989677429105, but expected 5e-7
+ ❯ tests/comparison.test.ts:217:32
+    215|       for (let n = 0; n < 120; n++) c.advance();
+    216|       view.update(c, true);
+    217|       expect(position.getX(0)).toBeCloseTo(c.frame(120)!.poses[0]! + 0…
+       |                                ^
+    218|       const moved = observe(c.host);
+    219|       view.update(c, false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  00:55:03
+   Duration  5.56s (tests 95%, transform 3%, import 2%)
+

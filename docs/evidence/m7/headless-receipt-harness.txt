@@ -1,0 +1,24 @@
+import { it } from '<checkout>/node_modules/vitest/dist/index.js';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { initSimulation, SimulationHost, worldCounts } from '<checkout>/src/simulation/host.ts';
+import { Comparison } from '<checkout>/src/simulation/comparison.ts';
+import { comparisonQualification, p3Document } from '<checkout>/src/simulation/comparisonFixtures.ts';
+import { TEST_IDENTITY } from '<checkout>/tests/support/run.ts';
+import { percentiles } from '<checkout>/src/measurement.ts';
+it('capture separate Node-only M7 resource and baseline receipts', async () => {
+ await initSimulation();
+ const events: Record<string, unknown>[] = [];
+ await comparisonQualification(TEST_IDENTITY, d => events.push(d));
+ const root = p3Document(); const host = new SimulationHost(root.semantic);
+ const c = new Comparison(host, root, 'headless-measurement'); const runs = [];
+ try {
+  for (const ticks of [600,7200]) {
+   const job = c.begin(ticks);
+   while (c.batch(job) === 'working') await new Promise(r => setTimeout(r,0));
+   runs.push({...c.metrics, batchMs:percentiles(c.metrics!.batches), counts:c.counts(), worlds:worldCounts()});
+  }
+ } finally { c.dispose(); host.dispose(); }
+ const result = {environment:'Node/headless only; native performance and replay qualification UNVERIFIED', codeCandidate:'ccdcf4ef0b4ecb5228d6b36338bdc57a6169dfd7', events, runs, after:worldCounts()};
+ mkdirSync('<checkout>/docs/evidence/m7',{recursive:true});
+ writeFileSync('<checkout>/docs/evidence/m7/headless-resources.json', JSON.stringify(result,null,2)+'\n');
+});

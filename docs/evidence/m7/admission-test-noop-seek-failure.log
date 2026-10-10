@@ -1,0 +1,36 @@
+npm notice run lawsmith@0.0.0 test
+npm notice run vitest run
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparison.test.ts (21 tests | 1 failed) 5718ms
+   ❯ T10 shared fork and actual continuation (18)
+     × admission refuses active recording, pending seek and unsettled commands before allocation 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparison.test.ts > T10 shared fork and actual continuation > admission refuses active recording, pending seek and unsettled commands before allocation
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/comparison.test.ts:66:51
+     64|     s.controller.settle();
+     65|     s.coordinator.enterReplay(); s.coordinator.seek({ tick: 0, cursor:…
+     66|     expect(() => s.coordinator.enterComparison()).toThrow(/seeking/);
+       |                                                   ^
+     67|     s.coordinator.cancelSeek(); s.coordinator.returnToAuthoring();
+     68|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 30 passed | 3 skipped (34)
+      Tests  1 failed | 659 passed | 3 skipped (663)
+   Start at  00:54:10
+   Duration  14.58s (tests 94%, transform 4%, import 2%)
+

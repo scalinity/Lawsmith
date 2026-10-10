@@ -1,0 +1,9540 @@
+{
+  "purpose": "Synthetic local qualification evidence; not an application checkpoint/alternate export format",
+  "environment": {
+    "app": "Lawsmith 0.0.0",
+    "build": "headless",
+    "bundle": "vitest (unbundled sources)",
+    "tauri": "none: Node harness",
+    "webkit": "none: Node V8",
+    "os": "test host",
+    "arch": "test"
+  },
+  "codeCandidate": "ccdcf4ef0b4ecb5228d6b36338bdc57a6169dfd7",
+  "fingerprint": {
+    "profile": "lawsmith-m1-rapier-0.21.0",
+    "rapier": "0.21.0",
+    "rapierWasmSha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b",
+    "effective": {
+      "dt": 0.008333333767950535,
+      "numSolverIterations": 4,
+      "numInternalPgsIterations": 1,
+      "maxCcdSubsteps": 1,
+      "lengthUnit": 1,
+      "normalizedAllowedLinearError": 0.004999999888241291,
+      "normalizedPredictionDistance": 0.019999999552965164,
+      "contactErp": 0.0728205069899559
+    },
+    "fieldKernel": "affine-ak-v2",
+    "commands": "lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick",
+    "step": "1/120"
+  },
+  "sourceIdentity": "m7-evidence-synthetic-source:e58755fed5245697:{\"commands\":\"lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick\",\"effective\":{\"contactErp\":0.0728205069899559,\"dt\":0.008333333767950535,\"lengthUnit\":1,\"maxCcdSubsteps\":1,\"normalizedAllowedLinearError\":0.004999999888241291,\"normalizedPredictionDistance\":0.019999999552965164,\"numInternalPgsIterations\":1,\"numSolverIterations\":4},\"fieldKernel\":\"affine-ak-v2\",\"profile\":\"lawsmith-m1-rapier-0.21.0\",\"rapier\":\"0.21.0\",\"rapierWasmSha256\":\"17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b\",\"step\":\"1/120\"}:{\"app\":\"Lawsmith 0.0.0\",\"arch\":\"test\",\"build\":\"headless\",\"bundle\":\"vitest (unbundled sources)\",\"os\":\"test host\",\"tauri\":\"none: Node harness\",\"webkit\":\"none: Node V8\"}",
+  "forkIdentity": "m7-evidence-synthetic-source:e58755fed5245697:{\"commands\":\"lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick\",\"effective\":{\"contactErp\":0.0728205069899559,\"dt\":0.008333333767950535,\"lengthUnit\":1,\"maxCcdSubsteps\":1,\"normalizedAllowedLinearError\":0.004999999888241291,\"normalizedPredictionDistance\":0.019999999552965164,\"numInternalPgsIterations\":1,\"numSolverIterations\":4},\"fieldKernel\":\"affine-ak-v2\",\"profile\":\"lawsmith-m1-rapier-0.21.0\",\"rapier\":\"0.21.0\",\"rapierWasmSha256\":\"17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b\",\"step\":\"1/120\"}:{\"app\":\"Lawsmith 0.0.0\",\"arch\":\"test\",\"build\":\"headless\",\"bundle\":\"vitest (unbundled sources)\",\"os\":\"test host\",\"tauri\":\"none: Node harness\",\"webkit\":\"none: Node V8\"}:60:1:8e47136dbe6af012",
+  "address": {
+    "tick": 60,
+    "cursor": 1
+  },
+  "sourcePrefixIdentity": "e58755fed5245697",
+  "sourceRecordSha256": "1f74558ea2b9ef953c77b45f2bf24e0e03b7b99a502139d1c07ed2e0c090e8ab",
+  "root": {
+    "format": "lawsmith.scene",
+    "schemaVersion": 1,
+    "requiredCapabilities": [
+      "primitive.directional.v1",
+      "region.box.v1"
+    ],
+    "semantic": {
+      "units": "m-kg-s",
+      "seed": 1279350577,
+      "simulation": {
+        "profile": "lawsmith-m1-rapier-0.21.0",
+        "stepNumerator": 1,
+        "stepDenominator": 120,
+        "ambientAcceleration": [
+          0,
+          0,
+          0
+        ],
+        "maxAppliedAcceleration": 200,
+        "maxLiveBodies": 256
+      },
+      "bodies": [
+        {
+          "id": "traveler",
+          "initialPose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "initialLinearVelocity": [
+            1,
+            0,
+            0
+          ],
+          "initialAngularVelocity": [
+            0,
+            0.5,
+            0
+          ],
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.18
+          },
+          "material": {
+            "friction": 0,
+            "restitution": 0
+          },
+          "collisionMode": "fixedOnly",
+          "type": "dynamic",
+          "massKg": 1
+        }
+      ],
+      "emitters": [],
+      "fields": [
+        {
+          "id": "sideways",
+          "enabled": true,
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "region": {
+            "kind": "box",
+            "halfExtents": [
+              50,
+              10,
+              10
+            ]
+          },
+          "edgeFade": 0,
+          "expression": {
+            "kind": "directional",
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "strength": 0
+          }
+        }
+      ]
+    },
+    "presentation": {
+      "arrows": true,
+      "laws": [
+        {
+          "id": "sideways",
+          "label": "Sideways",
+          "color": "#55aaa4",
+          "visible": true
+        }
+      ]
+    },
+    "metadata": {
+      "title": "Two Futures"
+    }
+  },
+  "fork": {
+    "engineEncoding": "base64",
+    "engineBytes": "AAAAAAAAAAAAAAAAiYgIPD/DLjkAAPBBAAAgQQAAcEIAACBBAACAPwAAgD8BAAEBAQEBAQEAAAAAAAA/AQEBAQAAgD8CAAAAAAAAAAAAAQADAAAA8AAAAArXozwAAEA/BAAAAAAAAAAAAIBArMUnNxQAAAAAAAAAWAIAAAAAAAAK16M7AABAQArXozwAAMhDBAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAc3MTD0AAAAAAAA8AAAAAQAAAAAAAAABAAAAAAAAAAEBAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAEBAAAAAAAAAKhYcj4ghWu+IIVrvgAAAAC5WDI/IIVrPiCFaz4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEVW/z0AAAAAqQB+P/P//z4AAAAAAAAAAAAAAAAAAAAARVb/PQAAAACpAH4/8///PgAAAAAAAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAALoAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHz//8+AAAAAAAAAAAAAIA/AACAPwAAgD8rUppCAAAAAAAAADYsUppCAAAAACtSmkIAAAAAAAAAAAAAAAAAAIA/LFKaQixSmkIsUppCAAAAAAAAAAAAAAAAAACAPwAA7FE4PhUAgD8AAAAA/387tQAAAACxAAA/AAAAAOxROD4AAQAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAgL8AAIC/AAAAPwAAAAAAAAAAAFsa+z0AAAAAiRF+P6+7+z4AAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAP///////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQEAAAABAAAAAAAAAAAAAAAAAAAABAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA7FE4PgEAAAAAAIA/AAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAAAAAEVW/z0AAAAAqQB+P/P//z4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwAEAAAAAQAAAAAAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAEBAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAQEAAAAAAAAAAQIAAAAAAAAAAQMAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAABAQAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAA=",
+    "engineLength": 2639,
+    "engineSha256": "66d1d4ec1b42362aed20cdcc443e371af85f63f2883f00d6b6d034b32936ef2a",
+    "sidecarSha256": "5939f699e448db3ee7018c6d1b6db245f667a8ab79f73f2396b8c15081da455d",
+    "sidecar": {
+      "tick": 60,
+      "lastAppliedSequence": 1,
+      "phase": "settled-before-lifecycle",
+      "activeFields": [
+        {
+          "id": "sideways",
+          "enabled": false,
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "region": {
+            "kind": "box",
+            "halfExtents": [
+              50,
+              10,
+              10
+            ]
+          },
+          "edgeFade": 0,
+          "expression": {
+            "kind": "directional",
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "strength": 0
+          }
+        }
+      ],
+      "ambientAcceleration": [
+        0,
+        0,
+        0
+      ],
+      "emitterStates": [],
+      "bodyIdentityMap": [
+        {
+          "id": "traveler",
+          "body": 0,
+          "collider": 0,
+          "radius": 0.18
+        }
+      ],
+      "bodyLifetimes": [
+        {
+          "id": "traveler",
+          "deathTick": null
+        }
+      ],
+      "colliderIdentity": [
+        {
+          "collider": 0,
+          "id": "traveler"
+        }
+      ],
+      "skippedEmissions": 0,
+      "maxSpeed": 1,
+      "limitedSteps": 0
+    }
+  },
+  "baselineEndpoint": {
+    "engineEncoding": "base64",
+    "engineBytes": "AAAAAAAAAAAAAAAAiYgIPD/DLjkAAPBBAAAgQQAAcEIAACBBAACAPwAAgD8BAAEBAQEBAQEAAAAAAAA/AQEBAQAAgD8CAAAAAAAAAAAAAQADAAAA8AAAAArXozwAAEA/BAAAAAAAAAAAAIBArMUnNxQAAAAAAAAAWAIAAAAAAAAK16M7AABAQArXozwAAMhDBAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAc3MTD0AAAAAAACUAgAAAQAAAAAAAAABAAAAAAAAAAEBAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlAIAAAEBAAAAAAAAAESSp0AghWu+IIVrvgAAAACWSrZAIIVrPiCFaz4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABlAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH0dez8AAAAAtxVHPn3/r0AAAAAAAAAAAAAAAAAAAAAAfR17PwAAAAC3FUc+ff+vQAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAPAFAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF9/69AAAAAAAAAAAAAAIA/AACAPwAAgD80UppCAAAAAAAAALYsUppCAAAAADRSmkIAAAAAAAAAAAAAAAAAAIA/LFKaQixSmkIsUppCAAAAAAAAAAAAAAAAAACAPwAA7FE4Pv/+fz8AAAAA/5/INwAAAACNBgA/AAAAAOxROD4AAQAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAgL8AAIC/AAAAPwAAAAAAAAAAAMsCez8AAAAAay1JPjm7r0AAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAP///////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQEAAAABAAAAAAAAAAAAAAAAAAAABAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA7FE4PgEAAAAAAIA/AAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAAAAAH0dez8AAAAAtxVHPn3/r0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwAEAAAAAQAAAAAAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAEBAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAQEAAAAAAAAAAQIAAAAAAAAAAQMAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAABAQAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAA=",
+    "engineLength": 2639,
+    "engineSha256": "7e70053068566abdc8fb54a5cef61e3ac1b548fa85471ff31bb1e7a0c05a1a64",
+    "sidecarSha256": "993899c4060b08443fa6a1cb97825d83cb6174f0c5d89c753d2df888b233332c",
+    "sidecar": {
+      "tick": 660,
+      "lastAppliedSequence": 1,
+      "phase": "settled-before-lifecycle",
+      "activeFields": [
+        {
+          "id": "sideways",
+          "enabled": false,
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "region": {
+            "kind": "box",
+            "halfExtents": [
+              50,
+              10,
+              10
+            ]
+          },
+          "edgeFade": 0,
+          "expression": {
+            "kind": "directional",
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "strength": 0
+          }
+        }
+      ],
+      "ambientAcceleration": [
+        0,
+        0,
+        0
+      ],
+      "emitterStates": [],
+      "bodyIdentityMap": [
+        {
+          "id": "traveler",
+          "body": 0,
+          "collider": 0,
+          "radius": 0.18
+        }
+      ],
+      "bodyLifetimes": [
+        {
+          "id": "traveler",
+          "deathTick": null
+        }
+      ],
+      "colliderIdentity": [
+        {
+          "collider": 0,
+          "id": "traveler"
+        }
+      ],
+      "skippedEmissions": 0,
+      "maxSpeed": 1,
+      "limitedSteps": 0
+    }
+  },
+  "baselineTrace": {
+    "encoding": "actual Float32 seven-component pose arrays in host ID order, all 601 frames",
+    "sha256": "c00fc8544fbc5d66cb90ca97b76a84823af49c497ee3c18271c03c42187497d2",
+    "frames": [
+      {
+        "tick": 60,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.49999961256980896,
+          0,
+          0,
+          0,
+          0.12467626482248306,
+          0,
+          0.992197573184967
+        ]
+      },
+      {
+        "tick": 61,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5083330273628235,
+          0,
+          0,
+          0,
+          0.12674309313297272,
+          0,
+          0.9919355511665344
+        ]
+      },
+      {
+        "tick": 62,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5166664719581604,
+          0,
+          0,
+          0,
+          0.12880939245224,
+          0,
+          0.9916693568229675
+        ]
+      },
+      {
+        "tick": 63,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5249999165534973,
+          0,
+          0,
+          0,
+          0.1308751404285431,
+          0,
+          0.9913988709449768
+        ]
+      },
+      {
+        "tick": 64,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5333333611488342,
+          0,
+          0,
+          0,
+          0.13294033706188202,
+          0,
+          0.9911240935325623
+        ]
+      },
+      {
+        "tick": 65,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5416668057441711,
+          0,
+          0,
+          0,
+          0.1350049376487732,
+          0,
+          0.9908449053764343
+        ]
+      },
+      {
+        "tick": 66,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5500002503395081,
+          0,
+          0,
+          0,
+          0.1370689570903778,
+          0,
+          0.9905615448951721
+        ]
+      },
+      {
+        "tick": 67,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.558333694934845,
+          0,
+          0,
+          0,
+          0.13913236558437347,
+          0,
+          0.9902737736701965
+        ]
+      },
+      {
+        "tick": 68,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5666671395301819,
+          0,
+          0,
+          0,
+          0.14119519293308258,
+          0,
+          0.9899818301200867
+        ]
+      },
+      {
+        "tick": 69,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5750005841255188,
+          0,
+          0,
+          0,
+          0.14325739443302155,
+          0,
+          0.9896854758262634
+        ]
+      },
+      {
+        "tick": 70,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5833340287208557,
+          0,
+          0,
+          0,
+          0.14531899988651276,
+          0,
+          0.9893849492073059
+        ]
+      },
+      {
+        "tick": 71,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.5916674733161926,
+          0,
+          0,
+          0,
+          0.14737994968891144,
+          0,
+          0.989080011844635
+        ]
+      },
+      {
+        "tick": 72,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6000009179115295,
+          0,
+          0,
+          0,
+          0.14944027364253998,
+          0,
+          0.9887707829475403
+        ]
+      },
+      {
+        "tick": 73,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6083343625068665,
+          0,
+          0,
+          0,
+          0.151499941945076,
+          0,
+          0.9884572625160217
+        ]
+      },
+      {
+        "tick": 74,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6166678071022034,
+          0,
+          0,
+          0,
+          0.15355896949768066,
+          0,
+          0.9881395697593689
+        ]
+      },
+      {
+        "tick": 75,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6250012516975403,
+          0,
+          0,
+          0,
+          0.15561731159687042,
+          0,
+          0.9878174662590027
+        ]
+      },
+      {
+        "tick": 76,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6333346962928772,
+          0,
+          0,
+          0,
+          0.15767498314380646,
+          0,
+          0.9874910712242126
+        ]
+      },
+      {
+        "tick": 77,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6416681408882141,
+          0,
+          0,
+          0,
+          0.15973196923732758,
+          0,
+          0.9871603846549988
+        ]
+      },
+      {
+        "tick": 78,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.650001585483551,
+          0,
+          0,
+          0,
+          0.16178829967975616,
+          0,
+          0.9868255257606506
+        ]
+      },
+      {
+        "tick": 79,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6583350300788879,
+          0,
+          0,
+          0,
+          0.16384388506412506,
+          0,
+          0.9864862561225891
+        ]
+      },
+      {
+        "tick": 80,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6666684746742249,
+          0,
+          0,
+          0,
+          0.16589878499507904,
+          0,
+          0.9861428141593933
+        ]
+      },
+      {
+        "tick": 81,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6750019192695618,
+          0,
+          0,
+          0,
+          0.16795296967029572,
+          0,
+          0.9857950806617737
+        ]
+      },
+      {
+        "tick": 82,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6833353638648987,
+          0,
+          0,
+          0,
+          0.1700064092874527,
+          0,
+          0.9854429364204407
+        ]
+      },
+      {
+        "tick": 83,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.6916688084602356,
+          0,
+          0,
+          0,
+          0.17205914855003357,
+          0,
+          0.9850866198539734
+        ]
+      },
+      {
+        "tick": 84,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7000022530555725,
+          0,
+          0,
+          0,
+          0.17411112785339355,
+          0,
+          0.984726071357727
+        ]
+      },
+      {
+        "tick": 85,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7083356976509094,
+          0,
+          0,
+          0,
+          0.17616233229637146,
+          0,
+          0.9843611717224121
+        ]
+      },
+      {
+        "tick": 86,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7166691422462463,
+          0,
+          0,
+          0,
+          0.17821276187896729,
+          0,
+          0.9839919805526733
+        ]
+      },
+      {
+        "tick": 87,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7250025868415833,
+          0,
+          0,
+          0,
+          0.1802624613046646,
+          0,
+          0.9836186170578003
+        ]
+      },
+      {
+        "tick": 88,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7333360314369202,
+          0,
+          0,
+          0,
+          0.18231132626533508,
+          0,
+          0.9832408428192139
+        ]
+      },
+      {
+        "tick": 89,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7416694760322571,
+          0,
+          0,
+          0,
+          0.18435946106910706,
+          0,
+          0.9828588962554932
+        ]
+      },
+      {
+        "tick": 90,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.750002920627594,
+          0,
+          0,
+          0,
+          0.18640674650669098,
+          0,
+          0.9824726581573486
+        ]
+      },
+      {
+        "tick": 91,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7583363652229309,
+          0,
+          0,
+          0,
+          0.18845324218273163,
+          0,
+          0.9820822477340698
+        ]
+      },
+      {
+        "tick": 92,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7666698098182678,
+          0,
+          0,
+          0,
+          0.19049887359142303,
+          0,
+          0.9816874265670776
+        ]
+      },
+      {
+        "tick": 93,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7750032544136047,
+          0,
+          0,
+          0,
+          0.19254370033740997,
+          0,
+          0.9812884330749512
+        ]
+      },
+      {
+        "tick": 94,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7833366990089417,
+          0,
+          0,
+          0,
+          0.19458769261837006,
+          0,
+          0.9808852076530457
+        ]
+      },
+      {
+        "tick": 95,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.7916701436042786,
+          0,
+          0,
+          0,
+          0.1966308206319809,
+          0,
+          0.9804776310920715
+        ]
+      },
+      {
+        "tick": 96,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8000035881996155,
+          0,
+          0,
+          0,
+          0.19867312908172607,
+          0,
+          0.9800658822059631
+        ]
+      },
+      {
+        "tick": 97,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8083370327949524,
+          0,
+          0,
+          0,
+          0.20071455836296082,
+          0,
+          0.9796497821807861
+        ]
+      },
+      {
+        "tick": 98,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8166704773902893,
+          0,
+          0,
+          0,
+          0.20275509357452393,
+          0,
+          0.9792294502258301
+        ]
+      },
+      {
+        "tick": 99,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8250039219856262,
+          0,
+          0,
+          0,
+          0.204794779419899,
+          0,
+          0.9788049459457397
+        ]
+      },
+      {
+        "tick": 100,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8333373665809631,
+          0,
+          0,
+          0,
+          0.20683357119560242,
+          0,
+          0.9783762097358704
+        ]
+      },
+      {
+        "tick": 101,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8416708111763,
+          0,
+          0,
+          0,
+          0.20887145400047302,
+          0,
+          0.9779431223869324
+        ]
+      },
+      {
+        "tick": 102,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.850004255771637,
+          0,
+          0,
+          0,
+          0.210908442735672,
+          0,
+          0.9775058627128601
+        ]
+      },
+      {
+        "tick": 103,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8583377003669739,
+          0,
+          0,
+          0,
+          0.21294452250003815,
+          0,
+          0.977064311504364
+        ]
+      },
+      {
+        "tick": 104,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8666711449623108,
+          0,
+          0,
+          0,
+          0.21497966349124908,
+          0,
+          0.9766185879707336
+        ]
+      },
+      {
+        "tick": 105,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8750045895576477,
+          0,
+          0,
+          0,
+          0.2170138955116272,
+          0,
+          0.9761685132980347
+        ]
+      },
+      {
+        "tick": 106,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8833380341529846,
+          0,
+          0,
+          0,
+          0.2190471887588501,
+          0,
+          0.9757143259048462
+        ]
+      },
+      {
+        "tick": 107,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.8916714787483215,
+          0,
+          0,
+          0,
+          0.2210794985294342,
+          0,
+          0.9752557873725891
+        ]
+      },
+      {
+        "tick": 108,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9000049233436584,
+          0,
+          0,
+          0,
+          0.2231108844280243,
+          0,
+          0.9747931361198425
+        ]
+      },
+      {
+        "tick": 109,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9083383679389954,
+          0,
+          0,
+          0,
+          0.22514128684997559,
+          0,
+          0.9743260741233826
+        ]
+      },
+      {
+        "tick": 110,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9166718125343323,
+          0,
+          0,
+          0,
+          0.22717070579528809,
+          0,
+          0.9738549590110779
+        ]
+      },
+      {
+        "tick": 111,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9250052571296692,
+          0,
+          0,
+          0,
+          0.22919917106628418,
+          0,
+          0.9733796119689941
+        ]
+      },
+      {
+        "tick": 112,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9333387017250061,
+          0,
+          0,
+          0,
+          0.2312265932559967,
+          0,
+          0.9728999137878418
+        ]
+      },
+      {
+        "tick": 113,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.941672146320343,
+          0,
+          0,
+          0,
+          0.23325304687023163,
+          0,
+          0.9724161028862
+        ]
+      },
+      {
+        "tick": 114,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9500055909156799,
+          0,
+          0,
+          0,
+          0.23527850210666656,
+          0,
+          0.971928060054779
+        ]
+      },
+      {
+        "tick": 115,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9583390355110168,
+          0,
+          0,
+          0,
+          0.23730289936065674,
+          0,
+          0.9714357256889343
+        ]
+      },
+      {
+        "tick": 116,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9666724801063538,
+          0,
+          0,
+          0,
+          0.23932631313800812,
+          0,
+          0.9709392189979553
+        ]
+      },
+      {
+        "tick": 117,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9750059247016907,
+          0,
+          0,
+          0,
+          0.24134866893291473,
+          0,
+          0.970438539981842
+        ]
+      },
+      {
+        "tick": 118,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9833393692970276,
+          0,
+          0,
+          0,
+          0.2433699518442154,
+          0,
+          0.9699335694313049
+        ]
+      },
+      {
+        "tick": 119,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          0.9916728138923645,
+          0,
+          0,
+          0,
+          0.24539022147655487,
+          0,
+          0.9694244265556335
+        ]
+      },
+      {
+        "tick": 120,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0000061988830566,
+          0,
+          0,
+          0,
+          0.2474094182252884,
+          0,
+          0.9689111113548279
+        ]
+      },
+      {
+        "tick": 121,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0083394050598145,
+          0,
+          0,
+          0,
+          0.24942751228809357,
+          0,
+          0.9683935046195984
+        ]
+      },
+      {
+        "tick": 122,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0166726112365723,
+          0,
+          0,
+          0,
+          0.2514445185661316,
+          0,
+          0.9678716659545898
+        ]
+      },
+      {
+        "tick": 123,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.02500581741333,
+          0,
+          0,
+          0,
+          0.25346049666404724,
+          0,
+          0.9673457741737366
+        ]
+      },
+      {
+        "tick": 124,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.033339023590088,
+          0,
+          0,
+          0,
+          0.25547534227371216,
+          0,
+          0.9668156504631042
+        ]
+      },
+      {
+        "tick": 125,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0416722297668457,
+          0,
+          0,
+          0,
+          0.25748905539512634,
+          0,
+          0.9662812352180481
+        ]
+      },
+      {
+        "tick": 126,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0500054359436035,
+          0,
+          0,
+          0,
+          0.2595016658306122,
+          0,
+          0.9657426476478577
+        ]
+      },
+      {
+        "tick": 127,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0583386421203613,
+          0,
+          0,
+          0,
+          0.2615131735801697,
+          0,
+          0.9651999473571777
+        ]
+      },
+      {
+        "tick": 128,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0666718482971191,
+          0,
+          0,
+          0,
+          0.26352351903915405,
+          0,
+          0.964652955532074
+        ]
+      },
+      {
+        "tick": 129,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.075005054473877,
+          0,
+          0,
+          0,
+          0.2655327618122101,
+          0,
+          0.9641018509864807
+        ]
+      },
+      {
+        "tick": 130,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0833382606506348,
+          0,
+          0,
+          0,
+          0.267540842294693,
+          0,
+          0.9635465741157532
+        ]
+      },
+      {
+        "tick": 131,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.0916714668273926,
+          0,
+          0,
+          0,
+          0.2695477604866028,
+          0,
+          0.9629870057106018
+        ]
+      },
+      {
+        "tick": 132,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1000046730041504,
+          0,
+          0,
+          0,
+          0.27155351638793945,
+          0,
+          0.9624233841896057
+        ]
+      },
+      {
+        "tick": 133,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1083378791809082,
+          0,
+          0,
+          0,
+          0.2735580503940582,
+          0,
+          0.9618554711341858
+        ]
+      },
+      {
+        "tick": 134,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.116671085357666,
+          0,
+          0,
+          0,
+          0.2755614221096039,
+          0,
+          0.9612834453582764
+        ]
+      },
+      {
+        "tick": 135,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1250042915344238,
+          0,
+          0,
+          0,
+          0.27756360173225403,
+          0,
+          0.9607073068618774
+        ]
+      },
+      {
+        "tick": 136,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1333374977111816,
+          0,
+          0,
+          0,
+          0.27956458926200867,
+          0,
+          0.9601269364356995
+        ]
+      },
+      {
+        "tick": 137,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1416707038879395,
+          0,
+          0,
+          0,
+          0.2815643548965454,
+          0,
+          0.9595423340797424
+        ]
+      },
+      {
+        "tick": 138,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1500039100646973,
+          0,
+          0,
+          0,
+          0.28356289863586426,
+          0,
+          0.9589536786079407
+        ]
+      },
+      {
+        "tick": 139,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.158337116241455,
+          0,
+          0,
+          0,
+          0.2855602502822876,
+          0,
+          0.9583608508110046
+        ]
+      },
+      {
+        "tick": 140,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.166670322418213,
+          0,
+          0,
+          0,
+          0.28755632042884827,
+          0,
+          0.9577637910842896
+        ]
+      },
+      {
+        "tick": 141,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1750035285949707,
+          0,
+          0,
+          0,
+          0.28955116868019104,
+          0,
+          0.957162618637085
+        ]
+      },
+      {
+        "tick": 142,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1833367347717285,
+          0,
+          0,
+          0,
+          0.29154476523399353,
+          0,
+          0.9565572142601013
+        ]
+      },
+      {
+        "tick": 143,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.1916699409484863,
+          0,
+          0,
+          0,
+          0.29353711009025574,
+          0,
+          0.955947756767273
+        ]
+      },
+      {
+        "tick": 144,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2000031471252441,
+          0,
+          0,
+          0,
+          0.2955281436443329,
+          0,
+          0.9553340673446655
+        ]
+      },
+      {
+        "tick": 145,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.208336353302002,
+          0,
+          0,
+          0,
+          0.29751792550086975,
+          0,
+          0.9547162652015686
+        ]
+      },
+      {
+        "tick": 146,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2166695594787598,
+          0,
+          0,
+          0,
+          0.29950642585754395,
+          0,
+          0.9540943503379822
+        ]
+      },
+      {
+        "tick": 147,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2250027656555176,
+          0,
+          0,
+          0,
+          0.3014935851097107,
+          0,
+          0.9534682035446167
+        ]
+      },
+      {
+        "tick": 148,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2333359718322754,
+          0,
+          0,
+          0,
+          0.30347946286201477,
+          0,
+          0.9528380036354065
+        ]
+      },
+      {
+        "tick": 149,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2416691780090332,
+          0,
+          0,
+          0,
+          0.3054640293121338,
+          0,
+          0.9522036910057068
+        ]
+      },
+      {
+        "tick": 150,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.250002384185791,
+          0,
+          0,
+          0,
+          0.30744725465774536,
+          0,
+          0.951565146446228
+        ]
+      },
+      {
+        "tick": 151,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2583355903625488,
+          0,
+          0,
+          0,
+          0.3094291687011719,
+          0,
+          0.9509225487709045
+        ]
+      },
+      {
+        "tick": 152,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2666687965393066,
+          0,
+          0,
+          0,
+          0.31140974164009094,
+          0,
+          0.950275719165802
+        ]
+      },
+      {
+        "tick": 153,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2750020027160645,
+          0,
+          0,
+          0,
+          0.31338897347450256,
+          0,
+          0.9496248960494995
+        ]
+      },
+      {
+        "tick": 154,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.2833352088928223,
+          0,
+          0,
+          0,
+          0.31536683440208435,
+          0,
+          0.9489699006080627
+        ]
+      },
+      {
+        "tick": 155,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.29166841506958,
+          0,
+          0,
+          0,
+          0.3173433244228363,
+          0,
+          0.9483107924461365
+        ]
+      },
+      {
+        "tick": 156,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.300001621246338,
+          0,
+          0,
+          0,
+          0.31931838393211365,
+          0,
+          0.9476475119590759
+        ]
+      },
+      {
+        "tick": 157,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3083348274230957,
+          0,
+          0,
+          0,
+          0.32129204273223877,
+          0,
+          0.9469801187515259
+        ]
+      },
+      {
+        "tick": 158,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3166680335998535,
+          0,
+          0,
+          0,
+          0.32326439023017883,
+          0,
+          0.9463086724281311
+        ]
+      },
+      {
+        "tick": 159,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3250012397766113,
+          0,
+          0,
+          0,
+          0.3252353370189667,
+          0,
+          0.9456331133842468
+        ]
+      },
+      {
+        "tick": 160,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3333344459533691,
+          0,
+          0,
+          0,
+          0.3272048532962799,
+          0,
+          0.9449535012245178
+        ]
+      },
+      {
+        "tick": 161,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.341667652130127,
+          0,
+          0,
+          0,
+          0.32917284965515137,
+          0,
+          0.9442696571350098
+        ]
+      },
+      {
+        "tick": 162,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3500008583068848,
+          0,
+          0,
+          0,
+          0.3311394453048706,
+          0,
+          0.9435818195343018
+        ]
+      },
+      {
+        "tick": 163,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3583340644836426,
+          0,
+          0,
+          0,
+          0.33310467004776,
+          0,
+          0.9428898692131042
+        ]
+      },
+      {
+        "tick": 164,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3666672706604004,
+          0,
+          0,
+          0,
+          0.33506840467453003,
+          0,
+          0.9421937465667725
+        ]
+      },
+      {
+        "tick": 165,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3750004768371582,
+          0,
+          0,
+          0,
+          0.3370307385921478,
+          0,
+          0.9414936304092407
+        ]
+      },
+      {
+        "tick": 166,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.383333683013916,
+          0,
+          0,
+          0,
+          0.33899161219596863,
+          0,
+          0.9407893419265747
+        ]
+      },
+      {
+        "tick": 167,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.3916668891906738,
+          0,
+          0,
+          0,
+          0.34095096588134766,
+          0,
+          0.9400810599327087
+        ]
+      },
+      {
+        "tick": 168,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4000000953674316,
+          0,
+          0,
+          0,
+          0.34290891885757446,
+          0,
+          0.939368724822998
+        ]
+      },
+      {
+        "tick": 169,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4083333015441895,
+          0,
+          0,
+          0,
+          0.3448653221130371,
+          0,
+          0.9386521577835083
+        ]
+      },
+      {
+        "tick": 170,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4166665077209473,
+          0,
+          0,
+          0,
+          0.34682026505470276,
+          0,
+          0.9379316568374634
+        ]
+      },
+      {
+        "tick": 171,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.424999713897705,
+          0,
+          0,
+          0,
+          0.34877368807792664,
+          0,
+          0.937207043170929
+        ]
+      },
+      {
+        "tick": 172,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.433332920074463,
+          0,
+          0,
+          0,
+          0.35072559118270874,
+          0,
+          0.9364782571792603
+        ]
+      },
+      {
+        "tick": 173,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4416661262512207,
+          0,
+          0,
+          0,
+          0.35267603397369385,
+          0,
+          0.9357455372810364
+        ]
+      },
+      {
+        "tick": 174,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4499993324279785,
+          0,
+          0,
+          0,
+          0.35462486743927,
+          0,
+          0.9350086450576782
+        ]
+      },
+      {
+        "tick": 175,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4583325386047363,
+          0,
+          0,
+          0,
+          0.3565722405910492,
+          0,
+          0.9342678189277649
+        ]
+      },
+      {
+        "tick": 176,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4666657447814941,
+          0,
+          0,
+          0,
+          0.35851800441741943,
+          0,
+          0.9335228204727173
+        ]
+      },
+      {
+        "tick": 177,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.474998950958252,
+          0,
+          0,
+          0,
+          0.3604622483253479,
+          0,
+          0.9327738881111145
+        ]
+      },
+      {
+        "tick": 178,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4833321571350098,
+          0,
+          0,
+          0,
+          0.36240488290786743,
+          0,
+          0.9320207834243774
+        ]
+      },
+      {
+        "tick": 179,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4916653633117676,
+          0,
+          0,
+          0,
+          0.3643459677696228,
+          0,
+          0.9312637448310852
+        ]
+      },
+      {
+        "tick": 180,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.4999985694885254,
+          0,
+          0,
+          0,
+          0.36628544330596924,
+          0,
+          0.9305025339126587
+        ]
+      },
+      {
+        "tick": 181,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5083317756652832,
+          0,
+          0,
+          0,
+          0.3682233989238739,
+          0,
+          0.929737389087677
+        ]
+      },
+      {
+        "tick": 182,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.516664981842041,
+          0,
+          0,
+          0,
+          0.37015968561172485,
+          0,
+          0.9289681315422058
+        ]
+      },
+      {
+        "tick": 183,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5249981880187988,
+          0,
+          0,
+          0,
+          0.37209445238113403,
+          0,
+          0.9281949400901794
+        ]
+      },
+      {
+        "tick": 184,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5333313941955566,
+          0,
+          0,
+          0,
+          0.3740275204181671,
+          0,
+          0.9274175763130188
+        ]
+      },
+      {
+        "tick": 185,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5416646003723145,
+          0,
+          0,
+          0,
+          0.37595897912979126,
+          0,
+          0.926636278629303
+        ]
+      },
+      {
+        "tick": 186,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5499978065490723,
+          0,
+          0,
+          0,
+          0.3778887391090393,
+          0,
+          0.9258509874343872
+        ]
+      },
+      {
+        "tick": 187,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.55833101272583,
+          0,
+          0,
+          0,
+          0.3798168897628784,
+          0,
+          0.9250617027282715
+        ]
+      },
+      {
+        "tick": 188,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.566664218902588,
+          0,
+          0,
+          0,
+          0.3817433714866638,
+          0,
+          0.924268364906311
+        ]
+      },
+      {
+        "tick": 189,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5749974250793457,
+          0,
+          0,
+          0,
+          0.3836681842803955,
+          0,
+          0.9234710335731506
+        ]
+      },
+      {
+        "tick": 190,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5833306312561035,
+          0,
+          0,
+          0,
+          0.3855913281440735,
+          0,
+          0.9226697087287903
+        ]
+      },
+      {
+        "tick": 191,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5916638374328613,
+          0,
+          0,
+          0,
+          0.38751280307769775,
+          0,
+          0.9218643307685852
+        ]
+      },
+      {
+        "tick": 192,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.5999970436096191,
+          0,
+          0,
+          0,
+          0.3894326090812683,
+          0,
+          0.9210549592971802
+        ]
+      },
+      {
+        "tick": 193,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.608330249786377,
+          0,
+          0,
+          0,
+          0.39135074615478516,
+          0,
+          0.9202415943145752
+        ]
+      },
+      {
+        "tick": 194,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6166634559631348,
+          0,
+          0,
+          0,
+          0.3932671546936035,
+          0,
+          0.919424295425415
+        ]
+      },
+      {
+        "tick": 195,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6249966621398926,
+          0,
+          0,
+          0,
+          0.3951818645000458,
+          0,
+          0.9186029434204102
+        ]
+      },
+      {
+        "tick": 196,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6333298683166504,
+          0,
+          0,
+          0,
+          0.39709487557411194,
+          0,
+          0.9177775979042053
+        ]
+      },
+      {
+        "tick": 197,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6416630744934082,
+          0,
+          0,
+          0,
+          0.399006187915802,
+          0,
+          0.9169483184814453
+        ]
+      },
+      {
+        "tick": 198,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.649996280670166,
+          0,
+          0,
+          0,
+          0.4009157419204712,
+          0,
+          0.9161149263381958
+        ]
+      },
+      {
+        "tick": 199,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6583294868469238,
+          0,
+          0,
+          0,
+          0.4028235375881195,
+          0,
+          0.9152776598930359
+        ]
+      },
+      {
+        "tick": 200,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6666626930236816,
+          0,
+          0,
+          0,
+          0.40472960472106934,
+          0,
+          0.9144364595413208
+        ]
+      },
+      {
+        "tick": 201,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6749958992004395,
+          0,
+          0,
+          0,
+          0.4066339135169983,
+          0,
+          0.9135912656784058
+        ]
+      },
+      {
+        "tick": 202,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.6833291053771973,
+          0,
+          0,
+          0,
+          0.408536434173584,
+          0,
+          0.9127419590950012
+        ]
+      },
+      {
+        "tick": 203,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.691662311553955,
+          0,
+          0,
+          0,
+          0.4104371964931488,
+          0,
+          0.911888837814331
+        ]
+      },
+      {
+        "tick": 204,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.699995517730713,
+          0,
+          0,
+          0,
+          0.41233620047569275,
+          0,
+          0.9110317230224609
+        ]
+      },
+      {
+        "tick": 205,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7083287239074707,
+          0,
+          0,
+          0,
+          0.41423341631889343,
+          0,
+          0.9101706743240356
+        ]
+      },
+      {
+        "tick": 206,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7166619300842285,
+          0,
+          0,
+          0,
+          0.41612881422042847,
+          0,
+          0.9093056917190552
+        ]
+      },
+      {
+        "tick": 207,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7249951362609863,
+          0,
+          0,
+          0,
+          0.41802242398262024,
+          0,
+          0.9084367156028748
+        ]
+      },
+      {
+        "tick": 208,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7333283424377441,
+          0,
+          0,
+          0,
+          0.419914186000824,
+          0,
+          0.9075637459754944
+        ]
+      },
+      {
+        "tick": 209,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.741661548614502,
+          0,
+          0,
+          0,
+          0.42180418968200684,
+          0,
+          0.9066869616508484
+        ]
+      },
+      {
+        "tick": 210,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7499947547912598,
+          0,
+          0,
+          0,
+          0.4236923158168793,
+          0,
+          0.9058061242103577
+        ]
+      },
+      {
+        "tick": 211,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7583279609680176,
+          0,
+          0,
+          0,
+          0.42557868361473083,
+          0,
+          0.9049214720726013
+        ]
+      },
+      {
+        "tick": 212,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7666611671447754,
+          0,
+          0,
+          0,
+          0.4274631440639496,
+          0,
+          0.9040327668190002
+        ]
+      },
+      {
+        "tick": 213,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7749943733215332,
+          0,
+          0,
+          0,
+          0.4293457269668579,
+          0,
+          0.9031401872634888
+        ]
+      },
+      {
+        "tick": 214,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.783327579498291,
+          0,
+          0,
+          0,
+          0.4312264919281006,
+          0,
+          0.9022437334060669
+        ]
+      },
+      {
+        "tick": 215,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7916607856750488,
+          0,
+          0,
+          0,
+          0.43310537934303284,
+          0,
+          0.9013433456420898
+        ]
+      },
+      {
+        "tick": 216,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.7999939918518066,
+          0,
+          0,
+          0,
+          0.4349823296070099,
+          0,
+          0.9004390239715576
+        ]
+      },
+      {
+        "tick": 217,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8083271980285645,
+          0,
+          0,
+          0,
+          0.4368574023246765,
+          0,
+          0.8995307683944702
+        ]
+      },
+      {
+        "tick": 218,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8166604042053223,
+          0,
+          0,
+          0,
+          0.4387306571006775,
+          0,
+          0.8986185789108276
+        ]
+      },
+      {
+        "tick": 219,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.82499361038208,
+          0,
+          0,
+          0,
+          0.44060200452804565,
+          0,
+          0.8977025747299194
+        ]
+      },
+      {
+        "tick": 220,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.833326816558838,
+          0,
+          0,
+          0,
+          0.442471444606781,
+          0,
+          0.8967826962471008
+        ]
+      },
+      {
+        "tick": 221,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8416600227355957,
+          0,
+          0,
+          0,
+          0.44433891773223877,
+          0,
+          0.8958588242530823
+        ]
+      },
+      {
+        "tick": 222,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8499932289123535,
+          0,
+          0,
+          0,
+          0.44620442390441895,
+          0,
+          0.8949311375617981
+        ]
+      },
+      {
+        "tick": 223,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8583264350891113,
+          0,
+          0,
+          0,
+          0.44806796312332153,
+          0,
+          0.8939995169639587
+        ]
+      },
+      {
+        "tick": 224,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8666596412658691,
+          0,
+          0,
+          0,
+          0.4499296545982361,
+          0,
+          0.8930639624595642
+        ]
+      },
+      {
+        "tick": 225,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.874992847442627,
+          0,
+          0,
+          0,
+          0.45178934931755066,
+          0,
+          0.892124593257904
+        ]
+      },
+      {
+        "tick": 226,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8833260536193848,
+          0,
+          0,
+          0,
+          0.45364710688591003,
+          0,
+          0.8911814093589783
+        ]
+      },
+      {
+        "tick": 227,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8916592597961426,
+          0,
+          0,
+          0,
+          0.45550283789634705,
+          0,
+          0.8902342915534973
+        ]
+      },
+      {
+        "tick": 228,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.8999924659729004,
+          0,
+          0,
+          0,
+          0.457356721162796,
+          0,
+          0.8892833590507507
+        ]
+      },
+      {
+        "tick": 229,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9083256721496582,
+          0,
+          0,
+          0,
+          0.45920851826667786,
+          0,
+          0.888328492641449
+        ]
+      },
+      {
+        "tick": 230,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.916658878326416,
+          0,
+          0,
+          0,
+          0.4610583484172821,
+          0,
+          0.8873698115348816
+        ]
+      },
+      {
+        "tick": 231,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9249920845031738,
+          0,
+          0,
+          0,
+          0.4629061818122864,
+          0,
+          0.8864073157310486
+        ]
+      },
+      {
+        "tick": 232,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9333252906799316,
+          0,
+          0,
+          0,
+          0.4647519588470459,
+          0,
+          0.8854408860206604
+        ]
+      },
+      {
+        "tick": 233,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9416584968566895,
+          0,
+          0,
+          0,
+          0.46659576892852783,
+          0,
+          0.8844707608222961
+        ]
+      },
+      {
+        "tick": 234,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9499917030334473,
+          0,
+          0,
+          0,
+          0.4684375524520874,
+          0,
+          0.8834966421127319
+        ]
+      },
+      {
+        "tick": 235,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.958324909210205,
+          0,
+          0,
+          0,
+          0.4702773690223694,
+          0,
+          0.8825187683105469
+        ]
+      },
+      {
+        "tick": 236,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.966658115386963,
+          0,
+          0,
+          0,
+          0.47211506962776184,
+          0,
+          0.8815369606018066
+        ]
+      },
+      {
+        "tick": 237,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9749913215637207,
+          0,
+          0,
+          0,
+          0.47395074367523193,
+          0,
+          0.8805513381958008
+        ]
+      },
+      {
+        "tick": 238,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9833245277404785,
+          0,
+          0,
+          0,
+          0.4757843613624573,
+          0,
+          0.8795619010925293
+        ]
+      },
+      {
+        "tick": 239,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9916577339172363,
+          0,
+          0,
+          0,
+          0.47761598229408264,
+          0,
+          0.8785687685012817
+        ]
+      },
+      {
+        "tick": 240,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          1.9999909400939941,
+          0,
+          0,
+          0,
+          0.4794454574584961,
+          0,
+          0.877571702003479
+        ]
+      },
+      {
+        "tick": 241,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.008324146270752,
+          0,
+          0,
+          0,
+          0.4812728464603424,
+          0,
+          0.8765708208084106
+        ]
+      },
+      {
+        "tick": 242,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.0166573524475098,
+          0,
+          0,
+          0,
+          0.48309820890426636,
+          0,
+          0.8755662441253662
+        ]
+      },
+      {
+        "tick": 243,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.0249905586242676,
+          0,
+          0,
+          0,
+          0.4849214255809784,
+          0,
+          0.8745577335357666
+        ]
+      },
+      {
+        "tick": 244,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.0333237648010254,
+          0,
+          0,
+          0,
+          0.4867425858974457,
+          0,
+          0.8735455274581909
+        ]
+      },
+      {
+        "tick": 245,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.041656970977783,
+          0,
+          0,
+          0,
+          0.4885615110397339,
+          0,
+          0.8725294470787048
+        ]
+      },
+      {
+        "tick": 246,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.049990177154541,
+          0,
+          0,
+          0,
+          0.49037832021713257,
+          0,
+          0.8715096712112427
+        ]
+      },
+      {
+        "tick": 247,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.058323383331299,
+          0,
+          0,
+          0,
+          0.4921930432319641,
+          0,
+          0.8704861402511597
+        ]
+      },
+      {
+        "tick": 248,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.0666565895080566,
+          0,
+          0,
+          0,
+          0.49400562047958374,
+          0,
+          0.8694587349891663
+        ]
+      },
+      {
+        "tick": 249,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.0749897956848145,
+          0,
+          0,
+          0,
+          0.49581611156463623,
+          0,
+          0.868427574634552
+        ]
+      },
+      {
+        "tick": 250,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.0833230018615723,
+          0,
+          0,
+          0,
+          0.4976244270801544,
+          0,
+          0.8673925995826721
+        ]
+      },
+      {
+        "tick": 251,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.09165620803833,
+          0,
+          0,
+          0,
+          0.4994305670261383,
+          0,
+          0.8663539290428162
+        ]
+      },
+      {
+        "tick": 252,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.099989414215088,
+          0,
+          0,
+          0,
+          0.5012344717979431,
+          0,
+          0.8653115034103394
+        ]
+      },
+      {
+        "tick": 253,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.1083226203918457,
+          0,
+          0,
+          0,
+          0.5030363202095032,
+          0,
+          0.8642653226852417
+        ]
+      },
+      {
+        "tick": 254,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.1166558265686035,
+          0,
+          0,
+          0,
+          0.5048359632492065,
+          0,
+          0.8632153272628784
+        ]
+      },
+      {
+        "tick": 255,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.1249890327453613,
+          0,
+          0,
+          0,
+          0.5066334009170532,
+          0,
+          0.8621616363525391
+        ]
+      },
+      {
+        "tick": 256,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.133322238922119,
+          0,
+          0,
+          0,
+          0.5084285736083984,
+          0,
+          0.8611041903495789
+        ]
+      },
+      {
+        "tick": 257,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.141655445098877,
+          0,
+          0,
+          0,
+          0.5102216005325317,
+          0,
+          0.8600429892539978
+        ]
+      },
+      {
+        "tick": 258,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.1499886512756348,
+          0,
+          0,
+          0,
+          0.5120124220848083,
+          0,
+          0.8589780330657959
+        ]
+      },
+      {
+        "tick": 259,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.1583218574523926,
+          0,
+          0,
+          0,
+          0.5138009786605835,
+          0,
+          0.8579094409942627
+        ]
+      },
+      {
+        "tick": 260,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.1666550636291504,
+          0,
+          0,
+          0,
+          0.515587329864502,
+          0,
+          0.8568370342254639
+        ]
+      },
+      {
+        "tick": 261,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.174988269805908,
+          0,
+          0,
+          0,
+          0.5173714756965637,
+          0,
+          0.855760931968689
+        ]
+      },
+      {
+        "tick": 262,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.183321475982666,
+          0,
+          0,
+          0,
+          0.519153356552124,
+          0,
+          0.854681134223938
+        ]
+      },
+      {
+        "tick": 263,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.191654682159424,
+          0,
+          0,
+          0,
+          0.5209330320358276,
+          0,
+          0.8535975813865662
+        ]
+      },
+      {
+        "tick": 264,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.1999878883361816,
+          0,
+          0,
+          0,
+          0.5227103233337402,
+          0,
+          0.8525103330612183
+        ]
+      },
+      {
+        "tick": 265,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2083210945129395,
+          0,
+          0,
+          0,
+          0.5244855284690857,
+          0,
+          0.8514194488525391
+        ]
+      },
+      {
+        "tick": 266,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2166543006896973,
+          0,
+          0,
+          0,
+          0.5262582898139954,
+          0,
+          0.850324809551239
+        ]
+      },
+      {
+        "tick": 267,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.224987506866455,
+          0,
+          0,
+          0,
+          0.5280288457870483,
+          0,
+          0.8492264747619629
+        ]
+      },
+      {
+        "tick": 268,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.233320713043213,
+          0,
+          0,
+          0,
+          0.5297970771789551,
+          0,
+          0.8481245040893555
+        ]
+      },
+      {
+        "tick": 269,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2416539192199707,
+          0,
+          0,
+          0,
+          0.5315629839897156,
+          0,
+          0.8470187187194824
+        ]
+      },
+      {
+        "tick": 270,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2499871253967285,
+          0,
+          0,
+          0,
+          0.5333266854286194,
+          0,
+          0.8459093570709229
+        ]
+      },
+      {
+        "tick": 271,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2583203315734863,
+          0,
+          0,
+          0,
+          0.5350880026817322,
+          0,
+          0.8447962999343872
+        ]
+      },
+      {
+        "tick": 272,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.266653537750244,
+          0,
+          0,
+          0,
+          0.5368470549583435,
+          0,
+          0.8436795473098755
+        ]
+      },
+      {
+        "tick": 273,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.274986743927002,
+          0,
+          0,
+          0,
+          0.5386037230491638,
+          0,
+          0.8425592184066772
+        ]
+      },
+      {
+        "tick": 274,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2833199501037598,
+          0,
+          0,
+          0,
+          0.5403581261634827,
+          0,
+          0.8414351940155029
+        ]
+      },
+      {
+        "tick": 275,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2916531562805176,
+          0,
+          0,
+          0,
+          0.5421101450920105,
+          0,
+          0.8403074741363525
+        ]
+      },
+      {
+        "tick": 276,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.2999863624572754,
+          0,
+          0,
+          0,
+          0.5438597202301025,
+          0,
+          0.8391761183738708
+        ]
+      },
+      {
+        "tick": 277,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.308319568634033,
+          0,
+          0,
+          0,
+          0.5456069707870483,
+          0,
+          0.8380411863327026
+        ]
+      },
+      {
+        "tick": 278,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.316652774810791,
+          0,
+          0,
+          0,
+          0.5473519563674927,
+          0,
+          0.8369025588035583
+        ]
+      },
+      {
+        "tick": 279,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.324985980987549,
+          0,
+          0,
+          0,
+          0.5490944981575012,
+          0,
+          0.835760235786438
+        ]
+      },
+      {
+        "tick": 280,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.3333191871643066,
+          0,
+          0,
+          0,
+          0.5508347153663635,
+          0,
+          0.8346143960952759
+        ]
+      },
+      {
+        "tick": 281,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.3416523933410645,
+          0,
+          0,
+          0,
+          0.55257248878479,
+          0,
+          0.8334648609161377
+        ]
+      },
+      {
+        "tick": 282,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.3499855995178223,
+          0,
+          0,
+          0,
+          0.5543078780174255,
+          0,
+          0.832311749458313
+        ]
+      },
+      {
+        "tick": 283,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.35831880569458,
+          0,
+          0,
+          0,
+          0.5560408234596252,
+          0,
+          0.831155002117157
+        ]
+      },
+      {
+        "tick": 284,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.366652011871338,
+          0,
+          0,
+          0,
+          0.5577713847160339,
+          0,
+          0.8299946188926697
+        ]
+      },
+      {
+        "tick": 285,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.3749852180480957,
+          0,
+          0,
+          0,
+          0.5594995617866516,
+          0,
+          0.8288306593894958
+        ]
+      },
+      {
+        "tick": 286,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.3833184242248535,
+          0,
+          0,
+          0,
+          0.5612252354621887,
+          0,
+          0.8276631236076355
+        ]
+      },
+      {
+        "tick": 287,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.3916516304016113,
+          0,
+          0,
+          0,
+          0.56294846534729,
+          0,
+          0.8264919519424438
+        ]
+      },
+      {
+        "tick": 288,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.399984836578369,
+          0,
+          0,
+          0,
+          0.5646693110466003,
+          0,
+          0.8253172039985657
+        ]
+      },
+      {
+        "tick": 289,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.408318042755127,
+          0,
+          0,
+          0,
+          0.5663877129554749,
+          0,
+          0.8241389393806458
+        ]
+      },
+      {
+        "tick": 290,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.4166512489318848,
+          0,
+          0,
+          0,
+          0.5681036114692688,
+          0,
+          0.8229570388793945
+        ]
+      },
+      {
+        "tick": 291,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.4249844551086426,
+          0,
+          0,
+          0,
+          0.5698171257972717,
+          0,
+          0.8217715620994568
+        ]
+      },
+      {
+        "tick": 292,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.4333176612854004,
+          0,
+          0,
+          0,
+          0.5715281367301941,
+          0,
+          0.8205825090408325
+        ]
+      },
+      {
+        "tick": 293,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.441650867462158,
+          0,
+          0,
+          0,
+          0.5732366442680359,
+          0,
+          0.8193898797035217
+        ]
+      },
+      {
+        "tick": 294,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.449984073638916,
+          0,
+          0,
+          0,
+          0.5749426484107971,
+          0,
+          0.8181936740875244
+        ]
+      },
+      {
+        "tick": 295,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.458317279815674,
+          0,
+          0,
+          0,
+          0.5766461491584778,
+          0,
+          0.8169939517974854
+        ]
+      },
+      {
+        "tick": 296,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.4666504859924316,
+          0,
+          0,
+          0,
+          0.5783472061157227,
+          0,
+          0.8157907128334045
+        ]
+      },
+      {
+        "tick": 297,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.4749836921691895,
+          0,
+          0,
+          0,
+          0.5800457000732422,
+          0,
+          0.8145838975906372
+        ]
+      },
+      {
+        "tick": 298,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.4833168983459473,
+          0,
+          0,
+          0,
+          0.5817417502403259,
+          0,
+          0.8133735656738281
+        ]
+      },
+      {
+        "tick": 299,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.491650104522705,
+          0,
+          0,
+          0,
+          0.5834352374076843,
+          0,
+          0.8121597170829773
+        ]
+      },
+      {
+        "tick": 300,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.499983310699463,
+          0,
+          0,
+          0,
+          0.5851261615753174,
+          0,
+          0.8109422922134399
+        ]
+      },
+      {
+        "tick": 301,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.5083165168762207,
+          0,
+          0,
+          0,
+          0.5868145823478699,
+          0,
+          0.8097214102745056
+        ]
+      },
+      {
+        "tick": 302,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.5166497230529785,
+          0,
+          0,
+          0,
+          0.5885003805160522,
+          0,
+          0.8084969520568848
+        ]
+      },
+      {
+        "tick": 303,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.5249829292297363,
+          0,
+          0,
+          0,
+          0.590183675289154,
+          0,
+          0.8072689771652222
+        ]
+      },
+      {
+        "tick": 304,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.533316135406494,
+          0,
+          0,
+          0,
+          0.5918644666671753,
+          0,
+          0.8060374855995178
+        ]
+      },
+      {
+        "tick": 305,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.541649341583252,
+          0,
+          0,
+          0,
+          0.5935426354408264,
+          0,
+          0.8048025369644165
+        ]
+      },
+      {
+        "tick": 306,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.5499825477600098,
+          0,
+          0,
+          0,
+          0.5952182412147522,
+          0,
+          0.8035640716552734
+        ]
+      },
+      {
+        "tick": 307,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.5583157539367676,
+          0,
+          0,
+          0,
+          0.5968912839889526,
+          0,
+          0.8023221492767334
+        ]
+      },
+      {
+        "tick": 308,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.5666489601135254,
+          0,
+          0,
+          0,
+          0.598561704158783,
+          0,
+          0.8010767698287964
+        ]
+      },
+      {
+        "tick": 309,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.574982166290283,
+          0,
+          0,
+          0,
+          0.6002295017242432,
+          0,
+          0.7998278141021729
+        ]
+      },
+      {
+        "tick": 310,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.583315372467041,
+          0,
+          0,
+          0,
+          0.601894736289978,
+          0,
+          0.7985754609107971
+        ]
+      },
+      {
+        "tick": 311,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.591648578643799,
+          0,
+          0,
+          0,
+          0.6035573482513428,
+          0,
+          0.7973195910453796
+        ]
+      },
+      {
+        "tick": 312,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.5999817848205566,
+          0,
+          0,
+          0,
+          0.6052173376083374,
+          0,
+          0.79606032371521
+        ]
+      },
+      {
+        "tick": 313,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6083149909973145,
+          0,
+          0,
+          0,
+          0.6068747043609619,
+          0,
+          0.7947975397109985
+        ]
+      },
+      {
+        "tick": 314,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6166481971740723,
+          0,
+          0,
+          0,
+          0.6085293889045715,
+          0,
+          0.7935312986373901
+        ]
+      },
+      {
+        "tick": 315,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.62498140335083,
+          0,
+          0,
+          0,
+          0.6101815104484558,
+          0,
+          0.7922616600990295
+        ]
+      },
+      {
+        "tick": 316,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.633314609527588,
+          0,
+          0,
+          0,
+          0.6118309497833252,
+          0,
+          0.790988564491272
+        ]
+      },
+      {
+        "tick": 317,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6416478157043457,
+          0,
+          0,
+          0,
+          0.6134777665138245,
+          0,
+          0.7897120118141174
+        ]
+      },
+      {
+        "tick": 318,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6499810218811035,
+          0,
+          0,
+          0,
+          0.6151219010353088,
+          0,
+          0.7884320616722107
+        ]
+      },
+      {
+        "tick": 319,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6583142280578613,
+          0,
+          0,
+          0,
+          0.6167633533477783,
+          0,
+          0.7871487140655518
+        ]
+      },
+      {
+        "tick": 320,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.666647434234619,
+          0,
+          0,
+          0,
+          0.6184020638465881,
+          0,
+          0.7858618497848511
+        ]
+      },
+      {
+        "tick": 321,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.674980640411377,
+          0,
+          0,
+          0,
+          0.6200382113456726,
+          0,
+          0.784571647644043
+        ]
+      },
+      {
+        "tick": 322,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6833138465881348,
+          0,
+          0,
+          0,
+          0.6216716170310974,
+          0,
+          0.7832780480384827
+        ]
+      },
+      {
+        "tick": 323,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6916470527648926,
+          0,
+          0,
+          0,
+          0.6233022809028625,
+          0,
+          0.7819810509681702
+        ]
+      },
+      {
+        "tick": 324,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.6999802589416504,
+          0,
+          0,
+          0,
+          0.6249302625656128,
+          0,
+          0.7806805372238159
+        ]
+      },
+      {
+        "tick": 325,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.708313465118408,
+          0,
+          0,
+          0,
+          0.6265555620193481,
+          0,
+          0.779376745223999
+        ]
+      },
+      {
+        "tick": 326,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.716646671295166,
+          0,
+          0,
+          0,
+          0.6281781196594238,
+          0,
+          0.7780696153640747
+        ]
+      },
+      {
+        "tick": 327,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.724979877471924,
+          0,
+          0,
+          0,
+          0.6297979950904846,
+          0,
+          0.7767590284347534
+        ]
+      },
+      {
+        "tick": 328,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.7333130836486816,
+          0,
+          0,
+          0,
+          0.631415069103241,
+          0,
+          0.7754451036453247
+        ]
+      },
+      {
+        "tick": 329,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.7416462898254395,
+          0,
+          0,
+          0,
+          0.6330294013023376,
+          0,
+          0.7741277813911438
+        ]
+      },
+      {
+        "tick": 330,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.7499794960021973,
+          0,
+          0,
+          0,
+          0.6346409916877747,
+          0,
+          0.7728070616722107
+        ]
+      },
+      {
+        "tick": 331,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.758312702178955,
+          0,
+          0,
+          0,
+          0.636249840259552,
+          0,
+          0.7714830636978149
+        ]
+      },
+      {
+        "tick": 332,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.766645908355713,
+          0,
+          0,
+          0,
+          0.6378559470176697,
+          0,
+          0.770155668258667
+        ]
+      },
+      {
+        "tick": 333,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.7749791145324707,
+          0,
+          0,
+          0,
+          0.6394593119621277,
+          0,
+          0.7688249349594116
+        ]
+      },
+      {
+        "tick": 334,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.7833123207092285,
+          0,
+          0,
+          0,
+          0.641059935092926,
+          0,
+          0.7674908638000488
+        ]
+      },
+      {
+        "tick": 335,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.7916455268859863,
+          0,
+          0,
+          0,
+          0.6426576972007751,
+          0,
+          0.7661534547805786
+        ]
+      },
+      {
+        "tick": 336,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.799978733062744,
+          0,
+          0,
+          0,
+          0.6442526578903198,
+          0,
+          0.764812707901001
+        ]
+      },
+      {
+        "tick": 337,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.808311939239502,
+          0,
+          0,
+          0,
+          0.6458449363708496,
+          0,
+          0.7634686827659607
+        ]
+      },
+      {
+        "tick": 338,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.8166451454162598,
+          0,
+          0,
+          0,
+          0.6474342346191406,
+          0,
+          0.762121319770813
+        ]
+      },
+      {
+        "tick": 339,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.8249783515930176,
+          0,
+          0,
+          0,
+          0.649020791053772,
+          0,
+          0.7607706785202026
+        ]
+      },
+      {
+        "tick": 340,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.8333115577697754,
+          0,
+          0,
+          0,
+          0.6506044864654541,
+          0,
+          0.7594166994094849
+        ]
+      },
+      {
+        "tick": 341,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.841644763946533,
+          0,
+          0,
+          0,
+          0.6521854400634766,
+          0,
+          0.7580595016479492
+        ]
+      },
+      {
+        "tick": 342,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.849977970123291,
+          0,
+          0,
+          0,
+          0.6537635326385498,
+          0,
+          0.7566989064216614
+        ]
+      },
+      {
+        "tick": 343,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.858311176300049,
+          0,
+          0,
+          0,
+          0.6553388833999634,
+          0,
+          0.7553350329399109
+        ]
+      },
+      {
+        "tick": 344,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.8666443824768066,
+          0,
+          0,
+          0,
+          0.6569111943244934,
+          0,
+          0.7539679408073425
+        ]
+      },
+      {
+        "tick": 345,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.8749775886535645,
+          0,
+          0,
+          0,
+          0.6584808230400085,
+          0,
+          0.7525975108146667
+        ]
+      },
+      {
+        "tick": 346,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.8833107948303223,
+          0,
+          0,
+          0,
+          0.6600475907325745,
+          0,
+          0.7512238621711731
+        ]
+      },
+      {
+        "tick": 347,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.89164400100708,
+          0,
+          0,
+          0,
+          0.6616113781929016,
+          0,
+          0.7498469352722168
+        ]
+      },
+      {
+        "tick": 348,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.899977207183838,
+          0,
+          0,
+          0,
+          0.6631723046302795,
+          0,
+          0.7484668493270874
+        ]
+      },
+      {
+        "tick": 349,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.9083104133605957,
+          0,
+          0,
+          0,
+          0.6647302508354187,
+          0,
+          0.7470834255218506
+        ]
+      },
+      {
+        "tick": 350,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.9166436195373535,
+          0,
+          0,
+          0,
+          0.6662854552268982,
+          0,
+          0.7456969022750854
+        ]
+      },
+      {
+        "tick": 351,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.9249768257141113,
+          0,
+          0,
+          0,
+          0.6678376793861389,
+          0,
+          0.7443070411682129
+        ]
+      },
+      {
+        "tick": 352,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.933310031890869,
+          0,
+          0,
+          0,
+          0.6693868637084961,
+          0,
+          0.7429139614105225
+        ]
+      },
+      {
+        "tick": 353,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.941643238067627,
+          0,
+          0,
+          0,
+          0.6709333062171936,
+          0,
+          0.7415177822113037
+        ]
+      },
+      {
+        "tick": 354,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.9499764442443848,
+          0,
+          0,
+          0,
+          0.6724767684936523,
+          0,
+          0.7401182651519775
+        ]
+      },
+      {
+        "tick": 355,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.9583096504211426,
+          0,
+          0,
+          0,
+          0.6740174293518066,
+          0,
+          0.7387155890464783
+        ]
+      },
+      {
+        "tick": 356,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.9666428565979004,
+          0,
+          0,
+          0,
+          0.6755549907684326,
+          0,
+          0.7373095750808716
+        ]
+      },
+      {
+        "tick": 357,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.974976062774658,
+          0,
+          0,
+          0,
+          0.6770896911621094,
+          0,
+          0.7359004616737366
+        ]
+      },
+      {
+        "tick": 358,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.983309268951416,
+          0,
+          0,
+          0,
+          0.6786215305328369,
+          0,
+          0.7344881892204285
+        ]
+      },
+      {
+        "tick": 359,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.991642475128174,
+          0,
+          0,
+          0,
+          0.6801502704620361,
+          0,
+          0.7330726385116577
+        ]
+      },
+      {
+        "tick": 360,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          2.9999756813049316,
+          0,
+          0,
+          0,
+          0.6816762089729309,
+          0,
+          0.7316540479660034
+        ]
+      },
+      {
+        "tick": 361,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0083088874816895,
+          0,
+          0,
+          0,
+          0.6831991076469421,
+          0,
+          0.7302321195602417
+        ]
+      },
+      {
+        "tick": 362,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0166420936584473,
+          0,
+          0,
+          0,
+          0.6847190260887146,
+          0,
+          0.7288071513175964
+        ]
+      },
+      {
+        "tick": 363,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.024975299835205,
+          0,
+          0,
+          0,
+          0.6862360835075378,
+          0,
+          0.7273789644241333
+        ]
+      },
+      {
+        "tick": 364,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.033308506011963,
+          0,
+          0,
+          0,
+          0.6877501010894775,
+          0,
+          0.7259476184844971
+        ]
+      },
+      {
+        "tick": 365,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0416417121887207,
+          0,
+          0,
+          0,
+          0.6892610788345337,
+          0,
+          0.7245129942893982
+        ]
+      },
+      {
+        "tick": 366,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0499749183654785,
+          0,
+          0,
+          0,
+          0.6907691359519958,
+          0,
+          0.7230753898620605
+        ]
+      },
+      {
+        "tick": 367,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0583081245422363,
+          0,
+          0,
+          0,
+          0.692274272441864,
+          0,
+          0.721634566783905
+        ]
+      },
+      {
+        "tick": 368,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.066641330718994,
+          0,
+          0,
+          0,
+          0.6937763094902039,
+          0,
+          0.7201906442642212
+        ]
+      },
+      {
+        "tick": 369,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.074974536895752,
+          0,
+          0,
+          0,
+          0.6952752470970154,
+          0,
+          0.7187435030937195
+        ]
+      },
+      {
+        "tick": 370,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0833077430725098,
+          0,
+          0,
+          0,
+          0.6967713832855225,
+          0,
+          0.717293381690979
+        ]
+      },
+      {
+        "tick": 371,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0916409492492676,
+          0,
+          0,
+          0,
+          0.6982643604278564,
+          0,
+          0.7158401012420654
+        ]
+      },
+      {
+        "tick": 372,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.0999741554260254,
+          0,
+          0,
+          0,
+          0.6997542381286621,
+          0,
+          0.714383602142334
+        ]
+      },
+      {
+        "tick": 373,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.108307361602783,
+          0,
+          0,
+          0,
+          0.7012411952018738,
+          0,
+          0.7129241228103638
+        ]
+      },
+      {
+        "tick": 374,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.116640567779541,
+          0,
+          0,
+          0,
+          0.7027251124382019,
+          0,
+          0.7114615440368652
+        ]
+      },
+      {
+        "tick": 375,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.124973773956299,
+          0,
+          0,
+          0,
+          0.7042059302330017,
+          0,
+          0.7099958658218384
+        ]
+      },
+      {
+        "tick": 376,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.1333069801330566,
+          0,
+          0,
+          0,
+          0.7056836485862732,
+          0,
+          0.7085270285606384
+        ]
+      },
+      {
+        "tick": 377,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.1416401863098145,
+          0,
+          0,
+          0,
+          0.7071583867073059,
+          0,
+          0.7070552110671997
+        ]
+      },
+      {
+        "tick": 378,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.1499733924865723,
+          0,
+          0,
+          0,
+          0.7086300849914551,
+          0,
+          0.7055802941322327
+        ]
+      },
+      {
+        "tick": 379,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.15830659866333,
+          0,
+          0,
+          0,
+          0.7100986838340759,
+          0,
+          0.7041023373603821
+        ]
+      },
+      {
+        "tick": 380,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.166639804840088,
+          0,
+          0,
+          0,
+          0.7115640640258789,
+          0,
+          0.7026211619377136
+        ]
+      },
+      {
+        "tick": 381,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.1749730110168457,
+          0,
+          0,
+          0,
+          0.7130265235900879,
+          0,
+          0.7011370658874512
+        ]
+      },
+      {
+        "tick": 382,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.1833062171936035,
+          0,
+          0,
+          0,
+          0.7144858837127686,
+          0,
+          0.6996499300003052
+        ]
+      },
+      {
+        "tick": 383,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.1916394233703613,
+          0,
+          0,
+          0,
+          0.7159421443939209,
+          0,
+          0.6981597542762756
+        ]
+      },
+      {
+        "tick": 384,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.199972629547119,
+          0,
+          0,
+          0,
+          0.7173951864242554,
+          0,
+          0.696666419506073
+        ]
+      },
+      {
+        "tick": 385,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.208305835723877,
+          0,
+          0,
+          0,
+          0.7188452482223511,
+          0,
+          0.6951702237129211
+        ]
+      },
+      {
+        "tick": 386,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.2166390419006348,
+          0,
+          0,
+          0,
+          0.7202920317649841,
+          0,
+          0.6936708688735962
+        ]
+      },
+      {
+        "tick": 387,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.2249722480773926,
+          0,
+          0,
+          0,
+          0.7217358946800232,
+          0,
+          0.692168653011322
+        ]
+      },
+      {
+        "tick": 388,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.2333054542541504,
+          0,
+          0,
+          0,
+          0.7231765389442444,
+          0,
+          0.6906633973121643
+        ]
+      },
+      {
+        "tick": 389,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.241638660430908,
+          0,
+          0,
+          0,
+          0.7246139049530029,
+          0,
+          0.6891550421714783
+        ]
+      },
+      {
+        "tick": 390,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.249971866607666,
+          0,
+          0,
+          0,
+          0.7260482907295227,
+          0,
+          0.6876437664031982
+        ]
+      },
+      {
+        "tick": 391,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.258305072784424,
+          0,
+          0,
+          0,
+          0.7274794578552246,
+          0,
+          0.6861295700073242
+        ]
+      },
+      {
+        "tick": 392,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.2666382789611816,
+          0,
+          0,
+          0,
+          0.7289075255393982,
+          0,
+          0.6846122741699219
+        ]
+      },
+      {
+        "tick": 393,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.2749714851379395,
+          0,
+          0,
+          0,
+          0.7303323149681091,
+          0,
+          0.6830919981002808
+        ]
+      },
+      {
+        "tick": 394,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.2833046913146973,
+          0,
+          0,
+          0,
+          0.7317540645599365,
+          0,
+          0.6815688014030457
+        ]
+      },
+      {
+        "tick": 395,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.291637897491455,
+          0,
+          0,
+          0,
+          0.733172595500946,
+          0,
+          0.6800426840782166
+        ]
+      },
+      {
+        "tick": 396,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.299971103668213,
+          0,
+          0,
+          0,
+          0.7345879673957825,
+          0,
+          0.6785135865211487
+        ]
+      },
+      {
+        "tick": 397,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.3083043098449707,
+          0,
+          0,
+          0,
+          0.736000120639801,
+          0,
+          0.6769814491271973
+        ]
+      },
+      {
+        "tick": 398,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.3166375160217285,
+          0,
+          0,
+          0,
+          0.7374091148376465,
+          0,
+          0.6754465103149414
+        ]
+      },
+      {
+        "tick": 399,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.3249707221984863,
+          0,
+          0,
+          0,
+          0.7388148307800293,
+          0,
+          0.6739085912704468
+        ]
+      },
+      {
+        "tick": 400,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.333303928375244,
+          0,
+          0,
+          0,
+          0.740217387676239,
+          0,
+          0.6723676919937134
+        ]
+      },
+      {
+        "tick": 401,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.341637134552002,
+          0,
+          0,
+          0,
+          0.7416167855262756,
+          0,
+          0.6708239316940308
+        ]
+      },
+      {
+        "tick": 402,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.3499703407287598,
+          0,
+          0,
+          0,
+          0.7430127859115601,
+          0,
+          0.6692771911621094
+        ]
+      },
+      {
+        "tick": 403,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.3583035469055176,
+          0,
+          0,
+          0,
+          0.7444056272506714,
+          0,
+          0.6677275896072388
+        ]
+      },
+      {
+        "tick": 404,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.3666367530822754,
+          0,
+          0,
+          0,
+          0.7457953691482544,
+          0,
+          0.6661750674247742
+        ]
+      },
+      {
+        "tick": 405,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.374969959259033,
+          0,
+          0,
+          0,
+          0.7471818327903748,
+          0,
+          0.6646196246147156
+        ]
+      },
+      {
+        "tick": 406,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.383303165435791,
+          0,
+          0,
+          0,
+          0.7485650181770325,
+          0,
+          0.6630613207817078
+        ]
+      },
+      {
+        "tick": 407,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.391636371612549,
+          0,
+          0,
+          0,
+          0.7499449849128723,
+          0,
+          0.6615001559257507
+        ]
+      },
+      {
+        "tick": 408,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.3999695777893066,
+          0,
+          0,
+          0,
+          0.7513216137886047,
+          0,
+          0.659936249256134
+        ]
+      },
+      {
+        "tick": 409,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4083027839660645,
+          0,
+          0,
+          0,
+          0.7526949048042297,
+          0,
+          0.6583694815635681
+        ]
+      },
+      {
+        "tick": 410,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4166359901428223,
+          0,
+          0,
+          0,
+          0.7540649771690369,
+          0,
+          0.656799852848053
+        ]
+      },
+      {
+        "tick": 411,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.42496919631958,
+          0,
+          0,
+          0,
+          0.7554317712783813,
+          0,
+          0.6552273631095886
+        ]
+      },
+      {
+        "tick": 412,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.433302402496338,
+          0,
+          0,
+          0,
+          0.7567952871322632,
+          0,
+          0.653652012348175
+        ]
+      },
+      {
+        "tick": 413,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4416356086730957,
+          0,
+          0,
+          0,
+          0.7581555247306824,
+          0,
+          0.6520738005638123
+        ]
+      },
+      {
+        "tick": 414,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4499688148498535,
+          0,
+          0,
+          0,
+          0.7595124840736389,
+          0,
+          0.6504927277565002
+        ]
+      },
+      {
+        "tick": 415,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4583020210266113,
+          0,
+          0,
+          0,
+          0.760866105556488,
+          0,
+          0.6489089131355286
+        ]
+      },
+      {
+        "tick": 416,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.466635227203369,
+          0,
+          0,
+          0,
+          0.7622163891792297,
+          0,
+          0.6473222374916077
+        ]
+      },
+      {
+        "tick": 417,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.474968433380127,
+          0,
+          0,
+          0,
+          0.7635634541511536,
+          0,
+          0.6457328200340271
+        ]
+      },
+      {
+        "tick": 418,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4833016395568848,
+          0,
+          0,
+          0,
+          0.76490718126297,
+          0,
+          0.6441405415534973
+        ]
+      },
+      {
+        "tick": 419,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4916348457336426,
+          0,
+          0,
+          0,
+          0.766247570514679,
+          0,
+          0.6425454616546631
+        ]
+      },
+      {
+        "tick": 420,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.4999680519104004,
+          0,
+          0,
+          0,
+          0.7675846219062805,
+          0,
+          0.640947699546814
+        ]
+      },
+      {
+        "tick": 421,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.508301258087158,
+          0,
+          0,
+          0,
+          0.7689183354377747,
+          0,
+          0.6393470764160156
+        ]
+      },
+      {
+        "tick": 422,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.516634464263916,
+          0,
+          0,
+          0,
+          0.7702487111091614,
+          0,
+          0.6377436518669128
+        ]
+      },
+      {
+        "tick": 423,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.524967670440674,
+          0,
+          0,
+          0,
+          0.7715757489204407,
+          0,
+          0.6361375451087952
+        ]
+      },
+      {
+        "tick": 424,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.5333008766174316,
+          0,
+          0,
+          0,
+          0.7728994488716125,
+          0,
+          0.6345285773277283
+        ]
+      },
+      {
+        "tick": 425,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.5416340827941895,
+          0,
+          0,
+          0,
+          0.7742197513580322,
+          0,
+          0.6329168081283569
+        ]
+      },
+      {
+        "tick": 426,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.5499672889709473,
+          0,
+          0,
+          0,
+          0.7755367755889893,
+          0,
+          0.6313023567199707
+        ]
+      },
+      {
+        "tick": 427,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.558300495147705,
+          0,
+          0,
+          0,
+          0.7768504023551941,
+          0,
+          0.62968510389328
+        ]
+      },
+      {
+        "tick": 428,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.566633701324463,
+          0,
+          0,
+          0,
+          0.7781607508659363,
+          0,
+          0.6280652284622192
+        ]
+      },
+      {
+        "tick": 429,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.5749669075012207,
+          0,
+          0,
+          0,
+          0.7794677019119263,
+          0,
+          0.626442551612854
+        ]
+      },
+      {
+        "tick": 430,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.5833001136779785,
+          0,
+          0,
+          0,
+          0.7807711958885193,
+          0,
+          0.6248170137405396
+        ]
+      },
+      {
+        "tick": 431,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.5916333198547363,
+          0,
+          0,
+          0,
+          0.7820712924003601,
+          0,
+          0.6231889724731445
+        ]
+      },
+      {
+        "tick": 432,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.599966526031494,
+          0,
+          0,
+          0,
+          0.7833680510520935,
+          0,
+          0.6215581893920898
+        ]
+      },
+      {
+        "tick": 433,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.608299732208252,
+          0,
+          0,
+          0,
+          0.7846613526344299,
+          0,
+          0.6199246644973755
+        ]
+      },
+      {
+        "tick": 434,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.6166329383850098,
+          0,
+          0,
+          0,
+          0.7859512567520142,
+          0,
+          0.6182884573936462
+        ]
+      },
+      {
+        "tick": 435,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.6249661445617676,
+          0,
+          0,
+          0,
+          0.7872377634048462,
+          0,
+          0.6166496276855469
+        ]
+      },
+      {
+        "tick": 436,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.6332993507385254,
+          0,
+          0,
+          0,
+          0.7885208129882812,
+          0,
+          0.6150081157684326
+        ]
+      },
+      {
+        "tick": 437,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.641632556915283,
+          0,
+          0,
+          0,
+          0.7898004651069641,
+          0,
+          0.6133638620376587
+        ]
+      },
+      {
+        "tick": 438,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.649965763092041,
+          0,
+          0,
+          0,
+          0.7910767197608948,
+          0,
+          0.6117169857025146
+        ]
+      },
+      {
+        "tick": 439,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.658298969268799,
+          0,
+          0,
+          0,
+          0.7923495173454285,
+          0,
+          0.6100674867630005
+        ]
+      },
+      {
+        "tick": 440,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.6666321754455566,
+          0,
+          0,
+          0,
+          0.7936188578605652,
+          0,
+          0.6084152460098267
+        ]
+      },
+      {
+        "tick": 441,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.6749653816223145,
+          0,
+          0,
+          0,
+          0.7948847413063049,
+          0,
+          0.6067604422569275
+        ]
+      },
+      {
+        "tick": 442,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.6832985877990723,
+          0,
+          0,
+          0,
+          0.7961472272872925,
+          0,
+          0.6051030158996582
+        ]
+      },
+      {
+        "tick": 443,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.69163179397583,
+          0,
+          0,
+          0,
+          0.7974061965942383,
+          0,
+          0.603442907333374
+        ]
+      },
+      {
+        "tick": 444,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.699965000152588,
+          0,
+          0,
+          0,
+          0.7986617684364319,
+          0,
+          0.6017802357673645
+        ]
+      },
+      {
+        "tick": 445,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.7082982063293457,
+          0,
+          0,
+          0,
+          0.7999138236045837,
+          0,
+          0.6001149415969849
+        ]
+      },
+      {
+        "tick": 446,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.7166314125061035,
+          0,
+          0,
+          0,
+          0.8011624217033386,
+          0,
+          0.5984469652175903
+        ]
+      },
+      {
+        "tick": 447,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.7249646186828613,
+          0,
+          0,
+          0,
+          0.8024075627326965,
+          0,
+          0.5967764258384705
+        ]
+      },
+      {
+        "tick": 448,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.733297824859619,
+          0,
+          0,
+          0,
+          0.8036491870880127,
+          0,
+          0.5951033234596252
+        ]
+      },
+      {
+        "tick": 449,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.741631031036377,
+          0,
+          0,
+          0,
+          0.8048873543739319,
+          0,
+          0.5934276580810547
+        ]
+      },
+      {
+        "tick": 450,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.7499642372131348,
+          0,
+          0,
+          0,
+          0.8061220049858093,
+          0,
+          0.591749370098114
+        ]
+      },
+      {
+        "tick": 451,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.7582974433898926,
+          0,
+          0,
+          0,
+          0.807353138923645,
+          0,
+          0.590068519115448
+        ]
+      },
+      {
+        "tick": 452,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.7666306495666504,
+          0,
+          0,
+          0,
+          0.8085808157920837,
+          0,
+          0.5883851051330566
+        ]
+      },
+      {
+        "tick": 453,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.774963855743408,
+          0,
+          0,
+          0,
+          0.8098049759864807,
+          0,
+          0.5866991877555847
+        ]
+      },
+      {
+        "tick": 454,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.783297061920166,
+          0,
+          0,
+          0,
+          0.8110256195068359,
+          0,
+          0.5850107073783875
+        ]
+      },
+      {
+        "tick": 455,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.791630268096924,
+          0,
+          0,
+          0,
+          0.8122426867485046,
+          0,
+          0.5833196043968201
+        ]
+      },
+      {
+        "tick": 456,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.7999634742736816,
+          0,
+          0,
+          0,
+          0.8134562969207764,
+          0,
+          0.5816260576248169
+        ]
+      },
+      {
+        "tick": 457,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8082966804504395,
+          0,
+          0,
+          0,
+          0.8146663904190063,
+          0,
+          0.5799299478530884
+        ]
+      },
+      {
+        "tick": 458,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8166298866271973,
+          0,
+          0,
+          0,
+          0.8158729076385498,
+          0,
+          0.5782313346862793
+        ]
+      },
+      {
+        "tick": 459,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.824963092803955,
+          0,
+          0,
+          0,
+          0.8170758485794067,
+          0,
+          0.5765301585197449
+        ]
+      },
+      {
+        "tick": 460,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.833296298980713,
+          0,
+          0,
+          0,
+          0.8182752728462219,
+          0,
+          0.5748264789581299
+        ]
+      },
+      {
+        "tick": 461,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8416295051574707,
+          0,
+          0,
+          0,
+          0.8194711804389954,
+          0,
+          0.5731203556060791
+        ]
+      },
+      {
+        "tick": 462,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8499627113342285,
+          0,
+          0,
+          0,
+          0.8206635117530823,
+          0,
+          0.5714117288589478
+        ]
+      },
+      {
+        "tick": 463,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8582959175109863,
+          0,
+          0,
+          0,
+          0.8218522667884827,
+          0,
+          0.5697005987167358
+        ]
+      },
+      {
+        "tick": 464,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.866629123687744,
+          0,
+          0,
+          0,
+          0.8230375051498413,
+          0,
+          0.5679870247840881
+        ]
+      },
+      {
+        "tick": 465,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.874962329864502,
+          0,
+          0,
+          0,
+          0.8242191672325134,
+          0,
+          0.5662710070610046
+        ]
+      },
+      {
+        "tick": 466,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8832955360412598,
+          0,
+          0,
+          0,
+          0.8253971934318542,
+          0,
+          0.5645524263381958
+        ]
+      },
+      {
+        "tick": 467,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8916287422180176,
+          0,
+          0,
+          0,
+          0.8265716433525085,
+          0,
+          0.5628315210342407
+        ]
+      },
+      {
+        "tick": 468,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.8999619483947754,
+          0,
+          0,
+          0,
+          0.8277425169944763,
+          0,
+          0.5611081123352051
+        ]
+      },
+      {
+        "tick": 469,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.908295154571533,
+          0,
+          0,
+          0,
+          0.8289098143577576,
+          0,
+          0.5593822598457336
+        ]
+      },
+      {
+        "tick": 470,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.916628360748291,
+          0,
+          0,
+          0,
+          0.8300735354423523,
+          0,
+          0.5576539635658264
+        ]
+      },
+      {
+        "tick": 471,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.924961566925049,
+          0,
+          0,
+          0,
+          0.8312336206436157,
+          0,
+          0.5559232831001282
+        ]
+      },
+      {
+        "tick": 472,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.9332947731018066,
+          0,
+          0,
+          0,
+          0.8323901295661926,
+          0,
+          0.5541902184486389
+        ]
+      },
+      {
+        "tick": 473,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.9416279792785645,
+          0,
+          0,
+          0,
+          0.8335429430007935,
+          0,
+          0.5524546504020691
+        ]
+      },
+      {
+        "tick": 474,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.9499611854553223,
+          0,
+          0,
+          0,
+          0.8346922397613525,
+          0,
+          0.5507166981697083
+        ]
+      },
+      {
+        "tick": 475,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.95829439163208,
+          0,
+          0,
+          0,
+          0.8358378410339355,
+          0,
+          0.5489763617515564
+        ]
+      },
+      {
+        "tick": 476,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.966627597808838,
+          0,
+          0,
+          0,
+          0.836979866027832,
+          0,
+          0.5472336411476135
+        ]
+      },
+      {
+        "tick": 477,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.9749608039855957,
+          0,
+          0,
+          0,
+          0.838118314743042,
+          0,
+          0.5454885363578796
+        ]
+      },
+      {
+        "tick": 478,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.9832940101623535,
+          0,
+          0,
+          0,
+          0.8392530679702759,
+          0,
+          0.5437410473823547
+        ]
+      },
+      {
+        "tick": 479,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.9916272163391113,
+          0,
+          0,
+          0,
+          0.8403841257095337,
+          0,
+          0.5419912934303284
+        ]
+      },
+      {
+        "tick": 480,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          3.999960422515869,
+          0,
+          0,
+          0,
+          0.841511607170105,
+          0,
+          0.540239155292511
+        ]
+      },
+      {
+        "tick": 481,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.008293628692627,
+          0,
+          0,
+          0,
+          0.8426353931427002,
+          0,
+          0.5384845733642578
+        ]
+      },
+      {
+        "tick": 482,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.016626834869385,
+          0,
+          0,
+          0,
+          0.8437554836273193,
+          0,
+          0.536727786064148
+        ]
+      },
+      {
+        "tick": 483,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.024960041046143,
+          0,
+          0,
+          0,
+          0.844871997833252,
+          0,
+          0.5349686145782471
+        ]
+      },
+      {
+        "tick": 484,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.0332932472229,
+          0,
+          0,
+          0,
+          0.8459848165512085,
+          0,
+          0.5332071185112
+        ]
+      },
+      {
+        "tick": 485,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.041626453399658,
+          0,
+          0,
+          0,
+          0.8470938801765442,
+          0,
+          0.5314432382583618
+        ]
+      },
+      {
+        "tick": 486,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.049959659576416,
+          0,
+          0,
+          0,
+          0.8481993675231934,
+          0,
+          0.529677152633667
+        ]
+      },
+      {
+        "tick": 487,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.058292865753174,
+          0,
+          0,
+          0,
+          0.8493010997772217,
+          0,
+          0.5279087424278259
+        ]
+      },
+      {
+        "tick": 488,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.066626071929932,
+          0,
+          0,
+          0,
+          0.8503991961479187,
+          0,
+          0.5261379480361938
+        ]
+      },
+      {
+        "tick": 489,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.0749592781066895,
+          0,
+          0,
+          0,
+          0.8514936566352844,
+          0,
+          0.5243650078773499
+        ]
+      },
+      {
+        "tick": 490,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.083292484283447,
+          0,
+          0,
+          0,
+          0.8525843620300293,
+          0,
+          0.5225896835327148
+        ]
+      },
+      {
+        "tick": 491,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.091625690460205,
+          0,
+          0,
+          0,
+          0.8536713123321533,
+          0,
+          0.5208121538162231
+        ]
+      },
+      {
+        "tick": 492,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.099958896636963,
+          0,
+          0,
+          0,
+          0.854754626750946,
+          0,
+          0.5190322995185852
+        ]
+      },
+      {
+        "tick": 493,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.108292102813721,
+          0,
+          0,
+          0,
+          0.8558341860771179,
+          0,
+          0.5172502398490906
+        ]
+      },
+      {
+        "tick": 494,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.1166253089904785,
+          0,
+          0,
+          0,
+          0.8569101095199585,
+          0,
+          0.5154659748077393
+        ]
+      },
+      {
+        "tick": 495,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.124958515167236,
+          0,
+          0,
+          0,
+          0.8579822182655334,
+          0,
+          0.5136793851852417
+        ]
+      },
+      {
+        "tick": 496,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.133291721343994,
+          0,
+          0,
+          0,
+          0.8590506911277771,
+          0,
+          0.5118906497955322
+        ]
+      },
+      {
+        "tick": 497,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.141624927520752,
+          0,
+          0,
+          0,
+          0.8601154088973999,
+          0,
+          0.5100995898246765
+        ]
+      },
+      {
+        "tick": 498,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.14995813369751,
+          0,
+          0,
+          0,
+          0.8611763119697571,
+          0,
+          0.5083063244819641
+        ]
+      },
+      {
+        "tick": 499,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.158291339874268,
+          0,
+          0,
+          0,
+          0.862233579158783,
+          0,
+          0.5065109729766846
+        ]
+      },
+      {
+        "tick": 500,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.166624546051025,
+          0,
+          0,
+          0,
+          0.863287091255188,
+          0,
+          0.5047132968902588
+        ]
+      },
+      {
+        "tick": 501,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.174957752227783,
+          0,
+          0,
+          0,
+          0.8643367886543274,
+          0,
+          0.5029134154319763
+        ]
+      },
+      {
+        "tick": 502,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.183290958404541,
+          0,
+          0,
+          0,
+          0.8653828501701355,
+          0,
+          0.5011114478111267
+        ]
+      },
+      {
+        "tick": 503,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.191624164581299,
+          0,
+          0,
+          0,
+          0.8664250373840332,
+          0,
+          0.4993072748184204
+        ]
+      },
+      {
+        "tick": 504,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.199957370758057,
+          0,
+          0,
+          0,
+          0.8674635291099548,
+          0,
+          0.49750086665153503
+        ]
+      },
+      {
+        "tick": 505,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.2082905769348145,
+          0,
+          0,
+          0,
+          0.8684982657432556,
+          0,
+          0.49569234251976013
+        ]
+      },
+      {
+        "tick": 506,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.216623783111572,
+          0,
+          0,
+          0,
+          0.869529128074646,
+          0,
+          0.49388161301612854
+        ]
+      },
+      {
+        "tick": 507,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.22495698928833,
+          0,
+          0,
+          0,
+          0.8705562949180603,
+          0,
+          0.4920687973499298
+        ]
+      },
+      {
+        "tick": 508,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.233290195465088,
+          0,
+          0,
+          0,
+          0.8715797066688538,
+          0,
+          0.49025389552116394
+        ]
+      },
+      {
+        "tick": 509,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.241623401641846,
+          0,
+          0,
+          0,
+          0.8725993633270264,
+          0,
+          0.488436758518219
+        ]
+      },
+      {
+        "tick": 510,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.2499566078186035,
+          0,
+          0,
+          0,
+          0.8736152052879333,
+          0,
+          0.4866175055503845
+        ]
+      },
+      {
+        "tick": 511,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.258289813995361,
+          0,
+          0,
+          0,
+          0.8746272325515747,
+          0,
+          0.48479610681533813
+        ]
+      },
+      {
+        "tick": 512,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.266623020172119,
+          0,
+          0,
+          0,
+          0.8756353855133057,
+          0,
+          0.4829726219177246
+        ]
+      },
+      {
+        "tick": 513,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.274956226348877,
+          0,
+          0,
+          0,
+          0.8766398429870605,
+          0,
+          0.4811471104621887
+        ]
+      },
+      {
+        "tick": 514,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.283289432525635,
+          0,
+          0,
+          0,
+          0.8776404857635498,
+          0,
+          0.4793194830417633
+        ]
+      },
+      {
+        "tick": 515,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.291622638702393,
+          0,
+          0,
+          0,
+          0.8786373138427734,
+          0,
+          0.47748979926109314
+        ]
+      },
+      {
+        "tick": 516,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.29995584487915,
+          0,
+          0,
+          0,
+          0.8796303272247314,
+          0,
+          0.4756580591201782
+        ]
+      },
+      {
+        "tick": 517,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.308289051055908,
+          0,
+          0,
+          0,
+          0.8806195259094238,
+          0,
+          0.47382423281669617
+        ]
+      },
+      {
+        "tick": 518,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.316622257232666,
+          0,
+          0,
+          0,
+          0.881604790687561,
+          0,
+          0.4719882905483246
+        ]
+      },
+      {
+        "tick": 519,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.324955463409424,
+          0,
+          0,
+          0,
+          0.8825863599777222,
+          0,
+          0.470150351524353
+        ]
+      },
+      {
+        "tick": 520,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.333288669586182,
+          0,
+          0,
+          0,
+          0.8835639953613281,
+          0,
+          0.46831032633781433
+        ]
+      },
+      {
+        "tick": 521,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.3416218757629395,
+          0,
+          0,
+          0,
+          0.884537935256958,
+          0,
+          0.46646830439567566
+        ]
+      },
+      {
+        "tick": 522,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.349955081939697,
+          0,
+          0,
+          0,
+          0.8855079412460327,
+          0,
+          0.46462419629096985
+        ]
+      },
+      {
+        "tick": 523,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.358288288116455,
+          0,
+          0,
+          0,
+          0.8864741921424866,
+          0,
+          0.4627781808376312
+        ]
+      },
+      {
+        "tick": 524,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.366621494293213,
+          0,
+          0,
+          0,
+          0.8874364495277405,
+          0,
+          0.46093010902404785
+        ]
+      },
+      {
+        "tick": 525,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.374954700469971,
+          0,
+          0,
+          0,
+          0.8883948922157288,
+          0,
+          0.4590800404548645
+        ]
+      },
+      {
+        "tick": 526,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.3832879066467285,
+          0,
+          0,
+          0,
+          0.8893495202064514,
+          0,
+          0.4572279751300812
+        ]
+      },
+      {
+        "tick": 527,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.391621112823486,
+          0,
+          0,
+          0,
+          0.8903003334999084,
+          0,
+          0.4553739130496979
+        ]
+      },
+      {
+        "tick": 528,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.399954319000244,
+          0,
+          0,
+          0,
+          0.8912472128868103,
+          0,
+          0.4535177946090698
+        ]
+      },
+      {
+        "tick": 529,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.408287525177002,
+          0,
+          0,
+          0,
+          0.8921902775764465,
+          0,
+          0.4516598582267761
+        ]
+      },
+      {
+        "tick": 530,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.41662073135376,
+          0,
+          0,
+          0,
+          0.8931294083595276,
+          0,
+          0.44979986548423767
+        ]
+      },
+      {
+        "tick": 531,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.424953937530518,
+          0,
+          0,
+          0,
+          0.894064724445343,
+          0,
+          0.447937935590744
+        ]
+      },
+      {
+        "tick": 532,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.433287143707275,
+          0,
+          0,
+          0,
+          0.8949960470199585,
+          0,
+          0.4460740387439728
+        ]
+      },
+      {
+        "tick": 533,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.441620349884033,
+          0,
+          0,
+          0,
+          0.8959236145019531,
+          0,
+          0.4442082643508911
+        ]
+      },
+      {
+        "tick": 534,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.449953556060791,
+          0,
+          0,
+          0,
+          0.8968472480773926,
+          0,
+          0.4423404932022095
+        ]
+      },
+      {
+        "tick": 535,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.458286762237549,
+          0,
+          0,
+          0,
+          0.8977669477462769,
+          0,
+          0.44047075510025024
+        ]
+      },
+      {
+        "tick": 536,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.466619968414307,
+          0,
+          0,
+          0,
+          0.8986828327178955,
+          0,
+          0.43859922885894775
+        ]
+      },
+      {
+        "tick": 537,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.4749531745910645,
+          0,
+          0,
+          0,
+          0.899594783782959,
+          0,
+          0.4367257356643677
+        ]
+      },
+      {
+        "tick": 538,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.483286380767822,
+          0,
+          0,
+          0,
+          0.9005027413368225,
+          0,
+          0.4348503053188324
+        ]
+      },
+      {
+        "tick": 539,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.49161958694458,
+          0,
+          0,
+          0,
+          0.9014069437980652,
+          0,
+          0.43297305703163147
+        ]
+      },
+      {
+        "tick": 540,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.499952793121338,
+          0,
+          0,
+          0,
+          0.9023070931434631,
+          0,
+          0.43109390139579773
+        ]
+      },
+      {
+        "tick": 541,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.508285999298096,
+          0,
+          0,
+          0,
+          0.9032033681869507,
+          0,
+          0.42921289801597595
+        ]
+      },
+      {
+        "tick": 542,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.5166192054748535,
+          0,
+          0,
+          0,
+          0.9040957689285278,
+          0,
+          0.42732998728752136
+        ]
+      },
+      {
+        "tick": 543,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.524952411651611,
+          0,
+          0,
+          0,
+          0.9049841165542603,
+          0,
+          0.4254452586174011
+        ]
+      },
+      {
+        "tick": 544,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.533285617828369,
+          0,
+          0,
+          0,
+          0.905868649482727,
+          0,
+          0.42355868220329285
+        ]
+      },
+      {
+        "tick": 545,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.541618824005127,
+          0,
+          0,
+          0,
+          0.9067492485046387,
+          0,
+          0.42167025804519653
+        ]
+      },
+      {
+        "tick": 546,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.549952030181885,
+          0,
+          0,
+          0,
+          0.9076259136199951,
+          0,
+          0.4197799861431122
+        ]
+      },
+      {
+        "tick": 547,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.558285236358643,
+          0,
+          0,
+          0,
+          0.9084986448287964,
+          0,
+          0.4178878962993622
+        ]
+      },
+      {
+        "tick": 548,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.5666184425354,
+          0,
+          0,
+          0,
+          0.9093674421310425,
+          0,
+          0.41599398851394653
+        ]
+      },
+      {
+        "tick": 549,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.574951648712158,
+          0,
+          0,
+          0,
+          0.9102322459220886,
+          0,
+          0.41409832239151
+        ]
+      },
+      {
+        "tick": 550,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.583284854888916,
+          0,
+          0,
+          0,
+          0.9110930562019348,
+          0,
+          0.41220077872276306
+        ]
+      },
+      {
+        "tick": 551,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.591618061065674,
+          0,
+          0,
+          0,
+          0.9119499325752258,
+          0,
+          0.41030147671699524
+        ]
+      },
+      {
+        "tick": 552,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.599951267242432,
+          0,
+          0,
+          0,
+          0.9128029346466064,
+          0,
+          0.40840038657188416
+        ]
+      },
+      {
+        "tick": 553,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.6082844734191895,
+          0,
+          0,
+          0,
+          0.9136519432067871,
+          0,
+          0.4064975082874298
+        ]
+      },
+      {
+        "tick": 554,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.616617679595947,
+          0,
+          0,
+          0,
+          0.9144969582557678,
+          0,
+          0.404592901468277
+        ]
+      },
+      {
+        "tick": 555,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.624950885772705,
+          0,
+          0,
+          0,
+          0.9153379201889038,
+          0,
+          0.4026865065097809
+        ]
+      },
+      {
+        "tick": 556,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.633284091949463,
+          0,
+          0,
+          0,
+          0.9161750078201294,
+          0,
+          0.4007784128189087
+        ]
+      },
+      {
+        "tick": 557,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.641617298126221,
+          0,
+          0,
+          0,
+          0.917008101940155,
+          0,
+          0.39886853098869324
+        ]
+      },
+      {
+        "tick": 558,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.6499505043029785,
+          0,
+          0,
+          0,
+          0.9178372621536255,
+          0,
+          0.3969569206237793
+        ]
+      },
+      {
+        "tick": 559,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.658283710479736,
+          0,
+          0,
+          0,
+          0.918662428855896,
+          0,
+          0.39504358172416687
+        ]
+      },
+      {
+        "tick": 560,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.666616916656494,
+          0,
+          0,
+          0,
+          0.9194835424423218,
+          0,
+          0.39312854409217834
+        ]
+      },
+      {
+        "tick": 561,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.674950122833252,
+          0,
+          0,
+          0,
+          0.9203007221221924,
+          0,
+          0.39121177792549133
+        ]
+      },
+      {
+        "tick": 562,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.68328332901001,
+          0,
+          0,
+          0,
+          0.921113908290863,
+          0,
+          0.3892933428287506
+        ]
+      },
+      {
+        "tick": 563,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.691616535186768,
+          0,
+          0,
+          0,
+          0.9219229817390442,
+          0,
+          0.387373149394989
+        ]
+      },
+      {
+        "tick": 564,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.699949741363525,
+          0,
+          0,
+          0,
+          0.9227282404899597,
+          0,
+          0.38545140624046326
+        ]
+      },
+      {
+        "tick": 565,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.708282947540283,
+          0,
+          0,
+          0,
+          0.9235292673110962,
+          0,
+          0.38352787494659424
+        ]
+      },
+      {
+        "tick": 566,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.716616153717041,
+          0,
+          0,
+          0,
+          0.9243264198303223,
+          0,
+          0.3816027045249939
+        ]
+      },
+      {
+        "tick": 567,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.724949359893799,
+          0,
+          0,
+          0,
+          0.9251195788383484,
+          0,
+          0.37967586517333984
+        ]
+      },
+      {
+        "tick": 568,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.733282566070557,
+          0,
+          0,
+          0,
+          0.9259087443351746,
+          0,
+          0.37774738669395447
+        ]
+      },
+      {
+        "tick": 569,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.7416157722473145,
+          0,
+          0,
+          0,
+          0.926693856716156,
+          0,
+          0.37581726908683777
+        ]
+      },
+      {
+        "tick": 570,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.749948978424072,
+          0,
+          0,
+          0,
+          0.9274749159812927,
+          0,
+          0.3738855719566345
+        ]
+      },
+      {
+        "tick": 571,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.75828218460083,
+          0,
+          0,
+          0,
+          0.9282518625259399,
+          0,
+          0.37195223569869995
+        ]
+      },
+      {
+        "tick": 572,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.766615390777588,
+          0,
+          0,
+          0,
+          0.929024875164032,
+          0,
+          0.3700173497200012
+        ]
+      },
+      {
+        "tick": 573,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.774948596954346,
+          0,
+          0,
+          0,
+          0.9297938942909241,
+          0,
+          0.36808082461357117
+        ]
+      },
+      {
+        "tick": 574,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.7832818031311035,
+          0,
+          0,
+          0,
+          0.9305587410926819,
+          0,
+          0.3661426603794098
+        ]
+      },
+      {
+        "tick": 575,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.791615009307861,
+          0,
+          0,
+          0,
+          0.9313196539878845,
+          0,
+          0.36420297622680664
+        ]
+      },
+      {
+        "tick": 576,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.799948215484619,
+          0,
+          0,
+          0,
+          0.9320765137672424,
+          0,
+          0.36226168274879456
+        ]
+      },
+      {
+        "tick": 577,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.808281421661377,
+          0,
+          0,
+          0,
+          0.9328292608261108,
+          0,
+          0.36031877994537354
+        ]
+      },
+      {
+        "tick": 578,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.816614627838135,
+          0,
+          0,
+          0,
+          0.9335779547691345,
+          0,
+          0.35837429761886597
+        ]
+      },
+      {
+        "tick": 579,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.824947834014893,
+          0,
+          0,
+          0,
+          0.934322714805603,
+          0,
+          0.356428325176239
+        ]
+      },
+      {
+        "tick": 580,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.83328104019165,
+          0,
+          0,
+          0,
+          0.9350633025169373,
+          0,
+          0.3544807434082031
+        ]
+      },
+      {
+        "tick": 581,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.841614246368408,
+          0,
+          0,
+          0,
+          0.9357998967170715,
+          0,
+          0.35253170132637024
+        ]
+      },
+      {
+        "tick": 582,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.849947452545166,
+          0,
+          0,
+          0,
+          0.9365324378013611,
+          0,
+          0.3505811095237732
+        ]
+      },
+      {
+        "tick": 583,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.858280658721924,
+          0,
+          0,
+          0,
+          0.9372608065605164,
+          0,
+          0.3486289083957672
+        ]
+      },
+      {
+        "tick": 584,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.866613864898682,
+          0,
+          0,
+          0,
+          0.9379852414131165,
+          0,
+          0.3466752767562866
+        ]
+      },
+      {
+        "tick": 585,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.8749470710754395,
+          0,
+          0,
+          0,
+          0.9387055039405823,
+          0,
+          0.34472009539604187
+        ]
+      },
+      {
+        "tick": 586,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.883280277252197,
+          0,
+          0,
+          0,
+          0.9394217729568481,
+          0,
+          0.3427634537220001
+        ]
+      },
+      {
+        "tick": 587,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.891613483428955,
+          0,
+          0,
+          0,
+          0.9401338696479797,
+          0,
+          0.3408052921295166
+        ]
+      },
+      {
+        "tick": 588,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.899946689605713,
+          0,
+          0,
+          0,
+          0.9408419728279114,
+          0,
+          0.3388456404209137
+        ]
+      },
+      {
+        "tick": 589,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.908279895782471,
+          0,
+          0,
+          0,
+          0.9415460228919983,
+          0,
+          0.33688458800315857
+        ]
+      },
+      {
+        "tick": 590,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.9166131019592285,
+          0,
+          0,
+          0,
+          0.9422458410263062,
+          0,
+          0.3349219858646393
+        ]
+      },
+      {
+        "tick": 591,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.924946308135986,
+          0,
+          0,
+          0,
+          0.9429416656494141,
+          0,
+          0.3329579532146454
+        ]
+      },
+      {
+        "tick": 592,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.933279514312744,
+          0,
+          0,
+          0,
+          0.9436334371566772,
+          0,
+          0.3309924900531769
+        ]
+      },
+      {
+        "tick": 593,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.941612720489502,
+          0,
+          0,
+          0,
+          0.9443209767341614,
+          0,
+          0.329025536775589
+        ]
+      },
+      {
+        "tick": 594,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.94994592666626,
+          0,
+          0,
+          0,
+          0.9450045824050903,
+          0,
+          0.32705721259117126
+        ]
+      },
+      {
+        "tick": 595,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.958279132843018,
+          0,
+          0,
+          0,
+          0.945684015750885,
+          0,
+          0.32508745789527893
+        ]
+      },
+      {
+        "tick": 596,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.966612339019775,
+          0,
+          0,
+          0,
+          0.9463592767715454,
+          0,
+          0.3231162130832672
+        ]
+      },
+      {
+        "tick": 597,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.974945545196533,
+          0,
+          0,
+          0,
+          0.9470305442810059,
+          0,
+          0.3211436867713928
+        ]
+      },
+      {
+        "tick": 598,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.983278751373291,
+          0,
+          0,
+          0,
+          0.9476975798606873,
+          0,
+          0.31916967034339905
+        ]
+      },
+      {
+        "tick": 599,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.991611957550049,
+          0,
+          0,
+          0,
+          0.9483605623245239,
+          0,
+          0.3171943128108978
+        ]
+      },
+      {
+        "tick": 600,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          4.999945163726807,
+          0,
+          0,
+          0,
+          0.9490194916725159,
+          0,
+          0.31521761417388916
+        ]
+      },
+      {
+        "tick": 601,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.0082783699035645,
+          0,
+          0,
+          0,
+          0.9496741890907288,
+          0,
+          0.3132394552230835
+        ]
+      },
+      {
+        "tick": 602,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.016611576080322,
+          0,
+          0,
+          0,
+          0.9503247737884521,
+          0,
+          0.31126001477241516
+        ]
+      },
+      {
+        "tick": 603,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.02494478225708,
+          0,
+          0,
+          0,
+          0.9509713053703308,
+          0,
+          0.309279203414917
+        ]
+      },
+      {
+        "tick": 604,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.033277988433838,
+          0,
+          0,
+          0,
+          0.95161372423172,
+          0,
+          0.3072970509529114
+        ]
+      },
+      {
+        "tick": 605,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.041611194610596,
+          0,
+          0,
+          0,
+          0.9522519111633301,
+          0,
+          0.3053135573863983
+        ]
+      },
+      {
+        "tick": 606,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.0499444007873535,
+          0,
+          0,
+          0,
+          0.9528859257698059,
+          0,
+          0.3033287227153778
+        ]
+      },
+      {
+        "tick": 607,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.058277606964111,
+          0,
+          0,
+          0,
+          0.9535159468650818,
+          0,
+          0.30134260654449463
+        ]
+      },
+      {
+        "tick": 608,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.066610813140869,
+          0,
+          0,
+          0,
+          0.9541417360305786,
+          0,
+          0.299355149269104
+        ]
+      },
+      {
+        "tick": 609,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.074944019317627,
+          0,
+          0,
+          0,
+          0.9547634720802307,
+          0,
+          0.2973664104938507
+        ]
+      },
+      {
+        "tick": 610,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.083277225494385,
+          0,
+          0,
+          0,
+          0.9553809762001038,
+          0,
+          0.29537636041641235
+        ]
+      },
+      {
+        "tick": 611,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.091610431671143,
+          0,
+          0,
+          0,
+          0.9559943675994873,
+          0,
+          0.2933850586414337
+        ]
+      },
+      {
+        "tick": 612,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.0999436378479,
+          0,
+          0,
+          0,
+          0.9566036462783813,
+          0,
+          0.2913924753665924
+        ]
+      },
+      {
+        "tick": 613,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.108276844024658,
+          0,
+          0,
+          0,
+          0.9572086930274963,
+          0,
+          0.28939858078956604
+        ]
+      },
+      {
+        "tick": 614,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.116610050201416,
+          0,
+          0,
+          0,
+          0.957809567451477,
+          0,
+          0.2874034643173218
+        ]
+      },
+      {
+        "tick": 615,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.124943256378174,
+          0,
+          0,
+          0,
+          0.958406388759613,
+          0,
+          0.28540709614753723
+        ]
+      },
+      {
+        "tick": 616,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.133276462554932,
+          0,
+          0,
+          0,
+          0.9589990377426147,
+          0,
+          0.2834095060825348
+        ]
+      },
+      {
+        "tick": 617,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.1416096687316895,
+          0,
+          0,
+          0,
+          0.9595874547958374,
+          0,
+          0.2814106345176697
+        ]
+      },
+      {
+        "tick": 618,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.149942874908447,
+          0,
+          0,
+          0,
+          0.9601717591285706,
+          0,
+          0.27941060066223145
+        ]
+      },
+      {
+        "tick": 619,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.158276081085205,
+          0,
+          0,
+          0,
+          0.9607518315315247,
+          0,
+          0.27740928530693054
+        ]
+      },
+      {
+        "tick": 620,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.166609287261963,
+          0,
+          0,
+          0,
+          0.9613277912139893,
+          0,
+          0.2754068076610565
+        ]
+      },
+      {
+        "tick": 621,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.174942493438721,
+          0,
+          0,
+          0,
+          0.9618995189666748,
+          0,
+          0.2734031081199646
+        ]
+      },
+      {
+        "tick": 622,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.1832756996154785,
+          0,
+          0,
+          0,
+          0.9624671339988708,
+          0,
+          0.27139824628829956
+        ]
+      },
+      {
+        "tick": 623,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.191608905792236,
+          0,
+          0,
+          0,
+          0.9630305171012878,
+          0,
+          0.2693921625614166
+        ]
+      },
+      {
+        "tick": 624,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.199942111968994,
+          0,
+          0,
+          0,
+          0.9635897874832153,
+          0,
+          0.26738497614860535
+        ]
+      },
+      {
+        "tick": 625,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.208275318145752,
+          0,
+          0,
+          0,
+          0.9641448855400085,
+          0,
+          0.26537659764289856
+        ]
+      },
+      {
+        "tick": 626,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.21660852432251,
+          0,
+          0,
+          0,
+          0.9646956920623779,
+          0,
+          0.26336705684661865
+        ]
+      },
+      {
+        "tick": 627,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.224941730499268,
+          0,
+          0,
+          0,
+          0.9652424454689026,
+          0,
+          0.261356383562088
+        ]
+      },
+      {
+        "tick": 628,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.233274936676025,
+          0,
+          0,
+          0,
+          0.9657848477363586,
+          0,
+          0.25934454798698425
+        ]
+      },
+      {
+        "tick": 629,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.241608142852783,
+          0,
+          0,
+          0,
+          0.96632319688797,
+          0,
+          0.25733160972595215
+        ]
+      },
+      {
+        "tick": 630,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.249941349029541,
+          0,
+          0,
+          0,
+          0.9668572545051575,
+          0,
+          0.2553175091743469
+        ]
+      },
+      {
+        "tick": 631,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.258274555206299,
+          0,
+          0,
+          0,
+          0.9673871994018555,
+          0,
+          0.25330233573913574
+        ]
+      },
+      {
+        "tick": 632,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.266607761383057,
+          0,
+          0,
+          0,
+          0.9679128527641296,
+          0,
+          0.2512860596179962
+        ]
+      },
+      {
+        "tick": 633,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.2749409675598145,
+          0,
+          0,
+          0,
+          0.9684343934059143,
+          0,
+          0.24926871061325073
+        ]
+      },
+      {
+        "tick": 634,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.283274173736572,
+          0,
+          0,
+          0,
+          0.9689516425132751,
+          0,
+          0.24725022912025452
+        ]
+      },
+      {
+        "tick": 635,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.29160737991333,
+          0,
+          0,
+          0,
+          0.9694647789001465,
+          0,
+          0.24523070454597473
+        ]
+      },
+      {
+        "tick": 636,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.299940586090088,
+          0,
+          0,
+          0,
+          0.9699736833572388,
+          0,
+          0.24321012198925018
+        ]
+      },
+      {
+        "tick": 637,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.308273792266846,
+          0,
+          0,
+          0,
+          0.9704782962799072,
+          0,
+          0.24118845164775848
+        ]
+      },
+      {
+        "tick": 638,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.3166069984436035,
+          0,
+          0,
+          0,
+          0.9709787964820862,
+          0,
+          0.2391657531261444
+        ]
+      },
+      {
+        "tick": 639,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.324940204620361,
+          0,
+          0,
+          0,
+          0.9714750647544861,
+          0,
+          0.23714202642440796
+        ]
+      },
+      {
+        "tick": 640,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.333273410797119,
+          0,
+          0,
+          0,
+          0.9719670414924622,
+          0,
+          0.23511724174022675
+        ]
+      },
+      {
+        "tick": 641,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.341606616973877,
+          0,
+          0,
+          0,
+          0.9724549055099487,
+          0,
+          0.23309145867824554
+        ]
+      },
+      {
+        "tick": 642,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.349939823150635,
+          0,
+          0,
+          0,
+          0.9729384183883667,
+          0,
+          0.23106463253498077
+        ]
+      },
+      {
+        "tick": 643,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.358273029327393,
+          0,
+          0,
+          0,
+          0.9734178185462952,
+          0,
+          0.2290368229150772
+        ]
+      },
+      {
+        "tick": 644,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.36660623550415,
+          0,
+          0,
+          0,
+          0.973892867565155,
+          0,
+          0.22700798511505127
+        ]
+      },
+      {
+        "tick": 645,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.374939441680908,
+          0,
+          0,
+          0,
+          0.9743638634681702,
+          0,
+          0.22497820854187012
+        ]
+      },
+      {
+        "tick": 646,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.383272647857666,
+          0,
+          0,
+          0,
+          0.9748304486274719,
+          0,
+          0.2229474037885666
+        ]
+      },
+      {
+        "tick": 647,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.391605854034424,
+          0,
+          0,
+          0,
+          0.9752929210662842,
+          0,
+          0.22091566026210785
+        ]
+      },
+      {
+        "tick": 648,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.399939060211182,
+          0,
+          0,
+          0,
+          0.9757511615753174,
+          0,
+          0.2188829630613327
+        ]
+      },
+      {
+        "tick": 649,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.4082722663879395,
+          0,
+          0,
+          0,
+          0.9762051105499268,
+          0,
+          0.21684929728507996
+        ]
+      },
+      {
+        "tick": 650,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.416605472564697,
+          0,
+          0,
+          0,
+          0.9766548871994019,
+          0,
+          0.214814692735672
+        ]
+      },
+      {
+        "tick": 651,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.424938678741455,
+          0,
+          0,
+          0,
+          0.9771003127098083,
+          0,
+          0.21277914941310883
+        ]
+      },
+      {
+        "tick": 652,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.433271884918213,
+          0,
+          0,
+          0,
+          0.9775416254997253,
+          0,
+          0.21074269711971283
+        ]
+      },
+      {
+        "tick": 653,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.441605091094971,
+          0,
+          0,
+          0,
+          0.9779786467552185,
+          0,
+          0.2087053507566452
+        ]
+      },
+      {
+        "tick": 654,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.4499382972717285,
+          0,
+          0,
+          0,
+          0.9784113764762878,
+          0,
+          0.20666705071926117
+        ]
+      },
+      {
+        "tick": 655,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.458271503448486,
+          0,
+          0,
+          0,
+          0.9788398146629333,
+          0,
+          0.2046278566122055
+        ]
+      },
+      {
+        "tick": 656,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.466604709625244,
+          0,
+          0,
+          0,
+          0.9792640805244446,
+          0,
+          0.2025877982378006
+        ]
+      },
+      {
+        "tick": 657,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.474937915802002,
+          0,
+          0,
+          0,
+          0.9796841740608215,
+          0,
+          0.20054684579372406
+        ]
+      },
+      {
+        "tick": 658,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.48327112197876,
+          0,
+          0,
+          0,
+          0.9800998568534851,
+          0,
+          0.1985049992799759
+        ]
+      },
+      {
+        "tick": 659,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.491604328155518,
+          0,
+          0,
+          0,
+          0.9805113673210144,
+          0,
+          0.19646231830120087
+        ]
+      },
+      {
+        "tick": 660,
+        "ids": [
+          "traveler"
+        ],
+        "poses": [
+          5.499937534332275,
+          0,
+          0,
+          0,
+          0.9809187054634094,
+          0,
+          0.1944187730550766
+        ]
+      }
+    ]
+  },
+  "alternateSuffix": [
+    {
+      "atTick": 60,
+      "sequence": 2,
+      "transactionId": "tx-1",
+      "payload": {
+        "kind": "putField",
+        "field": {
+          "id": "sideways",
+          "enabled": true,
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "region": {
+            "kind": "box",
+            "halfExtents": [
+              50,
+              10,
+              10
+            ]
+          },
+          "edgeFade": 0,
+          "expression": {
+            "kind": "directional",
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "strength": 2
+          }
+        }
+      }
+    }
+  ],
+  "alternateEnd": {
+    "engineEncoding": "base64",
+    "engineBytes": "AAAAAAAAAAAAAAAAiYgIPD/DLjkAAPBBAAAgQQAAcEIAACBBAACAPwAAgD8BAAEBAQEBAQEAAAAAAAA/AQEBAQAAgD8CAAAAAAAAAAAAAQADAAAA8AAAAArXozwAAEA/BAAAAAAAAAAAAIBArMUnNxQAAAAAAAAAWAIAAAAAAAAK16M7AABAQArXozwAAMhDBAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAc3MTD0AAAAAAAC0AAAAAQAAAAAAAAABAAAAAAAAAAEBAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAtAAAAAEBAAAAAAAAAEB+oT+SZkE/IIVrvgAAAACIX9w/kJSbPyCFaz4BAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAggAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADEibs+AAAAAGo1bj/0/78/W0SAPwAAAAAAAAAAAAAAAMSJuz4AAAAAajVuP/T/vz9bRIA/AAAAAAAAAAAAAAAAAAAAAAAAgD80AABAAAAAAAAAAAAwAgA/AAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAB9P+/P1tEgD8AAAAAAACAPwAAgD8AAIA/LFKaQgAAAAAAAAAALFKaQgAAAAAsUppCAAAAAAAAAAAAAAAAAACAPyxSmkIsUppCLFKaQgAAAAAAAAAAAAAAAAAAgD8AAOxROD7//n8/jzP/P/9fkLYAAAAAzQIAPwAAAADsUTg+AAEAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAIC/AACAvwAAAD8AAAAAAAAAAACOi7o+AAAAAE1nbj/k7r4/2kd8PwAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAD///////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEBAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAOxROD4BAAAAAACAPwAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAAADEibs+AAAAAGo1bj/0/78/W0SAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8ABAAAAAEAAAAAAAAABAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEBAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAABAQAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAEBAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAQEAAAAAAAAAAQIAAAAAAAAAAQMAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA",
+    "engineLength": 2643,
+    "engineSha256": "3163ca4f697471ea65b86ca03c2d61ee17af0a3ca048d52578ab375cbf2c9ff9",
+    "sidecarSha256": "0d79cb382ba9475963d1b5014a68b4f37e71fd336a89c380abdfef6059102a26",
+    "sidecar": {
+      "tick": 180,
+      "lastAppliedSequence": 2,
+      "phase": "settled-before-lifecycle",
+      "activeFields": [
+        {
+          "id": "sideways",
+          "enabled": true,
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "region": {
+            "kind": "box",
+            "halfExtents": [
+              50,
+              10,
+              10
+            ]
+          },
+          "edgeFade": 0,
+          "expression": {
+            "kind": "directional",
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "strength": 2
+          }
+        }
+      ],
+      "ambientAcceleration": [
+        0,
+        0,
+        0
+      ],
+      "emitterStates": [],
+      "bodyIdentityMap": [
+        {
+          "id": "traveler",
+          "body": 0,
+          "collider": 0,
+          "radius": 0.18
+        }
+      ],
+      "bodyLifetimes": [
+        {
+          "id": "traveler",
+          "deathTick": null
+        }
+      ],
+      "colliderIdentity": [
+        {
+          "collider": 0,
+          "id": "traveler"
+        }
+      ],
+      "skippedEmissions": 0,
+      "maxSpeed": 2.2360790664057832,
+      "limitedSteps": 0
+    }
+  },
+  "replayedEnd": {
+    "engineEncoding": "base64",
+    "engineBytes": "AAAAAAAAAAAAAAAAiYgIPD/DLjkAAPBBAAAgQQAAcEIAACBBAACAPwAAgD8BAAEBAQEBAQEAAAAAAAA/AQEBAQAAgD8CAAAAAAAAAAAAAQADAAAA8AAAAArXozwAAEA/BAAAAAAAAAAAAIBArMUnNxQAAAAAAAAAWAIAAAAAAAAK16M7AABAQArXozwAAMhDBAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAc3MTD0AAAAAAAC0AAAAAQAAAAAAAAABAAAAAAAAAAEBAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAtAAAAAEBAAAAAAAAAEB+oT+SZkE/IIVrvgAAAACIX9w/kJSbPyCFaz4BAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAggAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADEibs+AAAAAGo1bj/0/78/W0SAPwAAAAAAAAAAAAAAAMSJuz4AAAAAajVuP/T/vz9bRIA/AAAAAAAAAAAAAAAAAAAAAAAAgD80AABAAAAAAAAAAAAwAgA/AAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAB9P+/P1tEgD8AAAAAAACAPwAAgD8AAIA/LFKaQgAAAAAAAAAALFKaQgAAAAAsUppCAAAAAAAAAAAAAAAAAACAPyxSmkIsUppCLFKaQgAAAAAAAAAAAAAAAAAAgD8AAOxROD7//n8/jzP/P/9fkLYAAAAAzQIAPwAAAADsUTg+AAEAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAIC/AACAvwAAAD8AAAAAAAAAAACOi7o+AAAAAE1nbj/k7r4/2kd8PwAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAD///////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEBAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAOxROD4BAAAAAACAPwAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAAADEibs+AAAAAGo1bj/0/78/W0SAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8ABAAAAAEAAAAAAAAABAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEBAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAABAQAAAAAAAAABAgAAAAAAAAABAwAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAEBAAAAAAAAAAECAAAAAAAAAAEDAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAQEAAAAAAAAAAQIAAAAAAAAAAQMAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA",
+    "engineLength": 2643,
+    "engineSha256": "3163ca4f697471ea65b86ca03c2d61ee17af0a3ca048d52578ab375cbf2c9ff9",
+    "sidecarSha256": "0d79cb382ba9475963d1b5014a68b4f37e71fd336a89c380abdfef6059102a26",
+    "sidecar": {
+      "tick": 180,
+      "lastAppliedSequence": 2,
+      "phase": "settled-before-lifecycle",
+      "activeFields": [
+        {
+          "id": "sideways",
+          "enabled": true,
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "region": {
+            "kind": "box",
+            "halfExtents": [
+              50,
+              10,
+              10
+            ]
+          },
+          "edgeFade": 0,
+          "expression": {
+            "kind": "directional",
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "strength": 2
+          }
+        }
+      ],
+      "ambientAcceleration": [
+        0,
+        0,
+        0
+      ],
+      "emitterStates": [],
+      "bodyIdentityMap": [
+        {
+          "id": "traveler",
+          "body": 0,
+          "collider": 0,
+          "radius": 0.18
+        }
+      ],
+      "bodyLifetimes": [
+        {
+          "id": "traveler",
+          "deathTick": null
+        }
+      ],
+      "colliderIdentity": [
+        {
+          "collider": 0,
+          "id": "traveler"
+        }
+      ],
+      "skippedEmissions": 0,
+      "maxSpeed": 2.2360790664057832,
+      "limitedSteps": 0
+    }
+  },
+  "proofs": {
+    "independentLinearPrefixEqual": true,
+    "replayExact": true,
+    "newClearedSuffixAndUndo": true,
+    "newEqualsFork": true,
+    "traceUnchanged": true,
+    "sourceTailExcluded": true
+  }
+}

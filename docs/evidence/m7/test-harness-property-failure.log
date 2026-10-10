@@ -1,0 +1,29 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparison.test.ts
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparison.test.ts (11 tests | 1 failed) 1776ms
+   ❯ T10 shared fork and actual continuation (10)
+     × C: independent analytic directional oracle exceeds 0.5 m at one second with no limiting 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparison.test.ts > T10 shared fork and actual continuation > C: independent analytic directional oracle exceeds 0.5 m at one second with no limiting
+TypeError: Cannot read properties of undefined (reading '1')
+ ❯ tests/comparison.test.ts:75:23
+     73|     const h = c.host.settings.stepNumerator / c.host.settings.stepDeno…
+     74|     expect(b.linvel[1]).toBeCloseTo(2, 4);
+     75|     expect(Math.abs(b.position[1] - 1)).toBeLessThan(2 * h + 1e-4);
+       |                       ^
+     76|     expect(b.position[1] - baseline.poses[1]!).toBeGreaterThanOrEqual(…
+     77|     expect(c.host.limitedSteps).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  00:44:05
+   Duration  2.08s (tests 90%, transform 7%, import 2%)
+

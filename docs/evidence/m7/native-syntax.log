@@ -1,0 +1,3 @@
+Command: zsh -n scripts/verify/native/m7-compare.zsh scripts/verify/native/m7-perf.zsh
+Exit: 0
+Scope: syntax only; native execution NOT RUN.

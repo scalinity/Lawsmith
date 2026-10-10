@@ -1,0 +1,118 @@
+{
+  "commands": [
+    {"atTick":60,"payload":{"field":{"edgeFade":0,"enabled":false,"expression":{"direction":[0,1,0],"kind":"directional","strength":0},"id":"sideways","pose":{"position":[0,0,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[50,10,10],"kind":"box"}},"kind":"putField"},"sequence":1,"transactionId":"tx-1"},
+    {"atTick":60,"payload":{"field":{"edgeFade":0,"enabled":true,"expression":{"direction":[0,1,0],"kind":"directional","strength":0},"id":"sideways","pose":{"position":[0,0,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[50,10,10],"kind":"box"}},"kind":"putField"},"sequence":2,"transactionId":"tx-2"}
+  ],
+  "createdLaws": [],
+  "finalCheck": {
+    "engineSha256": "21c7717fbf7fb784c68a7cf01ba3ab475a558e4b777ee37aae98d3fcc3bb7afc",
+    "stateSha256": "dd835dec27c52105ac2f0b670df5e1aa532137f6896770ac0ff3cae5dc4bee91"
+  },
+  "finalTick": 180,
+  "format": "lawsmith.run",
+  "lastAppliedSequence": 2,
+  "qualification": {
+    "app": "Lawsmith 0.0.0",
+    "arch": "test",
+    "build": "headless",
+    "bundle": "vitest (unbundled sources)",
+    "os": "test host",
+    "tauri": "none: Node harness",
+    "webkit": "none: Node V8"
+  },
+  "root": {
+    "format": "lawsmith.scene",
+    "metadata": {
+      "title": "Two Futures"
+    },
+    "presentation": {
+      "arrows": true,
+      "laws": [
+        {
+          "color": "#55aaa4",
+          "id": "sideways",
+          "label": "Sideways",
+          "visible": true
+        }
+      ]
+    },
+    "requiredCapabilities": ["primitive.directional.v1", "region.box.v1"],
+    "schemaVersion": 1,
+    "semantic": {
+      "bodies": [
+        {
+          "collider": {
+            "kind": "sphere",
+            "radius": 0.18
+          },
+          "collisionMode": "fixedOnly",
+          "id": "traveler",
+          "initialAngularVelocity": [0, 0.5, 0],
+          "initialLinearVelocity": [1, 0, 0],
+          "initialPose": {
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0, 1]
+          },
+          "massKg": 1,
+          "material": {
+            "friction": 0,
+            "restitution": 0
+          },
+          "type": "dynamic"
+        }
+      ],
+      "emitters": [],
+      "fields": [
+        {
+          "edgeFade": 0,
+          "enabled": true,
+          "expression": {
+            "direction": [0, 1, 0],
+            "kind": "directional",
+            "strength": 0
+          },
+          "id": "sideways",
+          "pose": {
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0, 1]
+          },
+          "region": {
+            "halfExtents": [50, 10, 10],
+            "kind": "box"
+          }
+        }
+      ],
+      "seed": 1279350577,
+      "simulation": {
+        "ambientAcceleration": [0, 0, 0],
+        "maxAppliedAcceleration": 200,
+        "maxLiveBodies": 256,
+        "profile": "lawsmith-m1-rapier-0.21.0",
+        "stepDenominator": 120,
+        "stepNumerator": 1
+      },
+      "units": "m-kg-s"
+    }
+  },
+  "runId": "m7-evidence-synthetic-source",
+  "schemaVersion": 2,
+  "simulationFingerprint": {
+    "commands": "lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick",
+    "effective": {
+      "contactErp": 0.0728205069899559,
+      "dt": 0.008333333767950535,
+      "lengthUnit": 1,
+      "maxCcdSubsteps": 1,
+      "normalizedAllowedLinearError": 0.004999999888241291,
+      "normalizedPredictionDistance": 0.019999999552965164,
+      "numInternalPgsIterations": 1,
+      "numSolverIterations": 4
+    },
+    "fieldKernel": "affine-ak-v2",
+    "profile": "lawsmith-m1-rapier-0.21.0",
+    "rapier": "0.21.0",
+    "rapierWasmSha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b",
+    "step": "1/120"
+  },
+  "stopped": "user"
+}

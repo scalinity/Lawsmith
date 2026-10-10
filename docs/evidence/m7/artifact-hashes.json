@@ -1,0 +1,30 @@
+{
+  "codeCandidate": "ccdcf4ef0b4ecb5228d6b36338bdc57a6169dfd7",
+  "acceptedBase": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "files": [
+    {
+      "file": "dist/index.html",
+      "bytes": 16383,
+      "sha256": "a50dc94c4fc9cb1dbfb55a6c8fed9709b81cfd072534ba8183c971ddf4bdc9fd"
+    },
+    {
+      "file": "dist/assets/index-BlGEIOdO.css",
+      "bytes": 17749,
+      "sha256": "ef53f48a1b4fbcacd1ae3c69dfbf8f7537f91a9735e5fd52a56fa3dc494acaff"
+    },
+    {
+      "file": "dist/assets/index-D_1e4Wmn.js",
+      "bytes": 5569451,
+      "sha256": "2e81a778af181dac416e8948f1123032bf9aea4de5848c1a4b78ec7da8deb407"
+    },
+    {
+      "file": "src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/lawsmith",
+      "bytes": 14094432,
+      "sha256": "9f178d75b13b4ace1227efc44f7b9c05b4012d51a9c0d798dc64716b679ab880"
+    }
+  ],
+  "startupFaultStrings": {
+    "VITE_LAWSMITH_FAULT": "ABSENT",
+    "rapier-hang": "ABSENT"
+  }
+}
