@@ -146,16 +146,18 @@ export class Comparison {
     if (this.b.halted) { this.controller.discardPending(); this.b.releaseHalt(); }
   }
   /** The only alternate scheduler entry; replay consumes exact commands before lifecycle. */
-  advance(): boolean {
+  advance(stepped?: (host: SimulationHost) => void): boolean {
     if (!this.canAdvance || this.replayStopped) return false;
     if (this.replay) {
       this.settleReplay();
       if (!this.replay) return false;
       this.b.step();
+      stepped?.(this.b);
       this.settleReplay();
     } else {
       this.settle();
       this.b.step();
+      stepped?.(this.b);
       this.controller.sync();
       if (this.b.halted) {
         this.controller.discardPending();

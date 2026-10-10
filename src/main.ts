@@ -504,30 +504,30 @@ async function start() {
     if (runs.recordingState === 'recording' && host.tick > 0 && host.tick % CHECKPOINT_TICKS === 0) runCheckpoint('live', host, runs.recorder!.runId);
     const t0 = performance.now();
     const before = host.tick;
-    if (comparing()) runs.comparison!.advance();
-    else host.step();
+    const completed = (steppedHost: SimulationHost) => {
+      const t1 = performance.now();
+      // Observe n→n+1 while the host still holds the laws used by that transition.
+      probes.advance(steppedHost);
+      const t2 = performance.now();
+      trails.record(steppedHost, explained);
+      const t3 = performance.now();
+      pushBounded(stepTimes, t1 - t0, 480);
+      if (p0?.phase === 'measure') {
+        p0.steps.push(t1 - t0);
+        if (probes.settings.enabled && probes.settings.count > 0) p0.probes.push(t2 - t1);
+        if (trails.mode !== 'off') p0.trails.push(t3 - t2);
+        p0.ticks.push(t3 - t0);
+      }
+    };
+    if (comparing()) runs.comparison!.advance(completed);
+    else { host.step(); if (host.tick !== before) completed(host); }
     if (comparing() && (runs.comparison!.atHorizon || !runs.comparison!.replaying && alternateWasReplaying)) {
       alternateWasReplaying = false;
       setPlaying(false, runs.comparison!.atHorizon ? 'comparison-horizon' : 'alternate-replayed');
       applyFreeze();
       renderPanel();
     }
-    // Halted at a recording limit: nothing stepped, so nothing is observed (SPEC §13.3).
     if (host.tick === before) return false;
-    const t1 = performance.now();
-    // Observers of the completed step: probes take the same transition, trails sample every fourth tick.
-    probes.advance(host);
-    const t2 = performance.now();
-    trails.record(host, explained);
-    const t3 = performance.now();
-    const elapsed = t1 - t0;
-    pushBounded(stepTimes, elapsed, 480);
-    if (p0?.phase === 'measure') {
-      p0.steps.push(elapsed);
-      if (probes.settings.enabled && probes.settings.count > 0) p0.probes.push(t2 - t1);
-      if (trails.mode !== 'off') p0.trails.push(t3 - t2);
-      p0.ticks.push(t3 - t0);
-    }
     if (!comparing() && (host.tick === 600 || host.tick === 1200)) captureDigest();
     return true;
   };

@@ -5,6 +5,7 @@ import { firstDivergence, observe } from '../src/simulation/replay';
 import { driveScheduledFrame, FixedStepScheduler } from '../src/simulation/scheduler';
 import { twoFuturesDocument } from '../src/simulation/comparisonFixtures';
 import { session } from './support/run';
+import { ProbeField } from '../src/observation/probes';
 
 beforeAll(initSimulation);
 const owned: { dispose(): void }[] = [];
@@ -98,4 +99,26 @@ it('F2: failed replacement allocation retains the settled controller and valid s
   finally { (c as unknown as { restore: typeof restore }).restore = restore; }
   expect(c.host).toBe(host); expect(c.controller.liveHost).toBe(host); expect(c.replaying).toBe(false);
   expect(firstDivergence(before, observe(c.host))).toBeNull(); expect(JSON.stringify(c.suffix)).toBe(suffix);
+});
+
+it('F3: completed-step hook preserves original B probes before next-boundary laws; late observation fails', () => {
+  const { c } = setup();
+  const probes = () => { const p = new ProbeField(); p.configure({ enabled: true, count: 8, seed: 13 }); p.sync(c.host); return p; };
+  const sample = (p: ProbeField) => ({ tick: p.tick, x: Array.from(p.position.slice(0, 24)), v: Array.from(p.velocity.slice(0, 24)), alive: Array.from(p.alive.slice(0, 8)) });
+  const original = probes(), expected: ReturnType<typeof sample>[] = [];
+  for (let tick = 1; tick <= 8; tick++) {
+    c.advance(); original.advance(c.host); expected.push(sample(original));
+    if (tick === 3) c.controller.editField('sideways', 'Law at n+1', (f) => ({ ...f, expression: { kind: 'directional', direction: [0, 1, 0], strength: 2 } }));
+    if (tick === 4) c.controller.setAmbient([0.3, 0, 0]);
+    if (tick === 5) c.controller.editField('sideways', 'Drag/gain', (f) => ({ ...f, expression: { kind: 'gain', gain: { kind: 'constant', value: 0.7 }, child: { kind: 'linearDrag', coefficient: 2 } } }));
+    if (tick === 8) c.controller.editField('sideways', 'Terminal', (f) => ({ ...f, enabled: false }));
+  }
+  const end = observe(c.host);
+  c.replayAlternate(); const replayed = probes(), actual: ReturnType<typeof sample>[] = [];
+  while (c.replaying) c.advance((host) => { replayed.advance(host); actual.push(sample(replayed)); });
+  expect(actual).toEqual(expected); expect(firstDivergence(end, observe(c.host))).toBeNull();
+  // Accepted M6A late-observation negative control: move observation after boundary settlement.
+  c.replayAlternate(); const late = probes(), wrong: ReturnType<typeof sample>[] = [];
+  while (c.replaying) { if (c.advance()) { late.advance(c.host); wrong.push(sample(late)); } }
+  expect(wrong).not.toEqual(expected); expect(wrong[2]).not.toEqual(expected[2]);
 });
