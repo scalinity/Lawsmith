@@ -301,6 +301,7 @@ describe('T11 lifetime and source retention', () => {
     await comparisonQualification(TEST_IDENTITY, (data) => events.push(data));
     expect(events.length).toBeGreaterThanOrEqual(10);
     expect(events.every((v) => v.pass === true)).toBe(true);
+    expect(events.find((v) => v.case === 'L stable identities and absent counterparts')).toMatchObject({ pass: true, tick: 8, unequalTickRejected: true });
   }, 60_000);
 
   it('R: 20 enter/calculate/replay/new/close cycles return all comparison worlds and buffers to bounded steady state', () => {

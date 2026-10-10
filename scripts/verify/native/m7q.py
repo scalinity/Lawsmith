@@ -56,6 +56,7 @@ def resources(samples):
 def fixtures(samples):
     require(any(e.get('complete') is True for e in samples), 'packaged fixtures incomplete')
     require(all(e.get('pass') is True for e in samples if 'case' in e), 'packaged fixture failure')
+    require(any(e.get('case') == 'L stable identities and absent counterparts' and e.get('pass') is True and e.get('tick') == 8 and e.get('unequalTickRejected') is True and e.get('indexSeparation', 0) > 0 for e in samples), 'missing stable-ID/absence negative control')
     for case in ('F effective absolute triangle', 'I retained suffix replay', 'P late commit refusal', 'resources released', 'F1 frame budget 2', 'F1 frame budget 8', 'F1 paused boundary 0', 'F1 paused boundary 73', 'F2 immediate refusal replay 0/false', 'F2 immediate refusal replay 0/true', 'F2 immediate refusal replay 7/false', 'F2 immediate refusal replay 7/true', 'F3 completed-step probes and late negative control', 'F4 importable title 8180', 'F4 importable title 8181', 'F4 importable title 8192', 'F5 comparison fault recovery', 'source law presentation', 'D/E nonvacuous source-tail control'):
         require(any(e.get('case') == case and e.get('pass') is True for e in samples), f'missing {case}')
     retained = next(e for e in samples if e.get('case') == 'I retained suffix replay')

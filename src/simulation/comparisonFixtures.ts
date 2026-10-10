@@ -140,6 +140,15 @@ export async function comparisonQualification(identity: QualificationIdentity, l
     check('Q memory boundary', refused && c.bytes <= COMPARISON_LIMITS.bytes, { bytes: c.bytes, limit: COMPARISON_LIMITS.bytes });
   } finally { c.dispose(); original.dispose(); }
 
+  const absentA = { tick: 8, ids: ['dead', 'kept'], poses: new Float32Array([9, 9, 9, 0, 0, 0, 1, 2, 3, 4, 0, 0, 0, 1]) };
+  const absentB = { tick: 8, ids: ['kept', 'born'], positions: new Float32Array([2, 3, 4, 5, 6, 7]) };
+  const kept = pairedBody('kept', absentA, absentB), dead = pairedBody('dead', absentA, absentB), born = pairedBody('born', absentA, absentB);
+  const indexSeparation = Math.hypot(absentA.poses[0]! - absentB.positions[0]!, absentA.poses[1]! - absentB.positions[1]!, absentA.poses[2]! - absentB.positions[2]!);
+  let unequalTickRejected = false;
+  try { pairedBody('kept', { ...absentA, tick: 9 }, absentB); } catch { unequalTickRejected = true; }
+  check('L stable identities and absent counterparts', kept.separation === 0 && dead.alternate === null && dead.separation === null && born.baseline === null && born.separation === null && JSON.stringify(born.alternate) === '[5,6,7]' && indexSeparation > 0 && unequalTickRejected,
+    { tick: 8, kept, dead, born, indexSeparation, unequalTickRejected });
+
   const live = new SimulationHost(simple.semantic);
   const controller = new DocumentController(simple, live);
   const runs = new RunCoordinator({ controller, identity: () => identity, runId: () => 'm7-source-tail-fixture' });
