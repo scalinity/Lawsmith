@@ -1,16 +1,17 @@
 # M6B qualification record
 
-**Status:** IMPLEMENTED / REVIEW PENDING. Every acceptance criterion passed headless and in the packaged app on one build (Acceptance criteria). The independent complete-state review that MILESTONES strongly recommends before M7 has not run, and only the owner marks M6B accepted (Owner checks). `m6b` is pushed and not merged.
-**Candidate:** branch `m6b`, application code at commit `d6966fd`. Every counted native result ran on the packaged app built from it at 23:16:39 on 2026-10-08 (Evidence provenance). The later commits change only `scripts/verify/`, `tests/` and `docs/`. Base: `321d9e1` (M6A accepted and merged, application code `2c79d2d`, on `main`, unchanged throughout).
+**Status:** IMPLEMENTED / REVIEW PENDING. The independent complete-state review found AC5 failing on two defects that let the displayed replay change while a seek is pending. Both are fixed, and every M6B check passed again headless and in the packaged repaired app (Review; Acceptance criteria). Only the owner marks M6B accepted (Owner checks). `m6b` is pushed and not merged.
+**Candidate:** branch `m6b`, application code at commit `66bd5bf`. Its M6B native results ran on the packaged app built from it at 20:47:53–20:48:08 on 2026-10-09 (Evidence provenance). `d6966fd`, the reviewed code, differs from it only in `src/main.ts` (the pending-seek play path and the Shift+C fixture) and `src/simulation/contexts.ts` (`advanceReplay`'s pending-seek guard). The M6A, M1–M5 and P0–P2 native results ran on `d6966fd` and were not re-run (Owner checks). The later commits change only `scripts/verify/` and `docs/`. Base: `321d9e1` (M6A accepted and merged, application code `2c79d2d`, on `main`, unchanged throughout).
 **Scope:** M6B only. **M7 NOT STARTED.**
 
 **Restore a complete checkpoint, replay forward, and land exactly where uninterrupted replay lands.**
 
 - **What a checkpoint holds.** It is the engine snapshot plus every future-affecting value the host holds beyond it. It is captured in one synchronous call between steps, at `settled-before-lifecycle`. It is keyed by run, history context, consumed prefix, simulation semantics, runtime and exact `(tick, cursor)`.
 - **How a seek runs.** It restores the closest eligible checkpoint into a new world out of sight, or rebuilds from the root through M6A's `LinearReplay`. It replays forward in batches of about 8 ms, and only the latest request's world replaces the displayed replay, once it holds the target exactly.
-- **Packaged app, lab recording.** The seek scenario played on from every kind of seek. Each of the 11 replay checkpoints it logged equals the live recording's digest at the same address, 8 of them from worlds a seek restored from a checkpoint.
-- **Packaged app, the in-app fixture (Shift+C).** It compared 47 targets on the lab recording and 46 on a 60 s P1 recording with M6A's checkpoint-free replay, state and engine bytes, and found no difference.
-- **Latency gate.** Cached seeks on that P1 recording reached the first drawn frame at p95 209 ms, against a 250 ms gate. An uncached rebuild of all 7,200 steps ran in batches of 8 ms (p95) and showed its progress and Cancel after 108 ms.
+- **While a seek is pending the displayed replay holds still.** Play and Space only toggle playing from the target, and nothing advances the displayed replay, not even a partly applied group of commands.
+- **Packaged app, lab recording.** The seek scenario played on from every kind of seek. Each of the 12 replay checkpoints it logged equals the live recording's digest at the same address, 9 of them from worlds a seek restored from a checkpoint.
+- **Packaged app, the in-app fixture (Shift+C).** It compared 47 targets on the lab recording and 46 on a 60 s P1 recording with M6A's checkpoint-free replay, state and engine bytes, and found no difference. On both, Play and Space pressed during long seeks left the displayed replay unchanged and paused, Cancel left it paused, and a commit played on from the target.
+- **Latency gate.** Cached seeks on that P1 recording reached the first drawn frame at p95 182 ms, against a 250 ms gate. An uncached rebuild of all 7,200 steps ran in batches of 8 ms (p95) and showed its progress and Cancel after 112 ms.
 
 ## Environment
 
@@ -22,7 +23,8 @@
 | Toolchain | Node 26.10.0, npm 12.2.0, rustc/cargo 1.99.0 (`rust-toolchain.toml`) |
 | Tauri family, frontend packages | Unchanged from M6A: `git diff 321d9e1..HEAD` touches no `package.json`, `package-lock.json`, `Cargo.toml`, `Cargo.lock` or toolchain pin. The app reports `tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.37.1` |
 | Simulation profile, kernel, run format | Profile `lawsmith-m1-rapier-0.21.0`, kernel `affine-ak-v2`, Rapier 0.21.0 and its WASM SHA-256 `17cfa80e…dd4b`: unchanged. A restored world's eight effective parameters are checked against the profile on every restore. The run format stays `lawsmith.run` schema 2 |
-| Bundle (candidate `d6966fd`, built 2026-10-08 23:16:39–23:17:05; every counted native run) | `Lawsmith.app`, 14 MB. SHA-256: `dist/assets/index-BiDBAne9.js` `a0c4f337ff9e92ae8b7e25e8b06aaa9771529a9a093cd3f64bf16220dc3900ec`, `index-X1uorxkK.css` `068b946f73f1151bc04b1e3bf08f5839a22a3355f1e5333e137f78e7119b9814`, `index.html` `bdc1b00a4c96e2218b29066206ecdf0a5adc1072064abd9fff91ff49faf226de`, shell binary `Contents/MacOS/lawsmith` `20448332a981014a3f7aaf0e4796a406db8a17f8ab920c8750567745141ce648`. The packaged app's own identity reports the bundle as `index-BiDBAne9.js sha256:a0c4f337…`, the same bytes |
+| Bundle (candidate `66bd5bf`, built from `caba623` 2026-10-09 20:47:53–20:48:08; the counted `m6b-seek` and `m6b-long`) | `Lawsmith.app`, 14 MB. SHA-256: `dist/assets/index-D25RU-Ve.js` `3dd2f808087376f34c78b28f9677e89fad56c4d2fc1457e63761a62153d72b09`, `index-X1uorxkK.css` `068b946f73f1151bc04b1e3bf08f5839a22a3355f1e5333e137f78e7119b9814` (unchanged), `index.html` `dfc699a750b5b824056a648ea03fd74ef399892ffcbbc98bd24133685ee99fc1`, shell binary `Contents/MacOS/lawsmith` `8763db13d179ef0a0cd6d93bf1f67156fa9d9022e8bb7c3401880341eb6de2e7` (it embeds the frontend). The packaged app's own identity reports the bundle as `index-D25RU-Ve.js sha256:3dd2f808…`, the same bytes |
+| Bundle (reviewed `d6966fd`, built 2026-10-08 23:16:39–23:17:05; the M6A, M1–M5 and P0–P2 runs) | `index-BiDBAne9.js` `a0c4f337ff9e92ae8b7e25e8b06aaa9771529a9a093cd3f64bf16220dc3900ec`, the same CSS, `index.html` `bdc1b00a4c96e2218b29066206ecdf0a5adc1072064abd9fff91ff49faf226de`, shell binary `20448332a981014a3f7aaf0e4796a406db8a17f8ab920c8750567745141ce648` |
 
 ## Commands and outcomes (candidate)
 
@@ -30,14 +32,15 @@
 | --- | --- |
 | `npm ci` | exit 0; `fsevents` install scripts blocked, as expected |
 | `npm run typecheck` | exit 0 |
-| `npx vitest run` | 30 files passed, 3 opt-in measurement files skipped: **637 tests passed, 3 skipped**. That is M6A's 591, unchanged, plus 46 new: `checkpoints` 28, `seek` 17, `workflow` 1 |
+| `npx vitest run` | 30 files passed, 3 opt-in measurement files skipped: **638 tests passed, 3 skipped**. That is M6A's 591, unchanged, plus 47 new: `checkpoints` 28, `seek` 18, `workflow` 1 |
 | `(cd src-tauri && cargo test)` | **27 tests passed**, as M6A (no Rust change) |
 | `(cd src-tauri && cargo check)` | exit 0 |
-| `npm run build` | exit 0; the chunk-size warning of M1–M6A |
+| `npm run build` (within `npx tauri build`) | exit 0; the chunk-size warning of M1–M6A |
 | `npx tauri build --bundles app` | exit 0; `Lawsmith.app`, 14 MB |
 | Fault-injection strings (`rapier-hang`, `LAWSMITH_FAULT`) in `dist/assets` | absent |
-| `VITE_LAWSMITH_MEASURE=1 npx vitest run tests/seekCost.test.ts --silent=false` | exit 0; `m6b/seek-cost-headless.log` (Seeking) |
-| Native scenarios (packaged `d6966fd`) | M6B: `m6b-seek` 18 checks, `m6b-long` 11. M6A, carried: `m6a-legible` 7, `m6a-record` 35, `m6a-guard` 19, `m6a-pace` 3. M1–M5 regression: `m5-compose` 37, `m5-legible` 3, `m4-trails` 6, `m4-perf` 13 (P0, P2), `m3-p1` 6 (P1), `m4-explain` 28, `m3-handles` 43, `m3-demo` 26, `m2-demo` 14, `m2-authoring` 20, `m2-files` 19, `m2-guard` 36. Every counted run exited 0 with no failed check (Evidence provenance) |
+| `VITE_LAWSMITH_MEASURE=1 npx vitest run tests/seekCost.test.ts --silent=false` | exit 0 on `d6966fd`; `m6b/seek-cost-headless.log` (Seeking). Its path has no pending-seek play request or frame, so the fixes do not reach it |
+| Native scenarios, M6B (packaged `66bd5bf`) | `m6b-seek` 18 checks, `m6b-long` 12. Each exited 0 with no failed check (Evidence provenance) |
+| Native scenarios, the rest (packaged `d6966fd`, not re-run) | M6A, carried: `m6a-legible` 7, `m6a-record` 35, `m6a-guard` 19, `m6a-pace` 3. M1–M5 regression: `m5-compose` 37, `m5-legible` 3, `m4-trails` 6, `m4-perf` 13 (P0, P2), `m3-p1` 6 (P1), `m4-explain` 28, `m3-handles` 43, `m3-demo` 26, `m2-demo` 14, `m2-authoring` 20, `m2-files` 19, `m2-guard` 36. Every counted run exited 0 with no failed check |
 
 ## Implementation
 
@@ -45,12 +48,12 @@
 | --- | --- |
 | `src/simulation/host.ts` | `checkpoint()`: the engine snapshot and the sidecar in one synchronous call at a settled boundary; `new SimulationHost(root, checkpoint)`: a new world from `World.restoreSnapshot`, every lookup rebuilt from the sidecar and checked against the restored world and the root; `HostCheckpoint`, `BodyHandleMapping`, `BodyLifetime`, `EmitterRuntimeState`, `ColliderIdentity`, `CheckpointRejected` |
 | `src/simulation/checkpoints.ts` (new) | `Checkpoint` (the sidecar and its key: run, history context, consumed-prefix identity, simulation fingerprint, runtime identity, address, size, checksum); `captureCheckpoint`; `intact`; `PrefixIdentities`; `onPath`; `ineligible`; `CheckpointCache` (64 MiB, 16 MiB each, least recently used first); `RestoredReplay`, forward replay from a restored checkpoint with its own logic; `CHECKPOINT_TICKS` 240 |
-| `src/simulation/contexts.ts` | The coordinator owns the cache: a capture right after each replay step onto a 240th tick; `scope(record)` (a history context per record, its prefix identities, this build's fingerprint and runtime); `seek`, `seekWork`, `cancelSeek`, `seeking`, `seekProgress`: a latest-wins seek job that reconstructs out of sight and replaces the displayed replay only at its exact target; every context change cancels it; a dropped or replaced record takes its checkpoints with it; `counts()` adds the seek world and the cache |
+| `src/simulation/contexts.ts` | The coordinator owns the cache: a capture right after each replay step onto a 240th tick; `scope(record)` (a history context per record, its prefix identities, this build's fingerprint and runtime); `seek`, `seekWork`, `cancelSeek`, `seeking`, `seekProgress`: a latest-wins seek job that reconstructs out of sight and replaces the displayed replay only at its exact target; every context change cancels it; while one is pending `advanceReplay` advances nothing, not even a unit cut short; a dropped or replaced record takes its checkpoints with it; `counts()` adds the seek world and the cache |
 | `src/simulation/replay.ts` | Unchanged: `LinearReplay`, the checkpoint-free oracle |
-| `src/main.ts`, `index.html`, `src/style.css` | The replay timeline (moving it requests tick n after its included commands); the seek request; its batch pump, each batch its own task within 8 ms; progress, a progressbar and Cancel seek after 100 ms. Escape, Step, a file dialog, a busy workflow and every context change end a pending seek. Play during a seek plays from its target once it commits. A commit shows its world paused with fresh views, keeps the explained body if it lives there, and says when trails start again. `seek` events report each request, superseding, cancel, commit and first drawn frame; `checkpoint` events report captures and rejections. Shift+C runs M6B's fixtures in the app |
+| `src/main.ts`, `index.html`, `src/style.css` | The replay timeline (moving it requests tick n after its included commands); the seek request; its batch pump, each batch its own task within 8 ms; progress, a progressbar and Cancel seek after 100 ms. Escape, Step, a file dialog, a busy workflow and every context change end a pending seek. During a seek the displayed replay stays paused: Play and Space toggle playing from its target once it commits, and the button shows that request. A commit shows its world paused with fresh views, keeps the explained body if it lives there, and says when trails start again. `seek` events report each request, superseding, cancel, commit and first drawn frame; `checkpoint` events report captures and rejections. Shift+C runs M6B's fixtures in the app |
 | `src/persistence/workflow.ts` | Open Recording quiets the app again after the panel, before building its candidate, so a seek's world never sits beside it |
-| `tests/` | `checkpoints` 28, `seek` 17, `workflow` +1, `seekCost` (opt-in); `tests/support/run.ts` `interventionRecord` |
-| `scripts/verify/native/` | `m6b-seek`, `m6b-long`, `m6bq.py`, `logq.py timeline` |
+| `tests/` | `checkpoints` 28, `seek` 18, `workflow` +1, `seekCost` (opt-in); `tests/support/run.ts` `interventionRecord` |
+| `scripts/verify/native/` | `m6b-seek`, `m6b-long`, `m6bq.py` (`checkpoints`, `seeks`, `retained`, `latest`, `deferred`), `logq.py timeline` |
 
 No dependency, engine, profile, run format or M6A run semantic changed. The run file stays `lawsmith.run` schema 2. `LinearReplay` and the M6A test "production replay restores no snapshot" are untouched.
 
@@ -141,6 +144,7 @@ Negative controls (the sidecar audit above): each changed component of the 720 c
 | Six rapid requests, then Return to authoring | nothing commits; one world (authoring); the authoring host, scene object, revision, applied revision, generation, undo, redo, state and engine bytes identical |
 | Replay from start, an imported recording, a dropped record | each cancels the pending seek and frees its world |
 | Cancel | frees the reconstruction; the displayed replay's state and engine bytes identical |
+| A seek requested while the displayed replay is cut short midway through a 130-command same-tick group, at (0, 64) | paused and playing frames leave its cursor, observation and engine bytes unchanged; canceled, the group finishes from (0, 64); replaced, the seek's world shows exactly (0, 120), equal to the oracle. Without the guard the first paused frame finishes the group |
 | An uncached seek to the end with a clock bounding batches | more than 100 batches, each stopping at its deadline (within its bookkeeping), progress monotonic, nothing displayed before the commit |
 | A checkpoint's byte changed in the cache | caught by the checksum before `World.restoreSnapshot` is called (a spy sees no call); the record's cache discarded; rebuilt from the root, exact; the seek recaptured fresh checkpoints |
 | Checkpoints keyed to another runtime | never used; rebuilt from the root, exact; `replayQualified` unchanged |
@@ -161,44 +165,45 @@ An earlier run of the same measurement read p95 394 ms while a reviewer agent's 
 
 ## In the packaged app: seeking a real intervention (`m6b-seek`; AC1, AC2, AC4, AC5, AC8, AC9)
 
-Packaged `d6966fd`, the M6A lab scene (`scripts/verify/scenes/m6a-lab.lawsmith.json`). Real gizmo drags, clicks on the timeline, keys and a real quit. `m6bq.py` reads the session's log in order with its own code.
+Packaged `66bd5bf`, the M6A lab scene (`scripts/verify/scenes/m6a-lab.lawsmith.json`). Real gizmo drags, clicks on the timeline, keys and a real quit. `m6bq.py` reads the session's log in order with its own code.
 
 | Step | Native result |
 | --- | --- |
-| The recording | tick 0 to 3138: the push dragged across the stream while it played (one gesture, its samples on many boundaries), the Storm Bottle disabled and enabled, two paused edits at the final tick; 29 commands, stopped by the user, with a final check |
-| Replay | a timeline over the whole recording (max 3138, at 0) |
-| Seek before the intervention (timeline) | committed at (326, 0), rebuilt from the root out of sight (nothing cached yet), 326 steps, 22 ms; the replay shows exactly that address, paused, read-only |
-| Played through the intervention, then forward to its result | (2097, 25) from the checkpoint at (960, 0), 1,137 steps, 198 ms |
-| Back before it | (474, 0) from the checkpoint at (240, 0), 234 steps, 24 ms |
-| Trails | 32 trails stored and drawn while the replay played; after a seek to (1942, 25) none stored or drawn, and the status said "Trails start again from here."; steps rebuilt them and the note went |
-| Scrubbing the timeline | 20 requests, each commit the newest request at its moment, the last one shown (`m6bq latest`). On this light scene each cached seek (7–25 ms) ended before the next pointer move, so none was superseded; `m6b-long` shows superseding |
-| Played on to the end | from (2835, 27), a restored world, to (3138, 29): the replay's own end check matched the recorded final digests, after 25 seeks |
-| `m6bq checkpoints` | every replay checkpoint the session logged equals the live recording's at its address: 3 from a world a seek rebuilt from the root, **8 from worlds a seek restored from a checkpoint** |
+| The recording | tick 0 to 3131: the push dragged across the stream while it played (one gesture, its 24 samples on many boundaries), the Storm Bottle disabled and enabled, two paused edits at the final tick; 28 commands, stopped by the user, with a final check |
+| Replay | a timeline over the whole recording (max 3131, at 0) |
+| Seek before the intervention (timeline) | committed at (318, 0), rebuilt from the root out of sight (nothing cached yet), 318 steps, 25 ms; the replay shows exactly that address, paused, read-only |
+| Played through the intervention, then forward to its result | (2085, 24) from the checkpoint at (960, 0), 1,125 steps, 190 ms |
+| Back before it | (473, 0) from the checkpoint at (240, 0), 233 steps, 32 ms |
+| Trails | 32 trails stored and drawn while the replay played; after a seek to (1922, 24) none stored or drawn, and the status said "Trails start again from here."; steps rebuilt them and the note went |
+| Scrubbing the timeline | 20 requests, each commit the newest request at its moment, the last one shown (`m6bq latest`). On this light scene each cached seek (4–38 ms) ended before the next pointer move, so none was superseded; `m6b-long` shows superseding |
+| Played on to the end | from (2829, 26), restored from the checkpoint at (2400, 25), to (3131, 28): the replay's own end check matched the recorded final digests, after 25 seeks |
 | `m6bq seeks` | 25 requests, 25 commits (1 from the root, 24 from checkpoints), each holding exactly its target |
-| Shift+C on this recording | 47 targets (special addresses, 3 between same-tick commands, seeded ticks; 8 from the root, 39 restored) equal to the checkpoint-free oracle, state and engine bytes; cached seeks p50 32 ms, p95 36 ms to the drawn frame (a 26 s recording: reported, not gated); uncached 3,138 steps in 49 batches of 8 ms (p95; max 9), progress at 103 ms; a cancel once progress showed, the displayed replay unchanged; 20 seek/reset cycles at 1 world, 13 checkpoints and 1,161,333 bytes after every cycle, peak 3 worlds; geometries and scene objects as before |
-| `m6bq retained` | the retained authoring world's 66 digests, at every switch since the replay began (22 entries, 22 Returns, 22 restarts, the fixture's cycles included), are identical |
+| Shift+C on this recording | 47 targets (special addresses, every same-tick group's inner cursors, seeded ticks; 7 from the root, 40 restored) equal to the checkpoint-free oracle, state and engine bytes; cached seeks p50 32 ms, p95 34 ms to the drawn frame (a 26 s recording: reported, not gated); uncached 3,131 steps in 44 batches of 8 ms (p95; max 9), progress at 100 ms; a cancel once progress showed, at 101 ms, the displayed replay unchanged. **Play and Space during long seeks** (the review's R1), through their own handlers: every press toggled only the request to play from the target and the button showed it, the displayed replay held still and paused across frames, stayed paused after Cancel, and after a commit played on from exactly the target. 20 seek/reset cycles at 1 world, 13 checkpoints and 1,161,757 bytes after every cycle, peak 3 worlds; geometries 43, textures 5 and scene objects 135 before, after every cycle and after |
+| `m6bq retained` | the retained authoring world's 68 digests, at every switch since the replay began (22 entries, 22 Returns, 24 restarts, the fixture's cycles and controls cases included), are identical |
+| `m6bq checkpoints`, after Shift+C | every replay checkpoint the session logged equals the live recording's at its address: 3 from a world a seek rebuilt from the root, **9 from worlds a seek restored from a checkpoint** |
 
-Recording: [m6b-seek.mp4](m6b/m6b-seek.mp4) (168 s of 170; Evidence provenance). Captures: [the replay](m6b/seek-01-replay.png), [before the intervention](m6b/seek-02-before-intervention.png), [its result](m6b/seek-03-after-intervention.png), [trails start again](m6b/seek-04-trails-start-again.png), [trails rebuilt](m6b/seek-05-trails-rebuilt.png), [scrubbed](m6b/seek-06-scrubbed.png), [the end](m6b/seek-07-end.png).
+Recording: [m6b-seek.mp4](m6b/m6b-seek.mp4) is of the `d6966fd` run (168 s of 170; Evidence provenance); this run's was not published. Captures, this run: [the replay](m6b/seek-01-replay.png), [before the intervention](m6b/seek-02-before-intervention.png), [its result](m6b/seek-03-after-intervention.png), [trails start again](m6b/seek-04-trails-start-again.png), [trails rebuilt](m6b/seek-05-trails-rebuilt.png), [scrubbed](m6b/seek-06-scrubbed.png), [the end](m6b/seek-07-end.png).
 
 ## In the packaged app: long reconstructions on P1 (`m6b-long`; AC5, AC7, AC8)
 
-Packaged `d6966fd`, the P1 workshop at a 1600×1000 CSS viewport under More Space, recorded while a law was dragged until the 60 s limit closed it at tick 7200 (144 commands).
+Packaged `66bd5bf`, the P1 workshop at a 1600×1000 CSS viewport under More Space, recorded while a law was dragged until the 60 s limit closed it at tick 7200 (145 commands).
 
 | Step | Native result |
 | --- | --- |
-| Return to authoring while a full 7,200-step reconstruction was pending | the seek ended `canceled` with reason `return` and never committed; one world (authoring); the retained world's state and engine digests, tick, cursor, revision, generation and history equal to those logged when the replay began |
-| Cancel seek | in a new replay, a long seek showed its progress and Cancel seek after 100 ms (the status "tick 0 of 7200, change 0 of 144. Seeking to tick 7200, change 144… 34%", the progressbar, the thumb at the target, `worlds 3`); Cancel seek ended it; the same replay at tick 0, no seek world, the timeline back at 0 |
-| A newer request during a long reconstruction | the long seek superseded, only the newer one committed and shown (`m6bq latest`: 2 requests, 1 superseded, 1 committed, the last shown) |
+| Play pressed twice while a full 7,200-step reconstruction was pending (the review's R1, its own reproduction) | two real clicks on Play, 585 and 913 ms after the request, logged `play-on-commit` then `pause-on-commit` (`control`), and no play of the displayed replay came between the request and the seek's end (`m6bq deferred`). Before the fix the second press started it |
+| Return to authoring while that reconstruction was still pending | the seek ended `canceled` with reason `return` at 2,261 ms, after 2,940 of its 7,200 steps from the root, and never committed; one world (authoring); the retained world's state and engine digests, tick, cursor, revision, generation and history equal to those logged when the replay began |
+| Cancel seek | in a new replay, a long seek showed its progress and Cancel seek after 100 ms (the status "tick 0 of 7200, change 0 of 145. Seeking to tick 7200, change 145… 16%", the progressbar, the thumb at the target, `worlds 3`); Cancel seek ended it at 1,870 ms, from the checkpoint at (2880, 58); the same replay at tick 0, "Paused.", no seek world, the timeline back at 0 |
+| A newer request during a long reconstruction | the long seek, from (4800, 96), superseded after 319 ms; only the newer one, (2156, 48), committed (from (1920, 42), 236 steps, drawn at 192 ms) and is shown (`m6bq latest`: 2 requests, 1 superseded, 1 committed, the last shown) |
 | `m6bq seeks` | no superseded or canceled request ever committed (4 requested, 1 committed, 1 superseded, 2 canceled) |
-| Shift+C (screen recording off) | 46 targets (6 from the root, 40 restored) equal to the oracle; **cached seeks to the first drawn frame p50 108, p95 209, p99 225, max 225 ms** over 100 seeded targets (to the commit: p95 202 ms; work p95 177 ms; steps p50 120, p95 233); the gate applies (a 60 s recording) and passes. **Uncached** to the end: 7,200 steps in 6.14 s, 666 batches of p50 8, p95 8, p99 14, max 15 ms, progress shown at 108 ms. A cancel once progress showed, at 103 ms, the replay unchanged. **20 seek/reset cycles**: 1 world, 30 checkpoints and 11,675,228 bytes after every cycle, geometries 58 and scene objects 268 after every cycle and after, peak 3 worlds |
+| Shift+C (screen recording off) | 46 targets (6 from the root, 40 restored) equal to the oracle; **cached seeks to the first drawn frame p50 98, p95 182, p99 186, max 186 ms** over 100 seeded targets (to the commit: p95 175 ms; work p95 161 ms; steps p50 120, p95 233); the gate applies (a 60 s recording) and passes. **Uncached** to the end: 7,200 steps in 5.31 s, 604 batches of p50 8, p95 8, p99 13, max 15 ms, progress shown at 112 ms. A cancel once progress showed, at 107 ms, the replay unchanged. **Play and Space during long seeks**: as on the lab recording, every gate held. **20 seek/reset cycles**: 1 world, 30 checkpoints and 11,404,108 bytes after every cycle, geometries 58, textures 5 and scene objects 268 after every cycle and after, peak 3 worlds |
 
-Recording: [m6b-long.mp4](m6b/m6b-long.mp4) (the replay section, 38 s). Captures: [returned](m6b/long-01-returned.png), [progress](m6b/long-02-progress.png), [canceled](m6b/long-03-canceled.png), [superseded](m6b/long-04-superseded.png).
+Recording: [m6b-long.mp4](m6b/m6b-long.mp4) is of the `d6966fd` run (its replay section, 38 s); this run's was not published. Captures, this run: [returned](m6b/long-01-returned.png), [progress](m6b/long-02-progress.png), [canceled](m6b/long-03-canceled.png), [superseded](m6b/long-04-superseded.png).
 
-Natively a P1 cached seek's steps run at about 0.72–0.86 ms each, quicker than the ~1.05 ms they average in interactive play: in the seek loop nothing renders between steps.
+Natively a P1 cached seek's steps run at about 0.71 ms each (the median of work over steps across the 100 seeks; 0.68 ms at the 5th percentile), quicker than the ~1.05 ms they average in interactive play: in the seek loop nothing renders between steps.
 
 ## M6A, carried: its four scenarios on this build (AC9; thread "M6A native re-run")
 
-M6A's remediated code (`2c79d2d`) never ran natively before acceptance. Its scenarios ran here on M6B's build, which contains it.
+M6A's remediated code (`2c79d2d`) never ran natively before acceptance. Its scenarios ran here on M6B's reviewed build, `d6966fd`, which contains it. They were not re-run on `66bd5bf`. None of them requests a seek, and the fixes change behavior only while one is pending; by the project's rule a native result counts only on the build it ran on (Owner checks).
 
 | Scenario | Native result |
 | --- | --- |
@@ -208,6 +213,8 @@ M6A's remediated code (`2c79d2d`) never ran natively before acceptance. Its scen
 | `m6a-pace` | 3 checks: P1 at 1600×1000 recorded with drags for 41 s (97 commands), interval p95/p99 18/18 ms, step 2/2, edit p95 19 recording and 17 replaying; the replay matched its recorded end |
 
 ## M1–M5 regression
+
+On the reviewed build, not re-run on `66bd5bf`, as M6A's above.
 
 | Scenario (packaged `d6966fd`) | Result |
 | --- | --- |
@@ -225,7 +232,7 @@ M6A's remediated code (`2c79d2d`) never ran natively before acceptance. Its scen
 
 ## Performance (AC8; the performance gate)
 
-**P0, P1, P2 on the candidate** (packaged `d6966fd`; SPEC §18.2 protocol as in M2–M6A: a focused window, a 1600×1000 CSS viewport at DPR 2 rendered under the 1.5 cap, recording off, 10 s warmup, 60 s measured, three runs, real drags about every 1.5 s feeding edit latency). p50 / p95 / p99 / max in ms; runs are never averaged:
+**P0, P1, P2 on the reviewed build** (packaged `d6966fd`, not re-run on `66bd5bf`: outside a pending seek the fixes add a few field reads per frame and nothing else; SPEC §18.2 protocol as in M2–M6A: a focused window, a 1600×1000 CSS viewport at DPR 2 rendered under the 1.5 cap, recording off, 10 s warmup, 60 s measured, three runs, real drags about every 1.5 s feeding edit latency). p50 / p95 / p99 / max in ms; runs are never averaged:
 
 | Workload | Run | Step | Edit → frame (n) | Frame interval | Frame work | Sim/wall |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -245,25 +252,25 @@ Every run is valid and meets its gates, at M6A's figures within a millisecond. T
 
 | Gate | Target | Measured |
 | --- | --- | --- |
-| Cached seek in a 60 s recording (P1, 100 seeded targets) | p95 ≤ 250 ms | p95 **209 ms** (p50 108, p99 225, max 225) |
-| Uncached work in batches | about 8 ms | p50 8, p95 8, p99 14, max 15 ms over 666 batches (a batch ends after the unit of work that crosses its deadline: one P1 step, or a chunk of commands) |
-| Progress and Cancel seek | shown after 100 ms | at 108 ms (P1), 103 ms (lab) |
-| Checkpoint cache | ≤ 64 MiB; ≤ 16 MiB each | 30 P1 checkpoints, 11,675,228 bytes; one 389,553 bytes (headless 389,553: the same scene) |
-| 20 seek/reset cycles | bounded worlds and cache bytes | 1 world, 30 checkpoints, 11,675,228 bytes after every cycle; peak 3 worlds |
+| Cached seek in a 60 s recording (P1, 100 seeded targets) | p95 ≤ 250 ms | p95 **182 ms** (p50 98, p99 186, max 186) on `66bd5bf`; p95 209 ms on `d6966fd`, which the review recomputed from its raw samples |
+| Uncached work in batches | about 8 ms | p50 8, p95 8, p99 13, max 15 ms over 604 batches (a batch ends after the unit of work that crosses its deadline: one P1 step, or a chunk of commands) |
+| Progress and Cancel seek | shown after 100 ms | at 112 ms (P1), 100 ms (lab) |
+| Checkpoint cache | ≤ 64 MiB; ≤ 16 MiB each | 30 P1 checkpoints, 11,404,108 bytes; each of the 112 P1 captures 280,504–407,230 bytes (headless: 389,553 for its own recording of the same scene) |
+| 20 seek/reset cycles | bounded worlds and cache bytes | 1 world, 30 checkpoints, 11,404,108 bytes after every cycle; peak 3 worlds |
 
 ## Acceptance criteria
 
 | # | Criterion | Result | Evidence |
 | --- | --- | --- | --- |
-| 1 | Restore plus forward replay matches uninterrupted checkpoint-free M6A replay exactly at selected `(tick, cursor)` in the qualified app, through contacts, emissions, deaths and field edits | **PASS**, natively | Shift+C in the packaged app: 47 lab and 46 P1 targets equal in state and engine bytes, 79 of them restored; `m6b-seek`: 8 replay checkpoints from restored worlds equal the live recording's; headless: from each 240th tick and 8 more addresses, equal at every boundary to the end (Restored versus linear) |
-| 2 | Targets between intervals; birth/death boundaries and paused revisions once each; final-boundary and zero-duration records | **PASS**, natively | headless: 720's death and birth exactly once after the restore, each cursor between the commands at 500, the final tick before, between and after its commands, a zero-duration record at cursors 0–3; natively: 3 targets between same-tick commands, the final boundary, ticks between checkpoints |
+| 1 | Restore plus forward replay matches uninterrupted checkpoint-free M6A replay exactly at selected `(tick, cursor)` in the qualified app, through contacts, emissions, deaths and field edits | **PASS**, natively | Shift+C in the packaged app: 47 lab and 46 P1 targets equal in state and engine bytes, 80 of them restored; `m6b-seek`: 9 replay checkpoints from restored worlds equal the live recording's; headless: from each 240th tick and 8 more addresses, equal at every boundary to the end (Restored versus linear) |
+| 2 | Targets between intervals; birth/death boundaries and paused revisions once each; final-boundary and zero-duration records | **PASS**, natively | headless: 720's death and birth exactly once after the restore, each cursor between the commands at 500, the final tick before, between and after its commands, a zero-duration record at cursors 0–3; natively: every inner cursor of the lab recording's same-tick groups, the final boundary before and after its paused edits, ticks between checkpoints |
 | 3 | A later cursor at the same tick cannot serve an earlier target; a newer unrecorded live checkpoint cannot serve a stopped recording; keys include record, prefix, context and runtime | **PASS**, headless | Keys and eligibility; the eligibility, selection and live-checkpoint cases; natively no source was ever after its target (`m6bq seeks`, the fixtures) |
-| 4 | Restoring creates a new world and rebuilds its wrappers and maps; old wrappers cannot survive; the retained authoring context stays intact; no position/velocity-only reconstruction | **PASS**, natively | The sidecar audit; the restore checks every handle, radius and name against the restored world and refuses a mismatch, allocating nothing; a new generation, the displaced world freed, views cleared; natively 66 identical authoring digests; the restore uses engine bytes only, never poses |
-| 5 | Superseded results never overwrite a newer target, another replay context or Return; only the latest fully reconstructed target becomes visible; progress explicit | **PASS**, natively | `m6b-long`: a long seek superseded, Return while pending, Cancel; `m6b-seek`: every commit the newest request; headless: superseding, rapid seeks then Return, Replay from start, import and drop all cancel |
-| 6 | A corrupt compatible cache is discarded and rebuilt from root and log; an incompatible runtime is not repaired or labeled exact | **PASS**, headless | a changed byte caught by the checksum before Rapier reads it, the record's cache discarded, rebuilt from the root exactly; checkpoints of another runtime never used, `replayQualified` unchanged; natively no checkpoint was rejected in any run, and a run of another WebKit is refused (`m6a-guard`) |
+| 4 | Restoring creates a new world and rebuilds its wrappers and maps; old wrappers cannot survive; the retained authoring context stays intact; no position/velocity-only reconstruction | **PASS**, natively | The sidecar audit; the restore checks every handle, radius and name against the restored world and refuses a mismatch, allocating nothing; a new generation, the displaced world freed, views cleared; natively 68 identical authoring digests; the restore uses engine bytes only, never poses |
+| 5 | Superseded results never overwrite a newer target, another replay context or Return; only the latest fully reconstructed target becomes visible; progress explicit | **PASS**, natively, on `66bd5bf` (the review's FAIL on `d6966fd`, R1 and R2, fixed) | While a seek is pending the displayed replay changes in no way: Play and Space only toggle playing from the target (Shift+C on both recordings; `m6b-long`'s two real Play clicks, `m6bq deferred`), and no frame advances it, not even a partly applied command group (headless, fails without the guard). `m6b-long`: a long seek superseded, Return while pending, Cancel; `m6b-seek`: every commit the newest request; headless: superseding, rapid seeks then Return, Replay from start, import and drop all cancel |
+| 6 | A corrupt compatible cache is discarded and rebuilt from root and log; an incompatible runtime is not repaired or labeled exact | **PASS**, headless | a changed byte caught by the checksum before Rapier reads it, the record's cache discarded, rebuilt from the root exactly; checkpoints of another runtime never used, `replayQualified` unchanged; natively no checkpoint was rejected in any run (174 captures in the two `66bd5bf` runs), and a run of another WebKit is refused (`m6a-guard`, on `d6966fd`) |
 | 7 | Cache ≤ 64 MiB, one checkpoint ≤ 16 MiB; eviction cannot alter root/log; repeated restore/seek frees worlds and buffers | **PASS**, natively | the bounded cache cases; natively 20 cycles bounded on both recordings, peak 3 worlds |
 | 8 | Cached p95 ≤ 250 ms in a 60 s recording; uncached in ~8 ms batches with progress/cancel after 100 ms; trails rebuild or clear explicitly | **PASS**, natively | Performance; `m6b-seek` trails |
-| 9 | Read-only replay and M6A's Save Scene / Return ownership unchanged; seeking cannot mutate the draft, undo or recovery | **PASS**, natively | `m6bq retained`; M6A's four scenarios on this build; headless AC9 case |
+| 9 | Read-only replay and M6A's Save Scene / Return ownership unchanged; seeking cannot mutate the draft, undo or recovery | **PASS**, natively | `m6bq retained` on `66bd5bf`; M6A's four scenarios on `d6966fd`; headless AC9 case |
 
 ## Findings
 
@@ -278,6 +285,10 @@ Every run is valid and meets its gates, at M6A's figures within a millisecond. T
 4. **The engine restores exactly.** A spike before any code, and every restore since, found the restored world's snapshot byte-identical to the captured one. It stepped identically to the uninterrupted world through births, removals (arena handle reuse) and contacts, and so did a restore of a restored world. Rapier rebuilds its physics pipeline and CCD solver on restore; neither carries state that changes a step.
 5. **Harness slips in the first counted attempts** (fixed; the app was right each time; Evidence provenance).
 6. **Two machine events stopped attempts before any click.** First, another session's screenshot interface (`screencaptureui`) covered the screen, as in M6A; the owner chose to have it quit. Second, Notification Center covered the screen for more than the 10 s the guard waits out a banner. One later attempt yielded to the owner's input (exit 4), by design.
+7. **The independent review found two ways the displayed replay changed while a seek was pending** (fixed; Review R1, R2). R1 came from the pre-native review's S8.
+8. **A deferred Play moves the replay cluster's buttons** (informational). With Play pressed during a seek, " Then playing." wraps the status onto a second line at 1600×1000. Replay from start, Return to authoring and Cancel seek drop 17 CSS px, so the pointer may be over a moved button just when Cancel seek is wanted ([capture](m6b/review-then-playing.png), from a discarded attempt on the same build). The pre-native review's F2 kept Cancel seek's own coming and going from moving the row; this is the status line's. No criterion is affected. Whether to keep the status on one line is an owner decision (Owner checks).
+9. **A saturated machine made synthetic clicks arrive late** (QA environment; Evidence provenance). Three `ffmpeg` screen recorders orphaned by an earlier Lawsmith session on 2026-10-06 kept `replayd` near 170% CPU. With another project's Unreal Engine build, the load average reached 30–42. Clicks reached the page after the harness had declared them lost, its resends toggled twice, and the first re-run failed before any seek. With the owner's agreement the three recorders were stopped (`replayd` fell to 2%), and the counted runs waited for that build to end.
+10. **A `kp:space` from `cliclick` reached no keydown handler** (harness; unresolved). In a re-run attempt, Space sent while a long seek was pending logged no toggle. No scenario had sent a `kp:` key before; every other key goes through `t:` with modifiers. The app logs no raw key events, so whether WebKit delivered the key to the focused timeline is not established. Space through its handler is covered by Shift+C. Space on a real keyboard with the timeline focused is an owner check.
 
 Carried, not changed by M6B: the clean Dock Quit/logout policy, emitter rotation, panel height, the window jump and the recording controls at the 900×600 minimum (M8; with the timeline the replay cluster now reaches y 224 there, M6A's finding 4 measured 206); startup compile and probes at the work limits (M9); the Tauri dialog patch, the next Tauri/TAO update and DPR across displays; M4's moving-body and M5's Storm Bottle trackpad checks.
 
@@ -298,16 +309,36 @@ Carried, not changed by M6B: the clean Dock Quit/logout policy, emitter rotation
 
 The reviewer verified `tsc` clean and the 45 T10 cases passing, and found no other path where a superseded or canceled seek could commit or a promise could stay unresolved.
 
-**Independent complete-state review:** strongly recommended by MILESTONES before accepting M6B and beginning M7; not run (Owner checks).
+**Independent complete-state review** (MILESTONES M6B Evidence required for review). A read-only Codex review with two specialist reviewers, a debugger and an auditor, of the evidence head `c119e3f` (application code `d6966fd`) against `321d9e1`.
+
+- **Design verdict.** The complete-state checkpoint approach is sound under the M6A oracle. `LinearReplay` is unchanged and independent of checkpoints. Its sidecar audit of every host value found no omitted future-affecting state. Its probes confirmed the structural rejection, the restore exception's fallback without leaking a world, and the root-and-log rebuild.
+- **Execution.** It re-ran the suite in an isolated copy: 637 tests, 27 Rust tests, typecheck and `cargo check` all passed. It recomputed the P1 latency percentiles from the 100 raw samples, 108/209/225/225 ms, with p95 209 ms on the 96 checkpoint-backed requests alone, and the P0/P1/P2 percentiles from the nine raw captures.
+- **Dispositions.** AC1–AC4 and AC6–AC9 PASS. AC5 FAIL, on two defects that let the displayed replay change while a seek is pending, each reproduced headlessly with the real coordinator.
+
+`/address` resolved both findings and the review's correction to this record, each committed and pushed separately:
+
+| # | Severity | Finding | Resolution |
+| --- | --- | --- | --- |
+| R1 | critical (high) | **Repeated Play started the old displayed replay during a seek.** The pending-seek interception applied only when the request differed from the deferred intention. Play and Space toggled `scheduler.playing`, which stays false throughout a seek, so a second press repeated the first, fell through and started the displayed replay. Cancel then left it playing from where it had drifted: (0, 0) → (2, 0). The previous review's S8 (`8def2cb`) introduced it | `72957b6`: every play request during a pending seek sets the deferred intention only. Play, Space and the button's pressed state read that intention. Shift+C presses Play and Space through their own handlers during long seeks and gates on the displayed replay holding still and paused, staying paused after Cancel, and playing on from the target after a commit. `m6b-long` (`0a3ac0d`) clicks the real Play twice during its long seek, and `m6bq deferred` checks the log |
+| R2 | warning (medium) | **A pending seek kept settling the displayed replay's partly applied same-tick group.** Each paused frame's zero-unit `advanceReplay` finished a unit cut short: (0, 64) → (0, 128) with 130 tick-zero commands | `66bd5bf`: `advanceReplay` advances nothing while a seek is pending and reports the replay's own partial state, so no replay checkpoint is logged at a partial address. Every path that moves the displayed replay goes through it. A seek test (Seeking) fails without the guard |
+| R3 | note | The record counted 11 replay checkpoints in the lab log; the log holds 12 | The in-script verdict ran before Shift+C logged a 12th: (240, 0), from a world rebuilt from the root and equal to the live one. Over that whole log (`c119e3f`), `m6bq checkpoints` counts 4 from the root and 8 restored, all equal. `caba623` runs the verdict after the fixtures; on `66bd5bf` it covered all 12 of that run's |
+
+The review recommended no change to the checkpoint representation, engine, profile or run schema, and none was made.
 
 ## Owner checks
 
-- **Independent complete-state review before M7** (MILESTONES M6B Evidence required for review; ORCHESTRATION names GPT-6.1 Sol). Review `d6966fd` against `321d9e1`, the linear oracle and the restored result separately. In order:
-  1. `src/simulation/replay.ts`, which is unchanged, and `RestoredReplay`, `captureCheckpoint` and `SimulationHost.checkpoint`/`restore`, against SPEC §14.1–14.2 and this record's sidecar audit.
-  2. `tests/checkpoints.test.ts` and `tests/seek.test.ts`.
-  3. The native evidence above.
+- **Whether the review's remediation is enough** (Review). The review ran on `d6966fd`. Its two findings are fixed in `72957b6` and `66bd5bf`, and its remediation scope was met: pending-seek play intention, control state and displayed-replay work only, two regression fixtures, the affected checks re-run on the repaired native candidate. A narrow re-review of `d6966fd..66bd5bf` is the owner's call.
+- **Whether to re-run M6A, M1–M5 and P0–P2 on `66bd5bf`** (Commands and outcomes). They passed on `d6966fd`. None of them requests a seek, and the fixes act only while one is pending. The project's rule counts a native result only on the build it ran on. Re-running them would take about 70 minutes of hands-off time, as on 2026-10-09 (Evidence provenance).
+- **Space with the timeline focused, on a real keyboard** (finding 10). Steps:
+  1. Open `Lawsmith.app` (packaged `66bd5bf`).
+  2. Open `scripts/verify/scenes/p1-workshop.lawsmith.json`.
+  3. Record until the 60 s limit stops it, then press **Replay recording**.
+  4. Click the timeline near its end, then press Space twice while it says "Seeking…".
+  5. Expect "Then playing." after the first press and not after the second, with the replay still at tick 0 and nothing moving.
+  6. After the seek ends, expect it paused at the target.
+- **The status line under a deferred Play** (finding 8). Decide whether the cluster's buttons may move when " Then playing." appears, or whether the status should keep one line.
 - **Scrubbing on a real trackpad** (finding 1). Steps:
-  1. Open `Lawsmith.app` (packaged `d6966fd`).
+  1. Open `Lawsmith.app` (packaged `66bd5bf`).
   2. Open `scripts/verify/scenes/p1-workshop.lawsmith.json`.
   3. Press **Record from tick 0** and **Play**, and drag a law now and then until the recording stops itself at 60 s.
   4. Press **Replay recording**, and drag the timeline across once quickly and once slowly.
@@ -318,16 +349,27 @@ The reviewer verified `tsc` clean and the 45 T10 cases passing, and found no oth
 
 ## Evidence provenance
 
-- **One build carried every counted native result.** The packaged app was built at 23:16:39–23:17:05 on 2026-10-08 from `1b57e47`, whose application code is `d6966fd`. Every counted run started after it, and every counted app log opens with a `qualification` event naming that bundle, `index-BiDBAne9.js sha256:a0c4f337…`. The commits after `d6966fd` change only `scripts/verify/`, `tests/` and `docs/` (`git diff --name-only d6966fd HEAD`). After the last run, a rebuild from HEAD (`2151aa9`) reproduced the four hashes in the Environment table byte for byte, with the fault strings absent from `dist/assets`.
-- **The hands-off window.** The owner agreed it ("you drive, I step away") at about 02:44 on 2026-10-09 and confirmed "continue I am off the keyboard now" at 03:04. The counted runs:
+- **The repaired candidate's M6B runs.**
+  - **The build.** The packaged app was built at 20:47:53–20:48:08 on 2026-10-09 from `caba623`, whose application code is `66bd5bf`. Both counted runs started after it, and each app log holds one `qualification` event naming that bundle, `index-D25RU-Ve.js sha256:3dd2f808…`. The commits after `66bd5bf` change only `scripts/verify/` and `docs/`. After the last run, a rebuild from HEAD (`0a3ac0d`) reproduced the four hashes in the Environment table byte for byte, with the fault strings absent from `dist/assets`.
+  - **The hands-off windows.** The owner agreed them ("you drive, I step away") for the re-run, and again for each of the two later `m6b-long` attempts.
+  - **The counted runs.** `m6b-seek` 23:21:27–23:25:15 (the harness at `caba623`). `m6b-long` 23:40:02–23:44:44 (the harness at `0a3ac0d`). No click was lost in `m6b-seek`; one synthetic release was resent in `m6b-long`, and its log then showed it arrive. During `m6b-seek` another application came to the front once, and the harness brought Lawsmith back before its next input.
+  - **Discarded attempts** (not cited; logs not published). In each, the app's log shows it behaving as specified.
+    - **Re-run 1**, 23:12:59–23:14:23: the machine was saturated (finding 9), and `m6b-seek` stopped before any seek. With the owner's agreement the orphaned recorders were stopped, and the next attempt waited for the other build to end.
+    - **Re-run 2's `m6b-long`** (its `m6b-seek` is the counted one): the presses sat in the Cancel segment, whose seek, from the checkpoint at (2160, 48), committed 4.02 s after its request, before the Space press. At the recorded end, Space correctly does nothing (`c47857d`).
+    - **Re-run 3**: a `cliclick` `kp:space` logged no toggle (finding 10; `0a3ac0d`).
+  - **Recordings.** Both counted runs recorded the screen. The recordings were not reviewed frame by frame for personal content, so they were not published; `m6b/m6b-seek.mp4` and `m6b/m6b-long.mp4` remain the `d6966fd` runs'.
+  - **Personal identifiers.** The published logs and the eleven captures were checked for credentials, personal paths, user, account and host names, and none appear. So was the crop `m6b/review-then-playing.png`, a part of a discarded attempt's window capture.
+  - **State the QA touched, restored.** The display read 1168×755@120 before and after. Lawsmith's panel preferences were re-imported from their pre-QA export, again leaving only `NSNavPanelExpandedSizeForOpenMode`. No QA disk image was attached, and no test instance was left running.
+- **The reviewed build's runs** (`d6966fd`; M6A carried, M1–M5, P0–P2, and the first M6B runs, whose figures the review audited at `c119e3f`). The packaged app was built at 23:16:39–23:17:05 on 2026-10-08 from `1b57e47`, whose application code is `d6966fd`. Every counted run started after it, and every counted app log opens with a `qualification` event naming that bundle, `index-BiDBAne9.js sha256:a0c4f337…`. After the last run, a rebuild from `2151aa9` reproduced its four hashes byte for byte.
+- **The reviewed build's hands-off window.** The owner agreed it ("you drive, I step away") at about 02:44 on 2026-10-09 and confirmed "continue I am off the keyboard now" at 03:04. The counted runs:
   - chain 4 (the harness at `456f938`, each scenario in a new QA folder of its own):
     - `m6b-seek` 03:04:49–03:08:24;
     - `m6a-legible`, `m6a-record`, `m6a-guard` and `m6a-pace` 03:08:25–03:19:57;
     - `m5-compose` through `m2-guard` 03:19:57–04:13:30.
   - chain 9 (the harness at `2151aa9`): `m6b-long` 04:32:22–04:36:53.
 - **Lost synthetic events.** The harness resent 14 lost synthetic releases once each, and the app's log then showed each one arrive (M0 finding 1's class): `m4-perf` 7, `m3-p1` 2, and one each in `m2-demo`, `m3-demo`, `m3-handles`, `m4-explain` and `m6a-pace`.
-- **Logs.** The logs in `m6b/native/` are the counted runs': for each scenario, the app logs' `[lawsmith]` lines (`<scenario>--<log>.log`) and the harness's step log (`<scenario>-steps.log`).
-- **Discarded attempts** (not cited; logs not published). On the candidate build, in order, before chain 4 and between chains 4 and 9:
+- **Logs.** The logs in `m6b/native/` are the counted runs': for each scenario, the app logs' `[lawsmith]` lines (`<scenario>--<log>.log`) and the harness's step log (`<scenario>-steps.log`). `m6b-seek` and `m6b-long` are the `66bd5bf` runs; `git show c119e3f:docs/evidence/m6b/native/…` holds the `d6966fd` runs' logs and captures, which the review audited. Every other scenario's logs are the `d6966fd` runs'.
+- **Discarded attempts on the reviewed build** (not cited; logs not published). In order, before chain 4 and between chains 4 and 9:
   - **Rehearsal 1:** stopped before its first click by another session's screenshot interface (`screencaptureui`, a full-screen window at layer 24). The owner chose to have it quit.
   - **Chain 1:** `m6b-seek`'s wait read the last seek event, which after a commit is its `drawn` event (`1347d9b`).
   - **Chain 2:** `m6b-seek` required superseding on the lab scene, where cached seeks end between pointer moves (`456f938`).
