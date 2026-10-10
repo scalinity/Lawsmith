@@ -2,7 +2,7 @@
 // alternate. Source commands beyond the fork are deliberately not an input to either continuation.
 import { DocumentController } from '../domain/document';
 import { cloneFrozen, type SceneDocument } from '../domain/scene';
-import { createDocument } from '../persistence/sceneFile';
+import { createDocument, parseScene, serializeScene } from '../persistence/sceneFile';
 import { fnv64 } from './checkpoints';
 import { SimulationHost, type AppliedCommand, type HostCheckpoint } from './host';
 import type { Address } from './replay';
@@ -323,9 +323,13 @@ export class Comparison {
   }
   alternateSetup(): SceneDocument {
     if (this.replay) throw new Error('Finish Replay Alternate before exporting its setup.');
-    this.controller.settle();
+    this.settle();
     const snapshot = this.controller.snapshot(this.controller.camera);
-    return createDocument({ ...this.root.semantic, fields: snapshot.semantic.fields, simulation: { ...this.root.semantic.simulation, ambientAcceleration: snapshot.semantic.simulation.ambientAcceleration } }, { ...snapshot.metadata, title: `${snapshot.metadata.title} — Alternate` }, snapshot.presentation);
+    const document = createDocument({ ...this.root.semantic, fields: snapshot.semantic.fields, simulation: { ...this.root.semantic.simulation, ambientAcceleration: snapshot.semantic.simulation.ambientAcceleration } }, snapshot.metadata, snapshot.presentation);
+    // Validate the complete derived scene through the same bounded reader used to reopen it.
+    const parsed = parseScene(serializeScene(document));
+    if (!parsed.ok) throw parsed.error;
+    return parsed.document;
   }
   counts() {
     return { worlds: this.disposed ? 0 : 1 + Number(this.job !== null), generation: this.generation, buffers: this.disposed ? 0 : this.chunks.length * 3 + 1 + Number(this.endpoint !== null) + (this.job ? 3 : 0), frames: this.disposed ? 0 : this.horizon - this.address.tick + Number(this.endpoint !== null), identities: this.ids.length, bytes: this.bytes, suffix: this.commands.length, suffixBytes: this.commandBytes, historyBytes: this.controller.historyBytes, horizon: this.horizon };

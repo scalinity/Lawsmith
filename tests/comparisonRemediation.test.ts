@@ -4,6 +4,8 @@ import { initSimulation, worldCounts } from '../src/simulation/host';
 import { firstDivergence, observe } from '../src/simulation/replay';
 import { driveScheduledFrame, FixedStepScheduler } from '../src/simulation/scheduler';
 import { twoFuturesDocument } from '../src/simulation/comparisonFixtures';
+import { parseScene, serializeScene } from '../src/persistence/sceneFile';
+import { SimulationHost } from '../src/simulation/host';
 import { session } from './support/run';
 import { ProbeField } from '../src/observation/probes';
 
@@ -121,4 +123,23 @@ it('F3: completed-step hook preserves original B probes before next-boundary law
   c.replayAlternate(); const late = probes(), wrong: ReturnType<typeof sample>[] = [];
   while (c.replaying) { if (c.advance()) { late.advance(c.host); wrong.push(sample(late)); } }
   expect(wrong).not.toEqual(expected); expect(wrong[2]).not.toEqual(expected[2]);
+});
+
+it.each([8180, 8181, 8192])('F4: alternate title derived from %i characters parses and reopens without changing the main scene', (length) => {
+  const document = { ...twoFuturesDocument(), metadata: { title: 'x'.repeat(length) } };
+  expect(parseScene(serializeScene(document)).ok).toBe(true);
+  const s = session(document); keep(s.live());
+  const c = keep(s.coordinator.enterComparison());
+  const original = serializeScene(document), main = JSON.stringify(s.controller.snapshot(s.controller.camera));
+  const revision = s.controller.revision;
+  c.controller.editField('sideways', 'Edit B', (f) => ({ ...f, enabled: false }));
+  const exported = c.alternateSetup(), parsed = parseScene(serializeScene(exported));
+  expect(parsed.ok).toBe(true);
+  if (!parsed.ok) throw parsed.error;
+  expect(parsed.document.metadata.title.length).toBeLessThanOrEqual(8192);
+  const reopened = keep(new SimulationHost(parsed.document.semantic)); expect(reopened.tick).toBe(0);
+  expect(reopened.appliedFields()).toEqual(c.host.appliedFields());
+  expect(serializeScene(document)).toBe(original);
+  expect(JSON.stringify(s.controller.snapshot(s.controller.camera))).toBe(main);
+  expect(s.controller.revision).toBe(revision);
 });
