@@ -13,6 +13,9 @@ import { RunRecorder, SIMULATION_FINGERPRINT, sha256Hex } from './recorder';
 import { LinearReplay, type Address } from './replay';
 import { Comparison } from './comparison';
 
+/** Reset Scene rebuilds only the main authored context. Comparison has its own recovery controls. */
+export const canResetScene = (context: Selected): boolean => context === 'authoring';
+
 export type Selected = 'authoring' | 'replay' | 'comparison';
 
 /** The displayed replay: built from the record's root, or restored from a checkpoint by a seek. */

@@ -37,7 +37,7 @@ import {
 } from './simulation/fixtures';
 import { SIMULATION_PROFILE, STEP_SECONDS, SimulationFault, SimulationHost, initSimulation, resetPeakWorlds, worldCounts, xorshift32 } from './simulation/host';
 import { RUN_LIMITS, parseRun, qualificationIdentity, qualified, type RunRecord, type StopReason } from './persistence/runFile';
-import { RunCoordinator, type CheckpointEvent, type FinalCheckResult, type SeekJob, type SeekStatus } from './simulation/contexts';
+import { canResetScene, RunCoordinator, type CheckpointEvent, type FinalCheckResult, type SeekJob, type SeekStatus } from './simulation/contexts';
 import { SIMULATION_FINGERPRINT, exportRun } from './simulation/recorder';
 import { LinearReplay, firstDivergence as replayDivergence, observe, type Address, type Observed } from './simulation/replay';
 import type { TransitionObservation } from './simulation/observation';
@@ -496,7 +496,7 @@ async function start() {
     if (!replaying() && runs.recordingState === 'recording') stopRecording('fault');
     report('simulation-fault', { tick: error.tick, entity: error.entity, reason: error.reason });
     // Reset restarts the authored scene, so a replay's fault does not offer it (as showContext does).
-    showSimError(`${error.message}. The last valid frame is shown.`, !replaying());
+    showSimError(`${error.message}. The last valid frame is shown.`, canResetScene(runs.selected));
   };
 
   const stepTimes: number[] = [];
@@ -557,7 +557,7 @@ async function start() {
   };
 
   const resetScene = () => {
-    if (frozen || replaying() || comparing()) return;
+    if (frozen || !canResetScene(runs.selected)) return;
     if (interaction.gesture) {
       report('sim-control', { action: 'reset-refused', reason: 'gesture active', tick: host.tick });
       return;
@@ -1514,7 +1514,7 @@ async function start() {
     seekedTrails = false;
     if (interaction.selectedId !== null && !appliedLaw(interaction.selectedId)) interaction.select(null);
     // A fault belongs to its world: shown again when that world is, hidden otherwise.
-    if (host.fault) showSimError(`${host.fault.message}. The last valid frame is shown.`, !replaying());
+    if (host.fault) showSimError(`${host.fault.message}. The last valid frame is shown.`, canResetScene(runs.selected));
     else $('sim-error').hidden = true;
   };
 

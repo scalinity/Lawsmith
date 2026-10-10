@@ -5,7 +5,8 @@ import { firstDivergence, observe } from '../src/simulation/replay';
 import { driveScheduledFrame, FixedStepScheduler } from '../src/simulation/scheduler';
 import { twoFuturesDocument } from '../src/simulation/comparisonFixtures';
 import { parseScene, serializeScene } from '../src/persistence/sceneFile';
-import { SimulationHost } from '../src/simulation/host';
+import { SimulationHost, SimulationFault } from '../src/simulation/host';
+import { canResetScene } from '../src/simulation/contexts';
 import { session } from './support/run';
 import { ProbeField } from '../src/observation/probes';
 
@@ -142,4 +143,20 @@ it.each([8180, 8181, 8192])('F4: alternate title derived from %i characters pars
   expect(serializeScene(document)).toBe(original);
   expect(JSON.stringify(s.controller.snapshot(s.controller.camera))).toBe(main);
   expect(s.controller.revision).toBe(revision);
+});
+
+it('F5: a faulted comparison offers comparison recovery, preserves source and never offers Reset Scene', () => {
+  const { s, c } = setup(); const main = observe(s.live()), document = s.controller.snapshot(s.controller.camera);
+  c.advance(); const end = observe(c.host);
+  c.host.fault = new SimulationFault(c.host.tick, 'fixture', 'controlled comparison fault');
+  expect(canResetScene(s.coordinator.selected)).toBe(false); expect(c.canAdvance).toBe(false);
+  c.replayAlternate(); while (c.replaying) c.advance();
+  expect(c.host.fault).toBeNull(); expect(firstDivergence(end, observe(c.host))).toBeNull();
+  c.host.fault = new SimulationFault(c.host.tick, 'fixture', 'controlled comparison fault');
+  c.newAlternate(); expect(c.host.fault).toBeNull(); expect(c.host.tick).toBe(c.address.tick);
+  expect(firstDivergence(main, observe(s.live()))).toBeNull();
+  s.coordinator.closeComparison(); expect(canResetScene(s.coordinator.selected)).toBe(true);
+  expect(s.controller.snapshot(s.controller.camera)).toEqual(document);
+  expect(firstDivergence(main, observe(s.live()))).toBeNull();
+  expect(canResetScene('replay')).toBe(false);
 });
