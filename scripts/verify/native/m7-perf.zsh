@@ -41,7 +41,9 @@ for run in 1 2 3; do
   keys kd:shift t:p ku:shift
   say "P3 $run: warm10s, restore fork, measure60s"
   wait_log p3-run $(( local_start + 1 )) 90
-  expect p3-run "P3 $run valid and meets all gates" "e['mode']=='packaged' and e['invalid'] is None and e['incomplete'] is None and e['ticks']==7200 and e['samples']['steps']==7200 and e['samples']['edits']>=50 and e['samples']['frames']>=3000 and e['bodies']==100 and e['workload']['laws']==4 and e['viewport']['css']==[1600,1000] and e['viewport']['pixelRatio']<=1.5 and e['stepMs'][1]<=3 and e['stepMs'][2]<=5 and e['workMs'][1]<=14 and e['intervalMs'][1]<=20 and e['intervalMs'][2]<=34 and e['editMs'][1]<=50 and e['simWallRatio']>=0.98 and e['comparison']['bytes']<=67108864"
+  # A fresh presentation clock admits no elapsed time on its first frame. SPEC §18 gates
+  # 60 s of measured playback and sim/wall ≥0.98, with every completed step counted.
+  expect p3-run "P3 $run valid and meets all gates" "e['mode']=='packaged' and e['invalid'] is None and e['incomplete'] is None and e['wallMs']>=60000 and 0<e['ticks']<=7200 and e['samples']['steps']==e['ticks'] and e['samples']['edits']>=50 and e['samples']['frames']>=3000 and e['bodies']==100 and e['workload']['laws']==4 and e['viewport']['css']==[1600,1000] and e['viewport']['pixelRatio']<=1.5 and e['stepMs'][1]<=3 and e['stepMs'][2]<=5 and e['workMs'][1]<=14 and e['intervalMs'][1]<=20 and e['intervalMs'][2]<=34 and e['editMs'][1]<=50 and e['simWallRatio']>=0.98 and e['comparison']['bytes']<=67108864"
 done
 press_expect comparison-close comparison
 keys kd:cmd t:q ku:cmd
