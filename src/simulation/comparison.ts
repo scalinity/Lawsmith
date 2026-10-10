@@ -63,6 +63,7 @@ export class Comparison {
   private job: OwnedJob | null = null;
   private generation = 0;
   private replay: { next: number; end: Address } | null = null;
+  private replayStopped = false;
   private disposed = false;
   metrics: BaselineMetrics | null = null;
   message: string | null = null;
@@ -110,6 +111,8 @@ export class Comparison {
   get suffix(): readonly AppliedCommand[] { return Object.freeze([...this.commands]); }
   get atHorizon(): boolean { return this.b.tick >= this.horizon; }
   get canAdvance(): boolean { return !this.disposed && !this.job && !this.b.fault && !this.b.halted && !this.atHorizon; }
+  /** Only an explicit Play/Step releases a completed replay's boundary hold. */
+  resumeAlternate(): void { this.replayStopped = false; }
   /** Consumer bytes never alias the owned fork or endpoint. */
   forkCheckpoint(): HostCheckpoint {
     if (!this.fork) throw new Error('Comparison is closed.');
@@ -144,7 +147,7 @@ export class Comparison {
   }
   /** The only alternate scheduler entry; replay consumes exact commands before lifecycle. */
   advance(): boolean {
-    if (!this.canAdvance) return false;
+    if (!this.canAdvance || this.replayStopped) return false;
     if (this.replay) {
       this.settleReplay();
       if (!this.replay) return false;
@@ -167,6 +170,7 @@ export class Comparison {
     while (replay.next < this.commands.length && this.commands[replay.next]!.atTick === this.b.tick) this.b.applyRecorded(this.commands[replay.next++]!);
     if (this.b.tick === replay.end.tick && this.b.lastAppliedSequence === replay.end.cursor) {
       this.replay = null;
+      this.replayStopped = true;
       this.controller.reattach(this.b);
       this.attachRecorder();
     }
@@ -179,6 +183,7 @@ export class Comparison {
     const replacement = this.restore(this.fork!);
     this.b.dispose();
     this.b = replacement;
+    this.replayStopped = false;
     this.replay = { next: 0, end };
     this.settleReplay();
   }
@@ -192,6 +197,7 @@ export class Comparison {
     this.commands = [];
     this.commandBytes = 0;
     this.replay = null;
+    this.replayStopped = false;
     this.controller = this.newController();
     this.controller.onAcks = onAcks;
     this.message = null;

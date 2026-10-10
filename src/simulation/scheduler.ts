@@ -21,6 +21,17 @@ export interface FrameAdvance {
 
 const IDLE: FrameAdvance = Object.freeze({ steps: 0, gap: false, droppedMs: 0 });
 
+/** Execute the already calculated budget; callers report whether a physics step completed. */
+export function driveScheduledFrame(scheduler: FixedStepScheduler, steps: number, step: () => boolean): number {
+  let completed = 0;
+  for (let i = 0; i < steps; i++) {
+    if (!scheduler.playing) break;
+    if (!step()) break;
+    completed++;
+  }
+  return completed;
+}
+
 export class FixedStepScheduler {
   playing = false;
   /** Total discarded wall-time debt since construction, in ms. */

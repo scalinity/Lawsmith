@@ -41,7 +41,7 @@ import { RunCoordinator, type CheckpointEvent, type FinalCheckResult, type SeekJ
 import { SIMULATION_FINGERPRINT, exportRun } from './simulation/recorder';
 import { LinearReplay, firstDivergence as replayDivergence, observe, type Address, type Observed } from './simulation/replay';
 import type { TransitionObservation } from './simulation/observation';
-import { FixedStepScheduler } from './simulation/scheduler';
+import { driveScheduledFrame, FixedStepScheduler } from './simulation/scheduler';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
 import { createIngredientPanel } from './ui/ingredientPanel';
 import { ingredientBreakdown } from './simulation/observation';
@@ -469,6 +469,7 @@ async function start() {
     // A replay at its frozen end stays there: Replay from Start, not Play, begins it again.
     if (playing && replaying() && runs.replay?.complete) return;
     if (playing) {
+      runs.comparison?.resumeAlternate();
       scheduler.play();
       // A next-step preview is a paused view; motion shows each completed step instead.
       explainMode = 'applied';
@@ -512,7 +513,7 @@ async function start() {
       renderPanel();
     }
     // Halted at a recording limit: nothing stepped, so nothing is observed (SPEC §13.3).
-    if (host.tick === before) return;
+    if (host.tick === before) return false;
     const t1 = performance.now();
     // Observers of the completed step: probes take the same transition, trails sample every fourth tick.
     probes.advance(host);
@@ -528,6 +529,7 @@ async function start() {
       p0.ticks.push(t3 - t0);
     }
     if (!comparing() && (host.tick === 600 || host.tick === 1200)) captureDigest();
+    return true;
   };
 
   const stepOnce = () => {
@@ -544,6 +546,7 @@ async function start() {
     setPlaying(false, 'step');
     // The boundary settles before the step, as a frame's does, so a checkpoint here sees it settled.
     settleNow();
+    runs.comparison?.resumeAlternate();
     try {
       timedStep();
     } catch (error) {
@@ -2954,18 +2957,18 @@ async function start() {
         stepsThisFrame = driveReplay(scheduler.playing ? advance.steps : 0);
       } else {
         settleNow();
-        for (let i = 0; i < advance.steps; i++) {
+        stepsThisFrame = driveScheduledFrame(scheduler, advance.steps, () => {
           // A recording closed at a limit holds the world until the stop is resolved (SPEC §13.3).
-          if (host.halted) break;
+          if (host.halted) return false;
           try {
-            timedStep();
-            stepsThisFrame += 1;
+            if (!timedStep()) return false;
             frameMaxStepMs = Math.max(frameMaxStepMs, stepTimes[stepTimes.length - 1]!);
+            return true;
           } catch (error) {
             onFault(error);
-            break;
+            return false;
           }
-        }
+        });
         absorb();
       }
       world.updateBodies(host);
