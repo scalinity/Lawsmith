@@ -3,7 +3,7 @@ import { Comparison } from '../src/simulation/comparison';
 import { initSimulation, worldCounts } from '../src/simulation/host';
 import { firstDivergence, observe } from '../src/simulation/replay';
 import { driveScheduledFrame, FixedStepScheduler } from '../src/simulation/scheduler';
-import { twoFuturesDocument } from '../src/simulation/comparisonFixtures';
+import { effectiveTriangleDocument, twoFuturesDocument } from '../src/simulation/comparisonFixtures';
 import { parseScene, serializeScene } from '../src/persistence/sceneFile';
 import { SimulationHost, SimulationFault } from '../src/simulation/host';
 import { canResetScene } from '../src/simulation/contexts';
@@ -159,4 +159,41 @@ it('F5: a faulted comparison offers comparison recovery, preserves source and ne
   expect(s.controller.snapshot(s.controller.camera)).toEqual(document);
   expect(firstDivergence(main, observe(s.live()))).toBeNull();
   expect(canResetScene('replay')).toBe(false);
+});
+
+it('Q1: effective absolute triangle at 519 changes real velocity and A/B remain exact for 600 ticks', () => {
+  const document = effectiveTriangleDocument(), s = session(document); keep(s.live()); s.steps(519);
+  const c = keep(s.coordinator.enterComparison()), job = c.begin();
+  const before = s.live().canonicalState().bodies.find((b) => b.id === 'traveler')!;
+  expect(before.translation.every((v) => Math.abs(v) < 100)).toBe(true);
+  const h = 1 / 120, expectedGain = 0.1 + 0.9 * (2 * ((519 + 13) % 240) / 240);
+  expect(expectedGain).toBeCloseTo(0.49, 14);
+  let firstDelta = 0;
+  for (let i = 0; i < 600; i++) {
+    s.step(); c.batch(job, Infinity, () => 0, 1);
+    const a = c.observeBaselineWork(); if (a) expect(firstDivergence(observe(s.live()), a)).toBeNull();
+    if (i === 0) {
+      firstDelta = s.live().canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1] - before.linvel[1];
+      expect(firstDelta).toBeCloseTo(2 * expectedGain * h, 5);
+      expect(Math.abs(firstDelta - 2 * 0.1975 * h)).toBeGreaterThan(0.004);
+    }
+    expect(c.host.limitedSteps).toBe(0);
+  }
+  const endpoint = keep(new SimulationHost(c.root.semantic, c.endpointCheckpoint()!));
+  expect(firstDivergence(observe(s.live()), observe(endpoint))).toBeNull();
+  const uninterrupted = keep(new SimulationHost(document.semantic));
+  for (let i = 0; i < 519; i++) uninterrupted.step();
+  for (let i = 0; i < 600; i++) {
+    uninterrupted.step(); c.advance();
+    expect(firstDivergence(observe(uninterrupted), observe(c.host))).toBeNull();
+    expect(uninterrupted.canonicalState().bodies.find((b) => b.id === 'traveler')!.translation.every((v) => Math.abs(v) < 100)).toBe(true);
+  }
+  expect(firstDivergence(observe(s.live()), observe(c.host))).toBeNull();
+  // Local-clock mutation: substitute the gain at local zero in an equal fork world.
+  const wrong = keep(new SimulationHost(c.root.semantic, c.forkCheckpoint()));
+  const law = wrong.appliedFields()[0]!;
+  wrong.submit({ kind: 'putField', field: { ...law, expression: { kind: 'directional', direction: [0, 1, 0], strength: 2 * 0.1975 } } }, 1);
+  wrong.step();
+  const delta = wrong.canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1] - before.linvel[1];
+  expect(delta).toBeCloseTo(2 * 0.1975 * h, 5); expect(Math.abs(delta - firstDelta)).toBeGreaterThan(0.004);
 });

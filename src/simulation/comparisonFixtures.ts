@@ -18,6 +18,14 @@ export function twoFuturesDocument(): SceneDocument {
   if (!result.ok) throw result.error;
   return result.document;
 }
+/** A living moving traveler feels the triangle throughout the non-period-aligned fork/horizon. */
+export function effectiveTriangleDocument(): SceneDocument {
+  const root = twoFuturesDocument(), field = root.semantic.fields[0]!;
+  return cloneFrozen(createDocument({ ...root.semantic, emitters: defaultDocument().semantic.emitters,
+    fields: [{ ...field, region: { kind: 'box', halfExtents: [100, 100, 100] },
+      expression: { kind: 'gain', gain: { kind: 'triangle', min: 0.1, max: 1, periodTicks: 240, phaseTicks: 13 },
+        child: { kind: 'directional', direction: [0, 1, 0], strength: 2 } } }] }, { title: 'Effective absolute triangle' }, root.presentation));
+}
 /** P3: exactly 100 authored dynamic spheres, four active laws, no automatic births or deaths. */
 export function p3Document(): SceneDocument {
   const example = twoFuturesDocument();
@@ -58,7 +66,7 @@ export async function comparisonQualification(identity: QualificationIdentity, l
     }
     const endpoint = new SimulationHost(c.root.semantic, c.endpointCheckpoint()!);
     try { divergence ??= firstDivergence(observe(source), observe(endpoint)); } finally { endpoint.dispose(); }
-    check('B/F/G/H actual baseline through contacts, modulation, births and deaths', divergence === null, { divergence, metrics: c.metrics });
+    check('B/G/H actual baseline through contacts, births and deaths', divergence === null, { divergence, metrics: c.metrics });
     source.dispose();
     const reference = new SimulationHost(c.root.semantic, c.forkCheckpoint());
     try {
@@ -78,6 +86,32 @@ export async function comparisonQualification(identity: QualificationIdentity, l
     check('N/O real extension preserves old samples', old.every((v, i) => Object.is(v, c!.frame(c!.address.tick + 600)!.poses[i])) && c.frame(c.horizon + 1) === null, { horizon: c.horizon, bytes: c.bytes });
     c.dispose(); c = null;
   } finally { c?.dispose(); source.dispose(); }
+
+  const triangle = effectiveTriangleDocument();
+  const uninterrupted = new SimulationHost(triangle.semantic);
+  const originalB = new SimulationHost(triangle.semantic);
+  try {
+    for (let n = 0; n < 519; n++) { uninterrupted.step(); originalB.step(); }
+    c = new Comparison(uninterrupted, triangle, 'qualification-effective-triangle');
+    const before = uninterrupted.canonicalState().bodies.find((b) => b.id === 'traveler')!;
+    const job = c.begin(); let divergence = null; let delta = 0;
+    for (let n = 0; n < 600; n++) {
+      uninterrupted.step(); c.batch(job, Infinity, () => performance.now(), 1);
+      if (n === 0) delta = uninterrupted.canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1] - before.linvel[1];
+      const a = c.observeBaselineWork(); if (a) divergence ??= firstDivergence(observe(uninterrupted), a);
+      if (n % 30 === 0) await yieldFrame();
+    }
+    const endpoint = new SimulationHost(c.root.semantic, c.endpointCheckpoint()!);
+    try { divergence ??= firstDivergence(observe(uninterrupted), observe(endpoint)); } finally { endpoint.dispose(); }
+    let inside = true;
+    for (let n = 0; n < 600; n++) {
+      originalB.step(); c.advance(); divergence ??= firstDivergence(observe(originalB), observe(c.host));
+      inside &&= originalB.canonicalState().bodies.find((b) => b.id === 'traveler')!.translation.every((v) => Math.abs(v) < 100);
+      if (n % 30 === 0) await yieldFrame();
+    }
+    check('F effective absolute triangle', divergence === null && inside && Math.abs(delta - 2 * 0.49 / 120) < 2e-5 && Math.abs(delta - 2 * 0.1975 / 120) > 0.004 && c.host.limitedSteps === 0,
+      { divergence, forkTick: 519, expectedGain: 0.49, localZeroGain: 0.1975, expectedDelta: 2 * 0.49 / 120, actualDelta: delta, inside, ticks: 600, bytes: c.bytes });
+  } finally { c?.dispose(); c = null; uninterrupted.dispose(); originalB.dispose(); }
 
   const simple = twoFuturesDocument();
   const original = new SimulationHost(simple.semantic);

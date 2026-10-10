@@ -85,7 +85,7 @@ describe('T10 shared fork and actual continuation', () => {
     c.advance(); expect(JSON.stringify(c.suffix)).toBe(suffix); expect(c.message).toMatch(/history is full/);
   });
 
-  it('B, F, G, H: no-op remains exactly equal for 600 ticks through triangle modulation, emissions, deaths and contacts', () => {
+  it('B, G, H: no-op remains exactly equal for 600 ticks through emissions, deaths and contacts', () => {
     const { s, c } = setup(laboratory(), 311);
     const job = c.begin();
     for (let i = 0; i < 600; i++) {
