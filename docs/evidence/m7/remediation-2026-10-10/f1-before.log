@@ -1,0 +1,77 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparisonRemediation.test.ts
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparisonRemediation.test.ts (4 tests | 4 failed) 84ms
+   × F1: application frame budget 2 stops at the retained endpoint and rejects further implicit steps 44ms
+   × F1: application frame budget 8 stops at the retained endpoint and rejects further implicit steps 7ms
+   × F1: paused-boundary replay at tick 0 stays at its exact cursor with no observation 5ms
+   × F1: paused-boundary replay at tick 73 stays at its exact cursor with no observation 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparisonRemediation.test.ts > F1: application frame budget 2 stops at the retained endpoint and rejects further implicit steps
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/comparisonRemediation.test.ts:37:17
+     35|     return stepped;
+     36|   });
+     37|   expect(steps).toBe(1); expect(samples).toEqual([1]); expect(schedule…
+       |                 ^
+     38|   expect(firstDivergence(endpoint, observe(c.host))).toBeNull();
+     39|   expect(c.host.tick).toBe(1); expect(c.host.lastAppliedSequence).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/comparisonRemediation.test.ts > F1: application frame budget 8 stops at the retained endpoint and rejects further implicit steps
+AssertionError: expected 8 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 8
+
+ ❯ tests/comparisonRemediation.test.ts:37:17
+     35|     return stepped;
+     36|   });
+     37|   expect(steps).toBe(1); expect(samples).toEqual([1]); expect(schedule…
+       |                 ^
+     38|   expect(firstDivergence(endpoint, observe(c.host))).toBeNull();
+     39|   expect(c.host.tick).toBe(1); expect(c.host.lastAppliedSequence).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/comparisonRemediation.test.ts > F1: paused-boundary replay at tick 0 stays at its exact cursor with no observation
+ FAIL  tests/comparisonRemediation.test.ts > F1: paused-boundary replay at tick 73 stays at its exact cursor with no observation
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/comparisonRemediation.test.ts:52:23
+     50|   c.replayAlternate(); expect(c.replaying).toBe(false);
+     51|   let samples = 0;
+     52|   expect(c.advance()).toBe(false);
+       |                       ^
+     53|   const scheduler = new FixedStepScheduler(1000 / 120);
+     54|   expect(driveScheduledFrame(scheduler, 8, () => { if (c.advance()) { …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  05:07:16
+   Duration  299ms (tests 44%, transform 41%, import 14%, worker 1%)
+

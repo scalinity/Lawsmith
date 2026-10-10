@@ -416,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-10 against <code>main</code>: M6B accepted and merged (code <code>66bd5bf</code>); M7 code <code>ccdcf4e</code> implemented, owner native check required; M8 remains locked</span>
+    <span>Realigned 2026-10-10 against <code>main</code>: M6B accepted and merged (code <code>66bd5bf</code>); M7 review required remediation; code <code>4f7454c</code> is headlessly qualified, owner native check required; M8 remains locked</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>M7 awaits native qualification and GPT-6 Pro review.</h1>
-    <p class="lede">M6B is accepted and merged (code <code>66bd5bf</code>; accepted base <code>075c1d5</code>). Codex GPT-6.1 Sol implemented M7 alone on <code>m7</code>; code candidate <code>ccdcf4e</code> passed 660 automated tests and the packaged build. Packaged native checks remain pending an agreed hands-off window. GPT-6 Pro will perform the external, read-only independent review of the immutable candidate. Claude is optional only under separate authorization. The candidate preserves <code>main</code>; M7 is not accepted and M8 stays locked. Native results must be captured on M7; the bounded M6B carry-forward exception does not apply.</p>
+    <h1>M7 remediation awaits native qualification and GPT-6 Pro follow-up.</h1>
+    <p class="lede">M6B is accepted and merged (code <code>66bd5bf</code>; accepted base <code>075c1d5</code>). The independent M7 review returned REMEDIATION REQUIRED against <code>ccdcf4e</code>. Codex GPT-6.1 Sol remediated M7 on <code>m7</code>; immutable code <code>4f7454c</code> passes 676 automated tests, 27 Rust tests and the packaged build. Packaged native checks remain pending an agreed hands-off window. GPT-6 Pro will perform a targeted independent follow-up of the repairs and current-candidate evidence. Claude is optional only under separate authorization. The candidate preserves <code>main</code>; M7 is not accepted and M8 stays locked. Native results must be captured on M7; the bounded M6B carry-forward exception does not apply.</p>
     <cite><code>docs/evidence/M6B.md</code> Owner acceptance; <code>docs/evidence/M7.md</code> Status and session allocation; <code>docs/MILESTONES.md</code> M7</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -654,8 +654,8 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Codex GPT-6.1 Sol implements and remediates. GPT-6 Pro performs the external read-only independent review. Claude is optional only with separate authorization; M7 uses this session-specific allocation.</dd>
-              <dt>Graph permits</dt><dd class="soft">M6B accepted; M7 implemented from <code>075c1d5</code> at <code>ccdcf4e</code>. Native qualification and external read-only review are eligible. M8 requires M7 acceptance.</dd>
-              <dt>Should run</dt><dd class="run">Qualify the packaged M7 candidate under an agreed hands-off window, then give the immutable candidate and evidence to GPT-6 Pro for independent read-only review. M7 alone holds comparison simulation, rendering, UI and qualification paths. This unit stops at a clean pushed review candidate; no merge or acceptance. M8 stays locked.</dd>
+              <dt>Graph permits</dt><dd class="soft">M6B accepted at <code>075c1d5</code>. M7 review returned REMEDIATION REQUIRED; repairs are implemented at <code>4f7454c</code>. Native qualification and targeted GPT-6 Pro follow-up are eligible. M8 requires independent clearance, owner acceptance, merge and push of M7.</dd>
+              <dt>Should run</dt><dd class="run">Qualify packaged code <code>4f7454c</code> under an agreed hands-off window, then give its immutable repairs and evidence to GPT-6 Pro for targeted independent read-only follow-up. If native execution remains unavailable, preserve OWNER NATIVE CHECK REQUIRED and review the runnable repairs with that gate pending. M7 alone holds comparison simulation, rendering, UI and qualification paths. This unit stops at a clean pushed review candidate; no merge or acceptance. M8 stays locked.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M6B, accepted on 2026-10-10. Contracts C4, C7, C9.</dd>
@@ -870,7 +870,7 @@
         </li>
         <li>
           <span class="key"></span>
-          <div><b>The reviewer is never the author’s model</b><p>Reviewers must be independent of the implementation they assess, and M6B warns against one faulty helper on both sides of a comparison. Nothing measures these three models reviewing each other, so the defence against a wrong finding is the loop itself: a finding closes only through a fix whose checks re-run.</p></div>
+          <div><b>The reviewer is never the author’s model</b><p>M7 is allocated explicitly to Codex GPT-6.1 Sol for implementation and GPT-6 Pro for independent review; the generic author allocations above apply to the other units. Reviewers must be independent of the implementation they assess, and M6B warns against one faulty helper on both sides of a comparison. Nothing measures these three models reviewing each other, so the defence against a wrong finding is the loop itself: a finding closes only through a fix whose checks re-run.</p></div>
         </li>
       </ul>
     </div>
@@ -1040,7 +1040,7 @@
       <li>
         <span class="n">4</span>
         <h3>Close out</h3>
-        <p>Seven steps in order, each criterion met before the next. Listed below.</p>
+        <p>Default close-out follows the seven steps below. M7 remediation ends at a clean, pushed <code>m7</code> candidate and a targeted GPT-6 Pro prompt. Merge, branch deletion and M8 are unauthorized in this unit.</p>
       </li>
       <li class="you">
         <span class="n">5</span>
@@ -1062,7 +1062,7 @@
     </ol>
 
     <div class="route">
-      <p><b>Review route with these models.</b> Every review crosses tools.</p>
+      <p><b>Review route with these models.</b> M7 uses Codex GPT-6.1 Sol implementation/remediation and an external GPT-6 Pro independent review. This owner-authorized M7 allocation takes precedence over the generic routes below; Claude requires separate authorization.</p>
       <p>Sol reviews Opus’s units in a Codex session on the candidate SHA. The report goes back to the Claude Code author session for <code>/address</code>.</p>
       <p>When Astra stands in, it authors in Codex. Opus 5.5 reviews it in a Claude Code session, or Sol in Codex. The report goes back to the Codex author session for <code>source-command-address</code>.</p>
       <p>A Claude Code reviewer subagent runs a Claude model, so it cannot review an Opus-authored unit.</p>
@@ -1152,13 +1152,13 @@
       <tbody>
         <tr id="t-m7-native" data-owner="m7" data-short="Native qualification">
           <td data-label="Thread" class="lead">M7 packaged native qualification</td>
-          <td data-label="What the record says">Code <code>ccdcf4e</code> passed headless exactness, 660 automated tests and the packaged build. Two Futures visual proof, packaged T10, three P3 playback runs, P0/P1/P2 regressions, legibility and real-trackpad checks remain pending. No hands-off window was agreed and no native input or app launch occurred. Follow the precise isolated-run procedure in M7's record; earlier native results do not pass M7.</td>
+          <td data-label="What the record says">The remediated code <code>4f7454c</code> passes headless exactness, 676 automated tests, 27 Rust tests, ten native-parser controls and the packaged build. The old <code>ccdcf4e</code> evidence is historical and its review required remediation. Two Futures visual proof, packaged T10, three P3 playback runs, P0/P1/P2 regressions, legibility and real-trackpad checks remain pending. No hands-off window was agreed and no native input or app launch occurred. Follow the precise isolated-run procedure in M7's record; earlier native results do not pass M7.</td>
           <td data-label="Owner"><a href="#m7">M7</a></td>
           <td data-label="Source"><cite><code>M7.md</code> Native checks and exact owner procedure, AC1–AC8</cite></td>
         </tr>
         <tr id="t-m7-review" data-owner="m7" data-short="GPT-6 Pro review">
-          <td data-label="Thread" class="lead">M7 independent complete-state review</td>
-          <td data-label="What the record says">GPT-6 Pro must independently audit the common fork, exact continuations, source-tail exclusion, consumed B suffix, ghost isolation, cancellation, full memory accounting and native evidence. Sol implemented M7 and does not accept its own work. The external review has not been launched. Acceptance, merge and M8 remain gated.</td>
+          <td data-label="Thread" class="lead">M7 targeted independent follow-up</td>
+          <td data-label="What the record says">Independent review of <code>ccdcf4e</code> returned REMEDIATION REQUIRED. Follow-up checks F1/F2 exact replay/refusal, F3 probes, F4 export, F5 fault recovery, Q1 effective modulation, Q2 equal-tick source-tail controls, source law presentation, strengthened native assertions and affected regressions at <code>4f7454c</code>. Packaged evidence remains pending. The accepted complete-state/checkpoint architecture has no confirmed defect and is preserved. Only the owner accepts M7; merge and M8 stay gated.</td>
           <td data-label="Owner"><a href="#m7">M7</a></td>
           <td data-label="Source"><cite><code>M7.md</code> Session allocation, Qualification; <code>MILESTONES.md</code> M7 independent review gate</cite></td>
         </tr>

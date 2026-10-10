@@ -1,0 +1,35 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparisonRemediation.test.ts -t F5
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparisonRemediation.test.ts (16 tests | 1 failed | 15 skipped) 73ms
+   × F5: a faulted comparison offers comparison recovery, preserves source and never offers Reset Scene 45ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparisonRemediation.test.ts > F5: a faulted comparison offers comparison recovery, preserves source and never offers Reset Scene
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/comparisonRemediation.test.ts:150:49
+    148|   c.advance(); const end = observe(c.host);
+    149|   c.host.fault = new SimulationFault(c.host.tick, 'fixture', 'controll…
+    150|   expect(canResetScene(s.coordinator.selected)).toBe(false); expect(c.…
+       |                                                 ^
+    151|   c.replayAlternate(); while (c.replaying) c.advance();
+    152|   expect(c.host.fault).toBeNull(); expect(firstDivergence(end, observe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 skipped (16)
+   Start at  05:26:03
+   Duration  283ms (transform 44%, tests 40%, import 16%, worker 1%)
+

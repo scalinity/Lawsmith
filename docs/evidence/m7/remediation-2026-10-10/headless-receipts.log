@@ -1,0 +1,11 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run --config .codex/m7-remediation/vitest.config.ts
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:33:31
+   Duration  3.60s (tests 94%, transform 5%, import 1%)
+

@@ -1,0 +1,42 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparisonRemediation.test.ts -t presentation
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparisonRemediation.test.ts (16 tests | 1 failed | 15 skipped) 86ms
+   × presentation: newly created and renamed laws retain current label, color and hidden state through comparison 47ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparisonRemediation.test.ts > presentation: newly created and renamed laws retain current label, color and hidden state through comparison
+AssertionError: expected { id: 'push', label: 'push', …(2) } to deeply equal { id: 'push', …(3) }
+
+- Expected
++ Received
+
+  {
+-   "color": "#123abc",
++   "color": "#55aaa4",
+    "id": "push",
+-   "label": "Custom created law",
+-   "visible": false,
++   "label": "push",
++   "visible": true,
+  }
+
+ ❯ tests/comparisonRemediation.test.ts:210:57
+    208|   const before = observe(s.live()), snapshot = s.controller.snapshot(s…
+    209|   const c = keep(s.coordinator.enterComparison());
+    210|   expect(c.controller.presentationOf(created.value.id)).toEqual({ id: …
+       |                                                         ^
+    211|   expect(c.controller.presentationOf('sideways')).toEqual(s.controller…
+    212|   expect(firstDivergence(before, observe(c.host))).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 skipped (16)
+   Start at  05:15:11
+   Duration  382ms (transform 50%, tests 33%, import 16%, worker 1%)
+

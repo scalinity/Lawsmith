@@ -1,0 +1,46 @@
+import { beforeAll, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
+import { Comparison } from '../../src/simulation/comparison';
+import { comparisonQualification, effectiveTriangleDocument, p3Document, computeBaseline } from '../../src/simulation/comparisonFixtures';
+import { SimulationHost, initSimulation, worldCounts } from '../../src/simulation/host';
+import { firstDivergence, observe } from '../../src/simulation/replay';
+import { TEST_IDENTITY } from '../../tests/support/run';
+
+beforeAll(initSimulation);
+const code = '4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912';
+const out = '<evidence-dir>';
+const hash = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex');
+const write = (name: string, facts: unknown) => writeFileSync(`${out}/${name}`, JSON.stringify({ codeCandidate: code, runtime: TEST_IDENTITY, facts }, null, 2) + '\n');
+const checkpoint = (c: ReturnType<SimulationHost['checkpoint']>) => ({ ...c, engineBytes: { encoding: 'base64', bytes: c.engineBytes.length, sha256: hash(c.engineBytes), value: Buffer.from(c.engineBytes).toString('base64') } });
+
+it('records current-candidate disposable fixtures, effective complete fork and Node-only P3/resource measurements', async () => {
+  const events: Record<string, unknown>[] = [];
+  await comparisonQualification(TEST_IDENTITY, (event) => events.push(event));
+  expect(events.every((e) => e.pass === true)).toBe(true);
+  write('headless-results.json', events);
+  const root = effectiveTriangleDocument(), source = new SimulationHost(root.semantic);
+  let c: Comparison | null = null;
+  try {
+    for (let n = 0; n < 519; n++) source.step();
+    const forkState = observe(source);
+    c = new Comparison(source, root, 'effective-triangle-receipt');
+    expect(firstDivergence(forkState, observe(c.host))).toBeNull();
+    const fork = checkpoint(c.forkCheckpoint());
+    await computeBaseline(c, 600);
+    for (let n = 0; n < 600; n++) { source.step(); c.advance(); expect(firstDivergence(observe(source), observe(c.host))).toBeNull(); }
+    write('effective-triangle-fork.json', { root, address: c.address, fork, forkState: forkState.state,
+      baselineEndpoint: checkpoint(c.endpointCheckpoint()!), alternateEndpoint: checkpoint(c.host.checkpoint()),
+      baselineHashFNV64: c.baselineIdentity(), baselineFrame519: c.frame(519), baselineFrame1119: c.frame(1119),
+      sourceEqualsBThrough600: true, sourceEngineSHA256: hash(source.engineSnapshot()), alternateEngineSHA256: hash(c.host.engineSnapshot()) });
+  } finally { c?.dispose(); source.dispose(); }
+  const p3 = p3Document(), original = new SimulationHost(p3.semantic), comparison = new Comparison(original, p3, 'p3-headless-receipt');
+  try {
+    await computeBaseline(comparison, 600); const initial = comparison.metrics;
+    await computeBaseline(comparison, 7200); const extension = comparison.metrics;
+    expect(comparison.bytes).toBeLessThanOrEqual(67108864);
+    expect(comparison.frame(7201)).toBeNull();
+    write('headless-p3.json', { initial, extension, counts: comparison.counts(), finalCommittedBudgetPass: comparison.bytes <= 67108864, framePastHorizon: comparison.frame(7201) !== null });
+  } finally { comparison.dispose(); original.dispose(); }
+  expect(worldCounts().allocated).toBe(0);
+}, 60000);

@@ -1,0 +1,11 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparisonRemediation.test.ts tests/comparison.test.ts
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  2 passed (2)
+      Tests  30 passed (30)
+   Start at  05:09:11
+   Duration  4.34s (tests 93%, transform 5%, import 2%)
+

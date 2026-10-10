@@ -1,0 +1,11 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparison.test.ts -t D/E
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 20 skipped (21)
+   Start at  05:14:25
+   Duration  1.08s (tests 83%, transform 10%, import 6%)
+

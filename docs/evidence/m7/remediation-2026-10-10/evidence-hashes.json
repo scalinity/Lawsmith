@@ -1,0 +1,255 @@
+{
+  "codeCandidate": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912",
+  "files": [
+    {
+      "file": "artifact-hashes.json",
+      "bytes": 1991,
+      "sha256": "52418d96dbd0158c79bcb8205a8df193f18dba40167ea36d03055c39c1bfb9d5",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "cargo-check.log",
+      "bytes": 72,
+      "sha256": "f2066ca264b9a8598ecd436c70919e1efe1acea4098ad2a13b5d82d67bc049ec",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "cargo-test.log",
+      "bytes": 2366,
+      "sha256": "405176f80e9ad163ff6550c07c3d4f8362d3a0d16204563188a6f5c0972a5c74",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "code-manifest.json",
+      "bytes": 24671,
+      "sha256": "4501be7601662e912c12f651f0436762101c421c0ef92a3b3f8d386ffc259da8",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "diagnostic-typecheck.log",
+      "bytes": 68,
+      "sha256": "fc7ff2eef2870e785ec06e71908e56afc1cc4c7b6aebf00758f501a953091373",
+      "producer": "4f7454c source blobs before commit"
+    },
+    {
+      "file": "effective-triangle-fork.json",
+      "bytes": 336425,
+      "sha256": "d798d64d244fe4da23c64bafff0d944f1bfbc00b5addb2eddd1a5f2710167d37",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "f1-after.log",
+      "bytes": 283,
+      "sha256": "c88d279c2e649225fc0bb09a014e5102571ee6c4b3bcfad6a87f10520321cca3",
+      "producer": "8164229 source/test blobs before commit"
+    },
+    {
+      "file": "f1-before.log",
+      "bytes": 2954,
+      "sha256": "eadcf3e7ed09408b4639f6a704343c134832c0841060c38cc8e971437b5af59d",
+      "producer": "e759fcc + added regression/shared driver reproducing old frame loop",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "f2-after.log",
+      "bytes": 283,
+      "sha256": "71f1bae312efc51dfdb8edd3cdace07074ce558fef916c40d108115b205ee78d",
+      "producer": "f2f7aaa source/test blobs before commit"
+    },
+    {
+      "file": "f2-before.log",
+      "bytes": 2457,
+      "sha256": "1d7650025c346e67c60e667cbfa2e660b96d432a776a52e66f744d4ac6abd2ef",
+      "producer": "8164229 + F2 regression",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "f3-after.log",
+      "bytes": 327,
+      "sha256": "7558f6652338c5c2362c8dbb53f75c21705c2bbf6fbe15f5402381cae5dfd543",
+      "producer": "241aa4e source/test blobs before commit"
+    },
+    {
+      "file": "f3-before.log",
+      "bytes": 11375,
+      "sha256": "6d1feaf965c1fba73edc5b5425c345b5681600ddab855d85e4d094b8003a2129",
+      "producer": "f2f7aaa + F3 completed-step-hook regression",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "f4-after.log",
+      "bytes": 282,
+      "sha256": "abd7207a538cfde0609bd42d6b4fa04429d96cc1988b58dc703300fb8f31346c",
+      "producer": "07b7dc1 source/test blobs before commit"
+    },
+    {
+      "file": "f4-before.log",
+      "bytes": 1555,
+      "sha256": "ddc5ce92d362b5783dd9cafb867d8ca24925898fe2fea7f0af6ccaaf131726c4",
+      "producer": "241aa4e + F4 regression",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "f5-after.log",
+      "bytes": 282,
+      "sha256": "bc4cae11d2c678fd7e4f14c5fa35cdbde6840297e6677adc8263aee630aa3c04",
+      "producer": "91f6841 source/test blobs before commit"
+    },
+    {
+      "file": "f5-old-policy-mutation.log",
+      "bytes": 1346,
+      "sha256": "cce7a0afbb0eef2080579076e4d746cab19859ad1455651eee37970ab6eb8d71",
+      "producer": "09d21bb with original offer-policy mutation; expected failure",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "frontend-build.log",
+      "bytes": 801,
+      "sha256": "d9a0f2d9e2f95923d393d1a710f8392f11515e869f69e40130f14bd59ccf6b67",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "harness-after.log",
+      "bytes": 283,
+      "sha256": "5cc8a4d0b6fa7515b59e92fd026a530500501cf09ab42a022fe7844f7c23c429",
+      "producer": "working runtime fixtures before 09d21bb commit"
+    },
+    {
+      "file": "harness-typecheck.log",
+      "bytes": 68,
+      "sha256": "fc7ff2eef2870e785ec06e71908e56afc1cc4c7b6aebf00758f501a953091373",
+      "producer": "working runtime fixtures before 09d21bb commit"
+    },
+    {
+      "file": "headless-p3.json",
+      "bytes": 3732,
+      "sha256": "22c121eaa190dfad15928fa58eceaf38d58ec5a36300f70785d18dd70df4aad5",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "headless-receipt-config.txt",
+      "bytes": 160,
+      "sha256": "ddc85936d5961d4249e0a858731767aeba01ba1dd9f01e74f18b4a77572e0e08",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "headless-receipt-harness.txt",
+      "bytes": 3333,
+      "sha256": "2309e247889bf61cb3aa7df58825086d04ae07aeeee087b7404771890f263747",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "headless-receipts.log",
+      "bytes": 268,
+      "sha256": "7edf35abdeb25aa94e56ef8457453fc2ecdb9f465cf3430ae715a4e870adb63f",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "headless-results.json",
+      "bytes": 28926,
+      "sha256": "bc5b7281cab70441957ecdbae3d90c2110aa80c084647bae7f5782a1b48740ff",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "intermediate-typecheck-after.log",
+      "bytes": 68,
+      "sha256": "fc7ff2eef2870e785ec06e71908e56afc1cc4c7b6aebf00758f501a953091373",
+      "producer": "working runtime fixtures before 09d21bb after type corrections"
+    },
+    {
+      "file": "intermediate-typecheck.log",
+      "bytes": 940,
+      "sha256": "4dec7f7c58671efe378cce1c45a83b4eccb903fa8fd57acc504f071b01156e5b",
+      "producer": "working runtime fixtures before 09d21bb, failed strict indexing/import checks"
+    },
+    {
+      "file": "native-assertion-controls.log",
+      "bytes": 109,
+      "sha256": "a60e0d2d66e445b0734c0563e528ca7eae6f1b838b35a48522a62ef5a010522e",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "native-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "packaged-build.log",
+      "bytes": 1395,
+      "sha256": "0d0299518361d17d213df7fd9c1e1bac722db0a4435ad7b69ce4a2c8fa638568",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "presentation-after.log",
+      "bytes": 307,
+      "sha256": "7904773433b74f693a711608b973cc25b8866d74630ed1db80b069ac7a06589d",
+      "producer": "e1bd8cc source/test blobs before commit"
+    },
+    {
+      "file": "presentation-before.log",
+      "bytes": 1594,
+      "sha256": "c27ccf8bf4cca7ed6ddf4566092450367ad6f6109748496b24454c97da5591b7",
+      "producer": "960898f + presentation regression",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "q1-after.log",
+      "bytes": 283,
+      "sha256": "0e0ec6fbe75d68d41d31cdfd27c9d3528a1a430d96436560ce7f672de723da04",
+      "producer": "30c022c source/test blobs before commit"
+    },
+    {
+      "file": "q1-effective.log",
+      "bytes": 277,
+      "sha256": "44a5f858ab4e76549a1ceadb378e80e17dd7fd3d1dc84799e4468cac92117023",
+      "producer": "Q1 working fixture based on 91f6841; before commit 30c022c"
+    },
+    {
+      "file": "q1-no-support-mutation.log",
+      "bytes": 1260,
+      "sha256": "c43ccd0a96727b6ab8431aaedf96b33c86cb2ed32d59545b14cf1dc94180ae81",
+      "producer": "30c022c + Q2 test correction; Q1 support-removal mutation; expected failure",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "q2-after.log",
+      "bytes": 267,
+      "sha256": "830f6c7e66fa944191013407a5bdad35e62a95e19cfa286123f6716762ac62d5",
+      "producer": "960898f source/test blobs before commit"
+    },
+    {
+      "file": "q2-no-injection-mutation.log",
+      "bytes": 1331,
+      "sha256": "500802a315bca65c009e1b804a007352ab4b681bfb2d7ee7d2d1c78e5b85e055",
+      "producer": "960898f test correction before commit, injection removed; expected failure",
+      "purpose": "Retained reproduction or intentional negative control; failure is expected"
+    },
+    {
+      "file": "typecheck.log",
+      "bytes": 68,
+      "sha256": "fc7ff2eef2870e785ec06e71908e56afc1cc4c7b6aebf00758f501a953091373",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "vitest-with-scratch-receipt.log",
+      "bytes": 251,
+      "sha256": "b231b1cf22fd02a7d96c34bda231719e5680ff0c48e2f19e8dd0ef6d23876c2b",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "vitest.log",
+      "bytes": 251,
+      "sha256": "8c1bfde148f7cbef8524e73b0a3483b8f7694d843fe934392911c24c1413b705",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912"
+    },
+    {
+      "file": "closeout-receipt.json",
+      "bytes": 571,
+      "sha256": "f5dd94bcd26715d928a600255080c620eb0f4c6f71038defc8b907457d658f72",
+      "producer": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912",
+      "purpose": "Read-only close-out identity, manifest and scope checks"
+    }
+  ],
+  "scope": "Mixed remediation history: immutable final qualification and separately attributed intermediate/failure receipts. No historical result is relabeled current."
+}

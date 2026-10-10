@@ -1,0 +1,13 @@
+{
+  "codeCandidate": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912",
+  "acceptedMain": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "originMain": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "branch": "m7",
+  "manifestPathsVerified": 122,
+  "historicalEvidenceChanged": false,
+  "privacyScan": "No credential/private path hits in new public evidence; only exact real path literals were redacted from preserved raw originals.",
+  "nativeStatus": "OWNER NATIVE CHECK REQUIRED",
+  "m8": "NOT STARTED",
+  "protectedSourceAndDependencyDelta": "NONE",
+  "gitDiffCheck": "PASS"
+}

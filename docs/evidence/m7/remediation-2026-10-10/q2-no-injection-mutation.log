@@ -1,0 +1,29 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparison.test.ts -t D/E
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparison.test.ts (21 tests | 1 failed | 20 skipped) 787ms
+   ❯ T10 shared fork and actual continuation (18)
+     × D/E: fork inside a recording omits its tail, including later edits at the same tick 749ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparison.test.ts > T10 shared fork and actual continuation > D/E: fork inside a recording omits its tail, including later edits at the same tick
+AssertionError: expected 7 to be greater than 7
+ ❯ tests/comparison.test.ts:150:46
+    148|     // Source-tail injection deliberately removed by negative-control …
+    149|     expect(contaminated.tick).toBe(uncontaminated.tick);
+    150|     expect(contaminated.lastAppliedSequence).toBeGreaterThan(uncontami…
+       |                                              ^
+    151|     expect(contaminated.appliedFields()).not.toEqual(uncontaminated.ap…
+    152|     expect(firstDivergence(observe(uncontaminated), observe(contaminat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 skipped (21)
+   Start at  05:15:08
+   Duration  1.12s (tests 78%, transform 14%, import 7%)
+

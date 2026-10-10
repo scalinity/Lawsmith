@@ -1,0 +1,11 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  33 passed | 3 skipped (36)
+      Tests  677 passed | 3 skipped (680)
+   Start at  05:31:39
+   Duration  14.88s (tests 95%, transform 3%, import 2%)
+

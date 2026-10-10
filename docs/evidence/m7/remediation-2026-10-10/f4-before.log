@@ -1,0 +1,37 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparisonRemediation.test.ts -t F4
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparisonRemediation.test.ts (13 tests | 2 failed | 10 skipped) 44ms
+   × F4: alternate title derived from 8181 characters parses and reopens without changing the main scene 3ms
+   × F4: alternate title derived from 8192 characters parses and reopens without changing the main scene 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparisonRemediation.test.ts > F4: alternate title derived from 8181 characters parses and reopens without changing the main scene
+ FAIL  tests/comparisonRemediation.test.ts > F4: alternate title derived from 8192 characters parses and reopens without changing the main scene
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/comparisonRemediation.test.ts:137:21
+    135|   c.controller.editField('sideways', 'Edit B', (f) => ({ ...f, enabled…
+    136|   const exported = c.alternateSetup(), parsed = parseScene(serializeSc…
+    137|   expect(parsed.ok).toBe(true);
+       |                     ^
+    138|   if (!parsed.ok) throw parsed.error;
+    139|   expect(parsed.document.metadata.title.length).toBeLessThanOrEqual(81…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed | 10 skipped (13)
+   Start at  05:10:40
+   Duration  271ms (transform 54%, tests 26%, import 19%, worker 1%)
+

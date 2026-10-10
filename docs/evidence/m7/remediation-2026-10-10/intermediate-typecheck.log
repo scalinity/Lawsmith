@@ -1,0 +1,11 @@
+npm notice run lawsmith@0.0.0 typecheck
+npm notice run tsc --noEmit
+src/main.ts(1325,36): error TS2783: 'tick' is specified more than once, so this usage will be overwritten.
+src/main.ts(1325,55): error TS2783: 'id' is specified more than once, so this usage will be overwritten.
+src/simulation/comparisonFixtures.ts(100,28): error TS2532: Object is possibly 'undefined'.
+src/simulation/comparisonFixtures.ts(100,112): error TS2532: Object is possibly 'undefined'.
+tests/comparisonRemediation.test.ts(2,10): error TS6133: 'Comparison' is declared but its value is never read.
+tests/comparisonRemediation.test.ts(176,20): error TS2532: Object is possibly 'undefined'.
+tests/comparisonRemediation.test.ts(176,99): error TS2532: Object is possibly 'undefined'.
+tests/comparisonRemediation.test.ts(197,17): error TS2532: Object is possibly 'undefined'.
+tests/comparisonRemediation.test.ts(197,93): error TS2532: Object is possibly 'undefined'.

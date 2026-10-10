@@ -1,0 +1,28 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/comparisonRemediation.test.ts -t Q1
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/comparisonRemediation.test.ts (15 tests | 1 failed | 14 skipped) 129ms
+   × Q1: effective absolute triangle at 519 changes real velocity and A/B remain exact for 600 ticks 93ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/comparisonRemediation.test.ts > Q1: effective absolute triangle at 519 changes real velocity and A/B remain exact for 600 ticks
+AssertionError: expected +0 to be close to 0.008166666666666666, received difference is 0.008166666666666666, but expected 0.000005
+ ❯ tests/comparisonRemediation.test.ts:177:26
+    175|     if (i === 0) {
+    176|       firstDelta = s.live().canonicalState().bodies.find((b) => b.id =…
+    177|       expect(firstDelta).toBeCloseTo(2 * expectedGain * h, 5);
+       |                          ^
+    178|       expect(Math.abs(firstDelta - 2 * 0.1975 * h)).toBeGreaterThan(0.…
+    179|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 skipped (15)
+   Start at  05:15:07
+   Duration  466ms (transform 45%, tests 41%, import 13%, worker 1%)
+

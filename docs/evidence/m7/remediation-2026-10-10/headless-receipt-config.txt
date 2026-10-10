@@ -1,0 +1,2 @@
+import { defineConfig } from 'vitest/config';
+export default defineConfig({ test: { include: ['.codex/m7-remediation/receipts.harness.ts'], maxWorkers: 1 } });
