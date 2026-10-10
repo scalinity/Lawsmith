@@ -141,7 +141,9 @@ export class RunCoordinator {
     const source = this.shown;
     const record = this.selected === 'replay' ? this.replay!.record : null;
     const snapshot = this.controller.snapshot(this.controller.camera);
-    const root = record ? cloneFrozen({ ...record.root, presentation: { ...record.root.presentation, laws: [...record.root.presentation.laws, ...record.createdLaws] } }) : createDocument(source.frozenRoot, snapshot.metadata, snapshot.presentation);
+    // Presentation belongs to the current source context, including laws created after its root.
+    // Preserve it before substituting the frozen body/emitter recipe used by the physical fork.
+    const root = record ? cloneFrozen({ ...record.root, presentation: { ...record.root.presentation, laws: [...record.root.presentation.laws, ...record.createdLaws] } }) : cloneFrozen({ ...createDocument(snapshot.semantic, snapshot.metadata, snapshot.presentation), semantic: source.frozenRoot });
     const identity = record ? `${record.runId}:${this.scope(record).prefixes.at(source.lastAppliedSequence)}` : `live-${this.context}-${source.generation}`;
     const comparison = new Comparison(source, root, `${identity}:${compactJson(SIMULATION_FINGERPRINT)}:${compactJson(this.options.identity())}`);
     this.comparisonEntry = this.selected;

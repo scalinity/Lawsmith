@@ -197,3 +197,20 @@ it('Q1: effective absolute triangle at 519 changes real velocity and A/B remain 
   const delta = wrong.canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1] - before.linvel[1];
   expect(delta).toBeCloseTo(2 * 0.1975 * h, 5); expect(Math.abs(delta - firstDelta)).toBeGreaterThan(0.004);
 });
+
+it('presentation: newly created and renamed laws retain current label, color and hidden state through comparison', () => {
+  const s = session(twoFuturesDocument()); keep(s.live()); s.steps(19);
+  const created = s.controller.create('directional', [0, 0, 0]); expect(created.ok).toBe(true);
+  if (!created.ok) throw new Error('fixture create failed');
+  const display = { label: 'Custom created law', color: '#123abc', visible: false };
+  s.controller.setLawPresentation(created.value.id, display);
+  s.controller.setLawPresentation('sideways', { label: 'Renamed original', color: '#abcdef', visible: false });
+  const before = observe(s.live()), snapshot = s.controller.snapshot(s.controller.camera);
+  const c = keep(s.coordinator.enterComparison());
+  expect(c.controller.presentationOf(created.value.id)).toEqual({ id: created.value.id, ...display });
+  expect(c.controller.presentationOf('sideways')).toEqual(s.controller.presentationOf('sideways'));
+  expect(firstDivergence(before, observe(c.host))).toBeNull();
+  c.newAlternate(); expect(c.controller.presentationOf(created.value.id)).toEqual({ id: created.value.id, ...display });
+  c.replayAlternate(); expect(c.controller.presentationOf(created.value.id)).toEqual({ id: created.value.id, ...display });
+  expect(s.controller.snapshot(s.controller.camera)).toEqual(snapshot);
+});
