@@ -3004,8 +3004,9 @@ async function start() {
         ingredientPanel.refreshLive(host.tick);
       }
       // The panel follows applied changes without a per-frame rebuild, and not during a drag.
-      if (editor().appliedRevision !== shownRevision && !interaction.gesture) {
-        shownRevision = editor().appliedRevision;
+      const panelRevision = replaying() ? host.lastAppliedSequence : editor().appliedRevision;
+      if (panelRevision !== shownRevision && !interaction.gesture) {
+        shownRevision = panelRevision;
         renderPanel();
       }
       frameBeforeMs = performance.now() - beforeStart;
