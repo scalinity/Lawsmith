@@ -1,9 +1,9 @@
 # M6B long reconstructions in the packaged app (MILESTONES M6B Visual QA and performance gate; AC5, AC7,
 # AC8): the P1 workshop at a 1600×1000 CSS viewport under More Space, recorded while a law is dragged until
 # the 60 s limit closes it. In its replay an uncached seek to the end is left pending while Return to
-# authoring is pressed: it never commits, and the retained authoring world's digests are those it had when
-# the replay began. In a new replay a long seek shows its progress and Cancel seek after 100 ms; Play and
-# Space pressed while it is pending only toggle playing from its target, and Cancel leaves the displayed
+# authoring is pressed: Space and Play pressed while it is pending only toggle playing from its target, it
+# never commits, and the retained authoring world's digests are those it had when the replay began. In a
+# new replay a long seek shows its progress and Cancel seek after 100 ms, and Cancel leaves the displayed
 # replay exactly as it was, paused. A newer request made while a long reconstruction runs
 # supersedes it: only the newer one commits and is shown. Then, with
 # screen recording off, the app's M6B fixtures
@@ -112,12 +112,22 @@ live_at_entry=$(logq last $APP_LOG context-live)
 record_start m6b-long 100
 seek_click $final_tick
 pending_id=$(field seek id)
+# Space, then Play, while it is pending (M6B review finding 1): each press only toggles playing from the
+# target; before the fix the second one started the displayed replay. Space goes first, while the timeline
+# holds focus, so it takes the keyboard's path. Play's point comes from seek_click's readback, before the
+# request: Play sits in the transport, which a seek never moves, and every readback here costs seek time.
+n=$(toggles)
+keys kp:space
+grows $n 30 toggles || fail "Space during the seek logged no toggle"
+pp=(${=$(point controls.play)})
+press_at $pp[1] $pp[2] toggles
 n=$(count context)
 press_expect run-return context
 wait_log context $(( n + 1 )) 10
 expect context "Return to authoring while the seek was pending: authoring, one world" "e['reason']=='return' and e['selected']=='authoring' and e['worlds']==1 and e['seeking']==0"
 sleep 3
 expect seek "the pending seek ended with Return and never committed" "e['id']==$pending_id and e['action']=='canceled' and e['reason']=='return'"
+verdict "Space and Play during the seek only toggled playing from its target; nothing played the displayed replay" deferred $APP_LOG $pending_id play-on-commit pause-on-commit
 wait_log context-live $(( lives + 2 )) 5
 python3 -I -c "
 import json, sys
@@ -133,23 +143,14 @@ n=$(count context)
 press_expect run-replay context
 wait_log context $(( n + 1 )) 10
 seek_click $final_tick
-cancel_id=$(field seek id)
 progress_shown
 expect layout "seeking: the status names the requested tick and its progress, the replay still shows tick 0" "'Seeking to tick $final_tick' in e['run']['status'] and '%' in e['run']['status'] and e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['contexts']['seeking']==1"
-# Play, then Space, while it is pending (M6B review finding 1): each press only toggles playing from the
-# target; before the fix the second one started the displayed replay. Both points come from this readback:
-# Play sits outside the replay cluster, and Cancel seek is back where it was once the second press takes
-# "Then playing." off the status, whose extra line moves the cluster's buttons down.
-pp=(${=$(point controls.play)})
-pc=(${=$(point controls.run-cancel)})
-press_at $pp[1] $pp[2] toggles
 shot long-02-progress
-n=$(toggles)
-keys kp:space
-grows $n 30 toggles || fail "Space during the seek logged no toggle"
+# Cancel seek's point from the readback that showed the progress, with nothing between them that changes
+# the status's lines: the presses above left the cache deeper, so this seek is shorter than a readback allows.
+pc=(${=$(point controls.run-cancel)})
 press_at $pc[1] $pc[2] count seek
 expect seek "Cancel seek ended it, with its progress shown after 100 ms" "e['action']=='canceled' and e['reason']=='cancel' and e['progressShownAfterMs'] >= 100"
-verdict "Play and Space during the seek only toggled playing from its target; nothing played the displayed replay" deferred $APP_LOG $cancel_id play-on-commit pause-on-commit
 layout
 expect layout "after Cancel: the same replay at tick 0, paused, no seek world, the timeline back at 0" "e['run']['replay']['address']=={'tick': 0, 'cursor': 0} and e['run']['status'].endswith('Paused.') and e['run']['contexts']['seeking']==0 and e['run']['contexts']['worlds']==2 and e['run']['timeline']['value']==0 and e['run']['seeking'] is None"
 shot long-03-canceled
