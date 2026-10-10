@@ -68,6 +68,8 @@ baseline
 shot m7-01-common-fork
 reveal_strength
 keys kd:cmd t:a ku:cmd t:2 kp:return
+# The numeric field keeps focus after commit; Escape releases it before diagnostic shortcuts.
+key_code 53
 sleep 0.4
 layout
 expect layout "B intervention recorded without moving source" "e['comparison']['suffix']==1 and e['run']['contexts']['selected']=='comparison'"
