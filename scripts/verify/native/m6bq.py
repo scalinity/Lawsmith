@@ -12,6 +12,10 @@
                                    over the requests after SINCE_ID: each commit is the newest request at that
                                    moment, at least MIN_SUPERSEDED (default 0) were superseded, and the last
                                    request is committed and shown
+  m6bq.py deferred LOG SEEK_ID ACTION…
+                                   Play and Space pressed while seek SEEK_ID was pending logged exactly these
+                                   play-on-commit / pause-on-commit actions, in order, and nothing played the
+                                   displayed replay between its request and its end
 """
 import json
 import sys
@@ -123,6 +127,21 @@ def retained(path):
     return 'PASS', f"{len(lives)} digests identical, state {lives[0]['stateSha256'][:12]} engine {lives[0]['engineSha256'][:12]}, by switch {reasons}"
 
 
+def deferred(path, seek_id, expected):
+    events = ordered(path)
+    start = next((i for i, e in enumerate(events) if e.get('kind') == 'seek' and e.get('action') == 'request' and e.get('id') == seek_id), None)
+    if start is None:
+        return 'FAIL', f'no request {seek_id}'
+    end = next((i for i in range(start + 1, len(events)) if events[i].get('kind') == 'seek' and events[i].get('id') == seek_id and events[i].get('action') in ('committed', 'superseded', 'canceled', 'failed')), None)
+    if end is None:
+        return 'FAIL', f'request {seek_id} never ended'
+    window = events[start:end + 1]
+    toggles = [e['action'] for e in window if e.get('kind') == 'seek' and e.get('id') == seek_id and e.get('action') in ('play-on-commit', 'pause-on-commit')]
+    played = [e.get('reason') for e in window if e.get('kind') == 'sim-control' and e.get('action') == 'play']
+    ok = toggles == expected and not played
+    return ('PASS' if ok else 'FAIL'), f"{seek_id}: {toggles} (expected {expected}); played while pending {played}; ended {events[end]['action']}"
+
+
 def main(argv):
     command, *args = argv[1:]
     if command == 'checkpoints':
@@ -133,6 +152,8 @@ def main(argv):
         verdict, detail = retained(args[0])
     elif command == 'latest':
         verdict, detail = latest(args[0], int(args[1]), int(args[2]) if len(args) > 2 else 0)
+    elif command == 'deferred':
+        verdict, detail = deferred(args[0], int(args[1]), args[2:])
     else:
         raise SystemExit(f'unknown command {command}')
     print(verdict, detail)
