@@ -119,6 +119,12 @@ export class Comparison {
     return copyCheckpoint(this.fork);
   }
   endpointCheckpoint(): HostCheckpoint | null { return this.endpoint ? copyCheckpoint(this.endpoint) : null; }
+  /** Read-only diagnostic identity of every retained baseline sample, stable ID and endpoint. */
+  baselineIdentity(): string {
+    const bytes = (view: ArrayBufferView) => fnv64(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
+    return fnv64(new TextEncoder().encode(JSON.stringify({ ids: this.ids, endpoint: this.endpoint ? [{ ...this.endpoint, engineBytes: null }, fnv64(this.endpoint.engineBytes)] : null,
+      chunks: this.chunks.map((chunk) => [chunk.first, chunk.last, chunk.used, bytes(chunk.offsets), bytes(chunk.identities), bytes(chunk.poses)]) })));
+  }
   /** Qualification observation; engine bytes are independently captured, never owned trace storage. */
   observeBaselineWork(): Observed | null { return this.job ? observe(this.job.work) : null; }
   private restore(c: HostCheckpoint): SimulationHost { return new SimulationHost(this.root.semantic, copyCheckpoint(c)); }
@@ -285,6 +291,9 @@ export class Comparison {
       if (job.work.tick < job.target) return 'working';
       const endpoint = job.work.checkpoint();
       if (checkpointBytes(endpoint) > COMPARISON_LIMITS.checkpointBytes) throw new Error('The baseline endpoint exceeds 16 MiB. Earlier samples remain available.');
+      const committedBytes = this.fixedReserve() + checkpointBytes(this.fork!) + checkpointBytes(endpoint) +
+        this.chunks.reduce((n, chunk) => n + this.chunkBytes(chunk), 0) + this.chunkBytes(job.chunk) + managedObjectBytes(job.ids) * 2;
+      preflightComparison(committedBytes);
       if (this.job !== job || job.generation !== this.generation) return 'canceled';
       this.endpoint = endpoint;
       this.chunks.push(job.chunk);

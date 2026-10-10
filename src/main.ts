@@ -42,6 +42,7 @@ import { SIMULATION_FINGERPRINT, exportRun } from './simulation/recorder';
 import { LinearReplay, firstDivergence as replayDivergence, observe, type Address, type Observed } from './simulation/replay';
 import type { TransitionObservation } from './simulation/observation';
 import { driveScheduledFrame, FixedStepScheduler } from './simulation/scheduler';
+import { fnv64 } from './simulation/checkpoints';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
 import { createIngredientPanel } from './ui/ingredientPanel';
 import { ingredientBreakdown } from './simulation/observation';
@@ -526,6 +527,7 @@ async function start() {
       setPlaying(false, runs.comparison!.atHorizon ? 'comparison-horizon' : 'alternate-replayed');
       applyFreeze();
       renderPanel();
+      report('comparison', { action: 'alternate-complete', playing: scheduler.playing, ...runs.comparison!.counts(), receipt: comparisonReceipt() });
     }
     if (host.tick === before) return false;
     if (!comparing() && (host.tick === 600 || host.tick === 1200)) captureDigest();
@@ -1311,6 +1313,18 @@ async function start() {
   let ghosts: ReturnType<typeof createComparisonView> | null = null;
   let ghostsShown = true;
   let alternateWasReplaying = false;
+  const authorityReceipt = (value: SimulationHost) => {
+    const observed = observe(value);
+    return { ...observed.address, stateHash: fnv64(new TextEncoder().encode(JSON.stringify(observed.state))), engineHash: fnv64(observed.engine) };
+  };
+  const comparisonReceipt = () => {
+    const c = runs.comparison;
+    if (!c) return null;
+    const frame = c.frame(c.host.tick), id = explained ?? c.host.ids[0] ?? frame?.ids[0] ?? null;
+    return { authority: authorityReceipt(c.host), baselineHash: c.baselineIdentity(),
+      pair: id === null ? null : pairedBody(id, frame, c.host),
+      framePastHorizon: c.frame(c.horizon + 1) !== null };
+  };
   const comparisonChannel = new MessageChannel();
   let calculation: { comparison: NonNullable<typeof runs.comparison>; job: BaselineJob } | null = null;
   const restoreComparisonView = () => {
@@ -1394,15 +1408,17 @@ async function start() {
     if (!c || frozen || workflow.busy || interaction.gesture) return;
     setPlaying(false, 'alternate-replay');
     try {
+      const retained = comparisonReceipt();
       c.replayAlternate();
       alternateWasReplaying = c.replaying;
       editLatency = new EditLatency();
       awaited.clear();
       showWorld('alternate-replay');
       applyFreeze();
-      report('comparison', { action: 'alternate-replay', ...c.counts() });
+      report('comparison', { action: 'alternate-replay', ...c.counts(), retained });
       renderPanel();
       if (c.replaying) setPlaying(true, 'alternate-replay');
+      else report('comparison', { action: 'alternate-complete', playing: scheduler.playing, ...c.counts(), receipt: comparisonReceipt() });
     } catch (error) { comparisonFailed(error); }
   });
   $('alternate-new').addEventListener('click', () => {
@@ -1423,7 +1439,7 @@ async function start() {
   $('baseline-ghosts').addEventListener('click', () => {
     ghostsShown = !ghostsShown;
     $('baseline-ghosts').setAttribute('aria-pressed', String(ghostsShown));
-    report('comparison', { action: 'ghosts', shown: ghostsShown, tick: host.tick, cursor: host.lastAppliedSequence, renderer: ghosts?.counts() });
+    report('comparison', { action: 'ghosts', shown: ghostsShown, tick: host.tick, cursor: host.lastAppliedSequence, renderer: ghosts?.counts(), receipt: comparisonReceipt() });
   });
   $('alternate-export').addEventListener('click', () => {
     const c = runs.comparison;
@@ -2166,6 +2182,8 @@ async function start() {
       box: box($('ingredients')),
     };
     report('layout', {
+      playing: scheduler.playing,
+      authority: authorityReceipt(host),
       viewport: [window.innerWidth, window.innerHeight],
       devicePixelRatio: window.devicePixelRatio,
       controls,
@@ -2186,7 +2204,7 @@ async function start() {
       explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
       scroll: Object.fromEntries(['panel', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
-      comparison: runs.comparison ? { ...runs.comparison.counts(), address: runs.comparison.address, tick: host.tick, cursor: host.lastAppliedSequence, replaying: runs.comparison.replaying, working: !!runs.comparison.working, status: $('comparison-status').textContent, inspect: $('comparison-inspect').textContent, box: box($('comparison')) } : null,
+      comparison: runs.comparison ? { ...runs.comparison.counts(), receipt: comparisonReceipt(), address: runs.comparison.address, tick: host.tick, cursor: host.lastAppliedSequence, replaying: runs.comparison.replaying, working: !!runs.comparison.working, status: $('comparison-status').textContent, inspect: $('comparison-inspect').textContent, box: box($('comparison')) } : null,
       run: {
         state: runParts.root.dataset.state,
         title: runParts.title.textContent,

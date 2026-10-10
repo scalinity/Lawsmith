@@ -33,7 +33,11 @@ baseline() {
   press_expect baseline-compute comparison
   wait_log comparison $(( n + 2 )) 20
   expect comparison "600 tick baseline committed" "e['action']=='baseline-committed' and e['horizon']==600 and e['metrics']['elapsedMs'] <= 3000 and e['bytes'] <= 67108864"
+  layout
+  BASELINE_HASH=$(field layout comparison.receipt.baselineHash)
 }
+assert_baseline() { [[ $(field layout comparison.receipt.baselineHash) == $BASELINE_HASH ]] || fail "retained baseline hash changed"; }
+numeric_check() { python3 -I $NATIVE/m7q.py $1 $APP_LOG || fail "M7 $1 assertion failed"; }
 reveal_strength() {
   local panel i p
   for i in {1..25}; do
@@ -50,11 +54,14 @@ segment "M7 two futures and packaged authority fixtures"
 say "More Space, 60 Hz: $(osascript -l JavaScript $NATIVE/display.js set 1728 1117 60)"
 sleep 2
 launch m7-compare $QA_STATE/recovery-m7-compare-$EPOCHSECONDS
+expect qualification "qualified packaged runtime identity" "e['mode']=='packaged' and e['qualified'] is True"
+expect backend "packaged WebGPU backend" "e['mode']=='packaged' and e['backend']=='WebGPU' and e['coordinateSystemIsWebGPU'] is True"
 activate
 window_size 1280 800
 open_fixture two-futures.lawsmith.json
 layout
 expect layout "1280×800 and known law selected" "e['viewport']==[1280,800] and e['selected']=='sideways'"
+SOURCE_AUTHORITY=$(field layout authority)
 record_start m7-two-futures 100
 press_expect compare-from comparison
 baseline
@@ -68,23 +75,30 @@ press_expect play sim-control
 sleep 1.5
 press_expect play sim-control
 layout
-expect layout "equal tick and nonzero separation" "e['comparison']['tick'] >= 120 and e['comparison']['tick'] < 600 and 'Separation' in e['comparison']['inspect'] and e['comparison']['suffix']==1"
+expect layout "equal tick intervention" "e['comparison']['tick'] >= 120 and e['comparison']['tick'] < 600 and e['comparison']['suffix']==1 and e['playing'] is False"
+numeric_check separation
+assert_baseline
 shot m7-02-divergence
 press baseline-ghosts
 press baseline-ghosts
+numeric_check ghosts
+replay_events=$(count comparison)
 press_expect alternate-replay comparison
-sleep 2
+wait_log comparison $(( replay_events + 2 )) 15
 layout
-expect layout "retained suffix replay finishes paused" "e['comparison']['suffix']==1 and e['comparison']['replaying'] is False"
+numeric_check replay
+assert_baseline
 shot m7-03-replayed
 press_expect alternate-new comparison
 layout
 expect layout "New Alternate deliberately clears edits" "e['comparison']['suffix']==0 and e['comparison']['tick']==0 and e['comparison']['cursor']==0"
+assert_baseline
 shot m7-04-new
 press_expect baseline-extend comparison
 sleep 0.5
 layout
 expect layout "real extension retains fork and reaches 1200" "e['comparison']['horizon']==1200 and e['comparison']['tick']==0"
+expect layout "no fabricated baseline frame" "e['comparison']['receipt']['framePastHorizon'] is False"
 press_panel alternate-export
 save_panel $QA_STATE/scenes two-futures-alternate.lawsmith.json
 sleep 0.5
@@ -92,6 +106,7 @@ expect document "ordinary alternate setup export" "e['action']=='export-alternat
 press_expect comparison-close comparison
 layout
 expect layout "source restored at entry address" "e['comparison'] is None and e['run']['contexts']['selected']=='authoring' and e['selectedField']['expression']['strength']==0"
+[[ $(field layout authority) == $SOURCE_AUTHORITY ]] || fail "retained source authority changed"
 record_stop
 keys kd:shift t:j ku:shift
 local_wait=0
@@ -100,13 +115,25 @@ while (( local_wait++ < 180 )); do
   sleep 0.2
 done
 expect m7-fixtures "packaged independent M7 fixtures completed" "e.get('complete') is True"
+numeric_check fixtures
 say "20 view/context cycles"
 for i in {1..20}; do
   press_expect compare-from comparison
+  baseline
+  press_expect step sim-control
+  replay_events=$(count comparison)
+  press_expect alternate-replay comparison
+  wait_log comparison $(( replay_events + 2 )) 15
+  layout
+  numeric_check replay
+  assert_baseline
   press_expect alternate-new comparison
+  layout
+  assert_baseline
   press_expect comparison-close comparison
   keys kd:shift t:v ku:shift
 done
+numeric_check resources
 shot m7-05-closed
 keys kd:cmd t:q ku:cmd
 [[ $(depth) == 1 ]] && alert_for scene "Don't Save"

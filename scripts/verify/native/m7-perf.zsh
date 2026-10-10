@@ -12,6 +12,8 @@ segment "P3 three active comparison runs, about five minutes"
 say "60Hz More Space: $(osascript -l JavaScript $NATIVE/display.js set 1728 1117 60)"
 sleep 2
 launch m7-perf $QA_STATE/recovery-m7-perf-$EPOCHSECONDS
+expect qualification "qualified packaged runtime identity" "e['mode']=='packaged' and e['qualified'] is True"
+expect backend "packaged WebGPU backend" "e['mode']=='packaged' and e['backend']=='WebGPU' and e['coordinateSystemIsWebGPU'] is True"
 activate
 osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
   set position of window \"Lawsmith\" to {40,45}
@@ -39,7 +41,7 @@ for run in 1 2 3; do
   keys kd:shift t:p ku:shift
   say "P3 $run: warm10s, restore fork, measure60s"
   wait_log p3-run $(( local_start + 1 )) 90
-  expect p3-run "P3 $run valid and meets all gates" "e['invalid'] is None and e['incomplete'] is None and e['ticks']==7200 and e['bodies']==100 and e['workload']['laws']==4 and e['viewport']['css']==[1600,1000] and e['viewport']['pixelRatio']<=1.5 and e['stepMs'][1]<=3 and e['stepMs'][2]<=5 and e['workMs'][1]<=14 and e['intervalMs'][1]<=20 and e['intervalMs'][2]<=34 and e['editMs'][1]<=50 and e['simWallRatio']>=0.98 and e['comparison']['bytes']<=67108864"
+  expect p3-run "P3 $run valid and meets all gates" "e['mode']=='packaged' and e['invalid'] is None and e['incomplete'] is None and e['ticks']==7200 and e['samples']['steps']==7200 and e['samples']['edits']>=50 and e['samples']['frames']>=3000 and e['bodies']==100 and e['workload']['laws']==4 and e['viewport']['css']==[1600,1000] and e['viewport']['pixelRatio']<=1.5 and e['stepMs'][1]<=3 and e['stepMs'][2]<=5 and e['workMs'][1]<=14 and e['intervalMs'][1]<=20 and e['intervalMs'][2]<=34 and e['editMs'][1]<=50 and e['simWallRatio']>=0.98 and e['comparison']['bytes']<=67108864"
 done
 press_expect comparison-close comparison
 keys kd:cmd t:q ku:cmd

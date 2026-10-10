@@ -1,5 +1,4 @@
 import { afterEach, beforeAll, expect, it } from 'vitest';
-import { Comparison } from '../src/simulation/comparison';
 import { initSimulation, worldCounts } from '../src/simulation/host';
 import { firstDivergence, observe } from '../src/simulation/replay';
 import { driveScheduledFrame, FixedStepScheduler } from '../src/simulation/scheduler';
@@ -33,8 +32,7 @@ it.each([2, 8])('F1: application frame budget %i stops at the retained endpoint 
   expect(frame.steps).toBe(budget);
   const samples: number[] = [];
   const steps = driveScheduledFrame(scheduler, frame.steps, () => {
-    const stepped = c.advance();
-    if (stepped) samples.push(c.host.tick);
+    const stepped = c.advance((host) => samples.push(host.tick));
     if (!c.replaying) scheduler.pause();
     return stepped;
   });
@@ -173,7 +171,7 @@ it('Q1: effective absolute triangle at 519 changes real velocity and A/B remain 
     s.step(); c.batch(job, Infinity, () => 0, 1);
     const a = c.observeBaselineWork(); if (a) expect(firstDivergence(observe(s.live()), a)).toBeNull();
     if (i === 0) {
-      firstDelta = s.live().canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1] - before.linvel[1];
+      firstDelta = s.live().canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1]! - before.linvel[1]!;
       expect(firstDelta).toBeCloseTo(2 * expectedGain * h, 5);
       expect(Math.abs(firstDelta - 2 * 0.1975 * h)).toBeGreaterThan(0.004);
     }
@@ -194,7 +192,7 @@ it('Q1: effective absolute triangle at 519 changes real velocity and A/B remain 
   const law = wrong.appliedFields()[0]!;
   wrong.submit({ kind: 'putField', field: { ...law, expression: { kind: 'directional', direction: [0, 1, 0], strength: 2 * 0.1975 } } }, 1);
   wrong.step();
-  const delta = wrong.canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1] - before.linvel[1];
+  const delta = wrong.canonicalState().bodies.find((b) => b.id === 'traveler')!.linvel[1]! - before.linvel[1]!;
   expect(delta).toBeCloseTo(2 * 0.1975 * h, 5); expect(Math.abs(delta - firstDelta)).toBeGreaterThan(0.004);
 });
 
