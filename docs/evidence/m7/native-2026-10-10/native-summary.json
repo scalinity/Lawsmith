@@ -1,0 +1,127 @@
+{
+  "codeCandidate": "a56fede4ee3b95e43772bb1db606d8fb23beeafb",
+  "acceptedMain": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "window": {
+    "startedAtUTC": "2026-10-10T20:48:19Z",
+    "authorizedDeadlineUTC": "2026-10-10T21:33:19Z",
+    "minutes": 45
+  },
+  "qualification": {
+    "kind": "qualification",
+    "identity": {
+      "app": "Lawsmith 0.0.0",
+      "build": "packaged",
+      "bundle": "index-DAN-URlm.js sha256:3eef6b2c97144a65daecb9cedb8f7689a09e753b440a23a260063f63db4a6342",
+      "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.37.1",
+      "webkit": "22625.2.7.1",
+      "os": "macOS 27.2 (26B5101f)",
+      "arch": "aarch64"
+    },
+    "qualified": true,
+    "fingerprint": {
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "rapier": "0.21.0",
+      "rapierWasmSha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b",
+      "effective": {
+        "dt": 0.008333333767950535,
+        "numSolverIterations": 4,
+        "numInternalPgsIterations": 1,
+        "maxCcdSubsteps": 1,
+        "lengthUnit": 1,
+        "normalizedAllowedLinearError": 0.004999999888241291,
+        "normalizedPredictionDistance": 0.019999999552965164,
+        "contactErp": 0.0728205069899559
+      },
+      "fieldKernel": "affine-ak-v2",
+      "commands": "lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick",
+      "step": "1/120"
+    },
+    "mode": "packaged",
+    "t": 151
+  },
+  "backend": {
+    "kind": "backend",
+    "backend": "WebGPU",
+    "coordinateSystemIsWebGPU": true,
+    "compatibilityMode": false,
+    "samples": 4,
+    "adapter": {
+      "vendor": "apple",
+      "architecture": "apple",
+      "device": "apple",
+      "description": "apple"
+    },
+    "features": [
+      "bgra8unorm-storage",
+      "clip-distances",
+      "core-features-and-limits",
+      "depth-clip-control",
+      "depth32float-stencil8",
+      "float32-blendable",
+      "float32-filterable",
+      "indirect-first-instance",
+      "rg11b10ufloat-renderable",
+      "shader-f16",
+      "texture-compression-astc",
+      "texture-compression-astc-sliced-3d",
+      "texture-compression-bc",
+      "texture-compression-bc-sliced-3d",
+      "texture-compression-etc2",
+      "texture-formats-tier1",
+      "texture-formats-tier2",
+      "timestamp-query"
+    ],
+    "mode": "packaged",
+    "t": 154
+  },
+  "fixtureCases": 34,
+  "fixturesAllPass": true,
+  "fixtureComplete": true,
+  "GUIResourceCycles": 20,
+  "steadyResourceCounts": {
+    "contexts": {
+      "worlds": 1,
+      "peakWorlds": 6,
+      "authoring": 1,
+      "replay": 0,
+      "candidates": 0,
+      "seeking": 0,
+      "checkpoints": 0,
+      "checkpointBytes": 0,
+      "selected": "authoring",
+      "recording": "idle",
+      "comparison": null
+    },
+    "render": {
+      "geometries": 31,
+      "textures": 5,
+      "objects": 115
+    },
+    "totalBytes": 901704
+  },
+  "performance": "PENDING - two invalid window-blur captures retained",
+  "affectedOlderNativeRegressions": "PENDING - native input paused after focus interruptions",
+  "privacy": {
+    "credentialPatternHits": 0,
+    "logsPersonalPathHits": 0,
+    "outcomeAndBuildPathRedactions": "exact full private-root and checkout literal values only",
+    "screenshots": "whole Lawsmith window; reviewed for unrelated content",
+    "videos": "whole Lawsmith window; sampled at 12/18 second intervals; synthetic file names only",
+    "preferenceBackup": "private, excluded"
+  },
+  "historicalEvidence": "prior candidates and original raw files retained without relabeling",
+  "nativeInput": "Stopped after repeated focus interruptions; unresolved clarification does not authorize resumption",
+  "restoration": {
+    "display": "1168x755@120",
+    "displayRestored": true,
+    "existingPreferencesRestored": true,
+    "removedQAAddedPreferenceKeys": [
+      "NSNavLastUserSetHideExtensionButtonState",
+      "NSOSPLastRootDirectory"
+    ],
+    "ownedLawsmithPIDs": [],
+    "sharedGUIUnlocked": true,
+    "nativeInputPaused": true
+  },
+  "AC7": "PENDING packaged explicit absent-counterpart/index-shift case L; headless case PASS"
+}

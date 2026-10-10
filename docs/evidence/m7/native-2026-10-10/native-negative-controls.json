@@ -1,0 +1,22 @@
+{
+  "codeCandidate": "a56fede4ee3b95e43772bb1db606d8fb23beeafb",
+  "producingNativeLog": "m7-compare-attempt-2/m7-compare.log",
+  "unmodifiedNativeAssertions": "PASS",
+  "mutatedNativeNegativeControls": [
+    {
+      "control": "zero separation",
+      "expectedRejection": true,
+      "reason": "actual separation below 0.5 m or incorrect readout"
+    },
+    {
+      "control": "overshot replay endpoint",
+      "expectedRejection": true,
+      "reason": "frame overshot after replay"
+    },
+    {
+      "control": "growing resources",
+      "expectedRejection": true,
+      "reason": "resource counts grew or failed to return to steady state"
+    }
+  ]
+}

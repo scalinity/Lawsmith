@@ -1,0 +1,21 @@
+{
+  "hardware": {
+    "machine_name": "MacBook Pro",
+    "machine_model": "Mac17,8",
+    "chip_type": "Apple M5 Pro",
+    "physical_memory": "48 GB"
+  },
+  "powerSettings": [
+    "Battery Power:",
+    "powermode            0",
+    "AC Power:",
+    "powermode            0"
+  ],
+  "macOS": [
+    "ProductName:\t\tmacOS",
+    "ProductVersion:\t\t27.2",
+    "BuildVersion:\t\t26B5101f"
+  ],
+  "node": "v26.10.0",
+  "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)"
+}

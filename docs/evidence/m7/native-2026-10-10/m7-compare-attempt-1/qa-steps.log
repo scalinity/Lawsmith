@@ -1,0 +1,11 @@
+[qa 16:49:04] segment: M7 two futures and packaged authority fixtures
+[qa 16:49:05] More Space, 60 Hz: set 1728x1117@60
+[qa 16:49:14] launched pid 59965, window at 224,104, log m7-compare.log
+[qa 16:49:14] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-DAN-URlm.js sha256:3eef6b2c97144a65daecb9cedb8f7689a09e753b440a23a260063f63db4a6342", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 16:49:14] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 16:49:31] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "two-futures.lawsmith.json", "generation": 2, "title": "Two Futures", "bytes": 2378, "readMs": 0.054, "parseMs": 0, "candidateMs": 1, "commitMs": 2, "openMs": 3.054, "mode": "packaged", "t": 17688}  [document] fixture opened
+[qa 16:49:32] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] 1280×800 and known law selected
+[qa 16:49:34] recording m7-two-futures for 100 s (overlay windows skipped by the hit test: 459)
+[qa 16:49:37] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 24, "batches": 4, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+[qa 16:49:38] captured m7-01-common-fork.png
+[qa 16:49:58] FAIL: timed out waiting for 10 'layout' events

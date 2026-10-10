@@ -1,0 +1,12 @@
+{
+  "scenario": "m7-compare",
+  "label": "m7-compare-attempt-1",
+  "startedAtUTC": "2026-10-10T20:49:04.098048+00:00",
+  "codeCandidate": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912",
+  "evidenceSourceHead": "bb6a8d96729eff546bc2ed1fd7aedce281cd3d9e",
+  "timeoutSeconds": 900,
+  "ownedProcessGroup": 59847,
+  "exitCode": 1,
+  "elapsedSeconds": 54.70448684692383,
+  "finishedAtUTC": "2026-10-10T20:49:58.802542+00:00"
+}
