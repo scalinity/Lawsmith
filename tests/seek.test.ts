@@ -292,6 +292,53 @@ describe('the latest request wins (AC5)', () => {
     runs.returnToAuthoring();
   });
 
+  it('a pending seek holds the displayed replay still midway through a same-tick group, until canceled or replaced', async () => {
+    const g = session();
+    g.coordinator.startRecording();
+    for (let i = 0; i < 130; i++) g.controller.editField('push', 'Move law', moveTo(i / 100));
+    const group = (await g.coordinator.stopRecording())!;
+    expect(group.commands.filter((c) => c.atTick === 0)).toHaveLength(130);
+    const c = g.coordinator;
+    /** The displayed replay cut short after one chunk of the group, by a deadline already passed. */
+    const cutShort = () => {
+      expect(c.advanceReplay(1, 0, () => 1)).toEqual({ complete: false, partial: true });
+      const shown = c.replay!;
+      expect(shown.address).toEqual({ tick: 0, cursor: 64 });
+      return { shown, observed: observe(shown.host), engine: shown.host.engineSnapshot() };
+    };
+    /** Paused frames finish a unit cut short; playing frames advance. Neither may touch the displayed replay now. */
+    const frames = (held: ReturnType<typeof cutShort>) => {
+      for (const units of [0, 0, 1, 2]) expect(c.advanceReplay(units, Infinity, () => 0)).toEqual({ complete: false, partial: true });
+      expect(c.replay).toBe(held.shown);
+      expect(held.shown.address).toEqual({ tick: 0, cursor: 64 });
+      expect(firstDivergence(held.observed, observe(held.shown.host))).toBeNull();
+      expect(held.shown.host.engineSnapshot()).toEqual(held.engine);
+    };
+
+    c.enterReplay();
+    const canceled = cutShort();
+    c.seek({ tick: 0, cursor: 10 });
+    frames(canceled);
+    c.cancelSeek();
+    // Canceled: the displayed replay finishes the group it was cut short in, from where it stood.
+    expect(c.advanceReplay(0, Infinity, () => 0)).toEqual({ complete: true, partial: false });
+    expect(canceled.shown.address).toEqual({ tick: 0, cursor: 130 });
+
+    c.restartReplay();
+    const replaced = cutShort();
+    c.seek({ tick: 0, cursor: 120 });
+    expect(c.seekWork(0, () => 1).kind).toBe('working');
+    frames(replaced);
+    expect(c.seekWork(Infinity, () => 0).kind).toBe('committed');
+    // Replaced: the seek's world is shown at exactly its target.
+    expect(c.replay).not.toBe(replaced.shown);
+    const reference = new LinearReplay(group);
+    reference.runTo({ tick: 0, cursor: 120 });
+    expect(firstDivergence(observe(reference.host), observe(c.replay!.host))).toBeNull();
+    reference.dispose();
+    c.returnToAuthoring();
+  });
+
   it('an uncached seek works in bounded batches and reports progress; nothing partial is displayed', () => {
     freshReplay();
     const shown = runs.replay!;

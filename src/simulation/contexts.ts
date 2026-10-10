@@ -289,11 +289,14 @@ export class RunCoordinator {
    * `deadline` between chunks of commands; a unit cut short resumes on the next call without stepping,
    * so physics never advances before its boundary is fully settled. `units` may be 0 to finish one.
    * `stepped` runs right after each transition, before the new boundary's commands: an observer of the
-   * step (probes, trails) sees the laws that step used, as a live observer does.
+   * step (probes, trails) sees the laws that step used, as a live observer does. While a seek is pending
+   * nothing advances, not even a unit cut short: the displayed replay stays exactly as it is until the
+   * seek is canceled or its world replaces it (SPEC §14.2).
    */
   advanceReplay(units: number, deadline: number, now: () => number, stepped?: () => void): { complete: boolean; partial: boolean } {
     const replay = this.replay;
     if (!replay || this.selected !== 'replay') return { complete: false, partial: false };
+    if (this.job) return { complete: replay.complete, partial: this.replayPartial };
     let remaining = units;
     for (;;) {
       if (replay.complete) {
