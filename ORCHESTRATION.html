@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-09 against <code>m6b</code>, pushed and not merged: M6B implemented (code <code>d6966fd</code>), review pending</span>
+    <span>Realigned 2026-10-09 against <code>m6b</code>, pushed and not merged: M6B implemented (code <code>66bd5bf</code>), the independent review’s findings fixed, acceptance pending</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Review M6B’s complete state before M7.</h1>
-    <p class="lede">M6B is implemented and waits on review (code <code>d6966fd</code>, branch <code>m6b</code>, not merged). A checkpoint restored into a new world and replayed forward lands exactly where M6A’s checkpoint-free replay lands: in the packaged app, 93 targets on two recordings matched in state and engine bytes, and a cached seek in a 60 s P1 recording reached its first drawn frame at p95 209 ms. M6A’s four scenarios and the M1–M5 chain passed on the same build. Next, the independent complete-state review MILESTONES strongly recommends before M7 (GPT-6.1 Sol), then your acceptance and the merge. M7 stays locked until then.</p>
-    <cite><code>docs/evidence/M6B.md</code> Status, Acceptance criteria, Performance, Owner checks; <code>docs/MILESTONES.md</code> M6B Evidence required for review</cite>
+    <h1>Decide M6B’s acceptance before M7.</h1>
+    <p class="lede">M6B is implemented and waits on your decision (code <code>66bd5bf</code>, branch <code>m6b</code>, not merged). The independent complete-state review of <code>d6966fd</code> found the checkpoint design sound and AC5 failing: twice, the displayed replay could change while a seek was pending. Both are fixed. On the repaired build, 93 targets on two recordings matched M6A’s checkpoint-free replay in state and engine bytes, and a cached seek in a 60 s P1 recording reached its first drawn frame at p95 182 ms. M6A’s four scenarios, the M1–M5 chain and P0–P2 passed on <code>d6966fd</code> and were not re-run. Next, your acceptance and the merge, optionally after a narrow re-review of the fix or that re-run. M7 stays locked until then.</p>
+    <cite><code>docs/evidence/M6B.md</code> Status, Review, Acceptance criteria, Performance, Owner checks; <code>docs/MILESTONES.md</code> M6B Evidence required for review</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -628,14 +628,14 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m6b</code>. Before any native run, one read-only Opus 5.5 reviewer checked the seek driver, the part with no automated coverage: 1 medium, 4 low, 3 suggestions, every one fixed. GPT-6.1 Sol runs the complete-state review before M7, checking the linear oracle and the restored result separately; it has not run.</dd>
-              <dt>Graph permits</dt><dd class="soft">Implemented, review pending: code at <code>d6966fd</code>, every acceptance criterion passing headless and natively on one build (bundle <code>a0c4f337…</code>). Not merged.</dd>
-              <dt>Should run</dt><dd class="run">Sol’s complete-state review of <code>d6966fd</code> against <code>321d9e1</code>, then your acceptance and the merge. Nothing else runs meanwhile: M7 forks from M6B’s checkpoints and stays locked until M6B is accepted.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored, alone, on <code>m6b</code>. Before any native run, one read-only Opus 5.5 reviewer checked the seek driver, the part with no automated coverage: 1 medium, 4 low, 3 suggestions, every one fixed. The independent Codex review of <code>d6966fd</code> (a debugger and an auditor, read-only) checked the linear oracle and the restored result separately. It found no missing state, and it found 1 critical and 1 warning, both in the app’s handling of a pending seek, plus a miscount in the record. All three are fixed, the critical one a regression from the pre-review’s S8, and re-verified.</dd>
+              <dt>Graph permits</dt><dd class="soft">Implemented, review pending: code at <code>66bd5bf</code>, every M6B check passing headless and natively on its build (bundle <code>3dd2f808…</code>). M6A, M1–M5 and P0–P2 passed on <code>d6966fd</code>, which differs only in the pending-seek paths. Not merged.</dd>
+              <dt>Should run</dt><dd class="run">Your acceptance of <code>66bd5bf</code>, then the merge. Optionally first, a narrow re-review of <code>d6966fd..66bd5bf</code>, or the M6A, M1–M5 and P0–P2 re-run on <code>66bd5bf</code> (about 70 minutes hands-off). Nothing else runs meanwhile: M7 forks from M6B’s checkpoints and stays locked until M6B is accepted.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M6A, accepted on 2026-10-08. Contracts C5–C8.</dd>
-              <dt>Destroys</dt><dd>Nothing beyond publishing. Checkpoint caches stay in memory. Native QA used disposable folders, per-run recovery directories and a 1 MiB disk image, switched the display to More Space only for the 1600×1000 and 1280×800 checks, and re-imported the panel preferences from their pre-QA export. By your decision it quit another session’s screenshot interface that covered the screen. The published seek video drops a notification banner’s first 2 s.</dd>
-              <dt>Your part</dt><dd>Request Sol’s review, then accept and merge, or not. Optionally, scrub a P1 replay on a real trackpad (thread below; <code>M6B.md</code> Owner checks).</dd>
+              <dt>Destroys</dt><dd>Nothing beyond publishing. Checkpoint caches stay in memory. Native QA used disposable folders, per-run recovery directories and a 1 MiB disk image, switched the display to More Space only for the 1600×1000 and 1280×800 checks, and re-imported the panel preferences from their pre-QA export. By your decision it quit another session’s screenshot interface that covered the screen, and later stopped three screen recorders an earlier session had left running. The published seek video drops a notification banner’s first 2 s.</dd>
+              <dt>Your part</dt><dd>Accept and merge, or not, with or without a narrow re-review or the regression re-run. Optionally: Space during a seek on a real keyboard, the status line under a deferred Play, and scrubbing a P1 replay on a real trackpad (threads below; <code>M6B.md</code> Owner checks).</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
@@ -1197,6 +1197,18 @@
           <td data-label="What the record says">WebKit sends a page one mouse event at a time, each waiting for the page’s reply, and the seek’s batches run between them. So a click made during a cached P1 seek (100–200 ms) reaches the page after that seek commits, and scrubbing P1 shows the intermediate targets in turn rather than skipping them. During long reconstructions, input lands between batches, and a newer request supersedes the old one. No criterion is affected. How it feels on a real trackpad is an owner check.</td>
           <td data-label="Owner"><a href="#m6b">M6B</a></td>
           <td data-label="Source"><cite><code>M6B.md</code> finding 1, Owner checks</cite></td>
+        </tr>
+        <tr id="t-m6b-space" data-owner="m6b" data-short="Space during a seek">
+          <td data-label="Thread" class="lead">M6B finding 10: Space during a seek, on a real keyboard</td>
+          <td data-label="What the record says">Space through its own handler toggles playing from a pending seek’s target, and Shift+C proves it on both recordings. A Space sent by <code>cliclick</code> (<code>kp:space</code>) while the timeline had focus reached no handler, and the app logs no raw key events, so whether WebKit delivered it is not established. A real keyboard decides it.</td>
+          <td data-label="Owner"><a href="#m6b">M6B</a></td>
+          <td data-label="Source"><cite><code>M6B.md</code> finding 10, Owner checks</cite></td>
+        </tr>
+        <tr id="t-m6b-status" data-owner="owner" data-short="Status line">
+          <td data-label="Thread" class="lead">M6B finding 8: a deferred Play moves the replay cluster’s buttons</td>
+          <td data-label="What the record says">With Play pressed during a seek, “ Then playing.” wraps the status onto a second line at 1600×1000, and Replay from start, Return to authoring and Cancel seek drop 17 CSS px. No criterion is affected. Whether the status should keep one line is your decision.</td>
+          <td data-label="Owner">You</td>
+          <td data-label="Source"><cite><code>M6B.md</code> finding 8, Owner checks</cite></td>
         </tr>
         <tr id="t-m4-contacts" data-owner="deferred" data-short="Contact readback">
           <td data-label="Thread" class="lead">M4 finding 2: contact naming on the pinned engine</td>
