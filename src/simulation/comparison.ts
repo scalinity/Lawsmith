@@ -122,8 +122,8 @@ export class Comparison {
   /** Qualification observation; engine bytes are independently captured, never owned trace storage. */
   observeBaselineWork(): Observed | null { return this.job ? observe(this.job.work) : null; }
   private restore(c: HostCheckpoint): SimulationHost { return new SimulationHost(this.root.semantic, copyCheckpoint(c)); }
-  private newController(): DocumentController {
-    return new DocumentController(createDocument({ ...this.root.semantic, fields: this.b.appliedFields(), simulation: { ...this.root.semantic.simulation, ambientAcceleration: this.b.settings.ambientAcceleration } }, this.root.metadata, this.root.presentation), this.b, COMPARISON_LIMITS.historyEntries, COMPARISON_LIMITS.historyBytes);
+  private newController(host = this.b): DocumentController {
+    return new DocumentController(createDocument({ ...this.root.semantic, fields: host.appliedFields(), simulation: { ...this.root.semantic.simulation, ambientAcceleration: host.settings.ambientAcceleration } }, this.root.metadata, this.root.presentation), host, COMPARISON_LIMITS.historyEntries, COMPARISON_LIMITS.historyBytes);
   }
   private attachRecorder(): void {
     this.b.recorder = {
@@ -178,9 +178,13 @@ export class Comparison {
   replayAlternate(): void {
     if (this.disposed) throw new Error('Comparison is closed.');
     this.cancel();
-    if (!this.replay) this.controller.settle();
+    if (!this.replay) this.settle();
     const end = this.replay?.end ?? { tick: this.b.tick, cursor: this.b.lastAppliedSequence };
     const replacement = this.restore(this.fork!);
+    // Detach only after the refusal path drained accepted acks and dropped unapplied commands.
+    // Attach before disposal; a failed attachment frees only the uncommitted replacement.
+    try { this.controller.reattach(replacement); }
+    catch (error) { replacement.dispose(); throw error; }
     this.b.dispose();
     this.b = replacement;
     this.replayStopped = false;
@@ -190,7 +194,11 @@ export class Comparison {
   newAlternate(): void {
     if (this.disposed) throw new Error('Comparison is closed.');
     this.cancel();
+    this.settle();
     const replacement = this.restore(this.fork!);
+    let controller: DocumentController;
+    try { controller = this.newController(replacement); }
+    catch (error) { replacement.dispose(); throw error; }
     const onAcks = this.controller.onAcks;
     this.b.dispose();
     this.b = replacement;
@@ -198,7 +206,7 @@ export class Comparison {
     this.commandBytes = 0;
     this.replay = null;
     this.replayStopped = false;
-    this.controller = this.newController();
+    this.controller = controller;
     this.controller.onAcks = onAcks;
     this.message = null;
     this.attachRecorder();

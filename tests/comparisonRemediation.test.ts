@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, expect, it } from 'vitest';
 import { Comparison } from '../src/simulation/comparison';
-import { initSimulation } from '../src/simulation/host';
+import { initSimulation, worldCounts } from '../src/simulation/host';
 import { firstDivergence, observe } from '../src/simulation/replay';
 import { driveScheduledFrame, FixedStepScheduler } from '../src/simulation/scheduler';
 import { twoFuturesDocument } from '../src/simulation/comparisonFixtures';
@@ -56,4 +56,46 @@ it.each([0, 73])('F1: paused-boundary replay at tick %i stays at its exact curso
   expect(driveScheduledFrame(scheduler, 8, () => { if (c.advance()) { samples++; return true; } return false; })).toBe(0);
   expect(samples).toBe(0); expect(firstDivergence(end, observe(c.host))).toBeNull();
   expect(c.controller.liveHost).toBe(c.host);
+});
+
+it.each([0, 7].flatMap((tick) => [false, true].map((gesture) => ({ tick, gesture }))))('F2: immediate replay after suffix refusal at $tick, gesture=$gesture', ({ tick, gesture }) => {
+  const { c } = setup(); for (let i = 0; i < tick; i++) c.advance();
+  const field = c.host.appliedFields()[0]!, tx = c.controller.newTransaction();
+  let refused = false;
+  for (let i = 0; i < 2500; i++) {
+    if (gesture) {
+      c.controller.putField({ ...field, enabled: i % 2 === 0 }, tx);
+      c.controller.settle();
+      if (c.host.halted) { refused = true; break; }
+    } else if (!c.controller.editField('sideways', 'Toggle', (f) => ({ ...f, enabled: !f.enabled })).ok) { refused = true; break; }
+  }
+  expect(refused).toBe(true); expect(c.host.pendingCount).toBeGreaterThan(0);
+  const end = observe(c.host), suffix = JSON.stringify(c.suffix), undo = c.controller.canUndo;
+  const worlds = worldCounts().allocated, old = c.host;
+  // No intervening Comparison.settle(): replay must resolve the refusal itself.
+  expect(() => c.replayAlternate()).not.toThrow();
+  expect(old.pendingCount).toBe(0); expect(c.controller.liveHost).toBe(c.host);
+  while (c.replaying) c.advance();
+  expect(firstDivergence(end, observe(c.host))).toBeNull(); expect(c.host.pendingCount).toBe(0);
+  expect(c.host.halted).toBe(false); expect(JSON.stringify(c.suffix)).toBe(suffix);
+  expect(c.controller.canUndo).toBe(undo); expect(worldCounts().allocated).toBe(worlds);
+  // A further capacity refusal remains coherent, then New Alternate permits ordinary editing.
+  c.controller.editField('sideways', 'Later', (f) => ({ ...f, enabled: !f.enabled }));
+  expect(() => c.newAlternate()).not.toThrow();
+  expect(c.controller.liveHost).toBe(c.host); expect(c.host.pendingCount).toBe(0);
+  expect(c.suffixCount).toBe(0); expect(c.controller.canUndo).toBe(false);
+  expect(c.controller.editField('sideways', 'After New', (f) => ({ ...f, enabled: !f.enabled })).ok).toBe(true);
+  expect(worldCounts().allocated).toBe(worlds);
+});
+
+it('F2: failed replacement allocation retains the settled controller and valid suffix', () => {
+  const { c } = setup(); c.controller.editField('sideways', 'Valid', (f) => ({ ...f, enabled: false }));
+  const before = observe(c.host), host = c.host, suffix = JSON.stringify(c.suffix);
+  // Restore failure injection is confined to the fixture; no physical checkpoint semantics change.
+  const restore = (c as unknown as { restore: () => never }).restore;
+  (c as unknown as { restore: () => never }).restore = () => { throw new Error('fixture restore failed'); };
+  try { expect(() => c.replayAlternate()).toThrow('fixture restore failed'); }
+  finally { (c as unknown as { restore: typeof restore }).restore = restore; }
+  expect(c.host).toBe(host); expect(c.controller.liveHost).toBe(host); expect(c.replaying).toBe(false);
+  expect(firstDivergence(before, observe(c.host))).toBeNull(); expect(JSON.stringify(c.suffix)).toBe(suffix);
 });
