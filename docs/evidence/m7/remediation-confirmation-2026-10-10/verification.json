@@ -1,0 +1,157 @@
+{
+  "verifiedAtUTC": "2026-10-10T20:36:38.439612+00:00",
+  "codeCandidate": "4f7454cdfd5a8d1e3a74af635f5b72a91f8f1912",
+  "startupAndTestedEvidenceHead": "5f74d3caca007c6678fb360c9c3ffe34385efda6",
+  "acceptedMain": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "branch": "m7",
+  "scope": "Fresh confirmation of legitimately advanced remediation; no source/test/native-script changes.",
+  "typescript": {
+    "passed": 676,
+    "skipped": 3,
+    "passedFiles": 32,
+    "skippedFiles": 3
+  },
+  "rust": {
+    "passed": 27,
+    "failed": 0
+  },
+  "nativeAssertionControls": {
+    "passed": 10,
+    "runtime": "synthetic Python parser data, not native app qualification"
+  },
+  "manifestPathsVerified": 122,
+  "priorEvidenceFilesHashVerified": 40,
+  "rebuiltArtifacts": [
+    {
+      "path": "dist/assets/index-BlGEIOdO.css",
+      "bytes": 17749,
+      "sha256": "ef53f48a1b4fbcacd1ae3c69dfbf8f7537f91a9735e5fd52a56fa3dc494acaff"
+    },
+    {
+      "path": "dist/assets/index-DAN-URlm.js",
+      "bytes": 5578011,
+      "sha256": "3eef6b2c97144a65daecb9cedb8f7689a09e753b440a23a260063f63db4a6342"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 16383,
+      "sha256": "243295d11664d9493f30d8b7da7f2f9e43a07c32717943e1e67d8e199e361e18"
+    },
+    {
+      "path": "src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/lawsmith",
+      "bytes": 14094432,
+      "sha256": "1aa2601d698126f185b1f427870baae8a62663dcc1976319c7ae4688ab1ede7f"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 58772,
+      "sha256": "aa9f8966a5e92578daf11ad0080f9d94499f2196b0488320a7673d4ad5726942"
+    },
+    {
+      "path": "src-tauri/Cargo.lock",
+      "bytes": 109849,
+      "sha256": "4d29fd4c326adc35ba20a67a64e07cdc1d383f96d8cb9d5db4c2997ac9aeb463"
+    },
+    {
+      "path": "src/fields/kernel.ts",
+      "bytes": 9295,
+      "sha256": "32e5f3b9f41034d65e5de6ed7db80b4f826fc6486873f085366a1f4239f9a248"
+    },
+    {
+      "path": "src/simulation/host.ts",
+      "bytes": 46701,
+      "sha256": "721bce82a1b9572af716c31b996eb9ac6a88b4304cfe4b16f530a516745db9f6"
+    },
+    {
+      "path": "node_modules/@dimforge/rapier3d-compat/dist/rapier_wasm3d_bg.wasm",
+      "bytes": 3082103,
+      "sha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b"
+    }
+  ],
+  "rebuildMatchesPriorPackage": true,
+  "protectedSourceAndDependencyDelta": "NONE",
+  "startupFaultStrings": "ABSENT from production assets",
+  "nativeStatus": "OWNER NATIVE CHECK REQUIRED; no window granted and no app launch or input",
+  "orchestration": "Checked against repository record; no change needed because no gate, finding, ordering, model or ownership assertion changed.",
+  "m8": "NOT STARTED",
+  "files": [
+    {
+      "file": "typecheck.log",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "bytes": 68,
+      "sha256": "fc7ff2eef2870e785ec06e71908e56afc1cc4c7b6aebf00758f501a953091373",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    },
+    {
+      "file": "vitest.log",
+      "command": "npx vitest run",
+      "exitCode": 0,
+      "bytes": 250,
+      "sha256": "a9c564f9562813ec3c1eadf241ea8553db1de18bcd3ba38bc5affd49860ae8c6",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    },
+    {
+      "file": "frontend-build.log",
+      "command": "npm run build",
+      "exitCode": 0,
+      "bytes": 800,
+      "sha256": "77d28a879f013579caed63f855789bda57f9d09bb0603eec611999447edf4096",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    },
+    {
+      "file": "cargo-test.log",
+      "command": "(cd src-tauri && cargo test)",
+      "exitCode": 0,
+      "bytes": 2365,
+      "sha256": "19c81b8bee23212aad7fd6f3559b54cc1ab6406fe9b0a8677eca947acc50aeb7",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    },
+    {
+      "file": "cargo-check.log",
+      "command": "(cd src-tauri && cargo check)",
+      "exitCode": 0,
+      "bytes": 72,
+      "sha256": "c2ccae29be8ebbd8973f3201e5f6646ec32bdad22fe9c3866ff8d1618ed74896",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    },
+    {
+      "file": "packaged-build.log",
+      "command": "npx tauri build --bundles app",
+      "exitCode": 0,
+      "bytes": 1393,
+      "sha256": "3f2751aa26a192e2fcaf5c949cb06b341d6a83441e8a63f0cf19223ff73b8468",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    },
+    {
+      "file": "native-controls.log",
+      "command": "python3 -I scripts/verify/native/test_m7q.py",
+      "exitCode": 0,
+      "bytes": 109,
+      "sha256": "a60e0d2d66e445b0734c0563e528ca7eae6f1b838b35a48522a62ef5a010522e",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    },
+    {
+      "file": "native-syntax.log",
+      "command": "zsh -n scripts/verify/native/m7-compare.zsh scripts/verify/native/m7-perf.zsh",
+      "exitCode": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicCopy": "Exact checkout-path replacement and whitespace normalization; original retained outside Git."
+    }
+  ],
+  "environment": {
+    "macOSVersion": "27.2",
+    "macOSBuild": "26B5101f",
+    "arch": "arm64",
+    "node": "v26.10.0",
+    "npm": "12.2.0",
+    "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+    "WKWebView": "PENDING - app not launched"
+  },
+  "priorProducingEnvironment": {
+    "macOSVersion": "27.2",
+    "macOSBuild": "26B5091g"
+  },
+  "runtimeCaveat": "Byte-identical rebuilt package; macOS build differs from prior producing receipt. Native exact-replay qualification is pending on the current WKWebView/OS identity."
+}
