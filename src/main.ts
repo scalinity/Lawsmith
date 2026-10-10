@@ -523,11 +523,13 @@ async function start() {
     if (comparing()) runs.comparison!.advance(completed);
     else { host.step(); if (host.tick !== before) completed(host); }
     if (comparing() && (runs.comparison!.atHorizon || !runs.comparison!.replaying && alternateWasReplaying)) {
+      const replayCompleted = alternateWasReplaying && !runs.comparison!.replaying;
       alternateWasReplaying = false;
       setPlaying(false, runs.comparison!.atHorizon ? 'comparison-horizon' : 'alternate-replayed');
       applyFreeze();
       renderPanel();
-      report('comparison', { action: 'alternate-complete', playing: scheduler.playing, ...runs.comparison!.counts(), receipt: comparisonReceipt() });
+      // Full baseline hashing is a paused replay diagnostic; keep it out of P3's horizon frame.
+      report('comparison', { action: replayCompleted ? 'alternate-complete' : 'horizon-paused', playing: scheduler.playing, ...runs.comparison!.counts(), ...(replayCompleted ? { receipt: comparisonReceipt() } : {}) });
     }
     if (host.tick === before) return false;
     if (!comparing() && (host.tick === 600 || host.tick === 1200)) captureDigest();
