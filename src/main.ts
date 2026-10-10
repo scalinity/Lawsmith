@@ -442,11 +442,17 @@ async function start() {
     $('sim-error').hidden = false;
   };
 
+  /** Whether playback is asked for: during a seek, whether it plays from its target once it holds it. */
+  const requestedPlaying = () => pendingSeek?.playOnCommit ?? scheduler.playing;
+
   const setPlaying = (playing: boolean, reason: string) => {
-    // Play during a seek plays from its target once it holds it; a pause, or a lifecycle pause, withdraws that.
-    if (pendingSeek && playing !== pendingSeek.playOnCommit && !scheduler.playing) {
+    // The displayed replay stays paused while a seek is pending (SPEC §14.2): Play asks to play from the
+    // target once the seek holds it; a pause, or a lifecycle pause, withdraws that.
+    if (pendingSeek) {
+      if (playing === pendingSeek.playOnCommit) return;
       pendingSeek.playOnCommit = playing;
       report('seek', { action: playing ? 'play-on-commit' : 'pause-on-commit', id: pendingSeek.job.id, reason });
+      syncControls();
       renderPanel();
       return;
     }
@@ -1225,8 +1231,8 @@ async function start() {
   const modeButtons = document.querySelectorAll<HTMLButtonElement>('[data-mode]');
   let shownPlaying = false;
   function syncControls() {
-    if (scheduler.playing !== shownPlaying) {
-      shownPlaying = scheduler.playing;
+    if (requestedPlaying() !== shownPlaying) {
+      shownPlaying = requestedPlaying();
       playButton.setAttribute('aria-pressed', String(shownPlaying));
       playButton.firstChild!.textContent = shownPlaying ? 'Pause ' : 'Play ';
     }
@@ -1256,7 +1262,7 @@ async function start() {
     report('control', { resetView: true });
   });
   viewport.orbit.addEventListener('start', () => (cameraMoved = true));
-  playButton.addEventListener('click', () => setPlaying(!scheduler.playing, 'control'));
+  playButton.addEventListener('click', () => setPlaying(!requestedPlaying(), 'control'));
   $('step').addEventListener('click', stepOnce);
   $('reset').addEventListener('click', resetScene);
   $('sim-error-reset').addEventListener('click', resetScene);
@@ -2149,7 +2155,9 @@ async function start() {
    *   2. Cached seek latency to the first frame drawn with the target: 100 seeded targets with every 240th
    *      tick cached, gated at p95 ≤ 250 ms on a 60-second recording and reported on any other.
    *   3. An uncached seek to the end, gated on ~8 ms batches and progress shown at 100 ms, and a long one
-   *      canceled once its progress shows.
+   *      canceled once its progress shows. Play and Space pressed during long seeks only toggle playing
+   *      from the target: the displayed replay holds still, stays paused after Cancel, and plays on from
+   *      the target after a commit.
    *   4. T11: 20 seek/reset cycles, counting worlds, checkpoint bytes and render resources.
    */
   const runSeekFixtures = async () => {
@@ -2243,6 +2251,52 @@ async function start() {
     if (exercised) cancelPendingSeek('fixture-cancel');
     const canceled = await pending;
     const cancel = { exercised, action: canceled?.action ?? null, elapsedMs: canceled ? round3(canceled.elapsedMs) : null, shownUnchanged: !exercised || replayDivergence(shownBefore, observe(host)) === null, worlds: runs.counts().worlds };
+    // Play and Space during a long seek, through their own handlers: each press toggles the request to play
+    // from the target, and the button shows it, while the displayed replay stays paused exactly as it was.
+    const space = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
+    const click = () => playButton.click();
+    const pressDuring = async (target: Address, presses: (() => void)[], asks: boolean[]) => {
+      restartReplay();
+      runs.checkpoints.discardHistory(scope.historyContextId);
+      const shown = observe(host);
+      const outcome = requestSeek(target, 'fixture-controls');
+      const job = pendingSeek?.job ?? null;
+      const asked: boolean[] = [];
+      let held = true;
+      for (const p of presses) {
+        p();
+        await nextFrame();
+        await nextFrame();
+        const still = pendingSeek;
+        if (!still || still.job !== job) break;
+        asked.push(still.playOnCommit);
+        held &&= !scheduler.playing && playButton.getAttribute('aria-pressed') === String(still.playOnCommit) && replayDivergence(shown, observe(host)) === null;
+      }
+      const exercised = job !== null && asked.length === presses.length;
+      return { shown, outcome, exercised, asked: exercised && asked.every((a, i) => a === asks[i]), held };
+    };
+    // Cancel after a deferred Play leaves the replay where it was, paused.
+    const toCancel = await pressDuring(at(last), [click, click, space, space, click], [true, false, true, false, true]);
+    if (toCancel.exercised) cancelPendingSeek('fixture-controls');
+    await toCancel.outcome;
+    await nextFrame();
+    const canceledPaused = !scheduler.playing && playButton.getAttribute('aria-pressed') === 'false' && replayDivergence(toCancel.shown, observe(host)) === null;
+    // A commit after one plays on from the target, and from nowhere else.
+    const playTarget = at(Math.floor(last * 0.9));
+    const toCommit = await pressDuring(playTarget, [space, click, click], [true, false, true]);
+    const played = await toCommit.outcome;
+    const atCommit = { address: runs.replay!.address, playing: scheduler.playing };
+    for (let frame = 0; frame < 6; frame++) await nextFrame();
+    const playedOn = runs.replay!.address.tick > playTarget.tick;
+    setPlaying(false, 'fixtures');
+    const controls = {
+      exercised: toCancel.exercised && toCommit.exercised,
+      asked: toCancel.asked && toCommit.asked,
+      held: toCancel.held && toCommit.held,
+      canceledPaused,
+      committed: played?.action ?? null,
+      fromTarget: atCommit.address.tick === playTarget.tick && atCommit.address.cursor === playTarget.cursor && atCommit.playing && playedOn,
+    };
     // 4. T11 cycles through the controls.
     await requestSeek(at(last), 'fixture');
     resetPeakWorlds();
@@ -2290,6 +2344,7 @@ async function start() {
       uncached,
       uncachedGate,
       cancel,
+      controls,
       lifecycle: { outside, cycles, after, peakWorlds: worldCounts().peak },
       pass:
         divergent.length === 0 &&
@@ -2300,6 +2355,12 @@ async function start() {
         cancel.exercised &&
         cancel.action === 'canceled' &&
         cancel.shownUnchanged &&
+        controls.exercised &&
+        controls.asked &&
+        controls.held &&
+        controls.canceledPaused &&
+        controls.committed === 'committed' &&
+        controls.fromTarget &&
         after.worlds === outside.worlds &&
         after.geometries === outside.geometries &&
         after.objects === outside.objects &&
@@ -2340,7 +2401,7 @@ async function start() {
       case 'f': return frameLaw();
       case ' ':
         event.preventDefault();
-        return setPlaying(!scheduler.playing, 'keyboard');
+        return setPlaying(!requestedPlaying(), 'keyboard');
       case '.': return stepOnce();
       case 'R': return resetScene();
       case 'Backspace':
