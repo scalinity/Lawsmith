@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    {
+      "path": "src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/Lawsmith",
+      "sha256": "9619185fde030e7b7ae951464297e0f9f5c2ff028672e3c9b69f92a10d400d9f"
+    },
+    {
+      "path": "dist/index.html",
+      "sha256": "ca252c6df6fe667809b379c2c2fc9cf3f83a4eb46de8e1f2424a79b610634978"
+    },
+    {
+      "path": "dist/assets/index-DiDVrdUR.js",
+      "sha256": "4fd91dffc8e674c8ed04c360e56dfb76bf735da282491b0a839f01d1ed330f81"
+    },
+    {
+      "path": "dist/assets/index-CrFFYFRB.css",
+      "sha256": "dd4cf6e03abb76cc2b67a8f9c99a349cd21ee99fe7c3e7e34b615df8e1df60a7"
+    }
+  ],
+  "bundle_manifest_sha256": "634c060f75ffb8f2191c147e8b2d2ea192dc3020dc70a53ba53a7b5ea7134574",
+  "app_source": "efcdf508d98c704303d0fcb78e7f8fdddda2717f",
+  "harness_source": "88395457d564fd13a0b874e5ee6da961f7bf9e6d",
+  "build_head": "eefcc081761112c3cc92aba49d609752e99467e9",
+  "fault_strings": [],
+  "execution": "NOT LAUNCHED; packaged runtime readback pending"
+}

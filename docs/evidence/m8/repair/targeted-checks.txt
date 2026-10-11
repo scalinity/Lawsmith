@@ -5,7 +5,7 @@ date 2026-10-11T18:45:37Z
 exit=0
 
 ## npx vitest run <targeted files>
- files: tests/authoring.test.ts tests/compactLayout.test.js tests/comparison.test.ts tests/conditionsRefresh.test.js tests/contexts.test.ts tests/determinism.test.ts tests/document.test.ts tests/emitterControls.test.js tests/emitterSchedule.test.ts tests/exampleEngagement.test.ts tests/examples.test.ts tests/expressionFile.test.ts tests/focusLayout.test.js tests/focusRestore.test.js tests/historyTitle.test.js tests/ingredients.test.ts tests/keyboardReadback.test.js tests/lawGesture.test.ts tests/m5scenes.test.ts tests/recording.test.ts tests/recordingCost.test.ts tests/recordingLimits.test.ts tests/replayPanel.test.js tests/runFile.test.ts tests/scenes.test.ts tests/sectionJump.test.js tests/seek.test.ts tests/seekCost.test.ts tests/trailNote.test.js tests/trails.test.ts tests/workflow.test.ts 
+ files: tests/authoring.test.ts tests/compactLayout.test.js tests/comparison.test.ts tests/conditionsRefresh.test.js tests/contexts.test.ts tests/determinism.test.ts tests/document.test.ts tests/emitterControls.test.js tests/emitterSchedule.test.ts tests/exampleEngagement.test.ts tests/examples.test.ts tests/expressionFile.test.ts tests/focusLayout.test.js tests/focusRestore.test.js tests/historyTitle.test.js tests/ingredients.test.ts tests/keyboardReadback.test.js tests/lawGesture.test.ts tests/m5scenes.test.ts tests/recording.test.ts tests/recordingCost.test.ts tests/recordingLimits.test.ts tests/replayPanel.test.js tests/runFile.test.ts tests/scenes.test.ts tests/sectionJump.test.js tests/seek.test.ts tests/seekCost.test.ts tests/trailNote.test.js tests/trails.test.ts tests/workflow.test.ts
 exit=0
  Test Files  29 passed | 2 skipped (31)
       Tests  470 passed | 2 skipped (472)

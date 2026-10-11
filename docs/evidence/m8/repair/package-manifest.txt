@@ -1,0 +1,3 @@
+dfac2e7acb02913afcd9fad55de7dd79548d1987bd74c1f5af5bc99705d5e4ad  Contents/Info.plist
+9619185fde030e7b7ae951464297e0f9f5c2ff028672e3c9b69f92a10d400d9f  Contents/MacOS/lawsmith
+0f3ab2bc8760acfd279ec87c574df2ef5493d4471268824b6213d229360482f1  Contents/Resources/icon.icns

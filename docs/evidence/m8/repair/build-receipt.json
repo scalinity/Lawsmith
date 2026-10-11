@@ -1,0 +1,7 @@
+{
+  "command": "npx tauri build --bundles app",
+  "head": "eefcc081761112c3cc92aba49d609752e99467e9",
+  "start": "2026-10-11T18:54:48.974226+00:00",
+  "exit": 0,
+  "end": "2026-10-11T18:55:07.125634+00:00"
+}

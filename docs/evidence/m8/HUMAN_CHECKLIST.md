@@ -4,7 +4,11 @@ The earlier version of this list was paused after your first exploration of the 
 
 Write down what actually happens, in your own words. A step you could not observe is UNVERIFIED, not a pass. Nothing here asks you to run tests or repeat earlier milestones.
 
-Use the packaged app at `src-tauri/target/release/bundle/macos/Lawsmith.app` once it has been rebuilt from the repaired source. The `fa4e223` build you explored does not contain the repairs.
+**The repaired app is built.** Before you start:
+1. Save anything you want to keep in the Lawsmith window that is open now, then quit it (⌘Q). That window is the old `fa4e223` build, which does not contain the repairs; please stop testing it.
+2. Open exactly `/Users/danny/Documents/Apps/Lawsmith/src-tauri/target/release/bundle/macos/Lawsmith.app`.
+
+Its identity and hashes are in `docs/evidence/M8.md` under the current status.
 
 ## 1. Explore again (AC8)
 
@@ -76,4 +80,8 @@ Anything else:
 
 1. Your observations go into `docs/evidence/M8.md` as received.
 2. Real failures are fixed, and only the affected checks run again.
-3. You decide on acceptance. After acceptance, one explicit close-out instruction from you covers merge, push and safe branch cleanup.
+3. Finishing this list does not make M8 ready to accept. These are still needed first:
+   - one declared native batch for what the repair changed (examples, layout, default visuals, emitter controls), with your go-ahead once before it starts;
+   - current performance (P0–P3), because the default visuals changed;
+   - your observations here recorded, and any real failure fixed and its checks rerun.
+4. Only then do you decide on acceptance. After acceptance, one explicit close-out instruction from you covers merge, push and safe branch cleanup.
