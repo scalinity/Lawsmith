@@ -1,0 +1,6 @@
+     × shows a skipped birth with the developer readout closed, and reports it once 16ms
+     × the limiter shows while its count grows and clears when it stops; overload shows only with a ratio 0ms
+     × switching to another context with a larger limiter count is not a limiter event 0ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 1 passed (2)
+      Tests  3 failed | 6 passed (9)
