@@ -62,7 +62,7 @@ function panel(s, selectedId = null) {
     workflow: { dirty: false, busy: null, fileName: null, message: null, recovery: { status: { state: 'idle' } } },
     invoke: () => Promise.resolve(), renderRun: () => {}, renderComparison: () => {}, renderSampling: () => {},
     // The Emitter block renders from the authoring document and has its own test (emitterControls.test.js).
-    renderEmitter: () => {},
+    renderEmitter: () => {}, emitterLockReason: () => null,
     // The Undo/Redo titles have their own test (historyTitle.test.js).
     historyTitle: () => '',
     ingredientPanel: { render: () => {} },

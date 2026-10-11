@@ -10,16 +10,24 @@ import { describe, expect, it } from 'vitest';
 const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const start = source.indexOf('  const TICKS_PER_SECOND = Math.round(1 / STEP_SECONDS);');
 const end = source.indexOf("  emitterApply.addEventListener('click', applyEmitter);\n", start) + "  emitterApply.addEventListener('click', applyEmitter);\n".length;
+// The frame loop's panel refresh, as written: it re-renders the panel when what the panel shows changes.
+const frameStart = source.indexOf('      const panelSignature = JSON.stringify(');
+const frameEnd = source.indexOf('        renderPanel();\n      }\n', frameStart) + '        renderPanel();\n      }\n'.length;
 
-function page({ recording = false, comparison = false, frozen = false, busy = null, seek = null, ok = true, emitter = { id: 'stream', intervalTicks: 8, lifetimeTicks: 512 }, emitters = null } = {}) {
+function page({ recording = false, comparison = false, replay = false, frozen = false, launch = false, guard = false, gesture = null, busy = null, seek = null, ok = true, emitter = { id: 'stream', intervalTicks: 8, lifetimeTicks: 512 }, emitters = null } = {}) {
   const calls = [];
   const el = (id) => ({
-    id, value: '', hidden: false, disabled: false, textContent: '', title: '', attrs: {}, listeners: {}, options: [],
+    id, value: '', hidden: false, disabled: false, textContent: '', title: '', attrs: {}, listeners: {}, options: [], dataset: {},
     toggleAttribute(k, v) { this.attrs[k] = v; }, removeAttribute(k) { delete this.attrs[k]; },
     addEventListener(type, fn) { this.listeners[type] = fn; },
     replaceChildren(...o) { this.options = o; },
+    focus() { calls.push(['focus', id]); },
+    click() { calls.push(['click', id]); this.listeners.click?.(); },
   });
-  const nodes = Object.fromEntries(['emitter', 'emitter-rate', 'emitter-life', 'emitter-apply', 'emitter-revert', 'emitter-pick', 'emitter-pick-row', 'emitter-error', 'emitter-now', 'sim-error'].map((id) => [id, el(id)]));
+  const nodes = Object.fromEntries(['emitter', 'emitter-rate', 'emitter-life', 'emitter-apply', 'emitter-revert', 'emitter-pick', 'emitter-pick-row', 'emitter-error', 'emitter-now', 'emitter-lock', 'emitter-lock-text', 'emitter-lock-action', 'sim-error', 'run-stop', 'run-return', 'comparison-close'].map((id) => [id, el(id)]));
+  nodes['run-stop'].textContent = 'Stop recording';
+  nodes['run-return'].textContent = 'Return to authoring';
+  nodes['comparison-close'].textContent = 'Close comparison';
   const list = emitters ?? (emitter ? [emitter] : []);
   const authoring = {
     generation: 1,
@@ -28,11 +36,16 @@ function page({ recording = false, comparison = false, frozen = false, busy = nu
   };
   const context = createContext({
     $: (id) => nodes[id], STEP_SECONDS: 1 / 120, document: { activeElement: null, createElement: () => ({}) }, authoring,
-    blocked: () => frozen, comparing: () => comparison, runs: { recordingState: recording ? 'recording' : 'idle' }, workflow: { busy }, pendingSeek: seek,
-    setPlaying: (p, r) => calls.push(['play', p, r]), settleNow: () => {}, edited: () => calls.push(['edited']), renderPanel: () => context.renderEmitter(),
-    report: () => {}, runIndex: 0, editsSinceReset: 0, p0: null, host: { tick: 0 },
+    launchPending: launch, guardFrozen: guard, interaction: { gesture }, replaying: () => replay, readOnly: () => replay,
+    blocked: () => context.frozen || context.launchPending || context.guardFrozen || context.interaction.gesture !== null || context.replaying(), frozen,
+    comparing: () => comparison, runs: { recordingState: recording ? 'recording' : 'idle' }, workflow: { busy }, pendingSeek: seek,
+    setPlaying: (p, r) => calls.push(['play', p, r]), settleNow: () => {}, edited: () => calls.push(['edited']),
+    renderPanel: () => { calls.push(['render']); context.renderEmitter(); },
+    report: () => {}, runIndex: 0, editsSinceReset: 0, p0: null, host: { tick: 0, generation: 1, lastAppliedSequence: 0 },
+    editor: () => ({ generation: 1, appliedRevision: 0 }), shownPanelSignature: '',
   });
-  runInContext(`${stripTypeScriptTypes(source.slice(start, end))}\nglobalThis.applyEmitter = applyEmitter; globalThis.renderEmitter = renderEmitter;`, context);
+  runInContext(`${stripTypeScriptTypes(source.slice(start, end))}\nglobalThis.applyEmitter = applyEmitter; globalThis.renderEmitter = renderEmitter;
+globalThis.frame = () => { ${source.slice(frameStart, frameEnd)} };`, context);
   const type = (id, value) => { nodes[id].value = value; nodes[id].listeners.input(); };
   return { nodes, calls, context, authoring, type };
 }
@@ -176,5 +189,86 @@ describe('Emitter controls', () => {
     p.context.applyEmitter();
     expect(p.calls.filter((c) => c[0] === 'set')).toEqual([]);
   });
+
+  it('normally shows no lock, and both fields take ordinary typing and apply', () => {
+    const p = page();
+    p.context.renderEmitter();
+    expect([p.nodes['emitter-rate'].disabled, p.nodes['emitter-life'].disabled, p.nodes['emitter-apply'].disabled]).toEqual([false, false, false]);
+    expect(p.nodes['emitter-lock'].hidden).toBe(true);
+    p.type('emitter-rate', '2');
+    p.type('emitter-rate', '24');
+    p.type('emitter-life', '6.5');
+    p.context.renderEmitter();
+    expect([p.nodes['emitter-rate'].value, p.nodes['emitter-life'].value]).toEqual(['24', '6.5']);
+    p.context.applyEmitter();
+    expect(p.calls).toContainEqual(['set', 'stream', { intervalTicks: 5, lifetimeTicks: 780 }]);
+  });
+
+  it('unlocks on the next frame when the launch freeze ends with no document change (the owner-reported lock)', () => {
+    const p = page({ launch: true });
+    p.context.frame(); // the first frames render while launch recovery is still pending
+    expect(p.nodes['emitter-apply'].disabled).toBe(true);
+    expect(p.nodes['emitter-lock-text'].textContent).toBe('Choose Recover or Discard for the earlier unsaved work first.');
+    p.context.frame();
+    const renders = p.calls.filter((c) => c[0] === 'render').length;
+    p.context.launchPending = false; // no offer, or the offer answered: no revision or generation changes
+    p.context.frame();
+    expect(p.calls.filter((c) => c[0] === 'render').length).toBe(renders + 1);
+    expect([p.nodes['emitter-rate'].disabled, p.nodes['emitter-apply'].disabled, p.nodes['emitter-lock'].hidden]).toEqual([false, false, true]);
+  });
+
+  it('unlocks on the next frame when a recording stops, a replay returns or a comparison closes', () => {
+    for (const [state, key, value] of [[{ recording: true }, 'runs', { recordingState: 'recorded' }], [{ replay: true }, 'replaying', () => false], [{ comparison: true }, 'comparing', () => false]]) {
+      const p = page(state);
+      p.context.frame();
+      expect(p.nodes['emitter-apply'].disabled).toBe(true);
+      p.context[key] = value;
+      p.context.frame();
+      expect(p.nodes['emitter-apply'].disabled).toBe(false);
+    }
+  });
+
+  it.each([
+    ['recording', { recording: true }, 'Recording is on, and applying restarts the scene. Stop recording first.', 'recording', 'run-stop', 'Stop recording'],
+    ['a replay', { replay: true }, 'A replay is shown, and it is read-only. Return to authoring to change the emitter.', 'replay', 'run-return', 'Return to authoring'],
+    ['comparison', { comparison: true }, 'Two futures are being compared. Close the comparison to change the emitter.', 'comparison', 'comparison-close', 'Close comparison'],
+  ])('during %s, shows the reason and the existing control that ends it', (_, state, text, context, target, label) => {
+    const p = page(state);
+    p.context.renderEmitter();
+    expect(p.nodes['emitter-lock'].hidden).toBe(false);
+    expect(p.nodes['emitter-lock'].dataset.context).toBe(context);
+    expect(p.nodes['emitter-lock-text'].textContent).toBe(text);
+    expect(p.nodes['emitter-apply'].title).toBe(text);
+    expect([p.nodes['emitter-lock-action'].hidden, p.nodes['emitter-lock-action'].textContent, p.nodes['emitter-lock-action'].dataset.target]).toEqual([false, label, target]);
+  });
+
+  it('the action presses the real control, then focuses the rate once unlocked; nothing ends on render or focus', () => {
+    const p = page({ recording: true });
+    p.nodes['run-stop'].addEventListener('click', () => { p.context.runs.recordingState = 'recorded'; });
+    p.context.renderEmitter();
+    p.context.renderEmitter();
+    expect(p.calls.filter((c) => c[0] === 'click')).toEqual([]);
+    p.nodes['emitter-lock-action'].listeners.click();
+    expect(p.calls.filter((c) => c[0] === 'click')).toEqual([['click', 'run-stop']]);
+    expect(p.nodes['emitter-rate'].disabled).toBe(false);
+    expect(p.calls.at(-1)).toEqual(['focus', 'emitter-rate']);
+  });
+
+  it('a disabled recovery control is offered disabled and never pressed', () => {
+    const p = page({ comparison: true });
+    p.nodes['comparison-close'].disabled = true;
+    p.context.renderEmitter();
+    expect(p.nodes['emitter-lock-action'].disabled).toBe(true);
+    p.nodes['emitter-lock-action'].listeners.click();
+    expect(p.calls.filter((c) => c[0] === 'click')).toEqual([]);
+  });
+
+  it.each([['the save question', { guard: true }, 'Answer the save question first.'], ['a drag', { gesture: {} }, 'Let go of the law you are dragging first.'], ['a file action', { busy: 'save' }, 'A file action is still working. Wait for it to finish.']])(
+    'names %s without offering an action', (_, state, text) => {
+      const p = page(state);
+      p.context.renderEmitter();
+      expect(p.nodes['emitter-lock-text'].textContent).toBe(text);
+      expect(p.nodes['emitter-lock-action'].hidden).toBe(true);
+    });
 });
 

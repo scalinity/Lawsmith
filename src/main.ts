@@ -892,6 +892,23 @@ async function start() {
   const emitterError = $('emitter-error');
   const emitterNow = $('emitter-now');
   const emitterLocked = () => blocked() || comparing() || runs.recordingState === 'recording' || workflow.busy !== null || pendingSeek !== null;
+  const emitterLock = $('emitter-lock');
+  const emitterLockAction = $<HTMLButtonElement>('emitter-lock-action');
+  /**
+   * Why the emitter is locked, in the person's terms, and the existing control that ends the lock, if one
+   * does. The lock itself is emitterLocked's, unchanged; this only names it (M8 owner feedback).
+   */
+  const emitterLockReason = (): { text: string; context: string; action: string | null } | null => {
+    if (!emitterLocked()) return null;
+    if (launchPending) return { text: 'Choose Recover or Discard for the earlier unsaved work first.', context: 'guard', action: null };
+    if (guardFrozen) return { text: 'Answer the save question first.', context: 'guard', action: null };
+    if (interaction.gesture) return { text: 'Let go of the law you are dragging first.', context: 'gesture', action: null };
+    if (comparing()) return { text: 'Two futures are being compared. Close the comparison to change the emitter.', context: 'comparison', action: 'comparison-close' };
+    if (replaying()) return { text: 'A replay is shown, and it is read-only. Return to authoring to change the emitter.', context: 'replay', action: 'run-return' };
+    if (runs.recordingState === 'recording') return { text: 'Recording is on, and applying restarts the scene. Stop recording first.', context: 'recording', action: 'run-stop' };
+    if (workflow.busy !== null) return { text: 'A file action is still working. Wait for it to finish.', context: 'busy', action: null };
+    return { text: 'Wait for the current action to finish.', context: 'busy', action: null };
+  };
   /** The emitter the block edits: the one picked by ID (a scene may have several), else the first. */
   let emitterId: string | null = null;
   /**
@@ -932,9 +949,19 @@ async function start() {
     if (emitterDraft?.life == null) emitterLife.value = String(Number((emitter.lifetimeTicks / TICKS_PER_SECOND).toFixed(4)));
     emitterRevert.hidden = emitterDraft === null;
     emitterNow.textContent = describeSchedule(emitter.intervalTicks, emitter.lifetimeTicks);
-    const locked = emitterLocked();
+    const lock = emitterLockReason();
+    const locked = lock !== null;
     emitterPick.disabled = emitterRate.disabled = emitterLife.disabled = emitterApply.disabled = emitterRevert.disabled = locked;
-    emitterApply.title = locked ? 'Stop recording, replay or comparison first' : `Rebuilds the scene from tick 0 with this rate and lifetime for ${emitter.id}. Undo restores the previous ones.`;
+    emitterApply.title = lock ? lock.text : `Rebuilds the scene from tick 0 with this rate and lifetime for ${emitter.id}. Undo restores the previous ones.`;
+    // The reason is shown, not only in a tooltip, with the existing control that ends the lock.
+    emitterLock.hidden = !lock;
+    emitterLock.dataset.context = lock?.context ?? '';
+    $('emitter-lock-text').textContent = lock?.text ?? '';
+    const target = lock?.action ? $<HTMLButtonElement>(lock.action) : null;
+    emitterLockAction.hidden = !target;
+    emitterLockAction.dataset.target = lock?.action ?? '';
+    emitterLockAction.textContent = target?.textContent ?? '';
+    emitterLockAction.disabled = !target || target.disabled;
   };
   const keepDraft = (field: 'rate' | 'life', input: HTMLInputElement) => {
     if (!emitterDraft || emitterDraft.key !== draftKey()) emitterDraft = { key: draftKey(), rate: null, life: null };
@@ -951,6 +978,15 @@ async function start() {
     renderEmitter();
   };
   emitterRevert.addEventListener('click', clearEmitterDraft);
+  // Presses the named control itself, so its own guards and meaning apply; nothing ends on focus alone.
+  emitterLockAction.addEventListener('click', () => {
+    const target = emitterLockAction.dataset.target ? $<HTMLButtonElement>(emitterLockAction.dataset.target) : null;
+    if (!target || target.disabled) return;
+    report('control', { emitterLockAction: target.id });
+    target.click();
+    renderEmitter();
+    if (!emitterLocked()) emitterRate.focus({ preventScroll: true });
+  });
   emitterPick.addEventListener('change', () => {
     emitterId = emitterPick.value;
     clearEmitterDraft();
@@ -3475,7 +3511,9 @@ async function start() {
       // The panel follows applied changes without a per-frame rebuild, and not during a drag.
       // Recorded commands have no author acknowledgments in either replay mode. Include context
       // generations and editability so equal revision numbers cannot retain another world's panel.
-      const panelSignature = JSON.stringify([host.generation, editor().generation, readOnly(), readOnly() ? host.lastAppliedSequence : editor().appliedRevision]);
+      // The emitter's lock reason too: a lock can end with no document change (launch recovery answered, a
+      // recording stopped), and its controls must not stay disabled from the frame before (M8 owner feedback).
+      const panelSignature = JSON.stringify([host.generation, editor().generation, readOnly(), readOnly() ? host.lastAppliedSequence : editor().appliedRevision, emitterLockReason()?.text ?? null]);
       if (panelSignature !== shownPanelSignature && !interaction.gesture) {
         shownPanelSignature = panelSignature;
         renderPanel();

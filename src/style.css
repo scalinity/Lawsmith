@@ -1687,3 +1687,26 @@ h2[tabindex="-1"]:focus {
   outline-offset: calc(2 * var(--u));
 }
 
+/* The emitter's lock: why its controls are disabled, edged in the color of the mode that holds them. */
+#emitter-lock {
+  margin: calc(8 * var(--u)) 0;
+  padding: calc(2 * var(--u)) 0 calc(2 * var(--u)) calc(10 * var(--u));
+  border-left: calc(2 * var(--u)) solid var(--text-tertiary);
+}
+#emitter-lock[hidden],
+#emitter-lock-action[hidden] {
+  display: none;
+}
+#emitter-lock[data-context="recording"] {
+  border-left-color: var(--recording);
+}
+#emitter-lock[data-context="replay"] {
+  border-left-color: var(--lavender);
+}
+#emitter-lock[data-context="comparison"] {
+  border-left-color: var(--teal);
+}
+#emitter-lock-text {
+  margin: 0 0 calc(6 * var(--u));
+  color: var(--text-secondary);
+}
