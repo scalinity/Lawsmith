@@ -27,7 +27,7 @@ function page(innerWidth, uiScale, compact = false) {
   const window = { innerWidth, addEventListener: (type, fn) => { if (type === 'resize') onResize = fn; } };
   const document = { documentElement: { dataset: compact ? { compact: 'true' } : {} } };
   const context = createContext({
-    $: (id) => nodes[id], window, document, uiScale, report: () => {},
+    $: (id) => nodes[id], window, document, uiScale, report: () => {}, keepFocus: (move) => move(),
     overlaysCluster: nodes.overlays, contextColumn: nodes['context-column'],
   });
   runInContext(stripTypeScriptTypes(source.slice(start, end)), context);

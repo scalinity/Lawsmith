@@ -996,6 +996,32 @@ async function start() {
   // Compact (M8 R18): when the window is shorter than 360 interface units (900×600 at 175% and 200%), the
   // tools take two rows, the transport alone takes the bottom right, and the drawing options join the
   // context column, which scrolls, so every region keeps a useful height and nothing covers another.
+  /**
+   * Moving a node out of the document and back drops keyboard focus to the body (M8 review R-FB2). A
+   * layout move keeps the focused control focused, with its text selection, when it is still connected,
+   * enabled and shown.
+   */
+  const keepFocus = (move: () => void) => {
+    const active = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
+    const field = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement ? active : null;
+    let range: [number, number, 'forward' | 'backward' | 'none'] | null = null;
+    try {
+      if (field && field.selectionStart !== null && field.selectionEnd !== null) range = [field.selectionStart, field.selectionEnd, field.selectionDirection ?? 'none'];
+    } catch {
+      range = null; // number fields report no selection
+    }
+    move();
+    if (!active || document.activeElement === active || !active.isConnected || active.offsetParent === null) return;
+    if ((active as HTMLButtonElement | HTMLInputElement).disabled) return;
+    active.focus({ preventScroll: true });
+    if (field && range) {
+      try {
+        field.setSelectionRange(range[0], range[1], range[2]);
+      } catch {
+        // a field type without selection keeps its value; only the caret position is lost
+      }
+    }
+  };
   const dock = $('dock');
   const overlaysCluster = $('overlays');
   const contextColumn = $('context-column');
@@ -1003,8 +1029,10 @@ async function start() {
     const compact = window.innerHeight < 360 * uiScale;
     if (document.documentElement.dataset.compact === String(compact)) return;
     document.documentElement.dataset.compact = String(compact);
-    if (compact) contextColumn.append(overlaysCluster);
-    else dock.prepend(overlaysCluster);
+    keepFocus(() => {
+      if (compact) contextColumn.append(overlaysCluster);
+      else dock.prepend(overlaysCluster);
+    });
   }
   applyCompact();
   window.addEventListener('resize', applyCompact);
@@ -1037,13 +1065,15 @@ async function start() {
     if (document.documentElement.dataset.focus === String(focus)) return;
     document.documentElement.dataset.focus = String(focus);
     panelNav.hidden = !focus;
-    if (focus) {
-      lawsSection.after(detailsCard, explainCard);
-      panelEl.append(runCard, comparisonCard);
-    } else {
-      contextColumn.append(...contextHome);
-      if (document.documentElement.dataset.compact === 'true') contextColumn.append(overlaysCluster);
-    }
+    keepFocus(() => {
+      if (focus) {
+        lawsSection.after(detailsCard, explainCard);
+        panelEl.append(runCard, comparisonCard);
+      } else {
+        contextColumn.append(...contextHome);
+        if (document.documentElement.dataset.compact === 'true') contextColumn.append(overlaysCluster);
+      }
+    });
     setDrawFolded(focus);
     report('control', { layout: focus ? 'focus' : 'wide' });
   }

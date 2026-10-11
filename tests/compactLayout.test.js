@@ -18,7 +18,8 @@ function page(innerHeight, uiScale) {
   let onResize;
   const window = { innerHeight, addEventListener: (type, fn) => { if (type === 'resize') onResize = fn; } };
   const document = { documentElement: { dataset: {} } };
-  const context = createContext({ $: (id) => nodes[id], window, document, uiScale });
+  // keepFocus (focus survival across the move) has its own test, focusRestore.test.js.
+  const context = createContext({ $: (id) => nodes[id], window, document, uiScale, keepFocus: (move) => move() });
   runInContext(stripTypeScriptTypes(source.slice(start, end)), context);
   return { moves, window, document, context, resize: () => onResize() };
 }
