@@ -2090,7 +2090,11 @@ async function start() {
     const gesture = interaction.gesture;
     if (gesture) interaction.release(`recording-${reason}`, authoring.lawState(gesture.start.id)?.field ?? null);
     for (const revision of awaited) if (revision > authoring.appliedRevision) awaited.delete(revision);
-    if (reason === 'duration' || reason === 'commands' || reason === 'bytes') workflow.message = { kind: 'info', text: LIMIT_TEXT[reason] };
+    if (reason === 'duration' || reason === 'commands' || reason === 'bytes') {
+      workflow.message = { kind: 'info', text: LIMIT_TEXT[reason] };
+      // The recording stopped and edits since may not be applied: say so where it can be read (M8 review R-HUD3).
+      setHudHidden(false, `recording-${reason}`);
+    }
     report('recording', { action: 'limit', reason, tick: authoring.liveHost.tick, cursor: authoring.liveHost.lastAppliedSequence, gestureEnded: gesture !== null });
     void runs.settled().then((record) => {
       if (record) report('recording', { action: 'stopped', ...recordSummary(record) });

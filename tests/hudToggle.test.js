@@ -20,6 +20,8 @@ const hud = slice('  let hudFocus: HTMLElement | null = null;', "  $('hud-hide')
 const keydown = slice("  window.addEventListener('keydown', (event) => {", '\n  });\n');
 const alert = slice('    const hudAlert =', '    hudAlertSeen = hudAlert;\n');
 const freeze = slice('  const applyFreeze = () => {', '\n  };\n');
+const limited = slice('  const recordingLimited = (reason: StopReason) => {', '\n  };\n');
+const limitText = source.slice(source.indexOf('const LIMIT_TEXT'), source.indexOf('};', source.indexOf('const LIMIT_TEXT')) + 3);
 
 class Element {
   constructor(id = '', parent = null) { Object.assign(this, { id, parent, disabled: false, isContentEditable: false, focused: 0, blurred: 0, listeners: {} }); }
@@ -210,6 +212,23 @@ describe('the immersive view toggle', () => {
     context.workflow.busy = 'open';
     context.alertCheck();
     expect(hidden()).toBe(false);
+  });
+});
+
+describe('a recording limit while the HUD is hidden (R-HUD3)', () => {
+  it.each(['duration', 'commands', 'bytes'])('the %s limit brings the HUD back with its explanation', (reason) => {
+    setup();
+    press('h');
+    Object.assign(context, {
+      setPlaying: () => {}, awaited: new Set(), recordSummary: () => ({}), runs: { settled: () => Promise.resolve(null) },
+      authoring: { appliedRevision: 0, liveHost: { tick: 7200, lastAppliedSequence: 3 }, lawState: () => null },
+    });
+    context.interaction.release = () => false;
+    runInContext(stripTypeScriptTypes(`${limitText}\n${limited}\nrecordingLimited(${JSON.stringify(reason)});`), context);
+    expect(hidden()).toBe(false);
+    expect(context.workflow.message.kind).toBe('info');
+    expect(context.workflow.message.text).toMatch(/^The recording stopped at its .*limit/);
+    expect(calls.filter((c) => c[0] === 'report' && c[1] === 'control').at(-1)[2]).toEqual({ hud: 'shown', reason: `recording-${reason}` });
   });
 });
 
