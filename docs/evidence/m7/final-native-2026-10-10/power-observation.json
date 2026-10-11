@@ -1,0 +1,36 @@
+{
+  "capturedAtUTC": "2026-10-11T03:42:23.565639+00:00",
+  "context": "P5 run 3; current observation, not retrospective P3 power proof",
+  "commands": [
+    {
+      "command": [
+        "pmset",
+        "-g",
+        "custom"
+      ],
+      "exitCode": 0,
+      "stdout": "Battery Power:\n Sleep On Power Button 1\n powermode            0\n standby              1\n ttyskeepawake        1\n hibernatemode        3\n powernap             1\n hibernatefile        /var/vm/sleepimage\n displaysleep         0\n womp                 0\n networkoversleep     0\n sleep                1\n lessbright           0\n tcpkeepalive         1\n disksleep            10\nAC Power:\n Sleep On Power Button 1\n powermode            0\n standby              1\n ttyskeepawake        1\n hibernatemode        3\n powernap             1\n hibernatefile        /var/vm/sleepimage\n displaysleep         0\n womp                 0\n networkoversleep     0\n sleep                0\n tcpkeepalive         1\n disksleep            10\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pmset",
+        "-g",
+        "batt"
+      ],
+      "exitCode": 0,
+      "stdout": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=35979363)\t49%; charging; (no estimate) present: true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pmset",
+        "-g",
+        "therm"
+      ],
+      "exitCode": 0,
+      "stdout": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n",
+      "stderr": ""
+    }
+  ]
+}

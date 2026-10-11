@@ -1,0 +1,8 @@
+[qa 22:43:25] segment: M7 R1 targeted panel qualification
+[qa 22:43:29] launched pid 68693, window at 224,104, log m7-r1-panel.log
+[qa 22:43:46] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] fresh fixture at zero
+[qa 22:43:46] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU
+[qa 22:43:46] segment: R1 ordinary recording replay
+[qa 22:44:14] PASS {"kind": "layout", "playing": false, "authority": {"tick": 120, "cursor": 0, "stateHash": "1c1c34d91f2ddc4c", "engineHash": "7f809077a3cfed29"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] exact paused boundary 120
+[qa 22:44:37] FAIL {"kind": "layout", "playing": false, "authority": {"tick": 357, "cursor": 1, "stateHash": "286c095ffbfa1085", "engineHash": "b3dca16571fcc720"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] exact paused boundary 396
+[qa 22:44:37] FAIL: expectation failed: exact paused boundary 396

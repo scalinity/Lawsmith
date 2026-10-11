@@ -1,0 +1,18 @@
+[qa 23:38:36] segment: P5 compound at 1600×1000 under More Space (about 5 minutes)
+[qa 23:38:52] display → 1728×1117: set 1728x1117@120
+[qa 23:38:59] launched pid 99905, window at 224,104, log perf5.log
+[qa 23:39:11] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "p5-compound.lawsmith.json", "generation": 2, "title": "P5 Compound", "bytes": 72419, "readMs": 2.208, "parseMs": 6, "candidateMs": 6, "commitMs": 7, "openMs": 21.208, "mode": "packaged", "t": 12414}  [document] P5 opened
+[qa 23:39:12] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "da93b92dea04db62", "engineHash": "1e07d1ed4d23400b"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] the content viewport is 1600×1000 CSS at DPR 2, and the first compound law is selected
+[qa 23:39:14] PASS {"kind": "visualization", "change": "trails", "contexts": {"worlds": 1, "peakWorlds": 2, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle", "comparison": null}, "render": {"geometries": 41, "textures": 5,   [visualization] no probes, no trails, nothing explained: the workload is the laws and bodies
+[qa 23:39:21] PASS {"kind": "pacing", "intervalMs": [17, 18, 18], "maxIntervalMs": 18, "workP95Ms": 4, "stallsOver50ms": 3, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 487, "playing": true, "bodies": 100, "stepMs": [1, 1, 2], "editMs": null, "editSamples": 0, "simWallRatio": 1, "droppedMs": 0, "mode": "packaged"  [pacing] 100 bodies are live
+[qa 23:39:21] captured p5-1600x1000.png
+[qa 23:39:32] P5 run 1 measuring
+[qa 23:40:32] PASS {"kind": "p0-run", "comparison": null, "run": 1, "invalid": null, "incomplete": null, "wallMs": 60015, "ticks": 7201, "simWallRatio": 1, "droppedMs": 0, "bodies": 100, "arrows": 89, "workload": {"title": "P5 Compound", "laws": 8, "lawKinds": ["directional", "gain", "linearDrag", "mask", "softRadial"  [p0-run] P5 run 1 is valid and meets its gates
+[qa 23:40:42] P5 run 2 measuring
+[qa 23:41:42] PASS {"kind": "p0-run", "comparison": null, "run": 2, "invalid": null, "incomplete": null, "wallMs": 60000, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 100, "arrows": 89, "workload": {"title": "P5 Compound", "laws": 8, "lawKinds": ["directional", "gain", "linearDrag", "mask", "softRadial"  [p0-run] P5 run 2 is valid and meets its gates
+[qa 23:41:53] P5 run 3 measuring
+[qa 23:42:55] PASS {"kind": "p0-run", "comparison": null, "run": 3, "invalid": null, "incomplete": null, "wallMs": 60013, "ticks": 7202, "simWallRatio": 1, "droppedMs": 0, "bodies": 100, "arrows": 89, "workload": {"title": "P5 Compound", "laws": 8, "lawKinds": ["directional", "gain", "linearDrag", "mask", "softRadial"  [p0-run] P5 run 3 is valid and meets its gates
+[qa 23:42:59] display → 1168×755: set 1168x755@120
+[qa 23:43:02] display restored to 1168x755@120
+[qa 23:43:03] m5-perf complete
+[qa 23:43:03] display restored to 1168x755@120

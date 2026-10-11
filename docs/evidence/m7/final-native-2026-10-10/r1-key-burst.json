@@ -1,0 +1,12 @@
+{
+  "attempt": "m7-r1-ordinary-single",
+  "exitCode": 1,
+  "requestedBoundary": 396,
+  "observedBoundary": 357,
+  "observedStepEvents": 357,
+  "createdLaws": 1,
+  "simulationFaultEvents": 0,
+  "disposition": "Incomplete synthetic-input evidence; long injected text burst did not yield all requested steps. No application defect established.",
+  "correction": "32-key maximum batches, assert each exact boundary, abort any short/overshot batch without filling deficits",
+  "rerun": "ordinary-only fresh fixture under 7e267e416cf2a68b56c89d54b8ea11b11fa6a7de"
+}

@@ -1,0 +1,26 @@
+{
+  "failedAttempt": {
+    "scenario": "m7-r1-panel-fixed",
+    "applicationSourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "nativeHarnessSha": "8c1fb4e60617b9aa12c082d43412bea45a69964b",
+    "evidenceSourceHead": "8c1fb4e60617b9aa12c082d43412bea45a69964b",
+    "packagedExecutableSha256": "bfe81bb33262baf06af9b139488377cce2d94d7db7181b0cd506289af07442be",
+    "startedAtUTC": "2026-10-11T02:24:45.306789+00:00",
+    "timeoutSeconds": 750,
+    "ownedProcessGroup": 84661,
+    "exitCode": 1,
+    "elapsedSeconds": 326.6968231201172,
+    "finishedAtUTC": "2026-10-11T02:30:12.003548+00:00",
+    "cleanup": {
+      "displayRestored": "1168x755@120",
+      "preferencesRestored": true,
+      "sharedGUIUnlocked": true,
+      "ownedProcessesRemaining": [],
+      "terminatedOwnedProcesses": []
+    }
+  },
+  "classification": "native harness rounding and scroll-margin defect",
+  "cause": "at scrollTop 260 the Add button rectangle is [96.3,48.3,46,24], panel top is 52; CSS center is 60.3, rounded screen point y=105 equals window45+panel52+margin8. Strict > rejects it, and the next 120-pixel scroll moves it offscreen; 25 iterations oscillate between scrollTop 260 and 380.",
+  "correction": "inclusive >= and <= at the existing eight-pixel margin; actual click remains hit-tested",
+  "applicationSourceUnchanged": true
+}

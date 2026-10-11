@@ -1,0 +1,22 @@
+{
+  "scenario": "m7-presentation-fault",
+  "applicationSourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "nativeHarnessSha": "7e267e416cf2a68b56c89d54b8ea11b11fa6a7de",
+  "evidenceSourceHead": "7e267e416cf2a68b56c89d54b8ea11b11fa6a7de",
+  "packagedExecutableSha256": "bfe81bb33262baf06af9b139488377cce2d94d7db7181b0cd506289af07442be",
+  "supplementalHarnessSha256": "1848051f67c850d7f9793b3d5487547f172a63db3374bfd6c92cb7c6628ca142",
+  "supplementalDriverSha256": "d3427d07270ec23a2baa350b1aebdff5eea44800e8e43730743fbc96f9ef6fab",
+  "startedAtUTC": "2026-10-11T03:51:26.829208+00:00",
+  "timeoutSeconds": 450,
+  "ownedProcessGroup": 55928,
+  "exitCode": 3,
+  "elapsedSeconds": 74.85524129867554,
+  "finishedAtUTC": "2026-10-11T03:52:41.684685+00:00",
+  "cleanup": {
+    "displayRestored": "1168x755@120",
+    "preferencesRestored": true,
+    "sharedGUIUnlocked": true,
+    "ownedProcessesRemaining": [],
+    "terminatedOwnedProcesses": []
+  }
+}

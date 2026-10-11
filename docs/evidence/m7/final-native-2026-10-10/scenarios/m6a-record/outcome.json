@@ -1,0 +1,25 @@
+{
+  "scenario": "m6a-record",
+  "applicationSourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "nativeHarnessSha": "b6da56b9a61a3b2988e585e06267b2c1f304f7e2",
+  "evidenceSourceHead": "b6da56b9a61a3b2988e585e06267b2c1f304f7e2",
+  "packagedExecutableSha256": "bfe81bb33262baf06af9b139488377cce2d94d7db7181b0cd506289af07442be",
+  "startedAtUTC": "2026-10-11T02:37:24.177897+00:00",
+  "timeoutSeconds": 390,
+  "ownedProcessGroup": 44579,
+  "exitCode": 3,
+  "elapsedSeconds": 225.73357605934143,
+  "finishedAtUTC": "2026-10-11T02:41:09.911417+00:00",
+  "cleanup": {
+    "displayRestored": "1168x755@120",
+    "preferencesRestored": true,
+    "sharedGUIUnlocked": true,
+    "ownedProcessesRemaining": [],
+    "terminatedOwnedProcesses": [
+      {
+        "pid": 58362,
+        "command": "lawsmith"
+      }
+    ]
+  }
+}

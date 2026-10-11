@@ -1,0 +1,20 @@
+{
+  "attempt": "m6a-record",
+  "exitCode": 3,
+  "disposition": "Environment obstruction at start of session B; no refused click was sent, complete runner is not PASS",
+  "observedTopmost": {
+    "owner": "Control Center",
+    "id": 4393,
+    "layer": 24,
+    "bounds": {
+      "X": 829,
+      "Y": 26,
+      "Width": 319,
+      "Height": 145
+    }
+  },
+  "timeRelativeToOwnedRecorderStart": "about 2 seconds",
+  "laterReadback": "no on-screen Control Center windows",
+  "correction": "bounded 10-second no-input wait while owned recorder active; retain topmost gate and recheck outside input; no popover whitelist",
+  "rerun": "complete m6a-record under new harness abaad478fcce8d6bde219ee73a5055484323d43a"
+}

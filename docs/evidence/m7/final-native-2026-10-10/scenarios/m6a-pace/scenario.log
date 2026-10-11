@@ -1,0 +1,14 @@
+[qa 23:05:02] segment: P1 recorded with drags, then replayed, at 1600×1000 under More Space (about 3 minutes)
+[qa 23:05:17] display → 1728×1117: set 1728x1117@120
+[qa 23:05:25] launched pid 55184, window at 224,104, log m6a-pace.log
+[qa 23:05:37] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5ab0e73ecbf92e4c", "engineHash": "c3d5dc76e8887771"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] the content viewport is 1600×1000 CSS, drag-0 selected
+[qa 23:06:23] PASS {"kind": "recording", "action": "stopped", "runId": "run-3a5da234-a334-49b5-88b1-bea75c2dfd27", "title": "P1 Workshop", "commands": 96, "finalTick": 5042, "lastAppliedSequence": 96, "stopped": "user", "finalCheck": {"stateSha256": "85a262b591e4ab9264d2fc5138c0fbe36fb9b868312654af2337433599222abf", "  [recording] P1 recorded with its drags, stopped by the user
+[qa 23:06:23] while recording: {"lines": 8, "intervalP95Max": 18, "intervalP99Max": 19, "stepP95Max": 2, "stepP99Max": 2, "editP95Max": 17, "simWallMin": 0.999, "droppedMs": 0, "bodies": 200}
+[qa 23:07:08] PASS {"kind": "replay-complete", "runId": "run-3a5da234-a334-49b5-88b1-bea75c2dfd27", "tick": 5042, "cursor": 96, "finalTick": 5042, "lastAppliedSequence": 96, "check": {"kind": "match"}, "stateSha256": "85a262b591e4ab9264d2fc5138c0fbe36fb9b868312654af2337433599222abf", "engineSha256": "48198f15a1df41cba  [replay-complete] the P1 replay reached the recorded end exactly
+[qa 23:07:08] while replaying: {"lines": 8, "intervalP95Max": 18, "intervalP99Max": 22, "stepP95Max": 2, "stepP99Max": 2, "editP95Max": 17, "simWallMin": 0.915, "droppedMs": 0, "bodies": 200}
+[qa 23:07:15] the guard asks about the scene
+[qa 23:07:18] the guard asks about the recording
+[qa 23:07:20] display → 1168×755: set 1168x755@120
+[qa 23:07:23] display restored to 1168x755@120
+[qa 23:07:23] m6a-pace complete
+[qa 23:07:24] display restored to 1168x755@120

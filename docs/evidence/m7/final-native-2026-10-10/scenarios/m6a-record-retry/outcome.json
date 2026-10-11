@@ -1,0 +1,20 @@
+{
+  "scenario": "m6a-record-retry",
+  "applicationSourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "nativeHarnessSha": "7e267e416cf2a68b56c89d54b8ea11b11fa6a7de",
+  "evidenceSourceHead": "7e267e416cf2a68b56c89d54b8ea11b11fa6a7de",
+  "packagedExecutableSha256": "bfe81bb33262baf06af9b139488377cce2d94d7db7181b0cd506289af07442be",
+  "startedAtUTC": "2026-10-11T02:47:21.006199+00:00",
+  "timeoutSeconds": 390,
+  "ownedProcessGroup": 89978,
+  "exitCode": 0,
+  "elapsedSeconds": 334.90673184394836,
+  "finishedAtUTC": "2026-10-11T02:52:55.913361+00:00",
+  "cleanup": {
+    "displayRestored": "1168x755@120",
+    "preferencesRestored": true,
+    "sharedGUIUnlocked": true,
+    "ownedProcessesRemaining": [],
+    "terminatedOwnedProcesses": []
+  }
+}

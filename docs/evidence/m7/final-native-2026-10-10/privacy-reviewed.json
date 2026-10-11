@@ -1,0 +1,53 @@
+{
+  "media": {
+    "m7-compare/m7-two-futures.mp4": {
+      "review": "16 evenly spaced whole-window frames inspected; fixture app only, no nonfunctional personal UI content seen",
+      "sha256": "024e7be0dd94111afee7dcd03a59258a0596ff40ab312de1597d91766bf27750"
+    },
+    "m7-visual/m7-both-futures.mp4": {
+      "review": "16 evenly spaced whole-window frames inspected; fixture app only, no nonfunctional personal UI content seen",
+      "sha256": "46a17e854fadb318f20343380d9a2ee0ae735397354bb7938fc2fdd4d08b3892"
+    },
+    "m7-r1-panel-final/r1-created-intermediate.png": {
+      "review": "whole-window image inspected; fixture only"
+    },
+    "m7-r1-panel-final/r1-details-281.png": {
+      "review": "whole-window image inspected; fixture only"
+    },
+    "m7-r1-ordinary-batched/r1-ordinary-replay.png": {
+      "review": "whole-window image inspected; fixture only"
+    },
+    "m7-presentation-fault-retry/custom-compare-post-root.png": {
+      "review": "whole-window image inspected; controlled fixture only, custom synthetic labels and no personal content",
+      "sha256": "5fd63f64e4dc7c8e9c261f8a75eabeb584930c412984177de14619cc74f31387"
+    },
+    "m7-presentation-fault-retry/custom-replay-alternate-post-root.png": {
+      "review": "whole-window image inspected; controlled fixture only, custom synthetic labels and no personal content",
+      "sha256": "63d586e0a6cc65efad1e5e24656399cb5089d9d14464065cb721b2c62e263bbd"
+    },
+    "m7-presentation-fault-retry/custom-new-alternate.png": {
+      "review": "whole-window image inspected; controlled fixture only, custom synthetic labels and no personal content",
+      "sha256": "71a59f968331c4adf42764f417c8820ef82f7bf9dbfa29bd39248533b246b615"
+    },
+    "m7-presentation-fault-retry/controlled-comparison-fault.png": {
+      "review": "whole-window image inspected; controlled fixture only, custom synthetic labels and no personal content",
+      "sha256": "4503303526cd12b6fc309336ecfd29cff2bbc7b7d5cde8525b8c0480866c0348"
+    },
+    "m7-presentation-fault-retry/controlled-comparison-recovered.png": {
+      "review": "whole-window image inspected; controlled fixture only, custom synthetic labels and no personal content",
+      "sha256": "15271685b9791ca96ee70fa78f8914e8bf9d103d53ece664b48c384dde4eb190"
+    },
+    "m7-r1-panel-complete-batched/r1-created-intermediate.png": {
+      "review": "whole-window image inspected; synthetic Two Futures fixture only, no personal content",
+      "sha256": "2e25da6c107463589c275ab92d1c2e6ac1f38362952986fde7d0756455ab8e86"
+    },
+    "m7-r1-panel-complete-batched/r1-details-281.png": {
+      "review": "whole-window image inspected; synthetic Two Futures fixture only, no personal content",
+      "sha256": "5fd22be8993ca05e2082579b10c9313e873a89353027997c87921d14023b2550"
+    },
+    "m7-r1-panel-complete-batched/r1-ordinary-replay.png": {
+      "review": "whole-window image inspected; synthetic Two Futures fixture only, no personal content",
+      "sha256": "0ec41779fc060584b164755100960275dfd275fe97cbd7e1a99a5c259a483b45"
+    }
+  }
+}

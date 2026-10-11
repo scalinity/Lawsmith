@@ -1,0 +1,4 @@
+[qa 22:52:57] segment: a recording and a dirty scene; Quit from authoring
+[qa 22:53:16] launched pid 15255, window at 0,21, log m6a-guard.log
+[qa 22:53:45] a window of pid 1092 covers (182,542) during this segment; bringing the app under test back
+[qa 22:53:46] FAIL: refused input at (182,542): topmost is {"owner":"Notification Center","pid":1092,"layer":23,"id":19,"name":"Notification Center","bounds":{"X":0,"Height":755,"Y":0,"Width":1168}} 3

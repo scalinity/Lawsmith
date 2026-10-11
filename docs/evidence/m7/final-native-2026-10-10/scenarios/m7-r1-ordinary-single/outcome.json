@@ -1,0 +1,20 @@
+{
+  "scenario": "m7-r1-ordinary-single",
+  "applicationSourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "nativeHarnessSha": "abaad478fcce8d6bde219ee73a5055484323d43a",
+  "evidenceSourceHead": "abaad478fcce8d6bde219ee73a5055484323d43a",
+  "packagedExecutableSha256": "bfe81bb33262baf06af9b139488377cce2d94d7db7181b0cd506289af07442be",
+  "startedAtUTC": "2026-10-11T02:43:24.728112+00:00",
+  "timeoutSeconds": 220,
+  "ownedProcessGroup": 68666,
+  "exitCode": 1,
+  "elapsedSeconds": 74.55686092376709,
+  "finishedAtUTC": "2026-10-11T02:44:39.284935+00:00",
+  "cleanup": {
+    "displayRestored": "1168x755@120",
+    "preferencesRestored": true,
+    "sharedGUIUnlocked": true,
+    "ownedProcessesRemaining": [],
+    "terminatedOwnedProcesses": []
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "applicationCandidate": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "targetedR1Verdict": "R1 VERIFIED \u2014 NO NEW ACTIONABLE FINDINGS",
+  "F1ThroughF5AndQ1ThroughQ2": "previously independently cleared",
+  "source": "explicit owner direction in qualification request; matching verdict read in accessible targeted-review report",
+  "currentSessionScope": "new candidate-native evidence and unchanged source identity, not another source remediation or architecture review",
+  "ownerAcceptance": "NOT PERFORMED"
+}

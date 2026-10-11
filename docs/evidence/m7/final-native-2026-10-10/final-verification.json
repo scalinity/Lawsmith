@@ -1,0 +1,41 @@
+{
+  "observedAtUTC": "2026-10-11T04:12:30.121153+00:00",
+  "applicationSourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "nativeHarnessSha": "7e267e416cf2a68b56c89d54b8ea11b11fa6a7de",
+  "initialEvidenceSha": "6bc4bdf08f09d5cf06cbbdb42be44a35b7a1bc22",
+  "acceptedMainSha": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "applicationAndTestsMatchProducer": true,
+  "protectedContractsDependenciesAndFixtureSourcesUnchanged": true,
+  "nativeHarnessWorkingTreeMatchesCommittedPin": true,
+  "packagedHashesMatchProducerReceipt": true,
+  "prePublicationRefs": {
+    "main": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+    "origin/main": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+    "origin/m7": "6bc4bdf08f09d5cf06cbbdb42be44a35b7a1bc22",
+    "HEAD": "7e267e416cf2a68b56c89d54b8ea11b11fa6a7de"
+  },
+  "requiredRunnerTypesComplete": 16,
+  "actualAttemptDispositions": {
+    "PASS": 19,
+    "FAIL": 6,
+    "EXIT_ZERO / ORDINARY_FIXTURE_INCOMPLETE": 1
+  },
+  "fixtureCases": 35,
+  "GUIResourceCycles": 20,
+  "independentPerformanceCaptures": 15,
+  "retainedCaptureOriginalsVerified": 272,
+  "supplementalOriginalsVerified": 14,
+  "allPublishedScenarioBytesMatchRawOrStatedNormalization": true,
+  "allScenariosWithinApprovedBoundsAndRestored": true,
+  "orchestrationStructureStylesScriptsPreserved": true,
+  "orchestrationStructureCheck": "ignore changed inline code wrappers; structural tag order and unique IDs preserved",
+  "orchestrationGateStates": {
+    "m7": "owner-check",
+    "m8": "not-started"
+  },
+  "orchestrationVisualRendering": "NOT RERUN \u2014 text-only maintenance",
+  "newDossierLinksResolve": true,
+  "ownerVisualInspection": "PENDING",
+  "realTrackpad": "PENDING",
+  "newEvidenceAdmission": "PENDING"
+}

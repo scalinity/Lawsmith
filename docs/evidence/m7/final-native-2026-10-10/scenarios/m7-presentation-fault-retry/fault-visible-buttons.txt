@@ -1,0 +1,31 @@
+Undo ⌘Z
+Redo ⇧⌘Z
+Frame F
+Reset view
+New
+Open…
+Save
+Save As…
+Push
+Pull
+Swirl
+Drag
+Duplicate
+Delete
+Push
+Pull
+Swirl
+Drag
+Explain a body B
+Play Space
+Step .
+Reset ⇧R
+Compute baseline
+Extend baseline +5 s
+Replay Alternate
+New Alternate — clear edits
+Export Alternate Setup…
+Close comparison
+close button
+full screen button
+minimize button

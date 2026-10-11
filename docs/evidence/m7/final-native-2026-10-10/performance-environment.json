@@ -1,0 +1,50 @@
+[
+  {
+    "capturedAtUTC": "2026-10-11T03:16:19.804077+00:00",
+    "context": "M6B long-seek capture completion, before P0/P2 numeric capture",
+    "load": "23:16  up 10:26, 5 users, load averages: 5.79 10.98 16.91",
+    "recorders": [],
+    "topCPU": [
+      " 4677  4664 522.0 /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.99/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+      " 4670  4664  49.7 /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.99/Helpers/Google Chrome Helper (GPU).app/Contents/MacOS/Google Chrome Helper (GPU)",
+      " 4762  4762  24.4 /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+      "  606   606  22.9 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+      " 6456  6456  10.4 claude",
+      " 4761  4761   8.8 /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.GPU.xpc/Contents/MacOS/com.apple.WebKit.GPU",
+      " 1583  1271   6.0 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.40/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+      " 1784  1271   5.7 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.40/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)"
+    ]
+  },
+  {
+    "capturedAtUTC": "2026-10-11T03:26:03.252115+00:00",
+    "context": "P1 setup before first numeric capture",
+    "load": "23:26  up 10:36, 5 users, load averages: 27.25 13.68 15.10",
+    "recorders": [],
+    "topCPU": [
+      "48681 48680  92.4 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+      "48618 48617  88.6 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+      "48599 48598  88.5 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+      "48703 48702  87.6 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+      "48701 48700  87.1 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+      "48692 48691  85.6 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+      "48757 48753  85.2 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+      "48734 48730  84.4 /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
+    ]
+  },
+  {
+    "capturedAtUTC": "2026-10-11T03:39:33.209782+00:00",
+    "context": "P5 setup before first numeric capture",
+    "load": "23:39  up 10:49, 5 users, load averages: 34.11 27.13 21.39",
+    "recorders": [],
+    "topCPU": [
+      "  606   606  33.3 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+      "99925 99925  28.6 /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+      "99923 99923   9.5 /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.GPU.xpc/Contents/MacOS/com.apple.WebKit.GPU",
+      " 1583  1271   7.5 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.40/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+      " 1784  1271   7.2 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.40/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+      " 2201  2201   6.2 /opt/homebrew/Cellar/python@3.14/3.14.8/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+      "99905 99905   3.0 <checkout>/src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/lawsmith",
+      "31571 31571   2.7 /System/Library/DriverExtensions/AppleCentauriAlpha.dext/AppleCentauriAlpha"
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "attempt": "m7-r1-panel-final",
+  "actualRunnerExitCode": 0,
+  "ordinaryFixtureDiscrepancy": "existing reveal helper clicked Add law before press_expect clicked it again; two same-boundary create commands, cursor 2 at 121 and retained 396/2",
+  "applicationDefect": false,
+  "disposition": "created and selected segments completed; intended single-create ordinary fixture requires correction and bounded ordinary-only rerun",
+  "correction": "allow reveal to scroll without activating for button targets; strengthen ordinary cursor and exact law-ID checks",
+  "remainingNativeRegressions": "continue under immutable b6da56b harness; apply R1-only correction after driver completes so its identity guard remains valid"
+}

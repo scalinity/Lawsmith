@@ -1,0 +1,48 @@
+{
+  "capturedAtUTC": "2026-10-11T02:54:28.090103+00:00",
+  "context": "read-only environment observation during M6A guard, not retrospective P3 preflight",
+  "commands": [
+    {
+      "command": [
+        "uptime"
+      ],
+      "exitCode": 0,
+      "stdout": "22:54  up 10:04, 5 users, load averages: 24.65 19.83 16.09\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "sysctl",
+        "-n",
+        "machdep.cpu.brand_string",
+        "hw.model",
+        "hw.memsize",
+        "hw.ncpu"
+      ],
+      "exitCode": 0,
+      "stdout": "Apple M5 Pro\nMac17,8\n51539607552\n18\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pmset",
+        "-g",
+        "therm"
+      ],
+      "exitCode": 0,
+      "stdout": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n",
+      "stderr": ""
+    }
+  ],
+  "processesByCPU": [
+    "20919 20889  28.4 /Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor-Cmd",
+    "20889 20889  11.7 node",
+    "  606   606   8.4 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+    " 1583  1271   4.6 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.40/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+    " 1784  1271   3.7 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.40/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+    "  791   791   3.5 /System/Library/DriverExtensions/AppleCentauriAlpha.dext/AppleCentauriAlpha",
+    " 1785  1271   1.8 /Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex",
+    " 1271  1271   0.9 /Applications/ChatGPT.app/Contents/MacOS/ChatGPT"
+  ],
+  "recorders": []
+}

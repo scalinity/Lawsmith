@@ -1,0 +1,21 @@
+{
+  "attempt": "m6a-guard",
+  "exitCode": 3,
+  "disposition": "Environment obstruction; Notification Center remained topmost after the existing 10-second no-input wait. Input refused; no application defect demonstrated.",
+  "observedWindow": {
+    "owner": "Notification Center",
+    "id": 19,
+    "layer": 23,
+    "bounds": {
+      "X": 0,
+      "Y": 0,
+      "Width": 1168,
+      "Height": 755
+    }
+  },
+  "policy": "Do not skip or dismiss an unrelated window; rerun only once observation proves the obstruction cleared; preserve original attempt",
+  "applicationSourceUnchanged": true,
+  "ownerRemedy": "owner explicitly reported Notification Center dismissed",
+  "postRemedyWindowReadback": [],
+  "remedyCheckedAtUTC": "2026-10-11T03:00:51.023493+00:00"
+}

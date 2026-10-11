@@ -1,0 +1,10 @@
+{
+  "attempt": "m7-presentation-fault",
+  "actualExit": 3,
+  "classification": "native supplemental test defect / offscreen target",
+  "evidence": "Open target (146,-288) after inspector scroll; topmost owner/pid null; input refused; whole script stopped before fault",
+  "applicationSourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "correction": "Reveal Open before input; capture both selected custom law inspectors with both Laws rows actually visible; full fresh-state rerun",
+  "originalSupplementalHarnessSha256": "1848051f67c850d7f9793b3d5487547f172a63db3374bfd6c92cb7c6628ca142",
+  "correctedSupplementalHarnessSha256": "46f4acacf663fe3ab19aee587ee3a373723ba5f47309b3f49259214b6d61aa08"
+}

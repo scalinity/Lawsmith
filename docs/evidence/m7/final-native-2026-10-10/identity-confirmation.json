@@ -1,0 +1,13 @@
+{
+  "acceptedBaseIsAncestor": true,
+  "applicationAndTestsMatchProducer": true,
+  "nativeHarnessMatchesPin": true,
+  "workingTreeClean": true,
+  "refs": {
+    "main": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+    "origin/main": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+    "m7": "6bc4bdf08f09d5cf06cbbdb42be44a35b7a1bc22",
+    "origin/m7": "6bc4bdf08f09d5cf06cbbdb42be44a35b7a1bc22",
+    "HEAD": "6bc4bdf08f09d5cf06cbbdb42be44a35b7a1bc22"
+  }
+}
