@@ -35,8 +35,8 @@ describe('M8 bundled examples', () => {
     const again = parseScene(text);
     if (!again.ok) throw again.error;
     expect(serializeScene(again.document)).toBe(text);
-    // The two scenes authored for M8 are stored canonically; the others are accepted files, read as they are.
-    if (example.key === 'sideways-rain' || example.key === 'drag-pocket') expect(text).toBe(example.text);
+    // The scenes authored or tuned for M8 are stored canonically; Two Futures is an accepted file, read as it is.
+    if (example.key !== 'two-futures') expect(text).toBe(example.text);
     expect(document.metadata.title).toBe(example.title);
     expect(document.semantic.fields[0]!.id).toBe(INTENDED[example.key]);
     expect(document.presentation.laws.find((l) => l.id === INTENDED[example.key])!.visible).toBe(true);
@@ -60,7 +60,15 @@ describe('M8 bundled examples', () => {
     const pocket = exampleDocument(EXAMPLES[2]!);
     const source = parseScene(whyItMoves);
     if (!source.ok) throw source.error;
-    expect(await semanticDigest(pocket)).toBe(await semanticDigest(source.document));
+    // The accepted collision scene, tuned for M8 in two values only: a stronger pocket so bodies visibly
+    // slow (owner feedback), and a longer lifetime. Everything else is why-it-moves, unchanged.
+    const accepted = source.document.semantic;
+    const tuned = {
+      ...accepted,
+      fields: accepted.fields.map((f) => (f.id === 'pocket' ? { ...f, expression: { ...f.expression, coefficient: 14 } } : f)),
+      emitters: accepted.emitters.map((e) => ({ ...e, lifetimeTicks: 1800 })),
+    };
+    expect(await semanticDigest({ ...source.document, semantic: tuned } as typeof pocket)).toBe(await semanticDigest(pocket));
     const host = new SimulationHost(pocket.semantic);
     let explained: string | null = null;
     let dragged = false;

@@ -73,7 +73,7 @@
         "id": "stream",
         "intervalTicks": 10,
         "jitter": [0, 0, 0.2],
-        "lifetimeTicks": 900,
+        "lifetimeTicks": 1800,
         "pose": {
           "position": [-4, 4.5, 0],
           "rotation": [0, 0, 0, 1]
@@ -101,7 +101,7 @@
         "edgeFade": 0.25,
         "enabled": true,
         "expression": {
-          "coefficient": 2.5,
+          "coefficient": 14,
           "kind": "linearDrag"
         },
         "id": "pocket",
