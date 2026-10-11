@@ -15,7 +15,7 @@
 # display and preferences and stopping owned processes are cleanup, not new actions, and stay exempt.
 # Earlier scenarios run without it unchanged; the M8 scenarios require it.
 
-zmodload zsh/datetime
+zmodload zsh/datetime zsh/system
 NATIVE=${${(%):-%x}:A:h}
 REPO=${NATIVE:h:h:h}
 APP=${APP:-$REPO/src-tauri/target/release/bundle/macos/Lawsmith.app}
@@ -83,24 +83,39 @@ gui_lock() {
     return
   fi
   local flag=$QA_STATE/.gui-lock-$$-$(( ++lock_count ))
+  # The holder is told which shell to outlive (its own getppid() reads launchd if this shell died
+  # before it started), and checks that shell while it waits as well as while it holds, so a runner
+  # that is killed or terminated never leaves a holder behind.
+  local shell=$sysparams[pid]
   python3 -I -c '
 import fcntl, json, os, sys, time
-parent = os.getppid()
+parent = int(sys.argv[4])
 lock = open(sys.argv[1], "a+")
-fcntl.flock(lock, fcntl.LOCK_EX)
+while True:
+    if os.getppid() != parent:
+        sys.exit(0)
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        break
+    except BlockingIOError:
+        time.sleep(0.25)
 lock.seek(0); lock.truncate()
 lock.write(json.dumps({"pid": parent, "label": sys.argv[2], "sinceMs": int(time.time() * 1000)})); lock.flush()
 open(sys.argv[3], "w").write("held")
 while os.getppid() == parent:
     time.sleep(0.25)
-' $GUI_LOCK "lawsmith-m2: $1" $flag &
+' $GUI_LOCK "lawsmith-m2: $1" $flag $shell &
   LOCK_HOLDER=$!
   local waited=0
   while [[ ! -s $flag ]]; do
     deadline_gate
     sleep 0.25
     (( ++waited % 240 == 0 )) && print -r -- "[qa] still waiting for the shared GUI lock ($1)"
-    kill -0 $LOCK_HOLDER 2>/dev/null || fail "the GUI lock holder exited"
+    if ! kill -0 $LOCK_HOLDER 2>/dev/null; then
+      wait $LOCK_HOLDER 2>/dev/null
+      LOCK_HOLDER=
+      fail "the GUI lock holder exited"
+    fi
   done
 }
 
@@ -113,6 +128,9 @@ gui_unlock() {
   LOCK_HOLDER=
 }
 trap gui_unlock EXIT
+# zsh skips the EXIT trap when terminated by SIGTERM; exiting from a TERM trap runs it, so a runner's
+# own EXIT cleanup (app, recorder, display, preferences, lock) also runs when the runner is stopped.
+trap 'exit 143' TERM
 
 # segment LABEL: ends the previous segment, takes the shared lock, then waits for quiet input.
 segment() {

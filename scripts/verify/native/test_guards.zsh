@@ -5,10 +5,41 @@
 # The GUI lock is a real flock on a temporary file. Each case runs in its own subshell and is judged by
 # its exit status and by which mutations reached the log.
 #   zsh scripts/verify/native/test_guards.zsh        prints one line per case and exits non-zero on a failure
+# A case that starts a background process records it with `own $!`. Whatever trap the case installs,
+# its recorded processes still running when it ends are stopped, and so is the case itself when this
+# runner is interrupted or terminated. A lock holder left on a case's temporary lock fails the run.
 zmodload zsh/datetime
 HERE=${0:A:h}
 ROOT=$(mktemp -d)
-trap 'rm -rf $ROOT' EXIT
+CASE_PID=
+reaped=0
+# own PID: records a process this run started, with its start time, so cleanup stops that process and
+# never a later one that reuses the PID.
+own() { print -r -- "$1 ${(j: :)${=$(ps -o lstart= -p $1)}}" >> $OWNED }
+# reap FILE: stops each recorded process still running as the one recorded.
+reap() {
+  local pid start
+  [[ -f $1 ]] || return 0
+  while read -r pid start; do
+    [[ -n $start && ${(j: :)${=$(ps -o lstart= -p $pid 2>/dev/null)}} == $start ]] || continue
+    kill $pid 2>/dev/null && (( ++reaped ))
+  done < $1
+}
+# stale_holders: processes still running on this run's temporary directory (lock holders); each is
+# stopped and counted.
+stale_holders() {
+  local pid n=0
+  for pid in $(pgrep -f -- "$ROOT/"); do kill $pid 2>/dev/null && (( ++n )); done
+  print $n
+}
+finish() {
+  if [[ -n $CASE_PID ]]; then kill $CASE_PID 2>/dev/null; wait $CASE_PID 2>/dev/null; fi
+  local f; for f in $ROOT/*/owned(N); do reap $f; done
+  rm -rf $ROOT
+}
+trap finish EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 passed=0
 failed=0
 
@@ -17,6 +48,7 @@ run_case() {
   local name=$1 want=$2 body=$3 dir=$ROOT/$1
   mkdir -p $dir/state $dir/out
   : > $dir/calls
+  OWNED=$dir/owned
   (
     export QA_STATE=$dir/state QA_OUT=$dir/out GUI_LOCK=$dir/gui.lock QA_IDLE=1
     CALLS=$dir/calls
@@ -76,8 +108,12 @@ run_case() {
       esac
     }
     eval "$body"
-  ) > $dir/output 2>&1
+  ) > $dir/output 2>&1 &
+  CASE_PID=$!
+  wait $CASE_PID
   local got=$?
+  CASE_PID=
+  reap $OWNED
   if (( got == want )) && { [[ -z $4 ]] || eval "$4" }; then
     (( passed++ )); print -r -- "ok   $name"
   else
@@ -103,15 +139,15 @@ run_case drag-retry-outside-input 4 'QA_DEADLINE=$(( EPOCHSECONDS + 60 )); LAST_
 run_case save-after-panel-wait 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.5 )); LAST_INPUT=$EPOCHREALTIME; DEPTH_TAKES=1; save_panel $QA_STATE/scenes a.lawsmith.json' 'none save-after-panel-wait "ax .*set" && none save-after-panel-wait "press 4242 Save"'
 run_case alert-after-deadline 5 'QA_DEADLINE=$(( EPOCHSECONDS - 1 )); LAST_INPUT=$EPOCHREALTIME; alert "Don'"'"'t Save"' 'none alert-after-deadline "ax "'
 run_case open-press-after-deadline 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.2 )); LAST_INPUT=$EPOCHREALTIME; osascript() { case "$*" in *itempos*) print 10 10 ;; *depth*) print 1 ;; *windows.js\ hit*) print -r -- "{\"pid\":4242}" ;; *) print -r -- "ax $*" >> $CALLS; print pressed ;; esac }; CLICLICK_TAKES=1; open_panel a.lawsmith.json' 'has open-press-after-deadline "c:10,10" && none open-press-after-deadline "press 4242 Open"'
-run_case lock-wait-bounded 5 'python3 -I -c "import fcntl,sys,time; f=open(sys.argv[1],\"a+\"); fcntl.flock(f, fcntl.LOCK_EX); time.sleep(20)" $GUI_LOCK & holder=$!; command sleep 0.5; QA_DEADLINE=$(( EPOCHREALTIME + 1 )); gui_lock test; kill $holder' 'none lock-wait-bounded cliclick'
+run_case lock-wait-bounded 5 'python3 -I -c "import fcntl,sys,time; f=open(sys.argv[1],\"a+\"); fcntl.flock(f, fcntl.LOCK_EX); time.sleep(20)" $GUI_LOCK & holder=$!; own $!; command sleep 0.5; QA_DEADLINE=$(( EPOCHREALTIME + 1 )); gui_lock test; kill $holder' 'none lock-wait-bounded cliclick'
 run_case quiet-wait-bounded 5 'QA_DEADLINE=$(( EPOCHREALTIME + 0.5 )); print 0 > $IDLE_FILE; wait_quiet'
 run_case launch-needs-lock 3 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); LAST_INPUT=$EPOCHREALTIME; launch x $QA_STATE/recovery' 'none launch-needs-lock "open "'
-run_case launch-reserve 5 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS + 10 )); LAST_INPUT=$EPOCHREALTIME; launch x $QA_STATE/recovery' 'none launch-reserve "open "'
-run_case activate-after-deadline 5 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS - 1 )); LAST_INPUT=$EPOCHREALTIME; activate' 'none activate-after-deadline "System Events"'
+run_case launch-reserve 5 'command sleep 30 & LOCK_HOLDER=$!; own $!; QA_DEADLINE=$(( EPOCHSECONDS + 10 )); LAST_INPUT=$EPOCHREALTIME; launch x $QA_STATE/recovery' 'none launch-reserve "open "'
+run_case activate-after-deadline 5 'command sleep 30 & LOCK_HOLDER=$!; own $!; QA_DEADLINE=$(( EPOCHSECONDS - 1 )); LAST_INPUT=$EPOCHREALTIME; activate' 'none activate-after-deadline "System Events"'
 run_case seed-takes-lock-first 0 'unset QA_DEADLINE; seed_folder $QA_STATE/scenes; [[ -n $LOCK_HOLDER ]]' 'has seed-takes-lock-first seed-preferences'
 run_case seed-after-deadline 5 'QA_DEADLINE=$(( EPOCHSECONDS - 1 )); seed_folder $QA_STATE/scenes' 'none seed-after-deadline seed-preferences'
-run_case record-reserve 5 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS + 50 )); LAST_INPUT=$EPOCHREALTIME; screencapture() { print -r -- "screencapture $*" >> $CALLS }; record_start clip 100' 'none record-reserve screencapture'
-run_case window-after-deadline 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS - 1 )); LAST_INPUT=$EPOCHREALTIME; window_size 1280 800' 'none window-after-deadline "set size"'
+run_case record-reserve 5 'command sleep 30 & LOCK_HOLDER=$!; own $!; QA_DEADLINE=$(( EPOCHSECONDS + 50 )); LAST_INPUT=$EPOCHREALTIME; screencapture() { print -r -- "screencapture $*" >> $CALLS }; record_start clip 100' 'none record-reserve screencapture'
+run_case window-after-deadline 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; own $!; QA_DEADLINE=$(( EPOCHSECONDS - 1 )); LAST_INPUT=$EPOCHREALTIME; window_size 1280 800' 'none window-after-deadline "set size"'
 run_case m8-requires-deadline 1 'unset QA_DEADLINE; source $HERE/m8lib.zsh'
 
 # --- F4 (reopened): a slow hit or front check cannot spend the action's reserve -----------------------
@@ -129,8 +165,8 @@ run_case keycode-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.6 ))
 run_case keycode-delayed-front-enough-time 0 'QA_DEADLINE=$(( EPOCHREALTIME + 5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; key_code 36' 'has keycode-delayed-front-enough-time "key code 36"'
 run_case click-delayed-hit-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.5 )); LAST_INPUT=$EPOCHREALTIME; HIT_TAKES=1.0; click 10 10' 'none click-delayed-hit-refused cliclick'
 run_case scroll-delayed-hit-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.5 )); LAST_INPUT=$EPOCHREALTIME; HIT_TAKES=1.0; scroll_at 10 10 -120' 'none scroll-delayed-hit-refused cliclick'
-run_case window-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHREALTIME + 3.5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_size 1280 800' 'none window-delayed-front-refused "set size"'
-run_case window-delayed-front-enough-time 0 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_origin() { : }; window_size 1280 800; trap - EXIT' 'has window-delayed-front-enough-time "set size"'
+run_case window-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; own $!; QA_DEADLINE=$(( EPOCHREALTIME + 3.5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_size 1280 800' 'none window-delayed-front-refused "set size"'
+run_case window-delayed-front-enough-time 0 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; own $!; LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_origin() { : }; window_size 1280 800; trap - EXIT' 'has window-delayed-front-enough-time "set size"'
 run_case tab-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; QA_DEADLINE=$(( EPOCHREALTIME + 1.6 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; tab_to "True" 1' 'none tab-delayed-front-refused "key code 48"'
 # M8 G4: the pinned Wry's tabFocusesLinks=YES makes ordinary Tab reach buttons and Option-Tab skip them.
 # tab_to, the production helper, must send key code 48 with no modifier.
@@ -147,7 +183,7 @@ run_case prefs-early-failure-keeps-domain 5 "print -r -- '$PLIST' > \$DOMAIN_FIL
 run_case prefs-snapshot-failure-writes-nothing 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; EXPORT_FAILS=1; seed_folder \$QA_STATE/scenes" 'none prefs-snapshot-failure-writes-nothing seed-preferences && same_plist $ROOT/prefs-snapshot-failure-writes-nothing/domain.plist'
 run_case prefs-restore-failure-reported 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; seed_folder \$QA_STATE/scenes; IMPORT_FAILS=1; restore_preferences" 'grep -q "\"preferences\":\"failed\"" $ROOT/prefs-restore-failure-reported/out/cleanup.jsonl && [[ -s $ROOT/prefs-restore-failure-reported/state/preferences-original.plist ]]'
 run_case prefs-snapshot-needs-lock 1 'unset QA_DEADLINE; snapshot_preferences' 'none prefs-snapshot-needs-lock "defaults "'
-run_case prefs-snapshot-private 1 'unset QA_DEADLINE; QA_STATE=$REPO/qa-state-inside; command sleep 30 & LOCK_HOLDER=$!; snapshot_preferences' 'none prefs-snapshot-private "defaults "'
+run_case prefs-snapshot-private 1 'unset QA_DEADLINE; QA_STATE=$REPO/qa-state-inside; command sleep 30 & LOCK_HOLDER=$!; own $!; snapshot_preferences' 'none prefs-snapshot-private "defaults "'
 
 # --- F10: a campaign driver lends the shared lock; the runner adopts it only if it is really held ------
 # The test shell lends: it opens the lock file on a descriptor and a helper takes the flock on that same
@@ -161,11 +197,11 @@ sys.exit(1)" $GUI_LOCK'
 run_case lock-adopted-nested-kept 0 "$LEND; QA_LOCK_FD=\$lfd; QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); segment one; [[ \$LOCK_HOLDER == inherited:\$lfd ]] || exit 9; segment two; require_lock 'launching Lawsmith'; gui_unlock; [[ \$LOCK_HOLDER == inherited:\$lfd ]] || exit 8; $HELD || exit 7; [[ -z \$(print \$QA_STATE/.gui-lock-*(N)) ]] || exit 6"
 run_case lock-not-the-lock-file 3 ": >> \$GUI_LOCK; exec {lfd}>>\$QA_STATE/other.lock; python3 -I -c 'import fcntl,sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)' \$lfd; QA_LOCK_FD=\$lfd; gui_lock x" 'grep -q "is not the GUI lock" $ROOT/lock-not-the-lock-file/output'
 run_case lock-nobody-holds 3 'exec {lfd}>>$GUI_LOCK; QA_LOCK_FD=$lfd; gui_lock x' 'grep -q "nobody holds the GUI lock" $ROOT/lock-nobody-holds/output'
-run_case lock-competing-holder 3 'python3 -I -c "import fcntl,sys,time; f=open(sys.argv[1],\"a+\"); fcntl.flock(f, fcntl.LOCK_EX); time.sleep(20)" $GUI_LOCK & holder=$!; command sleep 0.5; exec {lfd}>>$GUI_LOCK; QA_LOCK_FD=$lfd; gui_lock x; kill $holder' 'grep -q "held, but not through descriptor" $ROOT/lock-competing-holder/output'
+run_case lock-competing-holder 3 'python3 -I -c "import fcntl,sys,time; f=open(sys.argv[1],\"a+\"); fcntl.flock(f, fcntl.LOCK_EX); time.sleep(20)" $GUI_LOCK & holder=$!; own $!; command sleep 0.5; exec {lfd}>>$GUI_LOCK; QA_LOCK_FD=$lfd; gui_lock x; kill $holder' 'grep -q "held, but not through descriptor" $ROOT/lock-competing-holder/output'
 run_case lock-closed-descriptor 3 'QA_LOCK_FD=57; gui_lock x' 'grep -q "descriptor 57 is not open" $ROOT/lock-closed-descriptor/output'
 run_case lock-adoption-failure-acts-on-nothing 3 "exec {lfd}>>\$GUI_LOCK; QA_LOCK_FD=\$lfd; QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); LAST_INPUT=\$EPOCHREALTIME; segment x; seed_folder \$QA_STATE/scenes" 'none lock-adoption-failure-acts-on-nothing seed-preferences && none lock-adoption-failure-acts-on-nothing "defaults "'
-run_case set-window-guarded 5 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHREALTIME + 3.5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; set_window 40 45 1280 800' 'none set-window-guarded "set size"'
-run_case set-window-enough-time 0 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS + 600 )); LAST_INPUT=$EPOCHREALTIME; window_origin() { : }; set_window 40 45 1280 800' 'has set-window-enough-time "set size"'
+run_case set-window-guarded 5 'command sleep 30 & LOCK_HOLDER=$!; own $!; QA_DEADLINE=$(( EPOCHREALTIME + 3.5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; set_window 40 45 1280 800' 'none set-window-guarded "set size"'
+run_case set-window-enough-time 0 'command sleep 30 & LOCK_HOLDER=$!; own $!; QA_DEADLINE=$(( EPOCHSECONDS + 600 )); LAST_INPUT=$EPOCHREALTIME; window_origin() { : }; set_window 40 45 1280 800' 'has set-window-enough-time "set size"'
 
 # --- F5 (reopened): only the exact not-found answer is absence; any other read failure stops the run ----
 run_case prefs-existing-unexpected-read-failure 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; READ_FAILS='Error: could not read domain (cfprefsd unavailable)'; trap 'restore_preferences' EXIT; seed_folder \$QA_STATE/scenes" 'none prefs-existing-unexpected-read-failure seed-preferences && none prefs-existing-unexpected-read-failure "defaults delete" && none prefs-existing-unexpected-read-failure "defaults export" && same_plist $ROOT/prefs-existing-unexpected-read-failure/domain.plist && grep -q "\"preferences\":\"unknown\"" $ROOT/prefs-existing-unexpected-read-failure/out/cleanup.jsonl'
@@ -176,15 +212,15 @@ run_case prefs-cleanup-unknown-read-is-failure 1 "unset QA_DEADLINE; seed_folder
 
 # --- Earlier campaign runners: their rewritten helpers, run against the stubs ----------------------------
 LEGIBLE='eval "$(sed -n "/^screen_size()/p;/^display_mode()/p;/^window_size()/p;/^restore_display()/p" $HERE/m5-legible.zsh)"'
-run_case legible-display-verified-and-restored 0 "$LEGIBLE; QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); command sleep 30 & LOCK_HOLDER=\$!; LAST_INPUT=\$EPOCHREALTIME; display_mode 1728 1117; [[ \$(<\$DISPLAY_FILE) == 1728x1117@120 ]] || exit 9; restore_display; [[ \$(<\$DISPLAY_FILE) == 1168x755@120 ]]" 'none legible-display-verified-and-restored cliclick'
+run_case legible-display-verified-and-restored 0 "$LEGIBLE; QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); command sleep 30 & LOCK_HOLDER=\$!; own \$!; LAST_INPUT=\$EPOCHREALTIME; display_mode 1728 1117; [[ \$(<\$DISPLAY_FILE) == 1728x1117@120 ]] || exit 9; restore_display; [[ \$(<\$DISPLAY_FILE) == 1168x755@120 ]]" 'none legible-display-verified-and-restored cliclick'
 run_case legible-display-needs-lock 3 "$LEGIBLE; unset QA_DEADLINE; display_mode 1728 1117" 'none legible-display-needs-lock display-set'
-run_case legible-failed-mode-refused 1 "$LEGIBLE; command sleep 30 & LOCK_HOLDER=\$!; LAST_INPUT=\$EPOCHREALTIME; print -r -- 'no 1728x1117 HiDPI mode at 120 Hz' > \$SET_REPLY_FILE; display_mode 1728 1117"
+run_case legible-failed-mode-refused 1 "$LEGIBLE; command sleep 30 & LOCK_HOLDER=\$!; own \$!; LAST_INPUT=\$EPOCHREALTIME; print -r -- 'no 1728x1117 HiDPI mode at 120 Hz' > \$SET_REPLY_FILE; display_mode 1728 1117"
 R1='eval "$(sed -n "/^cleanup() {/,/^}/p" $HERE/m7-r1-panel.zsh)"'
 run_case r1-cleanup-keeps-absent-absent 0 "$R1; unset QA_DEADLINE; seed_folder \$QA_STATE/scenes; print -r -- '<?xml version=\"1.0\"?><plist version=\"1.0\"><dict/></plist>' > \$DOMAIN_FILE; running() { false }; cleanup; [[ ! -e \$DOMAIN_FILE ]]" 'none r1-cleanup-keeps-absent-absent "defaults import"'
 run_case r1-cleanup-restores-existing 0 "$R1; unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; seed_folder \$QA_STATE/scenes; print -r -- '$QA_WRITES' > \$DOMAIN_FILE; running() { false }; cleanup" 'same_plist $ROOT/r1-cleanup-restores-existing/domain.plist'
 
 # --- F6: a display change is its exact token and readback; only a change QA made is restored ---------
-LOCKED='command sleep 30 & LOCK_HOLDER=$!; LAST_INPUT=$EPOCHREALTIME'
+LOCKED='command sleep 30 & LOCK_HOLDER=$!; own $!; LAST_INPUT=$EPOCHREALTIME'
 run_case display-set-and-restore 0 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; display_set 1728 1117 60 && [[ \$(<\$DISPLAY_FILE) == 1728x1117@60 ]] && restore_display_mode && [[ \$(<\$DISPLAY_FILE) == 1168x755@120 ]] && grep -q '\"display\":\"restored\"' \$QA_OUT/cleanup.jsonl"
 run_case display-failure-string 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; print -r -- 'no 1728x1117 HiDPI mode at 60 Hz' > \$SET_REPLY_FILE; trap 'restore_display_mode' EXIT; display_set 1728 1117 60" '[[ $(grep -c display-set $ROOT/display-failure-string/calls) == 1 ]]'
 run_case display-configure-failed 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; print -r -- 'configure failed' > \$SET_REPLY_FILE; display_set 1728 1117 60" '[[ $(<$ROOT/display-configure-failed/display) == 1168x755@120 ]]'
@@ -224,5 +260,7 @@ run_case perf-workload-must-fit 5 "$PERF; WORKLOAD_SECONDS=330; QA_DEADLINE=\$((
 run_case perf-requires-deadline 1 'unset QA_DEADLINE; source $HERE/m8-perf.zsh P0' 'none perf-requires-deadline "open "'
 run_case perf-unknown-workload 2 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8-perf.zsh P7' 'none perf-unknown-workload "open "'
 
-print -r -- "$passed passed, $failed failed"
-(( failed == 0 ))
+command sleep 1
+stale=$(stale_holders)
+print -r -- "$passed passed, $failed failed; $reaped case children stopped after their case; $stale stale lock holders"
+(( failed == 0 && stale == 0 ))
