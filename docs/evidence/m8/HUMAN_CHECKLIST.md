@@ -8,7 +8,7 @@ Use the packaged app at `src-tauri/target/release/bundle/macos/Lawsmith.app` onc
 
 ## 1. Explore again (AC8)
 
-Before reading further, spend a few minutes doing what you would naturally do: pick an example, select, change, delete and reset a law, save and reopen. Note any confusion and how you got past it, or what stopped you.
+Before reading further, spend a few minutes doing what you would naturally do: pick an example, select, change, delete and reset a law, change how often the emitter drops bodies and how long it keeps them, save and reopen. Note any confusion and how you got past it, or what stopped you.
 
 ## 2. The five examples (AC1)
 
@@ -24,7 +24,7 @@ Open each from **Open an example…** and follow its one-line suggestion. Note w
 
 ## 3. Keyboard and files at 200% (AC3, AC4)
 
-Set Interface Scale to 200% (⌘+). Everything now sits in one column on the left, with a bar for Laws, Details, Scene and Recording. Using only the keyboard, with ordinary Tab:
+Set Interface Scale to 200% (⌘+). Every section now sits in one scrolling column on the left. A bar at its top jumps to Laws, Details, Scene or Recording and puts the keyboard there. Using only the keyboard, with ordinary Tab:
 - open an example and select its law;
 - change its position, rotation, extent and strength;
 - switch it off and on;
@@ -47,6 +47,7 @@ Turn on System Settings → Accessibility → Display → Reduce motion. Orbit t
 
 - At 100%, 150% and 200%: is there room to see the scene? Use the section bar, **More** on the Recording card, and **Draw options**.
 - **Delete** under the Laws list names the selected law. Undo brings the law back.
+- **Emitter** (in the Scene section): set a spawn rate and how many seconds to keep each body, then **Apply and reset**. The line below shows the exact result. Undo should bring back the previous rate.
 - **Trails:** choose Selected body, click a moving body, and watch its path. Then try Up to 32 bodies.
 - **Fault:** open `scripts/verify/scenes/m8-comparison-fault.lawsmith.json` (⌘O), choose **Compare from here**, set Strength to 200, and Play. A red error naming a speed of about 350 m/s should appear. That is the expected fault, and it is different from the amber "Acceleration limit reached" line. Scroll to the red error and use **New Alternate** and **Close**. Note whether they work.
 
@@ -65,7 +66,7 @@ Date / display:
 3 Keyboard and files at 200%: unreachable controls; lost focus; save/open:
 4 Trackpad: move and rotate in the view; window drag 100% / 200%; window buttons:
 5 Reduce motion:
-6 Looking: room at 100/150/200%; Delete; trails; fault error and its buttons:
+6 Looking: room at 100/150/200%; Delete; Emitter rate and lifetime (and Undo); trails; fault error and its buttons:
 7 Replay:
 Anything else:
 ```
