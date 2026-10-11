@@ -345,8 +345,24 @@ layout() {
 }
 point() { logq center $APP_LOG $WIN_X $WIN_Y $1 }
 handle() { logq handle $APP_LOG $WIN_X $WIN_Y $1 ${2:-0} }
-# press ID: clicks a control by its id, from a fresh readback (the panel reflows as laws come and go).
-press() { layout; local p=(${=$(point controls.$1)}); click $p[1] $p[2] }
+# press ID: clicks a control by its id, from a fresh readback (the panel reflows as laws come and go). A
+# control the app places in the Scene panel or the context column is first brought wholly inside that
+# region's visible box, clipped to the window, by guarded wheel steps over the region; every click and
+# scroll uses fresh geometry. A control a bounded number of scrolls cannot reach fails the run (M8 R20:
+# a long inspector scrolled the details toggle above the window, and the click met the menu bar).
+press() {
+  local i act
+  for i in {1..25}; do
+    layout
+    act=(${=$(logq reach $APP_LOG $WIN_X $WIN_Y $1)})
+    case $act[1] in
+      click) click $act[2] $act[3]; return 0 ;;
+      scroll) scroll_at $act[2] $act[3] $act[4] ;;
+      *) fail "control $1 cannot be clicked: ${act[2,-1]}" ;;
+    esac
+  done
+  fail "control $1 did not come into view in its scrolling region after 25 scrolls"
+}
 # press_expect ID KIND: presses a control whose click the app logs as a KIND event. A synthetic click
 # that never reached WebKit (M0 finding 1; M5 finding 10) logs nothing, so it is sent again once, and
 # the harness says so; a click that did arrive is never repeated, since its event comes at once.

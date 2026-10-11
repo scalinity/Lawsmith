@@ -13,6 +13,8 @@
   logq.py project LOG OX OY X Y Z            screen point of a world point, by the last `layout` camera
   logq.py timeline LOG OX OY TICK            screen point of TICK on the replay timeline in the last `layout`
                                              (its 14 px thumb's center travels the track inside its ends)
+  logq.py reach LOG OX OY ID                 how to click control ID from the last `layout`: `click X Y`, or
+                                             `scroll X Y DELTA` over its scrolling region first (M8 R20)
 """
 import json
 import sys
@@ -37,6 +39,39 @@ def dig(value, path):
     for key in path.split('.'):
         value = value[int(key)] if isinstance(value, list) else value[key]
     return value
+
+
+SCROLLING = ('panel', 'context-column')
+MARGIN = 4
+
+
+def reach(layout, ox, oy, control):
+    """`click X Y` when the control can be clicked as it lies; `scroll X Y DELTA` (a wheel step at a point
+    inside its region) when the region the app names as its owner by DOM ancestry is the Scene panel or the
+    context column and the control is not wholly inside that region's visible box, clipped to the window;
+    `unreachable REASON` otherwise. Controls outside those two regions are clicked as before."""
+    box = layout['controls'].get(control)
+    if not box:
+        return f'unreachable {control} is not shown'
+    x, y, w, h = box
+    center = (round(ox + x + w / 2), round(oy + y + h / 2))
+    owner = ((layout.get('owners') or {}).get('controls') or {}).get(control)
+    if owner not in SCROLLING:
+        return f'click {center[0]} {center[1]}'
+    region = layout['controls'].get(owner)
+    if not region:
+        return f'unreachable {control} is in {owner}, which is not shown'
+    rx, ry, rw, rh = region
+    top = max(ry, 0) + MARGIN
+    bottom = min(ry + rh, layout['viewport'][1]) - MARGIN
+    if bottom - top < 1:
+        return f'unreachable {owner} has no visible height'
+    # A control taller than the visible box is reached when its center is inside it.
+    lo, hi = (y, y + h) if h <= bottom - top else (y + h / 2, y + h / 2)
+    if lo >= top and hi <= bottom:
+        return f'click {center[0]} {center[1]}'
+    sx, sy = round(ox + rx + 8), round(oy + (top + bottom) / 2)
+    return f'scroll {sx} {sy} {120 if lo < top else -120}'
 
 
 def main(argv):
@@ -85,6 +120,8 @@ def main(argv):
         x, y, w, h = timeline['box']
         fraction = min(1.0, max(0.0, float(argv[5]) / timeline['max'])) if timeline['max'] else 0.0
         print(round(float(argv[3]) + x + 7 + (w - 14) * fraction), round(float(argv[4]) + y + h / 2))
+    elif command == 'reach':
+        print(reach(events(log, 'layout')[-1], float(argv[3]), float(argv[4]), argv[5]))
     else:
         raise SystemExit(f'unknown command {command}')
 
