@@ -426,6 +426,19 @@ select:focus-visible {
   list-style: none;
 }
 
+.law-list-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: calc(6 * var(--u));
+}
+
+.law-list-actions button {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .law-row {
   display: flex;
   gap: calc(4 * var(--u));

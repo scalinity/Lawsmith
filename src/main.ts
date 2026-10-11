@@ -1172,6 +1172,10 @@ async function start() {
     const law = selectedLaw();
     $<HTMLButtonElement>('law-duplicate').disabled = !law;
     $<HTMLButtonElement>('law-delete').disabled = !law;
+    const listDelete = $<HTMLButtonElement>('laws-delete');
+    listDelete.disabled = !law || locked;
+    listDelete.textContent = law ? `Delete ${lawPresentation(law.id).label}` : 'Delete';
+    listDelete.title = law ? `Delete the selected law, ${lawPresentation(law.id).label} (⌫). Undo restores it.` : 'Select a law to delete it';
 
     // Selected-law details: refreshed from the applied value, never over a field being typed in.
     details.hidden = !law;
@@ -1365,6 +1369,7 @@ async function start() {
   });
   $('law-duplicate').addEventListener('click', duplicateSelected);
   $('law-delete').addEventListener('click', deleteSelected);
+  $('laws-delete').addEventListener('click', deleteSelected);
   $('arrows-toggle').addEventListener('click', setArrows);
   $('undo').addEventListener('click', () => undo(false));
   $('redo').addEventListener('click', () => undo(true));
