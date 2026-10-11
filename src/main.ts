@@ -310,6 +310,10 @@ async function start() {
   const probes = new ProbeField();
   const trails = new TrailRecorder('selected');
   let explained: string | null = null;
+  /** The selected-body trail draws nothing until a body is clicked: the note says so wherever the explained body changes. */
+  const refreshTrailNote = () => {
+    $('trail-note').hidden = !(trails.mode === 'selected' && explained === null);
+  };
   let explainMode: ExplainViewMode = 'applied';
   let arrowScope: 'all' | 'selected' = 'all';
 
@@ -1704,6 +1708,7 @@ async function start() {
     }
     explained = keep !== null && host.ids.includes(keep) ? keep : null;
     host.explain(explained);
+    refreshTrailNote();
     ingredientPanel.reset();
     listSignature = '';
     detailsSignature = '';
@@ -2952,7 +2957,7 @@ async function start() {
     if (id === explained) return;
     explained = id;
     host.explain(id);
-    renderMotion();
+    refreshTrailNote();
     report('explain-select', { body: id, reason, tick: host.tick, playing: scheduler.playing, trails: trails.mode });
   };
 
@@ -3152,8 +3157,7 @@ async function start() {
     if (document.activeElement !== probeCount) probeCount.value = String(s.count);
     if (document.activeElement !== probeSeed) probeSeed.value = String(s.seed);
     for (const b of document.querySelectorAll<HTMLButtonElement>('#trail-mode button')) b.setAttribute('aria-checked', String(b.dataset.trails === trails.mode));
-    // The selected-body trail draws nothing until a body is clicked: say so where the choice is made.
-    $('trail-note').hidden = !(trails.mode === 'selected' && explained === null);
+    refreshTrailNote();
     for (const b of document.querySelectorAll<HTMLButtonElement>('#arrows-scope button')) b.setAttribute('aria-checked', String(b.dataset.scope === arrowScope));
   };
   const visualizationChanged = (change: string) => {
