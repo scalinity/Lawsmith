@@ -1,0 +1,19 @@
+M8 G4 closure and G5 current-identity repair
+
+G4 review      GPT-6.1 Sol at 180433d071d1c7e925e555107ff6a0e507499ff5: CLOSED (source and receipt analysis only; no reviewer
+               build, test, native action or mutation)
+               preserved: test_guards.zsh 87 passed on c7cf5bf; targeted tab-sends-plain-tab fails on the previous m8lib.zsh;
+               nine copied-location failures classified as environment, not the repair or the application
+G5 finding     [P2] M8.md called c7cf5bf and 1762ba2 the current harness head; author read-through also found the status
+               line's "final native harness 92be14f"
+roles          application/test           fa4e22378c355050f388e070001a0236896f6af4 (unchanged)
+               native matrix harness       361dcd9d2d4dabaedefdd57aecd1e4d2514b64e8 (attempt 8)
+               native perf/replay harness  92be14f4b76f3564763f6b505f3349169166df5f (attempt 12)
+               historical G3 label repair  1762ba2a513dbcc298569c36e631ad0ef591b045
+               G4 functional fix           c7cf5bf2b2adfdef14468495320a53e743152800 (not run natively)
+               current harness source      65befdcac73d0020fd9626a2c165f6abcf27003e (comment-only after c7cf5bf)
+historical     final-identity.txt, publication.txt, final-review.txt record facts as of their commits; unchanged
+root checks    read-only at 180433d: clean m8 equal to live; accepted main 0d2f609 unchanged; application, tests, index,
+               runtime and pins unchanged from fa4e223; SPEC, MILESTONES and M0-M7 unchanged; four package hashes match r19;
+               git diff --check d74159f..180433d exit 0; no native input after the approved intervals ended
+status         G5 author repair, independent review pending; no native work; qualification blocked on owner checks
