@@ -39,15 +39,29 @@ The verification commands in `README.md` (`npm ci`, `npm run typecheck`, `npm ru
 - Vite reloads the page on every source edit and resets scene state. Finish a native test sequence before editing sources that `tauri dev` is serving.
 - `VITE_LAWSMITH_FAULT=webgl|rapier-hang` injects startup faults in dev only. After changing startup code, confirm the fault strings are absent from `dist/assets`.
 
+## Test scope
+
+Test what the current unit changed, not everything that exists.
+
+1. **Scope is the current milestone.** Test its newly implemented or changed behavior and its explicit acceptance requirements. Do not schedule whole native campaigns or every historic test from accepted milestones because they exist. An older helper or fixture may serve a narrow current integration check, or a concrete, reproducible regression witness; say how it links to the changed behavior. An explicit owner scope override wins. A full acceptance sweep belongs only to an explicit release gate (M10) or an owner request.
+2. **Build and test the final candidate once.** Run the targeted headless tests, source checks and one build on the final affected application candidate, and keep its runtime identity. Docs-only or harness-only edits do not trigger an application rebuild or the full suite.
+3. **Reuse valid results.** A passed result stays valid while its producing application, the affected source, and the relevant settings and workload are unchanged. Do not invalidate unaffected cases because docs or unrelated code changed. After a fix, rerun the failing and affected cases, not a whole historic milestone. A global layout change may still affect a whole matrix: say so, and never understate the impact or record a PASS that did not run.
+4. **Performance runs only on a relevant change.** Never restart a passed performance campaign without a relevant change. When one is required, keep its prescribed workloads, warmup and capture durations.
+
 ## Native QA
 
-The owner uses this Mac while sessions run, so synthetic input is scheduled and guarded:
+The owner uses this Mac while sessions run, so synthetic input is scheduled and guarded, and the Mac is reserved only while native actions actually run:
 
-1. Agree a **hands-off window** with the owner before any synthetic mouse or keyboard input. Warn just before it starts, and say when it is over.
-2. Before every synthetic click or drag, hit-test that point: the topmost on-screen window there must belong to Lawsmith (window owner `lawsmith` in dev, `Lawsmith` packaged). A window capture (`screencapture -l`) renders a covered window as if it were visible, so it never shows what is on top.
-3. Capture the whole window, never a cropped canvas. Store a few captures in `docs/evidence/m<n>/`.
-4. The built-in display currently provides 1168×755 pt, and macOS clamps larger windows. The 1280×800 and 1600×1000 content-size checks are owner checks under a "More Space" display setting or an external display.
-5. Synthetic drags sometimes lose their mouse-up (`docs/evidence/M0.md`, finding 1). Confirm pointer-ownership conclusions on a real trackpad as an owner check.
+1. **Prepare outside the hands-off period.** Deterministic fixtures, drivers, parsers, keyboard and focus preflight, and source review all happen before the Mac is reserved. Inside it, start with the riskiest native smoke checks (for a layout milestone: compact 200% and the mandatory 1280×800 at 200%) before the full matrix, so a failure stops cheaply. Ordinary UI qualification plans for at most 15 minutes of foreground interaction, excluding prescribed performance minimums. That is a planning target, not a measurement or a waiver.
+2. **One authorization per declared batch, with no extension prompts.** Before any synthetic mouse or keyboard input, declare a bounded batch (the scenarios and their measured or estimated occupancy) and get the owner's go-ahead. That authorization lasts until the batch finishes and the Mac's state is restored. Do not ask the owner to choose a fixed window length, and do not ask to renew or extend one. Warn just before the batch starts, and say when it is over. `QA_DEADLINE` is then each scenario's finite safety deadline inside the batch, not a renewal point.
+3. **Release the Mac between batches.** When a check fails, restore and release the Mac before debugging, editing or review. Then resume only the affected or unrun checks under the same authorization, if the owner is still hands-off.
+4. **The person always wins.** An explicit owner end time or cancel takes precedence: stop, restore, and record unfinished checks as pending, without asking for more time. Outside input makes the run yield and restore; it never keeps clicking against the person, and it does not resume automatically while they are active.
+5. **Guards stay.** Keep the shared GUI lock, disposable state, restoration and each scenario's finite watchdog. Do not reuse an old private campaign driver whose checks assume a fixed approved window, and do not alter old approval records: new completion-based batches use their own matching metadata.
+6. Before every synthetic click or drag, hit-test that point: the topmost on-screen window there must belong to Lawsmith (window owner `lawsmith` in dev, `Lawsmith` packaged). A window capture (`screencapture -l`) renders a covered window as if it were visible, so it never shows what is on top. Keys require the app to be frontmost.
+7. Capture the whole window, never a cropped canvas. Store a few captures in `docs/evidence/m<n>/`.
+8. The built-in display currently provides 1168×755 pt, and macOS clamps larger windows. The 1280×800 and 1600×1000 content-size checks are owner checks under a "More Space" display setting or an external display.
+9. Synthetic drags sometimes lose their mouse-up (`docs/evidence/M0.md`, finding 1). Confirm pointer-ownership conclusions on a real trackpad as an owner check.
+10. **Human checks are human.** Before close-out, give the owner one concise checklist of the observations that only a person can make, and the current milestone's interactions no run covered. A synthetic assertion never stands in for human exploration or a real trackpad.
 
 Evidence lives in one `docs/evidence/M<n>.md` per milestone, shaped like M0's. Every figure traces to a captured log, command output or image.
 
