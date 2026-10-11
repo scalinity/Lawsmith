@@ -416,7 +416,7 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-11: M8 ACCEPTED by the owner at branch head <code>ae7e7f5</code> (application <code>8595013</code>, built; harness <code>8839545</code>); acceptance authorizes publishing this candidate to <code>main</code>; native, performance and human checks on the final build unexecuted and carried (performance to M9, integrated checks to M10); M9 eligible, not started; no approval active; previous accepted main <code>0d2f609</code>; post-acceptance harness process-cleanup repair (<code>1c1ddfd</code>) review pending</span>
+    <span>Realigned 2026-10-11: M8 ACCEPTED by the owner at branch head <code>ae7e7f5</code> (application <code>8595013</code>, built; harness <code>8839545</code>); acceptance authorizes publishing this candidate to <code>main</code>; native, performance and human checks on the final build unexecuted and carried (performance to M9, integrated checks to M10); M9 eligible, not started; no approval active; previous accepted main <code>0d2f609</code>; post-acceptance harness process-cleanup repair (<code>1c1ddfd</code>, test correction <code>ed9d10a</code>) reviewed and closed</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
@@ -1150,10 +1150,10 @@
         <tr><th>Thread</th><th>What the record says</th><th>Owner</th><th>Source</th></tr>
       </thead>
       <tbody>
-        <tr id="t-process-cleanup" data-owner="review" data-short="Process cleanup">
+        <tr id="t-process-cleanup" data-owner="closed" data-short="Process cleanup">
           <td data-label="Thread" class="lead">Shared GUI-lock and test-runner process cleanup</td>
-          <td data-label="What the record says">After M8&rsquo;s acceptance, a harness-only repair (<code>1c1ddfd</code>, branch <code>process-cleanup</code>) stops the GUI lock holder from outliving its runner, whether that runner is terminated or killed while waiting, or killed before the holder starts. It runs each runner&rsquo;s cleanup on <code>TERM</code> and reaps <code>test_guards.zsh</code>&rsquo;s children on success and on cancel. <code>AGENTS.md</code> gains the standing &ldquo;Process lifecycle&rdquo; rule for every milestone. Six no-GUI check groups pass, and the new lifecycle test fails 5 checks on the previous <code>lib.zsh</code>. No native run or build. It changes no M8 or M9 state. GPT-6.1 Sol review, then merge; close this row with the review&rsquo;s outcome.</td>
-          <td data-label="Owner">Coordinator: review, then merge</td>
+          <td data-label="What the record says">After M8&rsquo;s acceptance, a harness-only repair (<code>1c1ddfd</code>, branch <code>process-cleanup</code>) stops the GUI lock holder from outliving its runner, whether that runner is terminated or killed while waiting, or killed before the holder starts. It runs each runner&rsquo;s cleanup on <code>TERM</code> and reaps <code>test_guards.zsh</code>&rsquo;s children on success and on cancel. <code>AGENTS.md</code> gains the standing &ldquo;Process lifecycle&rdquo; rule for every milestone. Six no-GUI check groups pass, and the new lifecycle test fails 5 checks on the previous <code>lib.zsh</code>. No native run or build. It changes no M8 or M9 state. CLOSED: GPT-6.1 Sol found one test gap; <code>ed9d10a</code> fixes the independent lent-lock probe and adds two deliberate-unlock controls. Sol closed it with no further findings. Final lifecycle checks: 16 passed; original-probe negative control: 2 expected failures. Three original-code negative-control holders were found and stopped by identity; final holder count 0. Owner-authorized publication to main; M9 remains eligible and not started.</td>
+          <td data-label="Owner">Closed after independent review</td>
           <td data-label="Source"><cite><code>M8.md</code> Post-acceptance: cross-milestone process cleanup</cite></td>
         </tr>
         <tr id="t-m7-native" data-owner="m10" data-short="Comparison fault layout">

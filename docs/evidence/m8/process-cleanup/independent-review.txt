@@ -1,0 +1,19 @@
+Independent GPT-6.1 Sol review — process-cleanup
+
+Source review at 1c1ddfd1dc8eab26f16a694510acb060840dd985:
+No concrete production defect. P2: the lent-lock assertion could reacquire a
+released lock through the lender descriptor and incorrectly pass.
+
+Documentation review at 970b4881c7246dd700c0415a9a896b7d959cb3df:
+No additional actionable findings. The policy applies across milestones and
+preserves unknown/shared processes. P2 remained open.
+
+Re-review at ed9d10a6e9539f5eb2ad93b20d3db20522ab3b42:
+P2 CLOSED. The independent descriptor probe cannot reacquire the lender lock.
+Both deliberate-unlock controls detect loss. Author receipts show 16 passed,
+0 failed with the fix and 14 passed, 2 failed with the old probe.
+The correction records all three original-code leftovers, their task-specific
+identification and termination, and zero remaining. No further findings.
+
+Review method: source and receipts inspected only. No execution or native
+qualification by the reviewer.
