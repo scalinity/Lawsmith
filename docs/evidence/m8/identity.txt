@@ -1,0 +1,23 @@
+candidate f9d55dd8b553729fe3d2089c4a4d4bf41018bd16
+tree src bdb41db7e084847f89731539cbe4a4aef5b92e56 tests 3dafe0875c287661723923c98a96a92951c6a059 src-tauri 16bcdef28db4aaddff11c351dc18b8a7515636bd index.html 4237341f04a81b0f754343f32f6c85d7e2254b5c package-lock 4906219efb1735e1c5307100cd76b5227f146c02 Cargo.lock b8c7e5235b2c6288339f9f7756489ef9bd10c76a
+executable 0f235a5059d8b77ca4eb7a6610bef2317f62e1a55994d6db79d4aad1beee6315
+dist/index.html 7a0e75835aa27d41528fb03035add934ad72686dc98ffa1101299a7e3c54f890 19405
+dist/assets/index-Dq6UQNdE.js 777bbde1171d9388312da340bc19a0f9aca5f239a385685e1905e0561502d12e 5596252
+dist/assets/index-Lo_vk4F_.css ed99831b8232e692c4a86e79db91ddc6e929cf154569a030d08067812431de49 24838
+node v26.10.0 npm 12.2.0 rustc 1.99.0 (b940084d7 2026-09-28) cargo 1.99.0 (5f94df478 2026-08-27)
+macOS 27.2 (26B5101f) arm64
+name = "tao"	version = "0.37.1"
+name = "tauri"	version = "3.0.0-alpha.4"
+name = "tauri-build"	version = "3.0.0-alpha.3"
+name = "tauri-plugin-dialog"	version = "3.0.0-alpha.2"
+name = "tauri-runtime"	version = "3.0.0-alpha.3"
+name = "tauri-runtime-wry"	version = "3.0.0-alpha.4"
+name = "wry"	version = "0.57.0"
+three 0.186.1
+@dimforge/rapier3d-compat 0.21.0
+@tauri-apps/api 3.0.0-alpha.2
+@tauri-apps/cli 3.0.0-alpha.4
+vite 8.3.2
+vitest 5.0.3
+typescript 7.0.2
+fault strings in dist/assets: 0

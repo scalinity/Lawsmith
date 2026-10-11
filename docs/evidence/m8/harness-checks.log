@@ -1,0 +1,16 @@
+# harness checks at f9d55dd8b553729fe3d2089c4a4d4bf41018bd16
+zsh -n scripts/verify/native/m8lib.zsh: exit 0
+zsh -n scripts/verify/native/m8-visual.zsh: exit 0
+zsh -n scripts/verify/native/m8-keyboard.zsh: exit 0
+zsh -n scripts/verify/native/m7-compare.zsh: exit 0
+zsh -n scripts/verify/native/m7-perf.zsh: exit 0
+zsh -n scripts/verify/native/m7-r1-panel.zsh: exit 0
+osacompile lights.js: exit 0
+py_compile m8q.py: exit 0
+Ran 12 tests in 0.000s
+
+OK
+test_m8q exit 0
+Ran 10 tests in 0.000s
+
+OK
