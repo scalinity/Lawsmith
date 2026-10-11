@@ -335,9 +335,11 @@ count() { logq count $APP_LOG $1 }
 field() { logq field $APP_LOG $1 $2 }
 
 # Layout readback (Shift+L), then screen points from it.
+# layout: the app's layout readback by ⇧⌘L, which it answers wherever focus is (a text field, a pop-up
+# menu, a button) without typing anything; plain ⇧L is swallowed by a focused field or menu (M8 R15).
 layout() {
   local n=$(count layout)
-  keys kd:shift t:l ku:shift
+  keys kd:cmd,shift t:l ku:cmd,shift
   wait_log layout $(( n + 1 ))
   window_origin
 }

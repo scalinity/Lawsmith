@@ -38,5 +38,13 @@ class CampaignRunners(unittest.TestCase):
                 self.assertTrue(helper in text, f'{name}.zsh does not use {helper}')
 
 
+    def test_layout_readback_uses_the_focus_independent_chord(self):
+        # M8 R15: plain Shift-L is swallowed by a focused text field or pop-up menu; the readback is Shift-Cmd-L.
+        lib = (HERE / 'lib.zsh').read_text(encoding='utf-8')
+        body = lib[lib.index('layout() {'):lib.index('\n}', lib.index('layout() {'))]
+        self.assertIn('keys kd:cmd,shift t:l ku:cmd,shift', body)
+        self.assertNotIn('kd:shift t:l', body)
+
+
 if __name__ == '__main__':
     unittest.main()
