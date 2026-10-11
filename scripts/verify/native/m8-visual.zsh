@@ -25,8 +25,8 @@ reveal_input() {
     layout
     p=(${=$(logq field $APP_LOG layout "inputs.$1" | tr -d '[],')})
     [[ -n $p[1] && $p[1] != null ]] || fail "no inspector input $1"
-    # The inspector is in the right context column: scroll whichever region holds the input.
-    panel=(${=$(scroller $(( ${p[1]%.*} + ${p[3]%.*} / 2 )) $(( ${p[2]%.*} + ${p[4]%.*} / 2 )))})
+    # The region the app reports as holding the input (the inspector's context column).
+    region_of "inputs.$1"; panel=($REGION)
     if (( p[2] >= panel[2] + 4 && p[2] + p[4] <= panel[2] + panel[4] - 4 )); then
       click $(( WIN_X + ${p[1]%.*} + ${p[3]%.*} / 2 )) $(( WIN_Y + ${p[2]%.*} + ${p[4]%.*} / 2 ))
       return 0

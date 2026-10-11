@@ -66,3 +66,44 @@ it('a hidden attribute on an ancestor, and a missing element, still read back as
   expect(layoutBox(s.fileOpen)).toBeNull();
   expect(layoutBox(null)).toBeNull();
 });
+
+// M8 review F7: the readback names the region that holds each control by DOM ancestry, so a harness
+// scrolls the inspector's column even when an input's unclipped box crosses the dock. The production
+// layoutOwner runs against the shipped index.html's ancestry.
+const ownerStart = source.indexOf('const LAYOUT_REGIONS');
+const ownerEnd = source.indexOf('\n}\n', source.indexOf('function layoutOwner(')) + 3;
+runInContext(stripTypeScriptTypes(source.slice(ownerStart, ownerEnd).replace('const LAYOUT_REGIONS', 'var LAYOUT_REGIONS')), context);
+const layoutOwner = (element) => runInContext('layoutOwner', context)(element);
+
+function shippedElements() {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+  const stack = [];
+  const byId = new Map();
+  for (const [, close, tag, attributes] of html.matchAll(/<(\/?)([a-z][a-z0-9-]*)([^>]*)>/g)) {
+    if (close) { stack.pop(); continue; }
+    const id = /\sid="([^"]+)"/.exec(attributes)?.[1] ?? null;
+    const element = { id, parent: stack.at(-1) ?? null };
+    element.closest = (selector) => {
+      const ids = selector.split(',').map((s) => s.trim().slice(1));
+      for (let e = element; e; e = e.parent) if (e.id && ids.includes(e.id)) return e;
+      return null;
+    };
+    if (id) byId.set(id, element);
+    if (!['meta', 'link', 'input', 'br', 'img'].includes(tag) && !attributes.trimEnd().endsWith('/')) stack.push(element);
+  }
+  return byId;
+}
+
+it('every control reports the region that actually holds it, by ancestry', () => {
+  const e = shippedElements();
+  const expected = {
+    'law-label': 'context-column', 'law-fade': 'context-column', 'ingredients': 'context-column', 'details-toggle': 'context-column',
+    'run-record': 'context-column', 'alternate-new': 'context-column', 'sim-error-reset': 'context-column',
+    'play': 'dock', 'trails-all': 'dock', 'file-open': 'document', 'example-open': 'document', 'panel-toggle': 'document',
+    'undo': 'top-rail', 'frame-view': 'top-rail', 'law-list': 'panel', 'law-shelf': 'panel', 'arrows-toggle': 'panel', 'ui-scale': 'panel',
+    'panel': 'panel', 'context-column': 'context-column', 'dock': 'dock',
+  };
+  for (const [id, region] of Object.entries(expected)) expect(layoutOwner(e.get(id)), id).toBe(region);
+  expect(layoutOwner(e.get('viewport'))).toBeNull();
+  expect(layoutOwner(null)).toBeNull();
+});

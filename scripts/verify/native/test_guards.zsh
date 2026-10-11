@@ -127,5 +127,23 @@ run_case m8-cleanup-restores 0 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); source \
 run_case m8-cleanup-failure-fails-run 6 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); source \$HERE/m8lib.zsh; $LOCKED; display_set 1728 1117 120; print -r -- 'complete failed 1001' > \$SET_REPLY_FILE; exit 0"
 run_case m8-cleanup-keeps-failure-code 5 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); source \$HERE/m8lib.zsh; $LOCKED; display_set 1728 1117 120; QA_DEADLINE=\$(( EPOCHSECONDS - 1 )); click 1 1" '[[ $(<$ROOT/m8-cleanup-keeps-failure-code/display) == 1168x755@120 ]]'
 
+# --- F7: reveals scroll the region the app says holds the target, never one its box happens to cross --
+# The reviewer's case: an inspector input scrolled below the context column, its center over the dock.
+layout_line() { print -r -- "[lawsmith] {\"kind\":\"layout\",\"controls\":{\"context-column\":[900,52,312,600],\"dock\":[850,700,418,88],\"document\":[12,52,284,200],\"top-rail\":[0,0,1280,40],\"panel\":[12,260,284,400],\"play\":[1100,750,96,28],\"file-open\":[80,120,60,28],\"undo\":[700,6,60,28]},\"inputs\":{\"Strength\":[$1,$2,100,26]},\"owners\":{\"controls\":{\"play\":\"dock\",\"file-open\":\"document\",\"undo\":\"top-rail\"},\"inputs\":\"context-column\",\"ingredients\":\"context-column\",\"laws\":\"panel\"}}" }
+OWNERS='print -r -- "$(layout_line 1050 727)" > $APP_LOG'
+run_case region-input-over-dock 0 "$(typeset -f layout_line); $OWNERS; region_of inputs.Strength; [[ \$REGION == '900 52 312 600' ]]"
+run_case region-input-above 0 "$(typeset -f layout_line); print -r -- \"\$(layout_line 1050 10)\" > \$APP_LOG; region_of inputs.Strength; [[ \$REGION == '900 52 312 600' ]]"
+run_case region-ingredient-expr 0 "$(typeset -f layout_line); $OWNERS; region_of \"next(r['select'] for r in e['ingredients']['rows'] if r['label']=='Drag')\"; [[ \$REGION == '900 52 312 600' ]]"
+run_case region-fixed-dock 0 "$(typeset -f layout_line); $OWNERS; region_of controls.play; [[ \$REGION == '850 700 418 88' ]]"
+run_case region-fixed-document 0 "$(typeset -f layout_line); $OWNERS; region_of \"e['controls']['file-open']\"; [[ \$REGION == '12 52 284 200' ]]"
+run_case region-tools 0 "$(typeset -f layout_line); $OWNERS; region_of controls.undo; [[ \$REGION == '0 0 1280 40' ]]"
+run_case region-laws-row 0 "$(typeset -f layout_line); $OWNERS; region_of laws.0.select; [[ \$REGION == '12 260 284 400' ]]"
+run_case region-unknown-owner 1 "$(typeset -f layout_line); $OWNERS; region_of controls.mystery"
+run_case region-no-owners-readback 1 'print -r -- "[lawsmith] {\"kind\":\"layout\",\"controls\":{\"dock\":[850,700,418,88]},\"inputs\":{\"Strength\":[1050,727,100,26]}}" > $APP_LOG; region_of inputs.Strength'
+# m7-compare's own reveal loop: the first readback has the input under the dock, so it scrolls the
+# context column (over its left edge) before clicking; the second has it inside the column.
+REVEAL="$(typeset -f layout_line); QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); LAST_INPUT=\$EPOCHREALTIME; WIN_X=0; WIN_Y=0; eval \"\$(sed -n '/^reveal_strength() {/,/^}/p' \$HERE/m7-compare.zsh)\"; print -r -- \"\$(layout_line 1050 727)\" > \$APP_LOG; layout() { [[ -f \$QA_STATE/scrolled ]] && print -r -- \"\$(layout_line 1050 400)\" >> \$APP_LOG; true }; osascript() { case \"\$*\" in *windows.js\\ hit*) print -r -- '{\"pid\":4242}' ;; *scroll.js*) print -r -- \"scroll \$*\" >> \$CALLS; : > \$QA_STATE/scrolled ;; *) ;; esac }; reveal_strength"
+run_case reveal-scrolls-column-before-click 0 "$REVEAL" 'has reveal-scrolls-column-before-click "scroll .*scroll.js -100" && has reveal-scrolls-column-before-click "m:908,352" && [[ $(grep -n "scroll.js" $ROOT/reveal-scrolls-column-before-click/calls | head -1 | cut -d: -f1) -lt $(grep -n "c:1100,413" $ROOT/reveal-scrolls-column-before-click/calls | cut -d: -f1) ]] && none reveal-scrolls-column-before-click "c:1100,740"'
+
 print -r -- "$passed passed, $failed failed"
 (( failed == 0 ))

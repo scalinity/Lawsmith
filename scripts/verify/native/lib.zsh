@@ -206,20 +206,25 @@ click() { idle_gate; guard_point $1 $2; cliclick -e 20 c:$1,$2; touched; sleep 0
 # under the pointer, never the scene behind it.
 scroll_at() { idle_gate; guard_point $1 $2; cliclick -e 20 m:$1,$2; osascript -l JavaScript $NATIVE/scroll.js $3 >/dev/null; touched; sleep 0.35 }
 
-# scroller X Y: the box ("x y w h", content-view points) of the region that holds content point (X,Y)
-# in the last layout. A point in the scene card, the tools or the dock gets that fixed region, which never
-# scrolls; otherwise the right context column (inspector, recording, comparison, explained body) when X
-# lies in its span, else the left Scene panel. The reveal helpers scroll that region over its left edge.
-scroller() {
-  logq last $APP_LOG layout | python3 -I -c '
-import json, sys
-c = json.load(sys.stdin)["controls"]
-x, y = float(sys.argv[1]), float(sys.argv[2])
-def holds(b): return b is not None and b[0] <= x <= b[0] + b[2] and b[1] <= y <= b[1] + b[3]
-fixed = [c.get(k) for k in ("document", "tools", "dock") if holds(c.get(k))]
-column = c.get("context-column")
-b = fixed[0] if fixed else column if column and column[0] <= x <= column[0] + column[2] else c["panel"]
-print(*b)' $1 $2
+# region_of EXPR: sets REGION=(x y w h), in content-view points, to the box of the region that holds the
+# layout target EXPR (a dotted path such as inputs.Strength, laws.0.select or controls.play, or a Python
+# expression over e['ingredients'], e['laws'], e['inputs'] or e['controls'][ID]), as the app reports it
+# from DOM ancestry in owners. Never inferred from where the target's unclipped box falls: an inspector
+# input scrolled below its column can cross the dock. Fails when the layout names no owner.
+region_of() {
+  REGION=(${=$(logq last $APP_LOG layout | python3 -I -c '
+import json, re, sys
+e, expr = json.load(sys.stdin), sys.argv[1]
+owners = e.get("owners") or {}
+m = re.fullmatch(r"controls\.([\w-]+)", expr) or re.search(r"e\[.controls.\]\[.([\w-]+).\]", expr)
+if m: owner = (owners.get("controls") or {}).get(m.group(1))
+elif expr.startswith("inputs.") or "e[\x27inputs\x27]" in expr: owner = owners.get("inputs")
+elif expr.startswith("ingredients.") or "e[\x27ingredients\x27]" in expr: owner = owners.get("ingredients")
+elif expr.startswith("laws.") or "e[\x27laws\x27]" in expr: owner = owners.get("laws")
+else: owner = None
+box = e["controls"].get(owner) if owner else None
+if box: print(*box)' "$1")})
+  (( $#REGION == 4 )) || fail "the layout names no owning region for $1"
 }
 
 # drag X1 Y1 X2 Y2 [STEPS]: press, move in steps, release; both ends are hit-tested. A synthetic

@@ -45,7 +45,7 @@ reveal_strength() {
   for i in {1..25}; do
     layout
     p=(${=$(point inputs.Strength)})
-    panel=(${=$(scroller $(( p[1] - WIN_X )) $(( p[2] - WIN_Y )))})
+    region_of inputs.Strength; panel=($REGION)
     if (( p[2] > WIN_Y + panel[2] + 8 && p[2] < WIN_Y + panel[2] + panel[4] - 8 )); then click $p[1] $p[2]; return 0; fi
     local sx=$(( WIN_X + ${panel[1]%.*} + 8 )) sy=$(( WIN_Y + ${panel[2]%.*} + ${panel[4]%.*} / 2 ))
     if (( p[2] <= WIN_Y + panel[2] + 8 )); then scroll_at $sx $sy 100; else scroll_at $sx $sy -100; fi

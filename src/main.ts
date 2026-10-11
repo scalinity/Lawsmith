@@ -103,6 +103,16 @@ function layoutBox(element: Element | null): number[] | null {
   return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
 }
 
+/**
+ * The layout region that holds an element for the readback: its nearest ancestor (or itself) among the
+ * scene card, the Scene panel, the right context column, the top rail and the dock, by DOM ancestry. A
+ * harness scrolls that region to reveal it, never whichever region its unclipped box happens to cross.
+ */
+const LAYOUT_REGIONS = ['document', 'panel', 'context-column', 'top-rail', 'dock'] as const;
+function layoutOwner(element: Element | null): string | null {
+  return element?.closest(LAYOUT_REGIONS.map((id) => `#${id}`).join(', '))?.id ?? null;
+}
+
 function pushBounded(values: number[], value: number, limit: number) {
   values.push(value);
   if (values.length > limit) values.shift();
@@ -2189,10 +2199,15 @@ async function start() {
   const layoutReport = () => {
     const box = layoutBox;
     const controls: Record<string, number[] | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#document, #doc-invitation, #panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #display, #explain, #trail-mode, #run, #comparison, #sim-error, #diagnostics, #scene-column, #context-column, #dock, button[id], input[id], select[id]')) {
+    const owners: Record<string, string | null> = {};
+    for (const element of document.querySelectorAll<HTMLElement>('#top-rail, #document, #doc-invitation, #panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #display, #explain, #trail-mode, #run, #comparison, #sim-error, #diagnostics, #scene-column, #context-column, #dock, button[id], input[id], select[id]')) {
       controls[element.id] = box(element);
+      owners[element.id] = layoutOwner(element);
     }
-    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) {
+      controls[`mode-${button.dataset.mode}`] = box(button);
+      owners[`mode-${button.dataset.mode}`] = layoutOwner(button);
+    }
     const laws = [...lawList.querySelectorAll('.law-row')].map((row) => ({
       id: row.querySelector<HTMLElement>('.law-select')!.dataset.id,
       label: row.querySelector('.law-name')!.textContent,
@@ -2292,6 +2307,8 @@ async function start() {
         return { id: e.id || null, tag: e.tagName.toLowerCase(), label: e.getAttribute('aria-label') ?? e.textContent?.trim().slice(0, 60) ?? '', focusVisible: e.matches(':focus-visible'), outline: [style.outlineStyle, style.outlineWidth], box: box(e) };
       })(),
       example: openedExample?.example.key ?? null,
+      // Which region holds each control, and the inspector's inputs and ingredients and the Laws rows.
+      owners: { controls: owners, inputs: layoutOwner(details), ingredients: layoutOwner($('ingredients')), laws: layoutOwner(lawList) },
       lawLabels: Object.fromEntries([...lawLabelSpans].map(([id, span]) => [id, { text: span.textContent, selected: span.dataset.selected === 'true', enabled: span.dataset.enabled === 'true', box: box(span) }])),
       controls,
       laws,
