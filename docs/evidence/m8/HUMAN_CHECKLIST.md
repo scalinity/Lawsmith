@@ -91,4 +91,4 @@ Anything else:
 1. Your observations go into `docs/evidence/M8.md` as received, with nothing added.
 2. Any real failure is fixed, and only the affected checks run again.
 3. You decide on acceptance.
-4. Merging to `main`, pushing it and cleaning up the branch each need your separate go-ahead.
+4. After acceptance, give one explicit close-out instruction covering merge, push and safe branch cleanup.
