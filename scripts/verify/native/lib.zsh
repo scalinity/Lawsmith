@@ -7,6 +7,13 @@
 #   - the idle gate yields to the owner: any keyboard or mouse input newer than the harness's own
 #     last synthetic event aborts the scenario (exit 4), so a run never fights a person.
 # Synthetic events reset the HID idle timer, so the gate compares it with our own last event.
+#
+# QA_DEADLINE (epoch seconds) is the end of an owner-approved hands-off window. When it is set, every
+# input and every native mutation (launch, activation, window, display, preferences, dialog presses)
+# first checks it with the time that action needs reserved, and the lock and quiet waits give up at it,
+# so nothing new starts that could still be running when the window closes (exit 5). Restoring the
+# display and preferences and stopping owned processes are cleanup, not new actions, and stay exempt.
+# Earlier scenarios run without it unchanged; the M8 scenarios require it.
 
 zmodload zsh/datetime
 NATIVE=${${(%):-%x}:A:h}
@@ -47,6 +54,7 @@ while os.getppid() == parent:
   LOCK_HOLDER=$!
   local waited=0
   while [[ ! -s $flag ]]; do
+    deadline_gate
     sleep 0.25
     (( ++waited % 240 == 0 )) && print -r -- "[qa] still waiting for the shared GUI lock ($1)"
     kill -0 $LOCK_HOLDER 2>/dev/null || fail "the GUI lock holder exited"
@@ -70,6 +78,15 @@ segment() {
 
 say() { print -r -- "[qa $(strftime %H:%M:%S $EPOCHSECONDS)] $*" | tee -a $QA_OUT/qa-steps.log }
 fail() { say "FAIL: $*"; [[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; exit ${2:-1} }
+
+# deadline_gate [SECONDS]: refuses (exit 5) when QA_DEADLINE is set and an action needing SECONDS would
+# not finish before it.
+deadline_gate() {
+  [[ -n $QA_DEADLINE ]] || return 0
+  (( EPOCHREALTIME + ${1:-1} < QA_DEADLINE )) || fail "the approved hands-off window ends at $(strftime %H:%M:%S ${QA_DEADLINE%.*}); not starting an action that needs ${1:-1} s" 5
+}
+# require_lock WHAT: in a deadline-bound campaign, WHAT happens only while this run holds the GUI lock.
+require_lock() { [[ -z $QA_DEADLINE || -n $LOCK_HOLDER ]] || fail "$1 needs the shared GUI lock" 3 }
 idle_seconds() { ioreg -c IOHIDSystem | awk '/HIDIdleTime/ {print $NF/1e9; exit}' }
 logq() { python3 -I $NATIVE/logq.py "$@" }
 
@@ -77,14 +94,17 @@ logq() { python3 -I $NATIVE/logq.py "$@" }
 wait_quiet() {
   local tries=0
   while (( $(idle_seconds) < QA_IDLE )); do
+    deadline_gate
     (( tries++ > 720 )) && fail "the owner stayed active; native QA not started" 4
     sleep 5
   done
   LAST_INPUT=$EPOCHREALTIME
 }
 
-# Aborts if any input arrived after our own last synthetic event.
+# idle_gate [SECONDS]: aborts if any input arrived after our own last synthetic event, and checks the
+# deadline with SECONDS reserved for the action about to start.
 idle_gate() {
+  deadline_gate ${1:-1}
   local idle=$(idle_seconds)
   local since=$(( EPOCHREALTIME - LAST_INPUT ))
   if (( idle + 0.3 < since )); then
@@ -99,6 +119,8 @@ launch() {
   APP_LOG=$QA_OUT/$1.log
   local before=(${(f)"$(pgrep -f "$APP/Contents/MacOS/lawsmith")"})
   local ready=$(grep -c '"kind":"guard","action":"ready"' $APP_LOG 2>/dev/null || true)
+  require_lock "launching Lawsmith"
+  idle_gate 35
   open -n $APP --env LAWSMITH_RECOVERY_DIR=$2 --stdout $APP_LOG --stderr $APP_LOG
   local i
   for i in {1..150}; do
@@ -131,6 +153,8 @@ running() { [[ -n $APP_PID ]] && kill -0 $APP_PID 2>/dev/null }
 
 # Brings the app under test to the front with its main window key; only then do keys reach the page.
 activate() {
+  require_lock "activating Lawsmith"
+  idle_gate 2
   osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
     set frontmost to true
     perform action \"AXRaise\" of window \"Lawsmith\"
@@ -203,8 +227,9 @@ print(*b)' $1 $2
 # synthetic move does not reveal it). If a law gesture began but did not end, the release is sent
 # again at the same point, and the harness says so.
 drag() {
-  idle_gate; guard_point $1 $2; guard_point $3 $4
   local n=${5:-24} i args=(dd:$1,$2 w:120)
+  # Reserve the whole batched drag: its moves, waits and release, plus a possible resent release.
+  idle_gate $(( (240 + 30 * n) / 1000 + 3 )); guard_point $1 $2; guard_point $3 $4
   local gestures=$(logq count $APP_LOG gesture)
   for i in {1..$n}; do args+=(dm:$(( $1 + ($3 - $1) * i / n )),$(( $2 + ($4 - $2) * i / n )) w:30); done
   args+=(w:120 du:$3,$4)
@@ -213,6 +238,7 @@ drag() {
     (( $(logq count $APP_LOG gesture) > gestures )) || break
     [[ $(logq field $APP_LOG gesture phase) == '"begin"' ]] || break
     say "the synthetic release was lost; sending it again"
+    idle_gate 1; guard_point $3 $4
     cliclick du:$3,$4; touched; sleep 0.5
   done
 }
@@ -222,7 +248,7 @@ drag() {
 # Another app can take the front between the check and the keystroke (another session's QA app did,
 # once); a front change seen right after sending is reported as possible misdelivery and stops the run.
 keys() {
-  idle_gate; guard_front; cliclick -e 30 "$@"; touched
+  idle_gate $(( 1 + $# / 10 )); guard_front; cliclick -e 30 "$@"; touched
   local front=$(front_pid)
   if [[ $front != $APP_PID ]]; then
     # Quitting hands the front to the next app; only a change while the app still runs is suspect.
@@ -235,7 +261,7 @@ keys() {
 # key_code N: a named key (48 Tab, 36 Return, 53 Escape, 51 Delete) through System Events; cliclick's
 # named keys do not reach WKWebView or AppKit panels here, while its typed text and chords do.
 key_code() {
-  idle_gate; guard_front
+  idle_gate 1; guard_front
   osascript -e "tell application \"System Events\" to key code $1" >/dev/null; touched
   sleep 0.4
 }
@@ -320,6 +346,9 @@ wait_depth() {
 # The preferences domain is Lawsmith's own; restore_preferences removes what QA added.
 seed_folder() {
   running && fail "seed the panel folder before launching"
+  # A preference write is a native mutation: it happens under the GUI lock, after a quiet check.
+  [[ -n $LOCK_HOLDER ]] || segment "seed the Open and Save folder"
+  idle_gate 2
   osascript -l JavaScript -e "ObjC.import('Foundation');
     const url = \$.NSURL.fileURLWithPath('$1');
     const data = url.bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(0, \$(), \$(), null);
@@ -336,21 +365,25 @@ wait_panel() {
 }
 
 # save_panel DIR NAME: saves into DIR only if the panel is already there; a Replace confirmation is
-# accepted only inside QA_STATE, which is disposable.
+# accepted only inside QA_STATE, which is disposable. Every press that writes or proceeds checks the
+# deadline and outside input first; the Cancel that closes a panel on the way to a failure does not,
+# because it only withdraws the owned app's own dialog.
 save_panel() {
   [[ $1 == $QA_STATE* ]] || fail "refusing to save outside the disposable QA directory"
   wait_panel
   local where=$(axq value $APP_PID 'Where:')
   [[ $where == ${1:t} ]] || { axq press $APP_PID Cancel >/dev/null; fail "the Save panel is in \"$where\", not ${1:t}; canceled" }
+  idle_gate 2
   [[ $(axq set $APP_PID 'Save As:' "$2") == set ]] || fail "could not name the file"
   sleep 0.3
+  idle_gate 2
   axq press $APP_PID Save >/dev/null
   sleep 0.8
-  [[ $(depth) == 2 ]] && axq press $APP_PID Replace >/dev/null
+  if [[ $(depth) == 2 ]]; then idle_gate 2; axq press $APP_PID Replace >/dev/null; fi
   touched
 }
 
-cancel_panel() { wait_panel; axq press $APP_PID Cancel >/dev/null; touched; wait_depth 0 }
+cancel_panel() { wait_panel; idle_gate 2; axq press $APP_PID Cancel >/dev/null; touched; wait_depth 0 }
 
 # open_panel NAME: opens the file NAME, shown in the panel's seeded folder: a click selects it (a
 # synthetic double-click may register as a single one) and the Open button is pressed through AX.
@@ -361,6 +394,7 @@ open_panel() {
   for attempt in 1 2; do
     click $p[1] $p[2]
     sleep 0.4
+    idle_gate 2
     [[ $(axq press $APP_PID Open) == pressed ]] || fail "could not press Open"
     touched
     sleep 0.8
@@ -373,7 +407,7 @@ open_panel() {
 }
 
 # alert BUTTON: answers the unsaved-work alert (Save, Don't Save, Cancel).
-alert() { wait_depth 1; [[ $(axq press $APP_PID "$1") == pressed ]] || fail "no alert button $1"; touched }
+alert() { wait_depth 1; idle_gate 2; [[ $(axq press $APP_PID "$1") == pressed ]] || fail "no alert button $1"; touched }
 # alert_for scene|recording BUTTON: answers the guard's alert only if it names that artifact: the
 # recording's offers "Save Recording…", the scene's a plain "Save" (M6A, SPEC §15.3).
 alert_for() {
@@ -419,6 +453,8 @@ drag_law_to() {
 # overlay windows that appeared when the recording began, and only until it ends.
 RECORDING_OVERLAYS=
 record_start() {
+  require_lock "screen recording"
+  idle_gate $(( ${2:-100} + 10 ))
   window_origin
   RECORDING=$1
   local before=$(osascript -l JavaScript $NATIVE/windows.js overlays)

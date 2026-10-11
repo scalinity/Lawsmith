@@ -14,7 +14,6 @@ source ${0:A:h}/lib.zsh
 source ${0:A:h}/m8lib.zsh
 mkdir -p $QA_STATE/scenes
 cp ${NATIVE:h}/scenes/m8-comparison-fault.lawsmith.json $QA_STATE/scenes/
-seed_folder $QA_STATE/scenes
 
 EXAMPLES=('sideways-rain:Sideways Rain:sideways' 'catch-and-release:Catch and Release:pull' 'drag-pocket:Drag Pocket:pocket' 'storm-bottle:Storm Bottle:storm-bottle' 'two-futures:Two Futures:sideways')
 SCALES=(100 150 200)
@@ -60,6 +59,8 @@ drag_window() {
 }
 
 segment "M8 visual matrix"
+seed_folder $QA_STATE/scenes
+idle_gate 10
 say "More Space, 120 Hz: $(osascript -l JavaScript $NATIVE/display.js set 1728 1117 120)"
 sleep 2
 launch m8-visual $QA_STATE/recovery-m8-visual-$EPOCHSECONDS

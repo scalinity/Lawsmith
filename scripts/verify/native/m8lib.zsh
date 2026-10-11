@@ -2,14 +2,10 @@
 # and frontmost hit tests and the external-input abort; this adds the approved window's deadline, the
 # display mode restore, examples, Interface Scale, focus walking and the layout assertions in m8q.py.
 #
-# QA_DEADLINE (epoch seconds) is the end of the owner-approved hands-off window. Every input checks it
-# first, so no synthetic event is sent after the window closes (exit 5).
+# QA_DEADLINE (epoch seconds) is the end of the owner-approved hands-off window. lib.zsh checks it
+# before every input and native mutation; the M8 scenarios refuse to start without it.
 : ${QA_DEADLINE:?set QA_DEADLINE to the end of the approved hands-off window, in epoch seconds}
-functions[lib_idle_gate]=$functions[idle_gate]
-idle_gate() {
-  (( EPOCHSECONDS < QA_DEADLINE )) || fail "the approved hands-off window ended at $(strftime %H:%M:%S $QA_DEADLINE); no further input" 5
-  lib_idle_gate
-}
+[[ $QA_DEADLINE == <->(|.<->) ]] || { print -u2 "QA_DEADLINE must be epoch seconds"; exit 2 }
 
 RECORDER=
 ORIGINAL_MODE=$(osascript -l JavaScript $NATIVE/display.js get)
@@ -22,6 +18,8 @@ restore_mode() {
 trap '[[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; running && kill $APP_PID; restore_mode; restore_preferences; gui_unlock' EXIT
 
 window_size() {
+  require_lock "resizing the window"
+  idle_gate 3; guard_front
   osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
     set position of window \"Lawsmith\" to {40, 45}
     set size of window \"Lawsmith\" to {$1, $2}

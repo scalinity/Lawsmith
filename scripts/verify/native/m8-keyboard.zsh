@@ -11,12 +11,13 @@
 source ${0:A:h}/lib.zsh
 source ${0:A:h}/m8lib.zsh
 mkdir -p $QA_STATE/scenes
-seed_folder $QA_STATE/scenes
 law() { logq field $APP_LOG layout "appliedLaws.0.$1" }
 # enter VALUE: replaces the focused field's value and commits it with Tab, which also moves focus on.
 enter() { keys kd:cmd t:a ku:cmd t:"$1"; key_code 48; sleep 0.3; layout }
 
 segment "M8 keyboard and native files at 1280×800, 200%"
+seed_folder $QA_STATE/scenes
+idle_gate 10
 say "More Space, 120 Hz: $(osascript -l JavaScript $NATIVE/display.js set 1728 1117 120)"
 sleep 2
 launch m8-keyboard $QA_STATE/recovery-m8-keyboard-$EPOCHSECONDS
