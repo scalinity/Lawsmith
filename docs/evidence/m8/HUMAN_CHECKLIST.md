@@ -1,5 +1,7 @@
 # M8 human verification checklist
 
+**M8 was accepted by the owner on 2026-10-11** without this list being run on the `8595013` build. It stays as a reference for the carried observations, which M10's integrated release checks own. It is not a new mandatory M8 gate.
+
 The earlier version of this list was paused after your first exploration of the `fa4e223` app. You found that deleting a law was hard to find, three examples did nothing until moved or retuned, the screen was crowded above 100%, and the trail and replay steps were confusing. Those findings are recorded in `docs/evidence/M8.md`. This list replaces it, for the repaired app.
 
 Write down what actually happens, in your own words. A step you could not observe is UNVERIFIED, not a pass. Nothing here asks you to run tests or repeat earlier milestones.

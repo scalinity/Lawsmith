@@ -416,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-11: M8 on branch <code>m8</code>; owner exploration of <code>fa4e223</code> found usability failures (AC8 incomplete); repair candidate: application source <code>efcdf50</code>, harness <code>8839545</code>; R-FB1–R-FB8 and the final full review closed (no actionable findings); built at <code>eefcc08</code>, not yet launched; owner feedback 2 (emitter lock <code>952ce3b</code>, Hide HUD <code>577ad1f</code>) reviewed; R-HUD1–R-HUD3 closed and built at <code>8595013</code>, not yet launched; native re-verification, current performance and owner checks pending; <code>fa4e223</code> results historical (P0–P3 supporting only, current pending); no approval active; accepted main <code>0d2f609</code></span>
+    <span>Realigned 2026-10-11: M8 ACCEPTED by the owner at branch head <code>ae7e7f5</code> (application <code>8595013</code>, built; harness <code>8839545</code>); its merge to <code>main</code> follows this record; native, performance and human checks on the final build unexecuted and carried (performance to M9, integrated checks to M10); M9 eligible, not started; no approval active; previous accepted main <code>0d2f609</code></span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>Your first exploration found real usability gaps in M8; the repairs are reviewed and built, and the second round of fixes is reviewed and built; your checks remain.</h1>
-    <p class="lede">Opus 5.5 authored M8 on <code>m8</code> from accepted <code>main</code> <code>0d2f609</code>. You explored the packaged <code>fa4e223</code> app and found real gaps: Delete was hard to find, three examples did nothing until moved or retuned, the screen was crowded above 100%, the recording card was too big, the trail choices were unclear, and spawning was fixed. The repairs are reviewed and built. They are: Delete beside the Laws list; the three examples tuned to engage on Play (measured on a real host); plain trail labels; at large scale, one consolidated scrolling column with a jump bar; a collapsible recording card; drawing options folded at start and kept as you leave them; editable emitter spawn rate and lifetime with reset and undo, a selector for several emitters and kept drafts; truthful Undo/Redo titles; and a Swirl pointer to Pull and Drag. GPT-6.1 Sol closed R-FB1 to R-FB8, and the final full review found nothing actionable. The app is built from <code>efcdf50</code>&rsquo;s application source at <code>eefcc08</code> but not yet launched. Your second round of feedback is at source: the Emitter controls stayed disabled after launch until an unrelated refresh, which is now fixed, and a lock now says why and offers the control that ends it. <kbd>H</kbd> hides the whole HUD and brings it back. GPT-6.1 Sol reviewed them and found three issues (R-HUD1–R-HUD3), all fixed. Sol closed them, and the app is built from <code>8595013</code>. What remains is your checklist on the new build, one short native batch and current performance. The <code>fa4e223</code> native results, including P0–P3, are historical, and current performance is pending because the default visuals changed. Permanent bodies and removing the acceleration limit remain open design questions. M8 is not accepted; M9 remains gated by M8 acceptance.</p>
+    <h1>M8 is accepted; M9 runs next, alone.</h1>
+    <p class="lede">You accepted M8 on 2026-10-11 at branch head <code>ae7e7f5</code>, application <code>8595013</code>. That build has Delete beside the Laws list, examples that engage on Play, a consolidated column at large scale, editable emitter rate and lifetime with visible lock reasons, and <kbd>H</kbd> to hide the whole HUD. GPT-6.1 Sol closed every review finding. Acceptance was your gate decision; it records no new native result. The final build&rsquo;s native batch, current performance and your checklist were not run, so they stay unverified and carried forward. M9 owns final performance qualification and M10 the integrated release checks; neither repeats all of M8. Permanent bodies and the acceleration limit remain design questions, not M9 changes. The merge to <code>main</code> follows this record. M9 is eligible and should run next, alone; M10 waits for M9.</p>
     <cite><code>docs/evidence/M7.md</code> Status and Owner acceptance; <code>docs/evidence/M8.md</code> Status, Commands and outcomes; <code>docs/MILESTONES.md</code> M8</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -669,7 +669,7 @@
       </article>
 
       <!-- REALIGN M8 -->
-      <article class="unit" id="m8" data-gate="M8" data-state="owner-check">
+      <article class="unit" id="m8" data-gate="M8" data-state="accepted">
         <div class="gate">M8</div>
         <div>
           <div class="unit-head">
@@ -679,13 +679,13 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors. GPT-6.1 Sol reviews independently, by source inspection: F1–F14, R15–R22, G1–G5, TP1–TP4 and R-FB1–R-FB8 and the final full review closed, with no actionable findings. Opus 5.5 authored owner feedback 2; Sol found R-HUD1–R-HUD3 and closed them at <code>8595013</code>. If Claude limits bind, GPT-6 Astra authors further fixes.</dd>
-              <dt>Graph permits</dt><dd class="soft">On branch <code>m8</code>, pushed to <code>origin/m8</code>: candidate application <code>fa4e223</code>, native producing harnesses <code>361dcd9</code> and <code>92be14f</code>, current harness source <code>65befdc</code>, from accepted <code>main</code> <code>0d2f609</code>. Native: the visual matrix and targeted states (attempt 8), P0–P3 and the R1 panel, comparison and seek regressions (attempt 12) passed. Window dragging and keyboard access did not pass. <code>m6a-record</code>, <code>m2-files</code>, <code>m5-compose</code>, <code>m2-demo</code>, <code>m6a-legible</code> and <code>m5-legible</code> are unrun. No approval is active.</dd>
-              <dt>Should run</dt><dd class="run">The review is closed and the app is built at <code>8595013</code> (<code>docs/evidence/m8/repair/feedback2/</code>). Next, your checklist on the new build (<code>docs/evidence/m8/HUMAN_CHECKLIST.md</code>), and one declared native batch for the changed examples, layout, default visuals, emitter controls and adapted runners, authorized once and run to completion, with current P0–P3 performance, now also covering the emitter lock reasons and the Hide HUD view. No earlier-milestone campaign and no other milestone runs beside it. Do not begin M9.</dd>
+              <dt>Graph permits</dt><dd class="soft">Done: you accepted M8 on 2026-10-11 at branch head <code>ae7e7f5</code> (application <code>8595013</code>, built; harness <code>8839545</code>), from accepted <code>main</code> <code>0d2f609</code>. The final build&rsquo;s native batch, P0&ndash;P3 and checklist were not executed and stay unverified; earlier native results stay historical.</dd>
+              <dt>Should run</dt><dd class="run">Nothing further for M8. The coordinator fast-forwards it onto <code>main</code> after this record. Its carried observations go forward without a full retest: performance to M9, integrated interaction and visual checks to M10.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M7 accepted. Contracts C1–C4, C7.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing.</dd>
-              <dt>Your part</dt><dd>Your observations from the first exploration are recorded. Save your work, quit the old app, open the built <code>src-tauri/target/release/bundle/macos/Lawsmith.app</code> and follow <code>docs/evidence/m8/HUMAN_CHECKLIST.md</code>: explore again, the five examples, keyboard and files at 200%, the trackpad, Reduce motion, the visual checks and ordinary replay. Decide whether the open design questions (indefinite lifetimes, the acceleration limit) change the SPEC. Once the native batch and current performance are also recorded, decide acceptance; after it, one explicit close-out instruction covers merge, push and safe branch cleanup.</dd>
+              <dt>Your part</dt><dd>Done: you accepted M8 on 2026-10-11. The checklist (<code>docs/evidence/m8/HUMAN_CHECKLIST.md</code>) stays a reference for M10, not an M8 gate. Permanent bodies, the acceleration limit and emitter rotation stay your design questions.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
@@ -704,8 +704,8 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews the decision to keep CPU/WASM simulation or admit a worker or WebGPU compute. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once M8 is ACCEPTED.</dd>
-              <dt>Should run</dt><dd class="run">Not before. It shares <code>rendering</code> with M8.</dd>
+              <dt>Graph permits</dt><dd class="soft">Eligible: M8 accepted on 2026-10-11. Not started.</dd>
+              <dt>Should run</dt><dd class="run">Next, alone, from <code>main</code> once the M8 merge is pushed. It owns final performance qualification, including M8&rsquo;s unexecuted P0&ndash;P3 on the final visuals, but not a retest of M8. The finite-body and acceleration-limit design questions are not M9 profile changes.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M8 accepted. Contracts C4–C6, C10.</dd>
@@ -729,7 +729,7 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the independent accept/reject review. If Claude limits bind, GPT-6 Astra authors.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once M9 is ACCEPTED.</dd>
+              <dt>Graph permits</dt><dd class="soft">Once M9 is ACCEPTED. It owns the final integrated release checks, including M8&rsquo;s carried interaction and visual observations.</dd>
               <dt>Should run</dt><dd class="run">Not before. Its final integration fixes may touch every module M9 does. Last approved stopping point: flagship candidate.</dd>
             </dl>
             <dl class="facts">
@@ -1040,7 +1040,7 @@
       <li>
         <span class="n">4</span>
         <h3>Close out</h3>
-        <p>Close-out follows the seven steps below. The owner accepted M7 and authorized merging it to <code>main</code> on 2026-10-11. M8 is implemented on <code>m8</code> and stays there through review and native qualification; a milestone implementation never grants owner acceptance automatically.</p>
+        <p>Close-out follows the seven steps below. The owner accepted M7 and authorized merging it to <code>main</code> on 2026-10-11. The owner accepted M8 on 2026-10-11 and authorized its merge to <code>main</code>; the merge follows the acceptance record. A milestone implementation never grants owner acceptance automatically.</p>
       </li>
       <li class="you">
         <span class="n">5</span>
@@ -1150,16 +1150,16 @@
         <tr><th>Thread</th><th>What the record says</th><th>Owner</th><th>Source</th></tr>
       </thead>
       <tbody>
-        <tr id="t-m7-native" data-owner="m8" data-short="Comparison fault layout">
+        <tr id="t-m7-native" data-owner="m10" data-short="Comparison fault layout">
           <td data-label="Thread" class="lead">M7 comparison fault presentation and real-device regression checks</td>
-          <td data-label="What the record says">M7 is accepted. Its controlled fault recovery passed, but the fault banner partly overlapped the comparison card at 1280×800. M8 puts the error at the head of the stacked context column. In attempt 8 (application <code>fa4e223</code>), the fault state at 100% and 200% showed an actual fault, non-overlapping layout and reachable New Alternate and Close after guarded scrolling. The retained inspector scroll left the banner out of view (y −368 and y −1695), so visible fault feedback is not established. Harness <code>1762ba2</code> corrects the overstating assertion label (G3, closed). The banner revealed and captured in view remains pending, as an owner visual check. Real-trackpad behavior is an M8 owner check.</td>
-          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="What the record says">M7 is accepted. Its controlled fault recovery passed, but the fault banner partly overlapped the comparison card at 1280×800. M8 puts the error at the head of the stacked context column. In attempt 8 (application <code>fa4e223</code>), the fault state at 100% and 200% showed an actual fault, non-overlapping layout and reachable New Alternate and Close after guarded scrolling. The retained inspector scroll left the banner out of view (y −368 and y −1695), so visible fault feedback is not established. Harness <code>1762ba2</code> corrects the overstating assertion label (G3, closed). The banner revealed and captured in view remains pending, as an owner visual check. Real-trackpad behavior is an M8 owner check. M8 was accepted with this unverified; it carries to M10&rsquo;s integrated checks, not as a PASS.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M7.md</code> Owner acceptance, Visible custom presentation and controlled fault, AC1–AC8 and owner inspection; <code>MILESTONES.md</code> M8</cite></td>
         </tr>
-        <tr id="t-f2" data-owner="m8" data-short="Finding 2">
+        <tr id="t-f2" data-owner="m10" data-short="Finding 2">
           <td data-label="Thread" class="lead">Finding 2: unreproduced window jump</td>
-          <td data-label="What the record says">Recurred once in 11 synthetic drag-region drags in M1. Moved to M8 as a non-blocking native-interaction regression watch; its cause may stay unknown. In M8, the window moved (0, 0) for an (80, 50) drag in attempt 8 and (70, 43) in attempt 9, each recorded with its displacement. The causes are not established, and the guard refused both reverse drags safely (R21). Window dragging is unresolved; your real trackpad decides it.</td>
-          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="What the record says">Recurred once in 11 synthetic drag-region drags in M1. Moved to M8 as a non-blocking native-interaction regression watch; its cause may stay unknown. In M8, the window moved (0, 0) for an (80, 50) drag in attempt 8 and (70, 43) in attempt 9, each recorded with its displacement. The causes are not established, and the guard refused both reverse drags safely (R21). Window dragging is unresolved; your real trackpad decides it. M8 was accepted with this unverified; it carries to M10&rsquo;s integrated checks, not as a PASS.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M1.md</code> finding 2, Owner native check results</cite></td>
         </tr>
         <tr id="t-f5" data-owner="m9" data-short="Finding 5">
@@ -1180,22 +1180,22 @@
           <td data-label="Owner">You</td>
           <td data-label="Source"><cite><code>M2.md</code> findings 9, 10; <code>M6A.md</code> Findings</cite></td>
         </tr>
-        <tr id="t-m2-emitter" data-owner="m8" data-short="Emitter rotation">
+        <tr id="t-m2-emitter" data-owner="m10" data-short="Emitter rotation">
           <td data-label="Thread" class="lead">M2 finding 5: emitter rotation</td>
-          <td data-label="What the record says">SPEC §5.3 does not say what an emitter’s rotation does, so schema 1 accepts only the identity rotation. Interval and lifetime editing needed no rotation decision and is now implemented narrowly (<code>d1f8c41</code>): a reset on apply and on undo, and finite lifetimes only. Emitter rotation stays undecided beyond M8.</td>
-          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="What the record says">SPEC §5.3 does not say what an emitter’s rotation does, so schema 1 accepts only the identity rotation. Interval and lifetime editing needed no rotation decision and is now implemented narrowly (<code>d1f8c41</code>): a reset on apply and on undo, and finite lifetimes only. Emitter rotation stays undecided beyond M8. M8 was accepted with this unverified; it carries to M10&rsquo;s integrated checks, not as a PASS.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M2.md</code> finding 5</cite></td>
         </tr>
-        <tr id="t-m2-panel" data-owner="m8" data-short="Panel height">
+        <tr id="t-m2-panel" data-owner="m10" data-short="Panel height">
           <td data-label="Thread" class="lead">M2 finding 8: precise fields scroll</td>
-          <td data-label="What the record says">At 1280×800, precise fields sat below the Scene panel’s fold, and a compound law’s ingredient editor took the file buttons out of view. M8 keeps the file actions and examples at the top of the scene card, gives the panel a usable minimum height, moves the selected law’s fields to the right context column and adds a compact arrangement for short windows. In attempt 8 all 30 matrix cases passed, with collapsed and scrolled controls reached (R20). The precise-field and compound-editor scenarios (<code>m2-files</code>, <code>m5-compose</code>, <code>m5-legible</code>) did not run; native check pending.</td>
-          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="What the record says">At 1280×800, precise fields sat below the Scene panel’s fold, and a compound law’s ingredient editor took the file buttons out of view. M8 keeps the file actions and examples at the top of the scene card, gives the panel a usable minimum height, moves the selected law’s fields to the right context column and adds a compact arrangement for short windows. In attempt 8 all 30 matrix cases passed, with collapsed and scrolled controls reached (R20). The precise-field and compound-editor scenarios (<code>m2-files</code>, <code>m5-compose</code>, <code>m5-legible</code>) did not run; native check pending. M8 was accepted with this unverified; it carries to M10&rsquo;s integrated checks, not as a PASS.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M2.md</code> finding 8; <code>M5.md</code> 1280×800, finding 3</cite></td>
         </tr>
-        <tr id="t-m6a-minimum" data-owner="m8" data-short="Minimum window">
+        <tr id="t-m6a-minimum" data-owner="m10" data-short="Minimum window">
           <td data-label="Thread" class="lead">M6A finding 4: the recording controls at the minimum window</td>
-          <td data-label="What the record says">At the 900×600 minimum window, the replay cluster overlapped the top of the selected Storm Bottle’s projected support in the QA scene’s framing, clear of every UI region. SPEC §11.1 sets the clearance at 1280×800. In attempt 8 the 900×600 matrix passed for all five examples at 100/150/200%, with the compact arrangement at 200%. The cluster-against-support check belongs to <code>m6a-legible</code>, which did not run; pending.</td>
-          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="What the record says">At the 900×600 minimum window, the replay cluster overlapped the top of the selected Storm Bottle’s projected support in the QA scene’s framing, clear of every UI region. SPEC §11.1 sets the clearance at 1280×800. In attempt 8 the 900×600 matrix passed for all five examples at 100/150/200%, with the compact arrangement at 200%. The cluster-against-support check belongs to <code>m6a-legible</code>, which did not run; pending. M8 was accepted with this unverified; it carries to M10&rsquo;s integrated checks, not as a PASS.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M6A.md</code> Recording controls, finding 4; <code>M6B.md</code> M6A, carried</cite></td>
         </tr>
         <tr id="t-m6b-scrub" data-owner="owner" data-short="Scrub feel on P1">
@@ -1204,16 +1204,16 @@
           <td data-label="Owner">You</td>
           <td data-label="Source"><cite><code>M6B.md</code> finding 1, Owner checks</cite></td>
         </tr>
-        <tr id="t-m6b-space" data-owner="m8" data-short="Space during a seek">
+        <tr id="t-m6b-space" data-owner="m10" data-short="Space during a seek">
           <td data-label="Thread" class="lead">M6B finding 10: Space during a seek, on a real keyboard</td>
-          <td data-label="What the record says">Space through its own handler toggles playing from a pending seek’s target, and Shift+C proves it. A synthetic Space reached no handler, and whether WebKit delivered it is not established. <code>m6b-seek</code> passed in attempt 12, but it does not use a real keyboard. Space during a seek stays unverified: a real keyboard decides it, as an owner check under AC3.</td>
-          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="What the record says">Space through its own handler toggles playing from a pending seek’s target, and Shift+C proves it. A synthetic Space reached no handler, and whether WebKit delivered it is not established. <code>m6b-seek</code> passed in attempt 12, but it does not use a real keyboard. Space during a seek stays unverified: a real keyboard decides it, as an owner check under AC3. M8 was accepted with this unverified; it carries to M10&rsquo;s integrated checks, not as a PASS.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M6B.md</code> finding 10, Owner checks</cite></td>
         </tr>
-        <tr id="t-m6b-status" data-owner="m8" data-short="Status line">
+        <tr id="t-m6b-status" data-owner="m10" data-short="Status line">
           <td data-label="Thread" class="lead">M6B finding 8: a deferred Play moves the replay cluster’s buttons</td>
-          <td data-label="What the record says">With Play pressed during a seek, “ Then playing.” wrapped the status and moved the replay buttons 17 CSS px at 1600×1000. M8 reserves the status’s second line. <code>m6b-seek</code> passed in attempt 12, but the independent analysis found no pending-seek layout captured, so status stability stays unverified and the thread stays open; native or owner visual check pending.</td>
-          <td data-label="Owner"><a href="#m8">M8</a></td>
+          <td data-label="What the record says">With Play pressed during a seek, “ Then playing.” wrapped the status and moved the replay buttons 17 CSS px at 1600×1000. M8 reserves the status’s second line. <code>m6b-seek</code> passed in attempt 12, but the independent analysis found no pending-seek layout captured, so status stability stays unverified and the thread stays open; native or owner visual check pending. M8 was accepted with this unverified; it carries to M10&rsquo;s integrated checks, not as a PASS.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M6B.md</code> finding 8, Owner checks</cite></td>
         </tr>
         <tr id="t-m4-contacts" data-owner="deferred" data-short="Contact readback">
