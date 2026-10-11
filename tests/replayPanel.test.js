@@ -63,6 +63,8 @@ function panel(s, selectedId = null) {
     invoke: () => Promise.resolve(), renderRun: () => {}, renderComparison: () => {}, renderSampling: () => {},
     // The Emitter block renders from the authoring document and has its own test (emitterControls.test.js).
     renderEmitter: () => {},
+    // The Undo/Redo titles have their own test (historyTitle.test.js).
+    historyTitle: () => '',
     ingredientPanel: { render: () => {} },
     lawList: $('law-list'), details: $('details'), colorGroup: $('law-colors'), labelInput: $('law-label'), fadeInput: $('law-fade'),
     supportGroup: $('law-support'), regionParams: $('law-region-params'), primitiveParams: $('law-params'),

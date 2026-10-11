@@ -141,6 +141,16 @@ export class DocumentController {
     return this.redoStack.length > 0;
   }
 
+  /** The entry Undo would apply next, if any: lets the interface say what it will do (a law edit or an emitter reset). */
+  get nextUndo(): Transaction | null {
+    return this.undoStack[this.undoStack.length - 1] ?? null;
+  }
+
+  /** The entry Redo would apply next, if any. */
+  get nextRedo(): Transaction | null {
+    return this.redoStack[this.redoStack.length - 1] ?? null;
+  }
+
   /** The presentation of a law; one without a stored entry gets the constructor default. */
   presentationOf(id: string): LawPresentation {
     return this.lawPresentation.get(id) ?? defaultLawPresentation(id);

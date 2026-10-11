@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Euler, Quaternion, Vector3, type Mesh, type Object3D } from 'three/webgpu';
-import { DocumentController } from './domain/document';
+import { DocumentController, type Transaction } from './domain/document';
 import { expressionSummary, isCompound, type Edited } from './domain/ingredients';
 import { EDGE_FADE, LAW_COLORS, checkCamera, cloneFrozen, defaultLawPresentation, type FieldDefinition, type LawPresentation, type Primitive, type SceneDocument, type Vec3 } from './domain/scene';
 import { expressionStats, walk } from './fields/expression';
@@ -786,6 +786,19 @@ async function start() {
   /** Authoring commands wait: edits frozen, a gesture in progress, or a replay displayed (read-only, SPEC §13.2). */
   const blocked = () => frozen || interaction.gesture !== null || readOnly();
 
+  /**
+   * What Undo or Redo will do next (M8 review R-FB4): a law edit leaves the motion that already happened,
+   * an emitter change rebuilds the scene from tick 0, as its original change did.
+   */
+  const historyTitle = (action: 'undo' | 'redo', next: Transaction | null) => {
+    if (next?.kind === 'emitter') return action === 'undo'
+      ? 'Undo the emitter change: rebuilds the scene from tick 0 with the previous spawn rate and lifetime.'
+      : 'Redo the emitter change: rebuilds the scene from tick 0 with that spawn rate and lifetime.';
+    return action === 'undo'
+      ? 'Undo your last change to the laws. Motion that already happened stays as it was.'
+      : 'Redo the change you undid. Motion that already happened stays as it was.';
+  };
+
   /** The note a refused undo or redo left, cleared by the next one that applies. */
   let historyRefusal: typeof workflow.message = null;
   const undo = (redo: boolean) => {
@@ -1295,6 +1308,8 @@ async function start() {
     // History and visualization default.
     $<HTMLButtonElement>('undo').disabled = !editor().canUndo || readOnly();
     $<HTMLButtonElement>('redo').disabled = !editor().canRedo || readOnly();
+    $('undo').title = historyTitle('undo', editor().nextUndo);
+    $('redo').title = historyTitle('redo', editor().nextRedo);
     $('arrows-toggle').setAttribute('aria-pressed', String(editor().arrows));
 
     // Laws list, rebuilt only when something it shows changed.
