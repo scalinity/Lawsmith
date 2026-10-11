@@ -62,8 +62,8 @@ reveal() {
 }
 law() {
   layout
-  local p=(${=$(python3 -I -c "import json,sys; e=json.loads(sys.argv[1]); b=next(r['$2'] for r in e['laws'] if r['id']=='$1'); print(round($WIN_X+b[0]+b[2]/2), round($WIN_Y+b[1]+b[3]/2))" "$(logq last $APP_LOG layout)")})
-  click $p[1] $p[2]
+  local index=$(python3 -I -c "import json,sys; e=json.loads(sys.argv[1]); print(next(i for i,r in enumerate(e['laws']) if r['id']=='$1'))" "$(logq last $APP_LOG layout)")
+  reveal laws.$index.$2
 }
 edit_value() { reveal $1; keys kd:cmd t:a ku:cmd t:$2 kp:return; key_code 53; }
 replay_paused() {
