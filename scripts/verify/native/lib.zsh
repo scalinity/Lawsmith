@@ -423,6 +423,49 @@ alert_for() {
   alert "$2"
 }
 
+# --- Display mode: display.js reports failures as ordinary output ("no … mode", "configure failed",
+# "complete failed"), so success is its exact "set WxH@HZ" token AND a readback of that mode. The original
+# is read under the lock just before the first change; only a change QA made is restored.
+DISPLAY_ORIGINAL=
+DISPLAY_CHANGED=
+display_get() { osascript -l JavaScript $NATIVE/display.js get 2>&1 }
+
+# display_set WIDTH HEIGHT HZ: that exact HiDPI mode or a failure; never a nearby mode or refresh rate.
+display_set() {
+  [[ -n $LOCK_HOLDER ]] || fail "the display mode changes only under the GUI lock" 3
+  idle_gate 10
+  if [[ -z $DISPLAY_ORIGINAL ]]; then
+    local original=$(display_get)
+    [[ $original == <->x<->@<-> ]] || fail "the current display mode reads \"$original\"; nothing was changed"
+    DISPLAY_ORIGINAL=$original
+    receipt "{\"display\":\"original\",\"mode\":\"$DISPLAY_ORIGINAL\"}"
+  fi
+  local want="$1x$2@$3" out now
+  out=$(osascript -l JavaScript $NATIVE/display.js set $1 $2 $3 2>&1)
+  [[ $out == set\ * ]] && DISPLAY_CHANGED=1
+  [[ $out == "set $want" ]] || fail "the display mode $want was not set: \"$out\""
+  sleep 2
+  now=$(display_get)
+  [[ $now == $want ]] || fail "the display reads back $now, not $want"
+  receipt "{\"display\":\"set\",\"mode\":\"$now\"}"
+  say "display is $now"
+}
+
+# restore_display_mode: cleanup. Puts back the original mode if QA changed it, verified the same way;
+# returns non-zero and records the failure when the original does not come back.
+restore_display_mode() {
+  [[ -n $DISPLAY_CHANGED ]] || return 0
+  local d=${DISPLAY_ORIGINAL%@*} hz=${DISPLAY_ORIGINAL#*@} out now outcome=restored
+  out=$(osascript -l JavaScript $NATIVE/display.js set ${d%x*} ${d#*x} $hz 2>&1)
+  sleep 2
+  now=$(display_get)
+  [[ $out == "set $DISPLAY_ORIGINAL" && $now == $DISPLAY_ORIGINAL ]] || outcome=failed
+  receipt "{\"display\":\"$outcome\",\"original\":\"$DISPLAY_ORIGINAL\",\"now\":\"$now\",\"reply\":\"${out//\"/'}\"}"
+  say "display $outcome: $now (original $DISPLAY_ORIGINAL)"
+  [[ $outcome == restored ]] && DISPLAY_CHANGED=
+  [[ $outcome == restored ]]
+}
+
 # --- Preferences: the owner's local.lawsmith domain is snapshotted before QA writes it, and restored
 # exactly. The snapshot lives in QA_STATE, which is private and outside the repository; receipts go to
 # QA_OUT/cleanup.jsonl. Nothing is restored unless this run took the snapshot (and so may have written).

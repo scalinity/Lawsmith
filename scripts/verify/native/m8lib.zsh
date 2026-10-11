@@ -8,14 +8,26 @@
 [[ $QA_DEADLINE == <->(|.<->) ]] || { print -u2 "QA_DEADLINE must be epoch seconds"; exit 2 }
 
 RECORDER=
-ORIGINAL_MODE=$(osascript -l JavaScript $NATIVE/display.js get)
-restore_mode() {
-  local dimensions=${ORIGINAL_MODE%@*} hz=${ORIGINAL_MODE#*@}
-  osascript -l JavaScript $NATIVE/display.js set ${=${dimensions/x/ }} $hz >/dev/null
-  say "display restored to $ORIGINAL_MODE"
+# Cleanup, whatever happens: stop the owned recorder and app (and let the app finish writing its
+# preferences), restore the display and preferences this run changed, release the lock. A restoration
+# that fails turns a passing run into a failure (exit 6); its receipt is in QA_OUT/cleanup.jsonl.
+m8_cleanup() {
+  local code=$? restored=1 i
+  [[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null
+  if running; then
+    kill $APP_PID
+    for i in {1..50}; do running || break; command sleep 0.1; done
+  fi
+  restore_display_mode || restored=0
+  restore_preferences || restored=0
+  gui_unlock
+  if (( ! restored )); then
+    say "cleanup could not restore everything; see cleanup.jsonl"
+    (( code == 0 )) && code=6
+  fi
+  exit $code
 }
-# Whatever happens: stop the owned recorder, the owned app, restore the display, release the lock.
-trap '[[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; running && kill $APP_PID; restore_mode; restore_preferences; gui_unlock' EXIT
+trap m8_cleanup EXIT
 
 window_size() {
   require_lock "resizing the window"

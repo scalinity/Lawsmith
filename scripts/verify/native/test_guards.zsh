@@ -112,5 +112,20 @@ run_case prefs-restore-failure-reported 1 "unset QA_DEADLINE; print -r -- '$PLIS
 run_case prefs-snapshot-needs-lock 1 'unset QA_DEADLINE; snapshot_preferences' 'none prefs-snapshot-needs-lock "defaults "'
 run_case prefs-snapshot-private 1 'unset QA_DEADLINE; QA_STATE=$REPO/qa-state-inside; command sleep 30 & LOCK_HOLDER=$!; snapshot_preferences' 'none prefs-snapshot-private "defaults "'
 
+# --- F6: a display change is its exact token and readback; only a change QA made is restored ---------
+LOCKED='command sleep 30 & LOCK_HOLDER=$!; LAST_INPUT=$EPOCHREALTIME'
+run_case display-set-and-restore 0 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; display_set 1728 1117 60 && [[ \$(<\$DISPLAY_FILE) == 1728x1117@60 ]] && restore_display_mode && [[ \$(<\$DISPLAY_FILE) == 1168x755@120 ]] && grep -q '\"display\":\"restored\"' \$QA_OUT/cleanup.jsonl"
+run_case display-failure-string 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; print -r -- 'no 1728x1117 HiDPI mode at 60 Hz' > \$SET_REPLY_FILE; trap 'restore_display_mode' EXIT; display_set 1728 1117 60" '[[ $(grep -c display-set $ROOT/display-failure-string/calls) == 1 ]]'
+run_case display-configure-failed 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; print -r -- 'configure failed' > \$SET_REPLY_FILE; display_set 1728 1117 60" '[[ $(<$ROOT/display-configure-failed/display) == 1168x755@120 ]]'
+run_case display-wrong-refresh 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; print -r -- 'wrong:1728x1117@120' > \$SET_REPLY_FILE; trap 'print -n > \$SET_REPLY_FILE; restore_display_mode' EXIT; display_set 1728 1117 60" '[[ $(<$ROOT/display-wrong-refresh/display) == 1168x755@120 ]] && grep -q "\"display\":\"restored\"" $ROOT/display-wrong-refresh/out/cleanup.jsonl'
+run_case display-wrong-size 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; print -r -- 'wrong:1600x1000@60' > \$SET_REPLY_FILE; display_set 1728 1117 60" 'grep -q "reads back 1600x1000@60" $ROOT/display-wrong-size/output'
+run_case display-restore-failure 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; display_set 1728 1117 60; print -r -- 'complete failed 1001' > \$SET_REPLY_FILE; restore_display_mode" 'grep -q "\"display\":\"failed\"" $ROOT/display-restore-failure/out/cleanup.jsonl'
+run_case display-needs-lock 3 'unset QA_DEADLINE; trap "restore_display_mode" EXIT; display_set 1728 1117 60' 'none display-needs-lock display-set'
+run_case display-after-deadline 5 "QA_DEADLINE=\$(( EPOCHSECONDS - 1 )); $LOCKED; trap 'restore_display_mode' EXIT; display_set 1728 1117 60" 'none display-after-deadline display-set'
+run_case display-unreadable-original 1 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; print -r -- 'garbled' > \$DISPLAY_FILE; trap 'restore_display_mode' EXIT; display_set 1728 1117 60" 'none display-unreadable-original display-set'
+run_case m8-cleanup-restores 0 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); source \$HERE/m8lib.zsh; $LOCKED; display_set 1728 1117 120; exit 0" '[[ $(<$ROOT/m8-cleanup-restores/display) == 1168x755@120 ]]'
+run_case m8-cleanup-failure-fails-run 6 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); source \$HERE/m8lib.zsh; $LOCKED; display_set 1728 1117 120; print -r -- 'complete failed 1001' > \$SET_REPLY_FILE; exit 0"
+run_case m8-cleanup-keeps-failure-code 5 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); source \$HERE/m8lib.zsh; $LOCKED; display_set 1728 1117 120; QA_DEADLINE=\$(( EPOCHSECONDS - 1 )); click 1 1" '[[ $(<$ROOT/m8-cleanup-keeps-failure-code/display) == 1168x755@120 ]]'
+
 print -r -- "$passed passed, $failed failed"
 (( failed == 0 ))

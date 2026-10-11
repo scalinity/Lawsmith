@@ -17,8 +17,7 @@ enter() { keys kd:cmd t:a ku:cmd t:"$1"; key_code 48; sleep 0.3; layout }
 
 segment "M8 keyboard and native files at 1280×800, 200%"
 seed_folder $QA_STATE/scenes
-idle_gate 10
-say "More Space, 120 Hz: $(osascript -l JavaScript $NATIVE/display.js set 1728 1117 120)"
+display_set 1728 1117 120
 sleep 2
 launch m8-keyboard $QA_STATE/recovery-m8-keyboard-$EPOCHSECONDS
 expect qualification "qualified packaged runtime identity" "e['mode']=='packaged' and e['qualified'] is True"

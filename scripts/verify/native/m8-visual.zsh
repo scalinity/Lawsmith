@@ -60,8 +60,7 @@ drag_window() {
 
 segment "M8 visual matrix"
 seed_folder $QA_STATE/scenes
-idle_gate 10
-say "More Space, 120 Hz: $(osascript -l JavaScript $NATIVE/display.js set 1728 1117 120)"
+display_set 1728 1117 120
 sleep 2
 launch m8-visual $QA_STATE/recovery-m8-visual-$EPOCHSECONDS
 expect qualification "qualified packaged runtime identity" "e['mode']=='packaged' and e['qualified'] is True"
