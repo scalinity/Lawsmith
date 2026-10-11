@@ -1,0 +1,7 @@
+M8 close-out publication
+
+evidence commit   1b7a42e3f3a1d7d6a1f7151c6d3331debc30513d
+  publishes       docs/evidence/M8.md (final dispositions), ORCHESTRATION.html (realigned),
+                  docs/evidence/m8/attempt7 … attempt12, docs/evidence/m8/final-identity.txt
+  application     fa4e22378c355050f388e070001a0236896f6af4 (unchanged by this commit)
+  native harness  92be14f4b76f3564763f6b505f3349169166df5f (unchanged by this commit)
