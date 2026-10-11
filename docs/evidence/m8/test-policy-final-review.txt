@@ -1,0 +1,12 @@
+M8 test-policy follow-up final review receipt
+
+reviewer        GPT-6.1 Sol, read-only documentation review (no edits, tests, builds or native actions)
+reviewed commit 402dd901230bd4a74cbb298a6f23486d6d9595d2
+scope           delta e15a5c72dd24cb68a878cebaa2a60992bb25864a..402dd901230bd4a74cbb298a6f23486d6d9595d2
+verdict         TP1-TP4 CLOSED, no actionable findings
+found           fixes cover optional keyboard-retry authorization, direct viewport movement and rotation, two independent
+                paused-replay seeks, and one explicit post-acceptance close-out instruction; M8 requirements intact;
+                historical failures, UNRUN not-required campaigns, pending human observations and expired approvals
+                accurately classified; no repaired native PASS or automatic publication implied
+earlier receipt test-policy-review.txt (author fixes, review pending) is kept as published
+status          no open test-policy finding; owner human checklist and acceptance remain
