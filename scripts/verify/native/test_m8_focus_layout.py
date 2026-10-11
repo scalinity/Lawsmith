@@ -69,5 +69,24 @@ class KeyboardWalk(unittest.TestCase):
         self.assertIn('idle_gate 1; guard_front; idle_gate 1', body)
 
 
+
+class DrawOptions(unittest.TestCase):
+    def test_the_helper_opens_only_when_folded_and_confirms(self):
+        body = LIB[LIB.index('open_draw_options() {'):LIB.index('\n}\n', LIB.index('open_draw_options() {'))]
+        self.assertIn("[[ $(field layout drawFolded) == true ]] || return 0", body)
+        self.assertIn('press_expect draw-toggle control', body)
+        self.assertIn("e['drawFolded'] is False", body)
+
+    def test_m8_perf_opens_them_before_every_drawing_option_press(self):
+        perf = (HERE / 'm8-perf.zsh').read_text(encoding='utf-8')
+        cases = re.findall(r'\n    (P[0-3])\)\n(.*?)\n      ;;', perf, re.S)
+        self.assertEqual([c[0] for c in cases], ['P0', 'P1', 'P2', 'P3'])
+        for case in cases:
+            lines = case[1].splitlines()
+            presses = [i for i, line in enumerate(lines) if re.search(r'press (trails-|probes-toggle|arrows-)', line)]
+            if presses:
+                opened = [i for i, line in enumerate(lines) if line.strip() == 'open_draw_options']
+                self.assertTrue(opened and opened[0] < presses[0], f'{case[0]} presses a drawing option before opening them')
+
 if __name__ == '__main__':
     unittest.main()

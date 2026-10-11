@@ -125,3 +125,12 @@ window_round_trip() {
   local back=($(( -MOVED[1] )) $(( -MOVED[2] )))
   drag_window $back[1] $back[2]
 }
+
+# open_draw_options: the drawing options (arrows, probes, trails) start folded (M8 owner feedback); opens them
+# through the Draw options button, only when the readback says they are folded, before a runner presses one.
+open_draw_options() {
+  layout
+  [[ $(field layout drawFolded) == true ]] || return 0
+  press_expect draw-toggle control
+  layout; expect layout "drawing options open" "e['drawFolded'] is False"
+}

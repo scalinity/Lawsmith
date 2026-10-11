@@ -117,6 +117,7 @@ for w in $WORKLOADS; do
     P1)
       open_fixture p1-workshop
       layout; expect layout "P1 opens with drag-0 selected" "e['selected']=='drag-0'"
+      open_draw_options
       press trails-all
       press play
       sleep 2
@@ -125,6 +126,7 @@ for w in $WORKLOADS; do
     P2)
       open_fixture p2-probes
       layout; expect layout "P2 opens with its drag law selected" "e['selected']=='drag'"
+      open_draw_options
       press probes-toggle
       press trails-all
       press play
