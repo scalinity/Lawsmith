@@ -63,6 +63,8 @@ function panel(s, selectedId = null) {
     invoke: () => Promise.resolve(), renderRun: () => {}, renderComparison: () => {}, renderSampling: () => {},
     // The Emitter block renders from the authoring document and has its own test (emitterControls.test.js).
     renderEmitter: () => {}, emitterLockReason: () => null,
+    // The immersive view's restore on a file action or error has its own test (hudToggle.test.js).
+    setHudHidden: () => {}, hudAlertSeen: null,
     // The Undo/Redo titles have their own test (historyTitle.test.js).
     historyTitle: () => '',
     ingredientPanel: { render: () => {} },

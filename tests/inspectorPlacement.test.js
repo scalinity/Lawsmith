@@ -66,7 +66,7 @@ describe('replay keeps the inspector read-only and its collapse control usable (
       return elements.get(id);
     };
     const context = createContext({
-      $, frozen: false, guardFrozen: guard, launchPending: false,
+      $, frozen: false, guardFrozen: guard, launchPending: false, hudHidden: false,
       readOnly: () => replay, comparing: () => false, replaying: () => replay,
       document: { body: { dataset: {} }, querySelectorAll: () => [] },
       viewport: { gizmo: { enabled: true, getHelper: () => ({ visible: true }) } },

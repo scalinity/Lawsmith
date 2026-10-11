@@ -339,6 +339,8 @@ async function start() {
   let drawWait: DrawWait | null = null;
   let launchPending = true;
   let cameraMoved = false;
+  /** The immersive view: every HUD panel hidden, the scene alone (M8 owner feedback). See setHudHidden. */
+  let hudHidden = false;
   const applyFreeze = () => {
     frozen = guardFrozen || launchPending;
     for (const id of ['document', 'panel', 'details', 'tools', 'transport', 'overlays', 'run', 'comparison']) $(id).inert = frozen;
@@ -351,10 +353,38 @@ async function start() {
     $<HTMLButtonElement>('reset').disabled = locked || comparing();
     $<HTMLButtonElement>('arrows-toggle').disabled = locked;
     $('reset').title = locked ? 'Reset restarts your authored scene. Return to authoring to use it.' : '';
-    viewport.gizmo.enabled = !frozen && !locked;
-    viewport.gizmo.getHelper().visible = !locked;
+    viewport.gizmo.enabled = !frozen && !locked && !hudHidden;
+    viewport.gizmo.getHelper().visible = !locked && !hudHidden;
   };
   applyFreeze();
+
+  /**
+   * Hides or restores the whole HUD: panels, toolbars, drawing options, diagnostics and the floating labels.
+   * Only presentation changes. The world, camera, simulation, each panel's own fold, the Interface Scale and
+   * the selection stay as they are, and the window's controls and drag strip stay. Hidden panels keep their
+   * layout but cannot take focus, so focus leaves them and returns on restore while still usable.
+   */
+  let hudFocus: HTMLElement | null = null;
+  /** The busy state or error message that last brought the HUD back, so each does so once. */
+  let hudAlertSeen: unknown = null;
+  const setHudHidden = (hidden: boolean, reason: string) => {
+    if (hidden === hudHidden || (hidden && frozen)) return;
+    if (hidden) {
+      const active = document.activeElement;
+      hudFocus = active instanceof HTMLElement && $('shell').contains(active) ? active : null;
+      hudFocus?.blur();
+    }
+    hudHidden = hidden;
+    document.documentElement.dataset.hud = hidden ? 'hidden' : 'shown';
+    applyFreeze();
+    if (!hidden) {
+      const back = hudFocus;
+      hudFocus = null;
+      if (back?.isConnected && !back.closest('[hidden], [inert]') && !(back as HTMLButtonElement).disabled) back.focus({ preventScroll: true });
+    }
+    report('control', { hud: hidden ? 'hidden' : 'shown', reason });
+  };
+  $('hud-hide').addEventListener('click', () => setHudHidden(true, 'button'));
 
   // The selected law's ingredient editor. Its edits run through editExpression, an authoring command
   // defined further down, so the call is deferred to the moment an edit happens.
@@ -378,13 +408,15 @@ async function start() {
       onGestureEnd: (end) => gestureEnded(end),
       onSelectionChange: () => renderPanel(),
       clickBody: (x, y) => {
+        // With the HUD hidden a click only looks: it neither explains a body nor changes the selection.
+        if (hudHidden) return true;
         const id = bodyAt(x, y);
         if (id === null) return false;
         setExplained(id, 'click');
         return true;
       },
       haltCamera: () => viewport.haltInertia(),
-      editable: () => !frozen && !readOnly(),
+      editable: () => !frozen && !readOnly() && !hudHidden,
       // The ingredient being edited brings its own handles (M5).
       focus: () => ingredientPanel.focus,
       log: report,
@@ -478,6 +510,7 @@ async function start() {
     $('sim-error-text').textContent = message;
     $('sim-error-reset').hidden = !offerReset;
     $('sim-error').hidden = false;
+    setHudHidden(false, 'fault');
   };
 
   /** Whether playback is asked for: during a seek, whether it plays from its target once it holds it. */
@@ -649,6 +682,8 @@ async function start() {
     },
     freeze: (value) => {
       guardFrozen = value;
+      // The guard's question is never asked behind a hidden HUD.
+      if (value) setHudHidden(false, 'guard');
       applyFreeze();
       report('guard', { frozen: value, tick: host.tick });
     },
@@ -1349,6 +1384,10 @@ async function start() {
 
   let reportedDirty: boolean | null = null;
   function renderPanel() {
+    // A file action starting, or a new error to read, brings the HUD back once; hiding it again is the person's choice.
+    const hudAlert = workflow.busy ?? (workflow.message?.kind === 'error' ? workflow.message : null);
+    if (hudAlert !== null && hudAlert !== hudAlertSeen) setHudHidden(false, workflow.busy ?? 'error');
+    hudAlertSeen = hudAlert;
     // The native side answers Dock Quit and logout synchronously, so it keeps the dirty state too: an
     // unsaved scene, or a recording that has not been saved.
     const atRisk = workflow.dirty || runs.recordingAtRisk;
@@ -2638,6 +2677,7 @@ async function start() {
       compact: document.documentElement.dataset.compact === 'true',
       focusLayout: document.documentElement.dataset.focus === 'true',
       drawFolded: $('overlays').dataset.folded === 'true',
+      hudHidden,
       recordingCollapsed: $('run').dataset.collapsed === 'true',
       scroll: Object.fromEntries(['panel', 'context-column', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
@@ -3026,9 +3066,11 @@ async function start() {
 
   window.addEventListener('keydown', (event) => {
     // The replay timeline takes no text: Play, Step and the other keys still work while it has focus.
-    const typing = (event.target instanceof HTMLInputElement && event.target.type !== 'range') || event.target instanceof HTMLTextAreaElement;
+    const typing = (event.target instanceof HTMLInputElement && event.target.type !== 'range') || event.target instanceof HTMLTextAreaElement || (event.target instanceof HTMLElement && event.target.isContentEditable);
     if (event.metaKey && !event.ctrlKey && !event.altKey) {
       const key = event.key.toLowerCase();
+      // Open, save and undo act on what the HUD shows, so they bring it back first.
+      if (hudHidden && (key === 'o' || key === 's' || key === 'z')) setHudHidden(false, 'command');
       if (key === 'o' || key === 's') {
         event.preventDefault();
         runFile(key === 'o' ? 'open' : event.shiftKey ? 'saveAs' : 'save');
@@ -3050,6 +3092,17 @@ async function start() {
       return;
     }
     if (event.metaKey || event.ctrlKey || event.altKey) return;
+    // Plain H, never ⌘H (the system's Hide), and never while composing text or from a held key.
+    const hudKey = event.key.toLowerCase() === 'h' && !event.shiftKey && !event.isComposing && event.keyCode !== 229;
+    if (hudHidden) {
+      // Hidden: H or Escape brings the HUD back and does nothing else; Play and Step still work.
+      if (hudKey || event.key === 'Escape') {
+        event.preventDefault();
+        if (!event.repeat) setHudHidden(false, 'keyboard');
+        return;
+      }
+      if (event.key !== ' ' && event.key !== '.') return;
+    }
     if (typing) {
       if (event.key === 'Escape') (event.target as HTMLElement).blur();
       return;
@@ -3060,6 +3113,10 @@ async function start() {
     // A readback changes nothing, so it also works while edits are frozen.
     if (event.key === 'L') return layoutReport();
     if (frozen) return;
+    if (hudKey) {
+      if (!event.repeat) setHudHidden(true, 'keyboard');
+      return;
+    }
     switch (event.key) {
       case 't': return setMode('translate');
       case 'r': return setMode('rotate');
@@ -3431,7 +3488,7 @@ async function start() {
         arrows: replaying() ? (runs.replay?.record.root.presentation.arrows ?? true) : editor().arrows,
         onlySelectedArrows: arrowScope === 'selected',
         handles: (() => {
-          if (readOnly()) return null;
+          if (readOnly() || hudHidden) return null;
           const shown = interaction.handles();
           return shown ? { ...shown, hover: interaction.hoverHandle, active: interaction.activeHandle } : null;
         })(),

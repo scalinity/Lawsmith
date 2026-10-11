@@ -1710,3 +1710,13 @@ h2[tabindex="-1"]:focus {
   margin: 0 0 calc(6 * var(--u));
   color: var(--text-secondary);
 }
+
+/* The immersive view (H): every HUD surface is hidden, keeping its layout, so nothing reflows and nothing
+   hidden can take focus or the pointer. The top rail stays for its window drag strip; its tools hide. */
+:root[data-hud="hidden"] #shell > :not(#top-rail),
+:root[data-hud="hidden"] #tools,
+:root[data-hud="hidden"] #law-labels,
+:root[data-hud="hidden"] #explain-labels,
+:root[data-hud="hidden"] #status {
+  visibility: hidden;
+}

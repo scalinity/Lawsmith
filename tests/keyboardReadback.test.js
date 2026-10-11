@@ -25,7 +25,7 @@ function listen() {
   const spy = (name) => (...args) => { calls.push([name, ...args]); };
   let listener;
   context = createContext({
-    HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement, HTMLButtonElement,
+    HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement, HTMLButtonElement, HTMLElement: Element, hudHidden: false, setHudHidden: spy('setHudHidden'),
     window: { addEventListener: (type, fn) => { if (type === 'keydown') listener = fn; } },
     frozen: false, pendingSeek: null, explained: null, comparing: () => false, workflow: { busy: null }, scheduler: { playing: false },
     interaction: { gesture: null, cancel: () => false, select: spy('select') }, runParts: { timeline: {} },
