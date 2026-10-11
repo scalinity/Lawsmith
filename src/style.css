@@ -1122,13 +1122,15 @@ button.primary {
   background: var(--raised);
 }
 
-#motion-error {
+#motion-error,
+#emitter-error {
   margin: calc(8 * var(--u)) 0 0;
   font-size: calc(12 * var(--u));
   color: var(--danger);
 }
 
-#motion-error[hidden] {
+#motion-error[hidden],
+#emitter-error[hidden] {
   display: none;
 }
 

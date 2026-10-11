@@ -11,6 +11,7 @@ import {
   checkLawPresentation,
   cloneFrozen,
   defaultLawPresentation,
+  validateEmitter,
   validateField,
   type FieldDefinition,
   type LawPresentation,
@@ -35,13 +36,35 @@ export interface LawState {
  * One author-undo entry (SPEC §10.3): a law's state before and after one user action. Its
  * `transactionId` is the one every command of that action carried; undoing it is a new action.
  */
-export interface Transaction {
+export interface LawTransaction {
+  readonly kind?: 'law';
   readonly label: string;
   readonly id: string;
   readonly transactionId: string;
   readonly before: LawState | null;
   readonly after: LawState | null;
 }
+
+/** An emitter's spawn interval and body lifetime, in ticks: the only emitter settings authors edit. */
+export interface EmitterSchedule {
+  readonly intervalTicks: number;
+  readonly lifetimeTicks: number;
+}
+
+/**
+ * One undo entry for an emitter's schedule. Editing an emitter rebuilds the world from tick 0 (SPEC
+ * §5.3), and undoing or redoing it performs the same explicit reset (SPEC §10.3).
+ */
+export interface EmitterTransaction {
+  readonly kind: 'emitter';
+  readonly label: string;
+  readonly id: string;
+  readonly transactionId: string;
+  readonly before: EmitterSchedule;
+  readonly after: EmitterSchedule;
+}
+
+export type Transaction = LawTransaction | EmitterTransaction;
 
 export type LawPresentationPatch = Partial<Pick<LawPresentation, 'label' | 'color' | 'visible'>>;
 
@@ -314,7 +337,7 @@ export class DocumentController {
 
   /** Records a completed user action as one undo entry; a later redo history is discarded. */
   record(transaction: Transaction): void {
-    if (sameState(transaction.before, transaction.after)) return;
+    if (transaction.kind !== 'emitter' && sameState(transaction.before, transaction.after)) return;
     this.undoStack.push(transaction);
     this.redoStack = [];
     while (this.undoStack.length > this.historyLimit || (Number.isFinite(this.historyByteLimit) && this.historyBytes > this.historyByteLimit)) this.undoStack.shift();
@@ -430,10 +453,47 @@ export class DocumentController {
    * Restores the state before the latest action, through new commands at the current boundary: a new
    * action with its own transaction, which never removes a consumed command from a recording.
    */
+  /**
+   * Sets an emitter's spawn interval and body lifetime (positive safe integers, validated with the whole
+   * emitter before anything changes) and rebuilds the world from tick 0 with them, as SPEC §5.3 requires
+   * for an emitter edit. The world is rebuilt first and the document changes only if that succeeds, so a
+   * refused reset (an active recording) leaves the document and the world as they were.
+   */
+  setEmitterSchedule(id: string, schedule: EmitterSchedule, label = 'Change emitter'): Validated<{ revision: number }> {
+    this.settle();
+    const current = this.authored.emitters.find((e) => e.id === id);
+    if (!current) return failure(`no emitter ${id}`);
+    const before = { intervalTicks: current.intervalTicks, lifetimeTicks: current.lifetimeTicks };
+    if (before.intervalTicks === schedule.intervalTicks && before.lifetimeTicks === schedule.lifetimeTicks) return failure('nothing changed');
+    const applied = this.applySchedule(id, schedule);
+    if (!applied.ok) return applied;
+    this.record({ kind: 'emitter', label, id, transactionId: this.newTransaction(), before, after: { ...schedule } });
+    return { ok: true, value: { revision: this.revision } };
+  }
+
+  private applySchedule(id: string, schedule: EmitterSchedule): Validated<null> {
+    const index = this.authored.emitters.findIndex((e) => e.id === id);
+    if (index < 0) return failure(`no emitter ${id}`);
+    const checked = validateEmitter({ ...this.authored.emitters[index]!, intervalTicks: schedule.intervalTicks, lifetimeTicks: schedule.lifetimeTicks });
+    if (!checked.ok) return checked;
+    const emitters = [...this.authored.emitters];
+    emitters[index] = checked.value;
+    const candidate = cloneFrozen({ ...this.authored, emitters });
+    try {
+      this.host.reset(candidate);
+    } catch (error) {
+      return failure(error instanceof Error ? error.message : String(error));
+    }
+    this.authored = candidate;
+    this.revision += 1;
+    this.appliedRevision = this.revision;
+    return { ok: true, value: null };
+  }
+
   undo(): Validated<Transaction> {
     const transaction = this.undoStack[this.undoStack.length - 1];
     if (!transaction) return failure('nothing to undo');
-    const applied = this.restore(transaction.id, transaction.before);
+    const applied = transaction.kind === 'emitter' ? this.applySchedule(transaction.id, transaction.before) : this.restore(transaction.id, transaction.before);
     if (!applied.ok) return applied;
     this.undoStack.pop();
     this.redoStack.push(transaction);
@@ -443,7 +503,7 @@ export class DocumentController {
   redo(): Validated<Transaction> {
     const transaction = this.redoStack[this.redoStack.length - 1];
     if (!transaction) return failure('nothing to redo');
-    const applied = this.restore(transaction.id, transaction.after);
+    const applied = transaction.kind === 'emitter' ? this.applySchedule(transaction.id, transaction.after) : this.restore(transaction.id, transaction.after);
     if (!applied.ok) return applied;
     this.redoStack.pop();
     this.undoStack.push(transaction);

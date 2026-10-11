@@ -61,6 +61,8 @@ function panel(s, selectedId = null) {
     $, document, interaction, Euler, Quaternion, expressionSummary, isCompound, primitiveDescriptor, regionDescriptor, defaultLawPresentation,
     workflow: { dirty: false, busy: null, fileName: null, message: null, recovery: { status: { state: 'idle' } } },
     invoke: () => Promise.resolve(), renderRun: () => {}, renderComparison: () => {}, renderSampling: () => {},
+    // The Emitter block renders from the authoring document and has its own test (emitterControls.test.js).
+    renderEmitter: () => {},
     ingredientPanel: { render: () => {} },
     lawList: $('law-list'), details: $('details'), colorGroup: $('law-colors'), labelInput: $('law-label'), fadeInput: $('law-fade'),
     supportGroup: $('law-support'), regionParams: $('law-region-params'), primitiveParams: $('law-params'),

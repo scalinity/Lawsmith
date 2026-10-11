@@ -793,6 +793,7 @@ async function start() {
     const result = redo ? editor().redo() : editor().undo();
     if (result.ok) {
       if (workflow.message === historyRefusal) workflow.message = null;
+      if (result.value.kind === 'emitter') emitterReset(redo ? 'redo' : 'undo');
       settleNow();
       if (appliedLaw(result.value.id)) interaction.select(result.value.id);
       else if (interaction.selectedId === result.value.id) interaction.select(editor().scene.fields[0]?.id ?? null);
@@ -862,6 +863,73 @@ async function start() {
     }
     report('control', { delete: law.id, ok: result.ok, laws: host.appliedFields().length });
   };
+
+  // The emitter's schedule (M8 owner feedback): spawn rate and how long each body is kept, in whole ticks.
+  // Applying rebuilds the world from tick 0 (SPEC §5.3); undo does the same. Bodies are always finite-lived.
+  const TICKS_PER_SECOND = 1000 / STEP_MS;
+  const RATE_RANGE = [0.01, TICKS_PER_SECOND] as const;
+  const LIFE_RANGE = [0.1, 3600] as const;
+  const emitterRate = $<HTMLInputElement>('emitter-rate');
+  const emitterLife = $<HTMLInputElement>('emitter-life');
+  const emitterApply = $<HTMLButtonElement>('emitter-apply');
+  const emitterError = $('emitter-error');
+  const emitterNow = $('emitter-now');
+  const emitterLocked = () => blocked() || comparing() || runs.recordingState === 'recording' || workflow.busy !== null || pendingSeek !== null;
+  const describeSchedule = (intervalTicks: number, lifetimeTicks: number) => {
+    const perSecond = TICKS_PER_SECOND / intervalTicks;
+    const seconds = lifetimeTicks / TICKS_PER_SECOND;
+    const alive = Math.ceil(lifetimeTicks / intervalTicks);
+    const limit = authoring.scene.simulation.maxLiveBodies;
+    const fit = alive > limit ? ` Up to ${alive} bodies would be alive at once, but the scene allows ${limit}: later births will be skipped and counted.` : '';
+    return `Now: a body every ${intervalTicks} ticks (${Number(perSecond.toFixed(2))} per second), each kept for ${lifetimeTicks} ticks (${Number(seconds.toFixed(2))} s).${fit}`;
+  };
+  const renderEmitter = () => {
+    const emitter = authoring.scene.emitters[0];
+    $('emitter').hidden = !emitter;
+    if (!emitter) return;
+    if (document.activeElement !== emitterRate) emitterRate.value = String(Number((TICKS_PER_SECOND / emitter.intervalTicks).toFixed(4)));
+    if (document.activeElement !== emitterLife) emitterLife.value = String(Number((emitter.lifetimeTicks / TICKS_PER_SECOND).toFixed(4)));
+    emitterNow.textContent = describeSchedule(emitter.intervalTicks, emitter.lifetimeTicks);
+    const locked = emitterLocked();
+    emitterRate.disabled = emitterLife.disabled = emitterApply.disabled = locked;
+    emitterApply.title = locked ? 'Stop recording, replay or comparison first' : 'Rebuilds the scene from tick 0 with this rate and lifetime. Undo restores the previous ones.';
+  };
+  /** After an emitter change or its undo: the world was rebuilt at tick 0, so the run starts afresh, paused. */
+  const emitterReset = (reason: string) => {
+    setPlaying(false, reason);
+    runIndex += 1;
+    editsSinceReset = 0;
+    if (p0) p0.invalid ??= 'reset during capture';
+    $('sim-error').hidden = true;
+    report('sim-control', { action: 'reset', reason, tick: host.tick, run: runIndex, emitters: authoring.scene.emitters.map((e) => ({ id: e.id, intervalTicks: e.intervalTicks, lifetimeTicks: e.lifetimeTicks })) });
+  };
+  const applyEmitter = () => {
+    const emitter = authoring.scene.emitters[0];
+    if (!emitter || emitterLocked()) return;
+    const rate = emitterRate.value.trim() === '' ? NaN : Number(emitterRate.value);
+    const life = emitterLife.value.trim() === '' ? NaN : Number(emitterLife.value);
+    const problem = !Number.isFinite(rate) || rate < RATE_RANGE[0] || rate > RATE_RANGE[1] ? `Spawn rate must be a number from ${RATE_RANGE[0]} to ${RATE_RANGE[1]} per second.`
+      : !Number.isFinite(life) || life < LIFE_RANGE[0] || life > LIFE_RANGE[1] ? `Keep each body must be a number of seconds from ${LIFE_RANGE[0]} to ${LIFE_RANGE[1]}.` : null;
+    emitterRate.toggleAttribute('aria-invalid', problem !== null && problem.startsWith('Spawn'));
+    emitterLife.toggleAttribute('aria-invalid', problem !== null && problem.startsWith('Keep'));
+    emitterError.hidden = problem === null;
+    emitterError.textContent = problem ? `${problem} Nothing changed.` : '';
+    if (problem) return;
+    const schedule = { intervalTicks: Math.max(1, Math.round(TICKS_PER_SECOND / rate)), lifetimeTicks: Math.max(1, Math.round(life * TICKS_PER_SECOND)) };
+    setPlaying(false, 'emitter');
+    settleNow();
+    const result = authoring.setEmitterSchedule(emitter.id, schedule);
+    if (result.ok) {
+      emitterReset('emitter');
+      edited();
+    } else if (result.reason !== 'nothing changed') {
+      emitterError.hidden = false;
+      emitterError.textContent = `Not applied: ${result.reason}. Nothing changed.`;
+    }
+    report('control', { emitter: emitter.id, ...schedule, ok: result.ok, reason: result.ok ? null : result.reason });
+    renderPanel();
+  };
+  emitterApply.addEventListener('click', applyEmitter);
 
   /** The tool shelf (SPEC §11.1): a law of one kind at the view's focus point, selected, as one undo entry. */
   const createLaw = (kind: PrimitiveKind) => {
@@ -1278,6 +1346,7 @@ async function start() {
     const law = selectedLaw();
     $<HTMLButtonElement>('law-duplicate').disabled = !law;
     $<HTMLButtonElement>('law-delete').disabled = !law;
+    renderEmitter();
     const listDelete = $<HTMLButtonElement>('laws-delete');
     listDelete.disabled = !law || locked;
     listDelete.textContent = law ? `Delete ${lawPresentation(law.id).label}` : 'Delete';
