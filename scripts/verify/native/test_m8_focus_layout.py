@@ -50,6 +50,40 @@ class PanelCollapsed(unittest.TestCase):
         self.assertFalse(holds(readback(False, panel=None, **{'file-open': None})))
 
 
+
+class FocusTogglesExercised(unittest.TestCase):
+    """R-FB7: the focus-layout branch presses the details and recording toggles, checks each state change and
+    restores it, while Laws stays hidden; a clipped or unreachable toggle is never clicked as it lies."""
+
+    def test_the_branch_presses_each_toggle_twice_and_checks_the_state_between(self):
+        start = VISUAL.index('expect layout "panel collapsed"')
+        block = VISUAL[start:VISUAL.index('press_expect panel-toggle control', start)]
+        branch = re.search(r'if \[\[ \$\(field layout focusLayout\) == true \]\]; then\n(.*?)\n  fi\n', block, re.S)
+        self.assertIsNotNone(branch)
+        steps = [line.strip() for line in branch.group(1).splitlines() if line.strip() and not line.strip().startswith('#')]
+        self.assertEqual([s.split(';')[0] for s in steps if s.startswith('press')], ['press_expect details-toggle control'] * 2 + ['press_expect run-toggle control'] * 2)
+        expects = [s for s in steps if s.startswith('expect layout')]
+        self.assertEqual(len(expects), 4)
+        for e, want in zip(expects, ["e['detailsCollapsed'] is True", "e['detailsCollapsed'] is False", "e['recordingCollapsed'] is False", "e['recordingCollapsed'] is True"]):
+            self.assertIn(want, e)
+            self.assertIn("e['panelCollapsed'] is True", e)  # Laws stays hidden throughout
+
+    def test_a_clipped_toggle_is_scrolled_into_view_never_clicked_where_it_lies(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('logq', HERE / 'logq.py')
+        logq = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(logq)
+        layout = {'viewport': [1280, 800], 'controls': {'panel': [24, 200, 560, 560], 'details-toggle': [400, 790, 140, 56]},
+                  'owners': {'controls': {'details-toggle': 'panel', 'panel': 'panel'}}}
+        self.assertEqual(logq.reach(layout, 40, 45, 'details-toggle').split()[0], 'scroll')  # below the panel's visible edge
+        layout['controls']['details-toggle'] = [400, 400, 140, 56]
+        self.assertEqual(logq.reach(layout, 40, 45, 'details-toggle').split()[0], 'click')
+        layout['controls']['details-toggle'] = None
+        self.assertEqual(logq.reach(layout, 40, 45, 'details-toggle').split()[0], 'unreachable')  # not shown: never clicked
+        layout['controls']['details-toggle'] = [400, 400, 140, 56]
+        layout['controls']['panel'] = [24, 200, 560, 0]
+        self.assertEqual(logq.reach(layout, 40, 45, 'details-toggle').split()[0], 'unreachable')  # its region has no height
+
 class KeyboardWalk(unittest.TestCase):
     def test_the_section_bar_is_used_by_id_in_the_focus_layout_only(self):
         block = re.search(r'if \[\[ \$\(field layout focusLayout\) == true \]\]; then\n(.*?)\nfi\n', KEYBOARD, re.S)
