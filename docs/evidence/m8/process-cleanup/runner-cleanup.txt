@@ -24,3 +24,9 @@ new-INT-9s: INT after 9.0s: exit=130, ended 0.2s after the signal (9.3 s)
 new-TERM-15s: TERM after 15.0s: exit=143, ended 1.5s after the signal (16.6 s)
   new launchd-reparented 'sleep 30' dummies=0; new launchd-reparented temp-lock python processes=0
   temp roots left by this run: 0
+
+# Closing check, about 11 minutes after the last run: 3 Python flock processes on test_guards temporary locks
+# were still reparented to launchd. All 3 ran the original holder code on the prefs-early-failure-keeps-domain
+# lock, and their start times (16:22:46, 16:29:50, 16:33:03) match the three full runs of the original
+# test_guards.zsh in this task. These were permanent holders from the startup race. Stopped by exact PID:
+# 3 stopped, 0 remaining. Holders running the fixed code: 0.
