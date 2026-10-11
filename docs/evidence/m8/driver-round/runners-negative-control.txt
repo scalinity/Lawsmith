@@ -1,0 +1,8 @@
+FAIL: test_direct_system_events_calls_follow_a_recheck (__main__.CampaignRunners.test_direct_system_events_calls_follow_a_recheck)
+AssertionError: Regex didn't match: 'guard_front; idle_gate' not found in 'window_size() {' : m5-legible.zsh:15 is not preceded by a recheck after its front check
+FAIL: test_display_and_preferences_restored_through_lib (__main__.CampaignRunners.test_display_and_preferences_restored_through_lib)
+AssertionError: False is not true : m5-legible.zsh does not use restore_display_mode
+FAIL: test_no_raw_mutations (__main__.CampaignRunners.test_no_raw_mutations)
+AssertionError: <re.Match object; span=(73, 87), match='display.js set'> is not None : m5-legible.zsh:13: display_mode() { say "display → $1×$2: $(osascript -l JavaScript $NATIVE/display.js set $1 $2 
+Ran 3 tests in 0.002s
+FAILED (failures=3)

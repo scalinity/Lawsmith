@@ -1,0 +1,2 @@
+previous 50531fd lib.zsh (parent lends its held lock, 3 s deadline): exit 5: [qa 02:02:37] FAIL: the approved hands-off window ends at 02:02:38; not starting an action that needs 1 s 5
+current lib.zsh (same case): exit 0: segment returned with LOCK_HOLDER=inherited:11
