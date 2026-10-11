@@ -139,7 +139,7 @@ close_comparison
 fi
 segment "R1 ordinary recording replay"
 press_expect run-record recording
-steps_to 120; press_expect add-directional control
+steps_to 120; reveal controls.add-directional; press_expect add-directional control
 steps_to 396; press_expect run-stop recording
 press_expect run-replay context
 steps_to 121
