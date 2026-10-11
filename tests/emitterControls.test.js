@@ -156,4 +156,3 @@ describe('Emitter controls', () => {
     expect(locked.nodes['emitter-pick'].disabled).toBe(true);
   });
 });
-

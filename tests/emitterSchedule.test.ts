@@ -143,4 +143,3 @@ describe('setEmitterSchedule', () => {
     host.dispose();
   });
 });
-
