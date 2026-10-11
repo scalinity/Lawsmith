@@ -146,6 +146,24 @@ run_case prefs-restore-failure-reported 1 "unset QA_DEADLINE; print -r -- '$PLIS
 run_case prefs-snapshot-needs-lock 1 'unset QA_DEADLINE; snapshot_preferences' 'none prefs-snapshot-needs-lock "defaults "'
 run_case prefs-snapshot-private 1 'unset QA_DEADLINE; QA_STATE=$REPO/qa-state-inside; command sleep 30 & LOCK_HOLDER=$!; snapshot_preferences' 'none prefs-snapshot-private "defaults "'
 
+# --- F10: a campaign driver lends the shared lock; the runner adopts it only if it is really held ------
+# The test shell lends: it opens the lock file on a descriptor and a helper takes the flock on that same
+# open file, which then stays locked for as long as the descriptor is open.
+LEND='exec {lfd}>>$GUI_LOCK; python3 -I -c "import fcntl,sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)" $lfd'
+HELD='python3 -I -c "import fcntl,sys
+f=open(sys.argv[1],\"a+\")
+try: fcntl.flock(f, fcntl.LOCK_EX|fcntl.LOCK_NB)
+except BlockingIOError: sys.exit(0)
+sys.exit(1)" $GUI_LOCK'
+run_case lock-adopted-nested-kept 0 "$LEND; QA_LOCK_FD=\$lfd; QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); segment one; [[ \$LOCK_HOLDER == inherited:\$lfd ]] || exit 9; segment two; require_lock 'launching Lawsmith'; gui_unlock; [[ \$LOCK_HOLDER == inherited:\$lfd ]] || exit 8; $HELD || exit 7; [[ -z \$(print \$QA_STATE/.gui-lock-*(N)) ]] || exit 6"
+run_case lock-not-the-lock-file 3 ": >> \$GUI_LOCK; exec {lfd}>>\$QA_STATE/other.lock; python3 -I -c 'import fcntl,sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)' \$lfd; QA_LOCK_FD=\$lfd; gui_lock x" 'grep -q "is not the GUI lock" $ROOT/lock-not-the-lock-file/output'
+run_case lock-nobody-holds 3 'exec {lfd}>>$GUI_LOCK; QA_LOCK_FD=$lfd; gui_lock x' 'grep -q "nobody holds the GUI lock" $ROOT/lock-nobody-holds/output'
+run_case lock-competing-holder 3 'python3 -I -c "import fcntl,sys,time; f=open(sys.argv[1],\"a+\"); fcntl.flock(f, fcntl.LOCK_EX); time.sleep(20)" $GUI_LOCK & holder=$!; command sleep 0.5; exec {lfd}>>$GUI_LOCK; QA_LOCK_FD=$lfd; gui_lock x; kill $holder' 'grep -q "held, but not through descriptor" $ROOT/lock-competing-holder/output'
+run_case lock-closed-descriptor 3 'QA_LOCK_FD=57; gui_lock x' 'grep -q "descriptor 57 is not open" $ROOT/lock-closed-descriptor/output'
+run_case lock-adoption-failure-acts-on-nothing 3 "exec {lfd}>>\$GUI_LOCK; QA_LOCK_FD=\$lfd; QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); LAST_INPUT=\$EPOCHREALTIME; segment x; seed_folder \$QA_STATE/scenes" 'none lock-adoption-failure-acts-on-nothing seed-preferences && none lock-adoption-failure-acts-on-nothing "defaults "'
+run_case set-window-guarded 5 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHREALTIME + 3.5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; set_window 40 45 1280 800' 'none set-window-guarded "set size"'
+run_case set-window-enough-time 0 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS + 600 )); LAST_INPUT=$EPOCHREALTIME; window_origin() { : }; set_window 40 45 1280 800' 'has set-window-enough-time "set size"'
+
 # --- F5 (reopened): only the exact not-found answer is absence; any other read failure stops the run ----
 run_case prefs-existing-unexpected-read-failure 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; READ_FAILS='Error: could not read domain (cfprefsd unavailable)'; trap 'restore_preferences' EXIT; seed_folder \$QA_STATE/scenes" 'none prefs-existing-unexpected-read-failure seed-preferences && none prefs-existing-unexpected-read-failure "defaults delete" && none prefs-existing-unexpected-read-failure "defaults export" && same_plist $ROOT/prefs-existing-unexpected-read-failure/domain.plist && grep -q "\"preferences\":\"unknown\"" $ROOT/prefs-existing-unexpected-read-failure/out/cleanup.jsonl'
 run_case prefs-existing-read-crash 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; READ_FAILS='zsh: segmentation fault'; READ_CODE=139; seed_folder \$QA_STATE/scenes" 'none prefs-existing-read-crash seed-preferences && none prefs-existing-read-crash "defaults delete" && same_plist $ROOT/prefs-existing-read-crash/domain.plist'

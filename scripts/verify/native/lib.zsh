@@ -36,9 +36,52 @@ WIN_Y=0
 GUI_LOCK=${GUI_LOCK:-/private/tmp/mac-gui-automation.lock}
 LOCK_HOLDER=
 lock_count=0
+#
+# A campaign driver can hold that same lock across a whole scenario, so its own snapshot and restoration
+# of the display and preferences happen under it too, and lend it to this runner as descriptor
+# QA_LOCK_FD. The runner then adopts it instead of taking a second lock (which would wait on its own
+# parent), and never releases it. Adoption checks the actual lock, not the variable: the descriptor
+# must be open on the GUI lock file, a fresh open must find the lock held, and the descriptor must be
+# the one holding it. Anything else stops the run (exit 3) rather than proceeding unlocked.
+
+# adopt_lock: adopts the lent lock or fails.
+adopt_lock() {
+  local why
+  why=$(python3 -I -c '
+import fcntl, os, sys
+fd, path = int(sys.argv[1]), sys.argv[2]
+try:
+    lent = os.fstat(fd)
+except OSError:
+    sys.exit(f"descriptor {fd} is not open")
+try:
+    lock = os.stat(path)
+except OSError:
+    sys.exit(f"{path} does not exist")
+if (lent.st_dev, lent.st_ino) != (lock.st_dev, lock.st_ino):
+    sys.exit(f"descriptor {fd} is not the GUI lock")
+with open(path, "a+") as probe:
+    try:
+        fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        pass
+    else:
+        fcntl.flock(probe, fcntl.LOCK_UN)
+        sys.exit("nobody holds the GUI lock")
+try:
+    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except BlockingIOError:
+    sys.exit(f"the GUI lock is held, but not through descriptor {fd}")
+' $QA_LOCK_FD $GUI_LOCK 2>&1) || fail "cannot adopt the lent GUI lock: $why" 3
+  LOCK_HOLDER=inherited:$QA_LOCK_FD
+}
 
 gui_lock() {
   gui_unlock
+  if [[ -n $QA_LOCK_FD ]]; then
+    adopt_lock
+    return
+  fi
   local flag=$QA_STATE/.gui-lock-$$-$(( ++lock_count ))
   python3 -I -c '
 import fcntl, json, os, sys, time
@@ -62,6 +105,8 @@ while os.getppid() == parent:
 }
 
 gui_unlock() {
+  # A lent lock belongs to the driver, which releases it after its own restoration.
+  [[ $LOCK_HOLDER == inherited:* ]] && return 0
   [[ -n $LOCK_HOLDER ]] || return 0
   kill $LOCK_HOLDER 2>/dev/null
   wait $LOCK_HOLDER 2>/dev/null
@@ -338,6 +383,19 @@ import json, sys
 print([w for w in json.load(sys.stdin) if w["layer"] == 0 and w["name"] == "Lawsmith"][0]["id"])')
   screencapture -x -o -l $id $QA_OUT/$1.png
   say "captured $1.png"
+}
+
+# set_window X Y WIDTH HEIGHT: moves and sizes the app's window, under the lock, with the deadline and
+# outside input checked on entry and again after the front check, immediately before the change.
+set_window() {
+  require_lock "resizing the window"
+  idle_gate 3; guard_front; idle_gate 3
+  osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
+    set position of window \"Lawsmith\" to {$1, $2}
+    set size of window \"Lawsmith\" to {$3, $4}
+  end tell" >/dev/null
+  sleep 1.2
+  window_origin
 }
 
 # --- Native dialogs and alerts, through Accessibility on the app's own sheets --------------------
