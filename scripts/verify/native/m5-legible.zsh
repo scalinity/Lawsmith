@@ -10,16 +10,11 @@ mkdir -p $QA_STATE/scenes
 cp ${NATIVE:h:h:h}/examples/storm-bottle.lawsmith.json $QA_STATE/scenes/
 
 screen_size() { osascript -l JavaScript $NATIVE/display.js get }
-display_mode() { say "display → $1×$2: $(osascript -l JavaScript $NATIVE/display.js set $1 $2 2>&1)"; sleep 3 }
-window_size() {
-  osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
-    set position of window \"Lawsmith\" to {$1, $2}
-    set size of window \"Lawsmith\" to {$3, $4}
-  end tell" >/dev/null
-  sleep 1.2
-  window_origin
-}
-restore_display() { [[ $(screen_size) == $LARGER_TEXT ]] || display_mode ${=${${LARGER_TEXT%@*}/x/ }}; cliclick m:584,300; touched; say "display restored to $(screen_size)" }
+# Display and window changes go through lib.zsh's guarded, verified helpers (the current refresh rate is
+# kept); restoring sends no input.
+display_mode() { display_set $1 $2 ${$(display_get)##*@} }
+window_size() { set_window $1 $2 $3 $4 }
+restore_display() { restore_display_mode || fail "the display was not restored"; say "display restored to $(screen_size)" }
 box() {
   logq last $APP_LOG layout | python3 -I -c "
 import json, sys
@@ -50,7 +45,7 @@ reveal() {
 seed_folder $QA_STATE/scenes
 segment "1280×800 with the Storm Bottle's ingredient editor open, under More Space"
 LARGER_TEXT=$(screen_size)
-trap 'running && kill $APP_PID; restore_display; gui_unlock' EXIT
+trap 'running && kill $APP_PID; restore_display_mode; restore_preferences; gui_unlock' EXIT
 display_mode 1728 1117
 [[ $(screen_size) != $LARGER_TEXT ]] || fail "the display did not change mode"
 launch legible5 $QA_STATE/recovery-legible5-$EPOCHSECONDS
@@ -78,7 +73,9 @@ keys t:b
 wait_log explain-select $(( n + 1 ))
 keys t:.
 layout
-expect layout "the bottle, its support and the explained body are clear of the panels, tools, transport and switches; nothing scrolls sideways; the opened editor's top is in view; the transport and history are in view and Save is in the panel's width" "e['viewport']==[1280, 800] and e['selected']=='storm-bottle' and e['ingredients']['focus']==[2] and e['explained']['point'] is not None and all(not (a[0] < e['support'][2] and a[0] + a[2] > e['support'][0] and a[1] < e['support'][3] and a[1] + a[3] > e['support'][1]) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and all(not (a[0] - 6 <= e['explained']['point'][0] <= a[0] + a[2] + 6 and a[1] - 6 <= e['explained']['point'][1] <= a[1] + a[3] + 6) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'explain')]) and all(s['scrollWidth'] <= s['clientWidth'] for s in e['scroll'].values()) and e['controls']['panel'][1] <= e['ingredients']['detail'][1] <= e['controls']['panel'][1] + e['controls']['panel'][3] - 40 and all(0 <= e['controls'][k][0] and e['controls'][k][0] + e['controls'][k][2] <= 1280 and 0 <= e['controls'][k][1] and e['controls'][k][1] + e['controls'][k][3] <= 800 for k in ('play', 'reset', 'undo', 'redo')) and 0 <= e['controls']['file-save'][0] and e['controls']['file-save'][0] + e['controls']['file-save'][2] <= 296"
+# M8 moved the law inspector (and with it the ingredient editor) and the explained body into the right
+# context column: the bottle and the body must clear that column, and the editor's top must be in its view.
+expect layout "the bottle, its support and the explained body are clear of the panels, tools, transport, switches and the context column; nothing scrolls sideways; the opened editor's top is in view; the transport and history are in view and Save is in the panel's width" "e['viewport']==[1280, 800] and e['selected']=='storm-bottle' and e['ingredients']['focus']==[2] and e['explained']['point'] is not None and all(not (a[0] < e['support'][2] and a[0] + a[2] > e['support'][0] and a[1] < e['support'][3] and a[1] + a[3] > e['support'][1]) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'context-column')]) and all(not (a[0] - 6 <= e['explained']['point'][0] <= a[0] + a[2] + 6 and a[1] - 6 <= e['explained']['point'][1] <= a[1] + a[3] + 6) for a in [e['controls'][k] for k in ('panel', 'tools', 'transport', 'overlays', 'context-column')]) and all(s['scrollWidth'] <= s['clientWidth'] for s in e['scroll'].values()) and e['controls']['context-column'][1] <= e['ingredients']['detail'][1] <= e['controls']['context-column'][1] + e['controls']['context-column'][3] - 40 and all(0 <= e['controls'][k][0] and e['controls'][k][0] + e['controls'][k][2] <= 1280 and 0 <= e['controls'][k][1] and e['controls'][k][1] + e['controls'][k][3] <= 800 for k in ('play', 'reset', 'undo', 'redo')) and 0 <= e['controls']['file-save'][0] and e['controls']['file-save'][0] + e['controls']['file-save'][2] <= 296"
 shot m5-1280x800-storm
 say "rects: $(logq last $APP_LOG layout | python3 -I -c 'import json,sys; e=json.load(sys.stdin); print({k: e["controls"][k] for k in ("panel","explain","tools","transport","overlays")}, "support", [round(v) for v in e["support"]], "body", [round(v) for v in e["explained"]["point"]], "detail", e["ingredients"]["detail"])')"
 activate

@@ -189,7 +189,7 @@ press_expect arrows-selected visualization
 press_expect play sim-control
 sleep 2.5
 n=$(count lifecycle)
-idle_gate; guard_front
+idle_gate 2; guard_front; idle_gate 2
 osascript -e "tell application \"System Events\" to set visible of (first process whose unix id is $APP_PID) to false" >/dev/null
 touched
 wait_log lifecycle $(( n + 1 )) 5

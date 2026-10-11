@@ -171,6 +171,15 @@ run_case prefs-not-found-for-another-domain 1 "unset QA_DEADLINE; READ_FAILS=\"E
 run_case prefs-confirmed-absent-seeds 0 'unset QA_DEADLINE; seed_folder $QA_STATE/scenes; grep -q "\"original\":\"absent\"" $QA_OUT/cleanup.jsonl' 'has prefs-confirmed-absent-seeds seed-preferences && none prefs-confirmed-absent-seeds "defaults export"'
 run_case prefs-cleanup-unknown-read-is-failure 1 "unset QA_DEADLINE; seed_folder \$QA_STATE/scenes; print -r -- '$QA_WRITES' > \$DOMAIN_FILE; READ_FAILS='Error: could not read domain'; READ_FAILS_AFTER=1; restore_preferences" 'grep -q "\"preferences\":\"failed\"" $ROOT/prefs-cleanup-unknown-read-is-failure/out/cleanup.jsonl && none prefs-cleanup-unknown-read-is-failure "\"preferences\":\"restored\""'
 
+# --- Earlier campaign runners: their rewritten helpers, run against the stubs ----------------------------
+LEGIBLE='eval "$(sed -n "/^screen_size()/p;/^display_mode()/p;/^window_size()/p;/^restore_display()/p" $HERE/m5-legible.zsh)"'
+run_case legible-display-verified-and-restored 0 "$LEGIBLE; QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); command sleep 30 & LOCK_HOLDER=\$!; LAST_INPUT=\$EPOCHREALTIME; display_mode 1728 1117; [[ \$(<\$DISPLAY_FILE) == 1728x1117@120 ]] || exit 9; restore_display; [[ \$(<\$DISPLAY_FILE) == 1168x755@120 ]]" 'none legible-display-verified-and-restored cliclick'
+run_case legible-display-needs-lock 3 "$LEGIBLE; unset QA_DEADLINE; display_mode 1728 1117" 'none legible-display-needs-lock display-set'
+run_case legible-failed-mode-refused 1 "$LEGIBLE; command sleep 30 & LOCK_HOLDER=\$!; LAST_INPUT=\$EPOCHREALTIME; print -r -- 'no 1728x1117 HiDPI mode at 120 Hz' > \$SET_REPLY_FILE; display_mode 1728 1117"
+R1='eval "$(sed -n "/^cleanup() {/,/^}/p" $HERE/m7-r1-panel.zsh)"'
+run_case r1-cleanup-keeps-absent-absent 0 "$R1; unset QA_DEADLINE; seed_folder \$QA_STATE/scenes; print -r -- '<?xml version=\"1.0\"?><plist version=\"1.0\"><dict/></plist>' > \$DOMAIN_FILE; running() { false }; cleanup; [[ ! -e \$DOMAIN_FILE ]]" 'none r1-cleanup-keeps-absent-absent "defaults import"'
+run_case r1-cleanup-restores-existing 0 "$R1; unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; seed_folder \$QA_STATE/scenes; print -r -- '$QA_WRITES' > \$DOMAIN_FILE; running() { false }; cleanup" 'same_plist $ROOT/r1-cleanup-restores-existing/domain.plist'
+
 # --- F6: a display change is its exact token and readback; only a change QA made is restored ---------
 LOCKED='command sleep 30 & LOCK_HOLDER=$!; LAST_INPUT=$EPOCHREALTIME'
 run_case display-set-and-restore 0 "QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); $LOCKED; display_set 1728 1117 60 && [[ \$(<\$DISPLAY_FILE) == 1728x1117@60 ]] && restore_display_mode && [[ \$(<\$DISPLAY_FILE) == 1168x755@120 ]] && grep -q '\"display\":\"restored\"' \$QA_OUT/cleanup.jsonl"

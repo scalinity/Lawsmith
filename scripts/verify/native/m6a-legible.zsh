@@ -8,16 +8,11 @@ mkdir -p $QA_STATE/scenes
 cp ${NATIVE:h}/scenes/m6a-lab.lawsmith.json $QA_STATE/scenes/
 
 screen_size() { osascript -l JavaScript $NATIVE/display.js get }
-display_mode() { say "display → $1×$2: $(osascript -l JavaScript $NATIVE/display.js set $1 $2 2>&1)"; sleep 3 }
-window_size() {
-  osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
-    set position of window \"Lawsmith\" to {$1, $2}
-    set size of window \"Lawsmith\" to {$3, $4}
-  end tell" >/dev/null
-  sleep 1.2
-  window_origin
-}
-restore_display() { [[ $(screen_size) == $LARGER_TEXT ]] || display_mode ${=${${LARGER_TEXT%@*}/x/ }}; cliclick m:584,300; touched; say "display restored to $(screen_size)" }
+# Display and window changes go through lib.zsh's guarded, verified helpers (the current refresh rate is
+# kept); restoring sends no input.
+display_mode() { display_set $1 $2 ${$(display_get)##*@} }
+window_size() { set_window $1 $2 $3 $4 }
+restore_display() { restore_display_mode || fail "the display was not restored"; say "display restored to $(screen_size)" }
 pause() { [[ $(field sim-control action) == '"play"' ]] && press_expect play sim-control; sleep 0.3 }
 select_law() {
   layout
@@ -46,7 +41,7 @@ clear_of_everything() {
 seed_folder $QA_STATE/scenes
 segment "the recording controls at 1280×800 and at the minimum window"
 LARGER_TEXT=$(screen_size)
-trap 'running && kill $APP_PID; restore_display; gui_unlock' EXIT
+trap 'running && kill $APP_PID; restore_display_mode; restore_preferences; gui_unlock' EXIT
 display_mode 1728 1117
 [[ $(screen_size) != $LARGER_TEXT ]] || fail "the display did not change mode"
 launch m6a-legible $QA_STATE/recovery-m6a-legible-$EPOCHSECONDS

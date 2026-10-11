@@ -3,29 +3,20 @@
 source ${0:A:h}/lib.zsh
 mkdir -p $QA_STATE/scenes
 cp $REPO/examples/two-futures.lawsmith.json $QA_STATE/scenes/
-ORIGINAL_MODE=$(osascript -l JavaScript $NATIVE/display.js get)
-HAD_PREFS=false
-defaults export local.lawsmith $QA_STATE/preferences-before.plist >/dev/null 2>&1 && HAD_PREFS=true
+# The display and preferences change through lib.zsh's guarded helpers: the original display mode and
+# preference domain are read under the lock (only an exact not-found answer counts as no preferences)
+# and restored and verified here.
 cleanup() {
   running && kill $APP_PID 2>/dev/null
   sleep 0.5
-  local dimensions=${ORIGINAL_MODE%@*} hz=${ORIGINAL_MODE#*@}
-  osascript -l JavaScript $NATIVE/display.js set ${=${dimensions/x/ }} $hz >/dev/null
-  defaults delete local.lawsmith >/dev/null 2>&1 || true
-  if $HAD_PREFS; then defaults import local.lawsmith $QA_STATE/preferences-before.plist >/dev/null; fi
-  defaults export local.lawsmith $QA_STATE/preferences-after.plist >/dev/null 2>&1 || true
+  restore_display_mode
+  restore_preferences
   gui_unlock
 }
 trap cleanup EXIT
 # This bounded run aborts a focus change rather than reactivating over an unrelated app.
 guard_front() { [[ $(front_pid) == $APP_PID ]] || fail "unrelated frontmost app; input aborted" 3; }
-window_size() {
-  osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
-    set position of window \"Lawsmith\" to {40, 45}
-    set size of window \"Lawsmith\" to {1280, 800}
-  end tell" >/dev/null
-  sleep 1; window_origin
-}
+window_size() { set_window 40 45 1280 800 }
 open_fixture() {
   press_panel file-open; open_panel two-futures.lawsmith.json
   [[ $(depth) == 1 ]] && alert_for scene "Don't Save"
@@ -98,7 +89,7 @@ close_comparison() {
 
 segment "M7 R1 targeted panel qualification"
 seed_folder $QA_STATE/scenes
-osascript -l JavaScript $NATIVE/display.js set 1728 1117 60 >/dev/null
+display_set 1728 1117 60
 launch m7-r1-panel $QA_STATE/recovery
 activate; window_size; open_fixture
 expect backend "packaged WebGPU" "e['backend']=='WebGPU' and e['mode']=='packaged'"

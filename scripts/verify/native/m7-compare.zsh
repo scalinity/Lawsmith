@@ -5,20 +5,10 @@ mkdir -p $QA_STATE/scenes
 cp $REPO/examples/two-futures.lawsmith.json $QA_STATE/scenes/
 cp ${NATIVE:h}/scenes/p3-futures.lawsmith.json $QA_STATE/scenes/
 RECORDER=
-ORIGINAL_MODE=$(osascript -l JavaScript $NATIVE/display.js get)
-restore_mode() {
-  local dimensions=${ORIGINAL_MODE%@*} hz=${ORIGINAL_MODE#*@}
-  osascript -l JavaScript $NATIVE/display.js set ${=${dimensions/x/ }} $hz >/dev/null
-}
-trap '[[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; running && kill $APP_PID; restore_mode; gui_unlock' EXIT
-window_size() {
-  osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
-    set position of window \"Lawsmith\" to {40, 45}
-    set size of window \"Lawsmith\" to {$1, $2}
-  end tell" >/dev/null
-  sleep 1
-  window_origin
-}
+# The display, window and preferences change through lib.zsh's guarded, verified helpers, which read
+# the original state under the lock and restore it on exit.
+trap '[[ -n $RECORDER ]] && kill $RECORDER 2>/dev/null; running && kill $APP_PID; restore_display_mode; restore_preferences; gui_unlock' EXIT
+window_size() { set_window 40 45 $1 $2 }
 open_fixture() {
   local n=$(count document)
   press_panel file-open
@@ -54,7 +44,7 @@ reveal_strength() {
 }
 seed_folder $QA_STATE/scenes
 segment "M7 two futures and packaged authority fixtures"
-say "More Space, 60 Hz: $(osascript -l JavaScript $NATIVE/display.js set 1728 1117 60)"
+display_set 1728 1117 60
 sleep 2
 launch m7-compare $QA_STATE/recovery-m7-compare-$EPOCHSECONDS
 expect qualification "qualified packaged runtime identity" "e['mode']=='packaged' and e['qualified'] is True"
@@ -141,5 +131,5 @@ shot m7-05-closed
 keys kd:cmd t:q ku:cmd
 [[ $(depth) == 1 ]] && alert_for scene "Don't Save"
 wait_exit
-restore_mode
+restore_display_mode || fail "the display was not restored"
 say "m7-compare complete"
