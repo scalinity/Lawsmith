@@ -22,10 +22,14 @@ class HTMLElement {
     if (parent) parent.children.push(this);
   }
   get isConnected() { return true; }
-  get offsetParent() { return this.shown ? {} : null; }
+  // Not rendered when hidden itself or inside a folded cluster: the stand-in models CSS display: none.
+  get offsetParent() {
+    for (let n = this; n; n = n.parent) if (!n.shown || n.dataset.folded === 'true') return null;
+    return {};
+  }
   contains(n) { for (let p = n; p; p = p.parent) if (p === this) return true; return false; }
   setAttribute(k, v) { this.attrs[k] = v; }
-  addEventListener() {}
+  addEventListener(type, fn) { (this.listeners ??= {})[type] = fn; }
   focus() { this.doc.activeElement = this; }
   // Moving a node detaches it first: focus inside it falls to the body.
   move(...nodes) { for (const n of nodes) if (n.contains(this.doc.activeElement)) this.doc.activeElement = this.doc.body; }
@@ -53,7 +57,7 @@ function page(innerWidth, innerHeight, uiScale) {
   const window = { innerWidth, innerHeight, addEventListener: (type, fn) => { if (type === 'resize') onResize.push(fn); } };
   const context = createContext({ $: (id) => nodes[id], window, document: doc, uiScale, report: () => {}, HTMLElement, HTMLInputElement, HTMLTextAreaElement });
   runInContext(stripTypeScriptTypes(block), context);
-  return { doc, nodes, strength, record, trails, window, context, resize: () => onResize.forEach((f) => f()) };
+  return { doc, nodes, strength, record, trails, window, context, resize: () => onResize.forEach((f) => f()), clickDraw: () => nodes['draw-toggle'].listeners.click() };
 }
 
 describe('focus survives a layout move', () => {
@@ -80,6 +84,7 @@ describe('focus survives a layout move', () => {
 
   it('a focused drawing option keeps focus when the compact arrangement moves the cluster', () => {
     const p = page(1600, 900, 2);
+    p.clickDraw(); // open: drawing options start folded
     p.trails.focus();
     p.window.innerHeight = 600;
     p.resize();
@@ -102,5 +107,28 @@ describe('focus survives a layout move', () => {
     q.context.uiScale = 2;
     q.resize();
     expect(q.doc.activeElement).toBe(q.doc.body);
+  });
+
+  it('folding the drawing options while one of them has focus moves focus to the Draw options button', () => {
+    const p = page(1600, 900, 1);
+    expect(p.nodes.overlays.dataset.folded).toBe('true');
+    expect(p.trails.offsetParent).toBe(null);
+    p.clickDraw();
+    p.trails.focus();
+    p.clickDraw();
+    expect(p.nodes.overlays.dataset.folded).toBe('true');
+    expect(p.doc.activeElement).toBe(p.nodes['draw-toggle']);
+  });
+
+  it('a layout change never folds or opens the drawing options, so it never hides a focused one', () => {
+    const p = page(2400, 900, 1);
+    p.clickDraw();
+    p.trails.focus();
+    p.window.innerWidth = 1280;
+    p.context.uiScale = 2;
+    p.resize();
+    expect(p.doc.documentElement.dataset.focus).toBe('true');
+    expect(p.nodes.overlays.dataset.folded).toBe('false');
+    expect(p.doc.activeElement).toBe(p.trails);
   });
 });

@@ -18,20 +18,23 @@ function page(innerWidth, uiScale, compact = false) {
     setAttribute(k, v) { this.attrs[k] = v; },
     after: (...n) => moves.push(['after', id, n.map((x) => x.id)]),
     append: (...n) => moves.push(['append', id, n.map((x) => x.id)]),
-    addEventListener() {},
+    listeners: {},
+    addEventListener(type, fn) { this.listeners[type] = fn; },
+    contains: () => false,
+    focus() {},
   });
   const ids = ['panel', 'panel-nav', 'laws', 'details', 'explain', 'run', 'comparison', 'draw-toggle', 'overlays', 'context-column'];
   const nodes = Object.fromEntries(ids.map((id) => [id, node(id)]));
   nodes['context-column'].children = ['sim-error', 'conditions', 'run', 'comparison', 'details', 'explain'].map((id) => nodes[id] ?? { id });
   let onResize;
   const window = { innerWidth, addEventListener: (type, fn) => { if (type === 'resize') onResize = fn; } };
-  const document = { documentElement: { dataset: compact ? { compact: 'true' } : {} } };
+  const document = { activeElement: null, documentElement: { dataset: compact ? { compact: 'true' } : {} } };
   const context = createContext({
     $: (id) => nodes[id], window, document, uiScale, report: () => {}, keepFocus: (move) => move(),
     overlaysCluster: nodes.overlays, contextColumn: nodes['context-column'],
   });
   runInContext(stripTypeScriptTypes(source.slice(start, end)), context);
-  return { moves, nodes, document, context, window, resize: () => onResize() };
+  return { moves, nodes, document, context, window, resize: () => onResize(), clickDraw: () => nodes['draw-toggle'].listeners.click() };
 }
 
 describe('the focus layout (applyFocus)', () => {
@@ -42,7 +45,9 @@ describe('the focus layout (applyFocus)', () => {
     const p = page(width, scale, compact);
     expect(p.document.documentElement.dataset.focus).toBe(String(focus));
     expect(p.nodes['panel-nav'].hidden).toBe(!focus);
-    expect(p.nodes.overlays.dataset.folded).toBe(String(focus));
+    // Drawing options start folded at every size; the layout never decides it.
+    expect(p.nodes.overlays.dataset.folded).toBe('true');
+    expect(p.nodes['draw-toggle'].attrs['aria-expanded']).toBe('false');
     if (focus) expect(p.moves).toEqual([['after', 'laws', ['details', 'explain']], ['append', 'panel', ['run', 'comparison']]]);
     else expect(p.moves).toEqual([['append', 'context-column', ['sim-error', 'conditions', 'run', 'comparison', 'details', 'explain']]]);
   });
@@ -54,7 +59,24 @@ describe('the focus layout (applyFocus)', () => {
     p.resize();
     expect(p.moves.slice(2)).toEqual([['append', 'context-column', ['sim-error', 'conditions', 'run', 'comparison', 'details', 'explain']]]);
     expect(p.document.documentElement.dataset.focus).toBe('false');
+    expect(p.nodes.overlays.dataset.folded).toBe('true');
+  });
+
+  it("keeps the person's open or folded choice across scale and layout changes", () => {
+    const p = page(2400, 1);
+    p.clickDraw();
     expect(p.nodes.overlays.dataset.folded).toBe('false');
-    expect(p.nodes['draw-toggle'].attrs['aria-expanded']).toBe('true');
+    p.window.innerWidth = 1280;
+    p.context.uiScale = 2;
+    p.resize();
+    expect(p.document.documentElement.dataset.focus).toBe('true');
+    expect(p.nodes.overlays.dataset.folded).toBe('false');
+    p.clickDraw();
+    p.window.innerWidth = 2400;
+    p.context.uiScale = 1;
+    p.resize();
+    expect(p.document.documentElement.dataset.focus).toBe('false');
+    expect(p.nodes.overlays.dataset.folded).toBe('true');
+    expect(p.nodes['draw-toggle'].attrs['aria-expanded']).toBe('false');
   });
 });

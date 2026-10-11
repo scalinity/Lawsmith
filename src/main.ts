@@ -1109,8 +1109,7 @@ async function start() {
   // the compact arrangement, two opposing columns leave no viewport. The selected law's details, the
   // explained body, the recording and the comparison then join the Scene panel's single scrolling column,
   // in reading order, with a bar that jumps between sections; the right column keeps only the error and
-  // the conditions. The same nodes move, so their listeners, focus and refresh are untouched. Drawing
-  // options fold in focus and open when it ends; the person can toggle them either way.
+  // the conditions. The same nodes move, so their listeners, focus and refresh are untouched.
   const panelEl = $('panel');
   const panelNav = $('panel-nav');
   const lawsSection = $('laws');
@@ -1119,11 +1118,17 @@ async function start() {
   const runCard = $('run');
   const comparisonCard = $('comparison');
   const contextHome = [...contextColumn.children];
+  // Drawing options (arrows, probes, trails) start folded at every size, for an uncluttered view; only the
+  // person opens or folds them, and their choice holds across scale and resize. Folding while a drawing
+  // control has keyboard focus hands focus to the Draw options button, which stays shown (M8 review R-FB2).
   const drawToggle = $<HTMLButtonElement>('draw-toggle');
   const setDrawFolded = (folded: boolean) => {
+    const hidesFocus = folded && overlaysCluster.contains(document.activeElement);
     overlaysCluster.dataset.folded = String(folded);
     drawToggle.setAttribute('aria-expanded', String(!folded));
+    if (hidesFocus) drawToggle.focus({ preventScroll: true });
   };
+  setDrawFolded(true);
   drawToggle.addEventListener('click', () => {
     setDrawFolded(overlaysCluster.dataset.folded !== 'true');
     report('control', { drawOptions: overlaysCluster.dataset.folded === 'true' ? 'folded' : 'open' });
@@ -1142,7 +1147,6 @@ async function start() {
         if (document.documentElement.dataset.compact === 'true') contextColumn.append(overlaysCluster);
       }
     });
-    setDrawFolded(focus);
     report('control', { layout: focus ? 'focus' : 'wide' });
   }
   applyFocus();
