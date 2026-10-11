@@ -1,0 +1,160 @@
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}

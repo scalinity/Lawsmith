@@ -1,0 +1,25 @@
+## test_press_reach.py on the R20 harness
+test_press_acts_only_through_the_guarded_helpers_with_fresh_geometry (__main__.PressInLib.test_press_acts_only_through_the_guarded_helpers_with_fresh_geometry) ... ok
+test_press_expect_still_resends_at_most_once (__main__.PressInLib.test_press_expect_still_resends_at_most_once) ... ok
+test_controls_outside_the_scrolling_regions_are_clicked_as_before (__main__.Reach.test_controls_outside_the_scrolling_regions_are_clicked_as_before) ... ok
+test_once_inside_the_column_it_is_clicked_at_its_fresh_center (__main__.Reach.test_once_inside_the_column_it_is_clicked_at_its_fresh_center) ... ok
+test_panel_controls_follow_the_panel (__main__.Reach.test_panel_controls_follow_the_panel) ... ok
+test_partly_clipped_at_either_edge_still_scrolls (__main__.Reach.test_partly_clipped_at_either_edge_still_scrolls) ... ok
+test_r20_toggle_above_the_column_is_scrolled_into_view_not_clicked (__main__.Reach.test_r20_toggle_above_the_column_is_scrolled_into_view_not_clicked) ... ok
+test_the_visible_box_is_clipped_to_the_window (__main__.Reach.test_the_visible_box_is_clipped_to_the_window) ... ok
+test_unreachable_is_reported_not_clicked (__main__.Reach.test_unreachable_is_reported_not_clicked) ... ok
+Ran 9 tests in 0.000s
+OK
+
+## the same tests on the previous lib.zsh and logq.py (3900920)
+test_press_acts_only_through_the_guarded_helpers_with_fresh_geometry (__main__.PressInLib.test_press_acts_only_through_the_guarded_helpers_with_fresh_geometry) ... FAIL
+test_press_expect_still_resends_at_most_once (__main__.PressInLib.test_press_expect_still_resends_at_most_once) ... ok
+test_controls_outside_the_scrolling_regions_are_clicked_as_before (__main__.Reach.test_controls_outside_the_scrolling_regions_are_clicked_as_before) ... ERROR
+test_once_inside_the_column_it_is_clicked_at_its_fresh_center (__main__.Reach.test_once_inside_the_column_it_is_clicked_at_its_fresh_center) ... ERROR
+test_panel_controls_follow_the_panel (__main__.Reach.test_panel_controls_follow_the_panel) ... ERROR
+test_partly_clipped_at_either_edge_still_scrolls (__main__.Reach.test_partly_clipped_at_either_edge_still_scrolls) ... ERROR
+test_r20_toggle_above_the_column_is_scrolled_into_view_not_clicked (__main__.Reach.test_r20_toggle_above_the_column_is_scrolled_into_view_not_clicked) ... ERROR
+test_the_visible_box_is_clipped_to_the_window (__main__.Reach.test_the_visible_box_is_clipped_to_the_window) ... ERROR
+test_unreachable_is_reported_not_clicked (__main__.Reach.test_unreachable_is_reported_not_clicked) ... ERROR
+Ran 9 tests in 0.001s
+FAILED (failures=1, errors=7)
