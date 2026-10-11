@@ -103,12 +103,14 @@ for pct in 100 200; do
   keys kd:cmd t:z ku:cmd; keys kd:cmd t:z ku:cmd; keys kd:cmd t:z ku:cmd
 done
 
-# The collapsed panel: the scene card stays, the laws, inspector and settings go.
+# The collapsed panel: the scene card stays and the Laws list goes. In the wide layout the whole panel goes.
+# In the focus layout (large Interface Scale: the details and recording share the panel's column) the Laws
+# and Scene sections go, while the details and the recording stay reachable through their own toggles.
 for pct in 100 200; do
   set_scale $pct
   press_expect panel-toggle control
   layout
-  expect layout "panel collapsed" "e['panelCollapsed'] is True and e['controls']['panel'] is None and e['controls']['arrows-toggle'] is None and all(r['select'] is None for r in e['laws']) and e['controls']['file-open'] is not None"
+  expect layout "panel collapsed" "e['panelCollapsed'] is True and e['controls']['arrows-toggle'] is None and all(r['select'] is None for r in e['laws']) and e['controls']['file-open'] is not None and ((e.get('focusLayout') is not True and e['controls']['panel'] is None) or (e.get('focusLayout') is True and e['controls']['panel'] is not None and e['controls']['motion'] is None and e['controls']['display'] is None and e['controls']['section-laws'] is None and e['controls']['details-toggle'] is not None and e['controls']['run-toggle'] is not None))"
   m8q surface
   shot m8-collapsed-$pct
   press_expect panel-toggle control

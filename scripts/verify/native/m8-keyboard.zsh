@@ -42,6 +42,14 @@ tab_to "f['label'].startswith('Sideways') and f['tag']=='button' and not f['id']
 key_code 49
 layout; expect layout "law selected from the list" "e['selected']=='sideways'"
 
+# At 200% the focus layout puts every section in one column; its section bar jumps to the law's details and
+# moves keyboard focus to their heading, so the walk continues inside them (M8 review R-FB3).
+if [[ $(field layout focusLayout) == true ]]; then
+  tab_to "f['id']=='section-details'"
+  key_code 49
+  layout; expect layout "the section bar moved focus to the details" "e['focus'] is not None and e['focus']['id']=='details-title'"
+fi
+
 # Position, rotation, extent and strength through their labeled fields.
 tab_to "f['label']=='Position x'"; enter 1.5
 expect layout "position x from the keyboard" "e['appliedLaws'][0]['pose']['position'][0]==1.5"
