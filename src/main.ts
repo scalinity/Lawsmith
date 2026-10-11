@@ -1524,7 +1524,7 @@ async function start() {
     listSignature = '';
     detailsSignature = '';
     clockTick = -1;
-    shownRevision = -1;
+    shownPanelSignature = '';
     previewKey = '';
     replayCheck = null;
     replayEnded = false;
@@ -2115,6 +2115,12 @@ async function start() {
       select: box(row.querySelector('.law-select')),
       visible: box(row.querySelector('.law-visible')),
       enabled: box(row.querySelector('.law-enabled')),
+      enabledState: row.querySelector('.law-enabled')!.getAttribute('aria-pressed'),
+      enabledText: row.querySelector('.law-enabled')!.textContent,
+      locked: (row.querySelector('.law-enabled') as HTMLButtonElement).disabled,
+      visibleState: row.querySelector('.law-visible')!.getAttribute('aria-pressed'),
+      color: (row as HTMLElement).style.getPropertyValue('--law-color'),
+      expression: row.querySelector('.law-meta')!.textContent,
     }));
     const inputs = Object.fromEntries([...details.querySelectorAll('input')].map((input) => [input.getAttribute('aria-label') ?? input.id, box(input)]));
     const swatches = Object.fromEntries([...colorGroup.querySelectorAll<HTMLButtonElement>('.swatch')].map((s) => [s.dataset.color, box(s)]));
@@ -2191,6 +2197,10 @@ async function start() {
       controls,
       laws,
       inputs,
+      inputValues: Object.fromEntries([...details.querySelectorAll<HTMLInputElement>('input')].map((input) => [input.getAttribute('aria-label') ?? input.id, input.value])),
+      detailTitle: $('details-title').textContent,
+      detailKind: $('law-kind').textContent,
+      appliedLaws: host.appliedFields(),
       swatches,
       ingredients,
       selected: law?.id ?? null,
@@ -2958,7 +2968,7 @@ async function start() {
   let previous = { workMs: 0, beforeMs: 0, maxStepMs: 0, steps: 0 };
   const clock = $('clock');
   let clockTick = -1;
-  let shownRevision = -1;
+  let shownPanelSignature = '';
 
   viewport.start({
     before(time) {
@@ -3004,9 +3014,11 @@ async function start() {
         ingredientPanel.refreshLive(host.tick);
       }
       // The panel follows applied changes without a per-frame rebuild, and not during a drag.
-      const panelRevision = replaying() ? host.lastAppliedSequence : editor().appliedRevision;
-      if (panelRevision !== shownRevision && !interaction.gesture) {
-        shownRevision = panelRevision;
+      // Recorded commands have no author acknowledgments in either replay mode. Include context
+      // generations and editability so equal revision numbers cannot retain another world's panel.
+      const panelSignature = JSON.stringify([host.generation, editor().generation, readOnly(), readOnly() ? host.lastAppliedSequence : editor().appliedRevision]);
+      if (panelSignature !== shownPanelSignature && !interaction.gesture) {
+        shownPanelSignature = panelSignature;
         renderPanel();
       }
       frameBeforeMs = performance.now() - beforeStart;
