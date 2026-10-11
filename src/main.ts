@@ -985,8 +985,24 @@ async function start() {
     uiScale = scale;
     document.documentElement.style.setProperty('--ui-scale', String(scale));
     scaleMenu.value = String(scale);
+    applyCompact();
     report('control', { interfaceScale: scale, source, pixelRatio: renderer.getPixelRatio(), canvas: [renderer.domElement.width, renderer.domElement.height] });
   };
+  // Compact (M8 R18): when the window is shorter than 360 interface units (900×600 at 175% and 200%), the
+  // tools take two rows, the transport alone takes the bottom right, and the drawing options join the
+  // context column, which scrolls, so every region keeps a useful height and nothing covers another.
+  const dock = $('dock');
+  const overlaysCluster = $('overlays');
+  const contextColumn = $('context-column');
+  function applyCompact() {
+    const compact = window.innerHeight < 360 * uiScale;
+    if (document.documentElement.dataset.compact === String(compact)) return;
+    document.documentElement.dataset.compact = String(compact);
+    if (compact) contextColumn.append(overlaysCluster);
+    else dock.prepend(overlaysCluster);
+  }
+  applyCompact();
+  window.addEventListener('resize', applyCompact);
   const stepInterfaceScale = (direction: -1 | 1) => {
     const at = UI_SCALES.indexOf(uiScale as (typeof UI_SCALES)[number]);
     setInterfaceScale(UI_SCALES[Math.min(UI_SCALES.length - 1, Math.max(0, at + direction))]!, 'keyboard');
@@ -2331,6 +2347,7 @@ async function start() {
       lawHandles: interaction.handlesOnScreen(),
       // The explained body's center now, and the panel's scroll extent (it must not scroll sideways).
       explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
+      compact: document.documentElement.dataset.compact === 'true',
       scroll: Object.fromEntries(['panel', 'context-column', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
       comparison: runs.comparison ? { ...runs.comparison.counts(), receipt: comparisonReceipt(), address: runs.comparison.address, tick: host.tick, cursor: host.lastAppliedSequence, replaying: runs.comparison.replaying, working: !!runs.comparison.working, status: $('comparison-status').textContent, inspect: $('comparison-inspect').textContent, box: box($('comparison')) } : null,

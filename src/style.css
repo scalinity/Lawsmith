@@ -371,6 +371,7 @@ select:focus-visible {
 
 .file-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: calc(6 * var(--u));
 }
 
@@ -658,6 +659,7 @@ select:focus-visible {
    at the view's focus point. */
 .laws-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: calc(8 * var(--u));
@@ -670,6 +672,7 @@ select:focus-visible {
 
 .law-shelf {
   display: flex;
+  flex-wrap: wrap;
   gap: calc(4 * var(--u));
 }
 
@@ -677,6 +680,10 @@ select:focus-visible {
   height: calc(24 * var(--u));
   padding: 0 calc(7 * var(--u));
   border-top: calc(2 * var(--u)) solid var(--law-color, var(--hairline));
+}
+
+.segmented.compact {
+  flex-wrap: wrap;
 }
 
 .segmented.compact button {
@@ -1571,4 +1578,16 @@ button.primary {
 body[data-context="replay"] #details-body,
 body[data-context="replay"] #law-shelf {
   opacity: 0.62;
+}
+
+/* Compact (M8 R18): a window shorter than 360 interface units. The tools wrap to two rows (the history pair
+   after the view tools), the transport alone takes the bottom right across the middle and right columns,
+   and the drawing options sit in the context column (moved there by applyCompact), which scrolls. */
+:root[data-compact="true"] #tools > .pair {
+  order: 1;
+}
+
+:root[data-compact="true"] #dock {
+  grid-column: 2 / 4;
+  max-width: none;
 }
