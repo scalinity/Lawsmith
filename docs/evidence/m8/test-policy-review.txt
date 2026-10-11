@@ -1,0 +1,12 @@
+M8 test-policy follow-up review receipt
+
+reviewer        GPT-6.1 Sol, read-only (no mutations, tests, builds or native actions)
+reviewed commit e15a5c72dd24cb68a878cebaa2a60992bb25864a
+accepted        current-milestone scope; UNRUN not-required handling; preserved M8 requirements and performance
+                durations; timing sums 3749.317 s total, 1524.505 s m8-visual, 1096.463 s older runners; deadline,
+                cancel and guard preservation without reviving old approvals; no invented observations
+findings        TP1 [P2] contradictory keyboard-retry wording                 fix b0239c4e139a019c46725716a23e23fb5d12955f
+                TP2 [P2] checklist lacked direct viewport rotation (AC2)      fix be92a8c552d8c5b3ae948df696ede5b53a35e92a
+                TP3 [P2] Play then Space on one pending seek toggles back off fix 0fdb3123a8331da3ecb51d666819c87263a65a18
+                TP4 [P2] three separate close-out permissions                 fix ed3239528ccab921e63b982c9fc57c09490a65f3
+status          author fixes, independent review pending; docs only; no application, harness, test, build or native change
