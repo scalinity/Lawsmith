@@ -143,26 +143,74 @@ class Runs(unittest.TestCase):
         self.fails('P3', lambda e: e.update(ticks=7300))
 
 
+def launch(workload='P2', runs=(1, 2, 3), start=5000.0):
+    """One launch's events as the app logs them: its identity, its first frame, then for each capture a
+    warmup, a measure 10 s later and the run event 60 s after that, on the launch's own clock t."""
+    evs = [{'kind': 'qualification', 'identity': {'build': 'x'}, 't': 100}, {'kind': 'ready', 't': 900}]
+    t = start
+    for r in runs:
+        evs += [{'kind': 'p0', 'phase': 'warmup', 'run': r, 't': t}, {'kind': 'p0', 'phase': 'measure', 'run': r, 't': t + 10010}]
+        e = capture(workload, r); e['t'] = t + 70020
+        evs.append(e)
+        t += 75000
+    return evs
+
+
 class Summary(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
         self.addCleanup(self.dir.cleanup)
 
-    def log(self, runs):
+    def log(self, evs):
         path = Path(self.dir.name) / 'app.log'
-        path.write_text(''.join('[lawsmith] ' + json.dumps(e) + '\n' for e in runs), encoding='utf-8')
+        path.write_text(''.join('[lawsmith] ' + json.dumps(e) + '\n' for e in evs), encoding='utf-8')
         return str(path)
 
-    def test_exactly_three_valid_runs(self):
-        out = str(Path(self.dir.name) / 'summary.json')
-        m8perf.main(['m8perf.py', 'summary', self.log([capture('P2') for _ in range(3)]), 'P2', out])
-        self.assertEqual(len(json.loads(Path(out).read_text(encoding='utf-8'))['runs']), 3)
-        for runs in ([capture('P2')] * 2, [capture('P2')] * 4):
-            with self.assertRaises(AssertionError):
-                m8perf.main(['m8perf.py', 'summary', self.log(runs), 'P2', out])
-        bad = copy.deepcopy(capture('P2')); bad['invalid'] = 'paused during capture'
+    def refused(self, evs, workload='P2'):
         with self.assertRaises(AssertionError):
-            m8perf.main(['m8perf.py', 'summary', self.log([capture('P2'), bad, capture('P2')]), 'P2', out])
+            m8perf.summarize(evs, workload)
+
+    def test_three_independent_captures_with_worst_runs(self):
+        evs = launch()
+        evs[-1]['raw']['stepMs'][-2] = 2.9          # run 3 has the worst step p99, still within its limit
+        evs[-1]['raw']['stepMs'][:400] = [2.5] * 400
+        evs[-1]['stepMs'] = m8perf.percentiles(evs[-1]['raw']['stepMs'])
+        evs[4]['simWallRatio'] = 0.991             # run 1 (its run event) has the lowest simulated/wall ratio
+        out = str(Path(self.dir.name) / 'summary.json')
+        m8perf.main(['m8perf.py', 'summary', self.log(evs), 'P2', out])
+        result = json.loads(Path(out).read_text(encoding='utf-8'))
+        self.assertEqual([r['run'] for r in result['runs']], [1, 2, 3])
+        worst = {w['gate']: w for w in result['worst']}
+        self.assertEqual(worst['step p99']['runs'], [3])
+        self.assertEqual(worst['simulated/wall']['runs'], [1])
+        self.assertEqual(worst['simulated/wall']['worst'], 0.991)
+        self.assertEqual(result['launch']['qualification'], {'build': 'x'})
+
+    def test_three_copies_of_one_capture_are_refused(self):
+        one = launch(runs=(1,))
+        self.refused(one[:2] + one[2:] * 3)
+
+    def test_two_or_four_captures_are_refused(self):
+        self.refused(launch(runs=(1, 2)))
+        self.refused(launch(runs=(1, 2, 3, 4)))
+
+    def test_missing_or_duplicate_lifecycle(self):
+        evs = launch(); del evs[2]; self.refused(evs)                      # run 1 lost its warmup
+        evs = launch(); del evs[3]; self.refused(evs)                      # run 1 lost its measure
+        evs = launch(); evs.insert(4, dict(evs[3])); self.refused(evs)     # run 1 measured twice
+        evs = launch(); evs[3]['t'] = evs[2]['t'] + 4000; self.refused(evs)  # warmup shorter than 10 s
+        evs = launch(); evs[4]['t'] = evs[3]['t'] + 30000; self.refused(evs)  # measured under 60 s
+        evs = launch(); evs.append({'kind': 'p0', 'phase': 'warmup', 'run': 4, 't': 400000}); self.refused(evs)  # a fourth capture started
+
+    def test_two_launches_joined_are_refused(self):
+        self.refused(launch(runs=(1,)) + launch(runs=(2, 3)))
+        evs = launch(); evs.insert(5, {'kind': 'ready', 't': 20}); self.refused(evs)
+
+    def test_capture_before_ready_is_refused(self):
+        self.refused(launch(start=500.0))
+
+    def test_an_invalid_capture_is_refused(self):
+        evs = launch(); evs[4]['invalid'] = 'paused during capture'; self.refused(evs)
 
     def test_construction(self):
         good = {'kind': 'comparison', 'action': 'baseline-committed', 'horizon': 600, 'bytes': 30_000_000, 'metrics': {'elapsedMs': 240, 'batches': 22, 'batchMs': [8, 9, 9, 10]}}

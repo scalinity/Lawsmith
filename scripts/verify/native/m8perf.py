@@ -4,8 +4,9 @@ warmup the app keeps out of the sample, then 60 s measured, with every raw sampl
 
   m8perf.py run LOG WORKLOAD          the last capture: protocol, workload and every gate, with its
                                       percentiles recomputed from the raw samples (rank floor(p·n))
-  m8perf.py summary LOG WORKLOAD OUT  exactly three independent valid captures in LOG, the log of
-                                      that workload's own launch; per-run table to OUT (JSON)
+  m8perf.py summary LOG WORKLOAD OUT  exactly three independent valid captures, each with its own
+                                      warmup→measure→run lifecycle, from the one launch in LOG; per-run
+                                      percentiles and the worst run for every gate to OUT (JSON)
   m8perf.py construction LOG          P3's separately measured default 600-tick baseline
 Percentiles are never averaged across runs. A gate with no samples fails; absence never reads as zero.
 """
@@ -69,6 +70,18 @@ def series_problems(e):
         if samples.get(count) not in (0, steps):
             problems.append(f'{count}={samples.get(count)} is neither 0 nor the {steps} steps')
     return problems
+
+
+def all_events(path):
+    out = []
+    with open(path, encoding='utf-8', errors='replace') as log:
+        for line in log:
+            if line.startswith('[lawsmith] {'):
+                try:
+                    out.append(json.loads(line[len('[lawsmith] '):]))
+                except json.JSONDecodeError:
+                    continue
+    return out
 
 
 def events(path, kind):
@@ -179,6 +192,64 @@ def check_construction(e):
     return {'elapsedMs': m.get('elapsedMs'), 'batches': m.get('batches'), 'batchMs': m.get('batchMs'), 'bytes': e.get('bytes')}
 
 
+# The gated quantities, read from each run's recomputed percentiles: (name, series, index, limit key, worse).
+GATED = [('step p95', 'stepMs', 1, 'step95', max), ('step p99', 'stepMs', 2, 'step99', max), ('CPU work p95', 'workMs', 1, 'work95', max),
+         ('interval p95', 'intervalMs', 1, 'interval95', max), ('interval p99', 'intervalMs', 2, 'interval99', max),
+         ('edit p95', 'editMs', 1, 'edit95', max)]
+
+
+def summarize(evs, workload):
+    """Three independent captures from one launch, each with its own complete lifecycle, and the worst run
+    for every gate. One launch: exactly one `qualification` and one `ready` event, so logs of two
+    launches cannot be joined. Each capture: one `p0` warmup, one `p0` measure at least 10 s later and
+    one run event at least 60 s after that, all with the same run number, in that order on the launch's
+    clock `t`, after `ready`; no other capture started. Nothing is averaged."""
+    kind = 'p3-run' if workload == 'P3' else 'p0-run'
+    problems = []
+    qualification = [e for e in evs if e.get('kind') == 'qualification']
+    ready = [e for e in evs if e.get('kind') == 'ready']
+    if len(qualification) != 1 or len(ready) != 1:
+        problems.append(f'{len(qualification)} qualification and {len(ready)} ready events: not exactly one launch')
+    runs = [e for e in evs if e.get('kind') == kind]
+    phases = [e for e in evs if e.get('kind') == 'p0']
+    ids = [e.get('run') for e in runs]
+    if len(runs) != 3:
+        problems.append(f'{len(runs)} {workload} captures, not three')
+    if len(set(ids)) != len(ids):
+        problems.append(f'capture run numbers repeat: {ids}')
+    started = [e.get('run') for e in phases if e.get('phase') == 'warmup']
+    if sorted(started) != sorted(ids):
+        problems.append(f'captures started {started}, finished {ids}')
+    t_ready = ready[0].get('t') if len(ready) == 1 else None
+    checked = []
+    for e in runs:
+        r = e.get('run')
+        warm = [p for p in phases if p.get('run') == r and p.get('phase') == 'warmup']
+        measure = [p for p in phases if p.get('run') == r and p.get('phase') == 'measure']
+        if len(warm) != 1 or len(measure) != 1:
+            problems.append(f'run {r}: {len(warm)} warmup and {len(measure)} measure events')
+            continue
+        tw, tm, te = warm[0].get('t'), measure[0].get('t'), e.get('t')
+        if not all(finite(v) for v in (tw, tm, te)) or (t_ready is not None and not tw > t_ready):
+            problems.append(f'run {r}: lifecycle not after this launch is ready ({tw}, {tm}, {te}; ready {t_ready})')
+        elif not (tm - tw >= 9990 and te - tm >= 59990):
+            problems.append(f'run {r}: warmup {tm - tw} ms, measured {te - tm} ms')
+        try:
+            checked.append(check_run(e, workload))
+        except AssertionError as error:
+            problems.append(f'run {r}: {error}')
+    assert not problems, '; '.join(problems)
+    limits = {**GATES[workload], **COMMON}
+    worst = []
+    for name, key, index, limit, _ in GATED:
+        value = max(c[key][index] for c in checked)
+        worst.append({'gate': name, 'limit': limits[limit], 'worst': value, 'runs': [c['run'] for c in checked if c[key][index] == value]})
+    ratio = min(c['simWallRatio'] for c in checked)
+    worst.append({'gate': 'simulated/wall', 'limit': limits['simWall'], 'worst': ratio, 'runs': [c['run'] for c in checked if c['simWallRatio'] == ratio]})
+    return {'workload': workload, 'launch': {'qualification': qualification[0].get('identity'), 'readyT': t_ready},
+            'percentiles': 'p50, p95, p99, max', 'runs': checked, 'worst': worst}
+
+
 def main(argv):
     command, log = argv[1], argv[2]
     if command == 'run':
@@ -186,9 +257,7 @@ def main(argv):
         result = check_run(events(log, 'p3-run' if workload == 'P3' else 'p0-run')[-1], workload)
     elif command == 'summary':
         workload, out = argv[3], argv[4]
-        runs = events(log, 'p3-run' if workload == 'P3' else 'p0-run')
-        assert len(runs) == 3, f'{len(runs)} {workload} captures, not three'
-        result = {'workload': workload, 'percentiles': 'p50, p95, p99, max', 'runs': [check_run(e, workload) for e in runs]}
+        result = summarize(all_events(log), workload)
         with open(out, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=1)
     elif command == 'construction':
