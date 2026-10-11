@@ -1,0 +1,106 @@
+# harness checks at c40d41fca4eac9072a8693cbbb4990af298af0d3 (application trees equal producer 7a296c8)
+zsh -n scripts/verify/native/lib.zsh: exit 0
+zsh -n scripts/verify/native/m2-authoring.zsh: exit 0
+zsh -n scripts/verify/native/m2-demo.zsh: exit 0
+zsh -n scripts/verify/native/m2-files.zsh: exit 0
+zsh -n scripts/verify/native/m2-guard.zsh: exit 0
+zsh -n scripts/verify/native/m2-p0.zsh: exit 0
+zsh -n scripts/verify/native/m2-stage.zsh: exit 0
+zsh -n scripts/verify/native/m3-demo.zsh: exit 0
+zsh -n scripts/verify/native/m3-handles.zsh: exit 0
+zsh -n scripts/verify/native/m3-p1.zsh: exit 0
+zsh -n scripts/verify/native/m4-explain.zsh: exit 0
+zsh -n scripts/verify/native/m4-legible.zsh: exit 0
+zsh -n scripts/verify/native/m4-perf.zsh: exit 0
+zsh -n scripts/verify/native/m4-trails.zsh: exit 0
+zsh -n scripts/verify/native/m5-compose.zsh: exit 0
+zsh -n scripts/verify/native/m5-legible.zsh: exit 0
+zsh -n scripts/verify/native/m5-perf.zsh: exit 0
+zsh -n scripts/verify/native/m6a-guard.zsh: exit 0
+zsh -n scripts/verify/native/m6a-legible.zsh: exit 0
+zsh -n scripts/verify/native/m6a-pace.zsh: exit 0
+zsh -n scripts/verify/native/m6a-record.zsh: exit 0
+zsh -n scripts/verify/native/m6b-long.zsh: exit 0
+zsh -n scripts/verify/native/m6b-seek.zsh: exit 0
+zsh -n scripts/verify/native/m7-compare.zsh: exit 0
+zsh -n scripts/verify/native/m7-perf.zsh: exit 0
+zsh -n scripts/verify/native/m7-r1-panel.zsh: exit 0
+zsh -n scripts/verify/native/m8-keyboard.zsh: exit 0
+zsh -n scripts/verify/native/m8-perf.zsh: exit 0
+zsh -n scripts/verify/native/m8-visual.zsh: exit 0
+zsh -n scripts/verify/native/m8lib.zsh: exit 0
+zsh -n scripts/verify/native/test_guards.zsh: exit 0
+osacompile lights.js: exit 0
+py_compile m8q.py: exit 0
+py_compile m8perf.py: exit 0
+## test_guards.zsh
+ok   expired-click
+ok   allowed-click
+ok   old-runner-click
+ok   outside-input-keys
+ok   chord-reserve
+ok   drag-reserve
+ok   drag-retry-after-deadline
+ok   drag-retry-outside-input
+ok   save-after-panel-wait
+ok   alert-after-deadline
+ok   open-press-after-deadline
+ok   lock-wait-bounded
+ok   quiet-wait-bounded
+ok   launch-needs-lock
+ok   launch-reserve
+ok   activate-after-deadline
+ok   seed-takes-lock-first
+ok   seed-after-deadline
+ok   record-reserve
+ok   window-after-deadline
+ok   m8-requires-deadline
+ok   prefs-existing-restored
+ok   prefs-absent-removed
+ok   prefs-no-snapshot-no-cleanup
+ok   prefs-early-failure-keeps-domain
+ok   prefs-snapshot-failure-writes-nothing
+ok   prefs-restore-failure-reported
+ok   prefs-snapshot-needs-lock
+ok   prefs-snapshot-private
+ok   display-set-and-restore
+ok   display-failure-string
+ok   display-configure-failed
+ok   display-wrong-refresh
+ok   display-wrong-size
+ok   display-restore-failure
+ok   display-needs-lock
+ok   display-after-deadline
+ok   display-unreadable-original
+ok   m8-cleanup-restores
+ok   m8-cleanup-failure-fails-run
+ok   m8-cleanup-keeps-failure-code
+ok   region-input-over-dock
+ok   region-input-above
+ok   region-ingredient-expr
+ok   region-fixed-dock
+ok   region-fixed-document
+ok   region-tools
+ok   region-laws-row
+ok   region-unknown-owner
+ok   region-no-owners-readback
+ok   reveal-scrolls-column-before-click
+ok   perf-refuses-recording
+ok   perf-environment-recorded
+ok   perf-workload-must-fit
+ok   perf-requires-deadline
+ok   perf-unknown-workload
+56 passed, 0 failed
+test_guards exit 0
+## test_m8q.py
+Ran 18 tests in 0.001s
+
+OK
+## test_m8perf.py
+Ran 9 tests in 0.027s
+OK
+test_m8perf exit 0
+## test_m7q.py
+Ran 10 tests in 0.000s
+
+OK

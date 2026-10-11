@@ -1,0 +1,53 @@
+ok   expired-click
+ok   allowed-click
+ok   old-runner-click
+ok   outside-input-keys
+ok   chord-reserve
+ok   drag-reserve
+ok   drag-retry-after-deadline
+ok   drag-retry-outside-input
+ok   save-after-panel-wait
+ok   alert-after-deadline
+ok   open-press-after-deadline
+ok   lock-wait-bounded
+ok   quiet-wait-bounded
+ok   launch-needs-lock
+ok   launch-reserve
+ok   activate-after-deadline
+ok   seed-takes-lock-first
+ok   seed-after-deadline
+ok   record-reserve
+ok   window-after-deadline
+ok   m8-requires-deadline
+ok   prefs-existing-restored
+ok   prefs-absent-removed
+ok   prefs-no-snapshot-no-cleanup
+ok   prefs-early-failure-keeps-domain
+ok   prefs-snapshot-failure-writes-nothing
+ok   prefs-restore-failure-reported
+ok   prefs-snapshot-needs-lock
+ok   prefs-snapshot-private
+ok   display-set-and-restore
+ok   display-failure-string
+ok   display-configure-failed
+ok   display-wrong-refresh
+ok   display-wrong-size
+ok   display-restore-failure
+ok   display-needs-lock
+ok   display-after-deadline
+ok   display-unreadable-original
+ok   m8-cleanup-restores
+ok   m8-cleanup-failure-fails-run
+ok   m8-cleanup-keeps-failure-code
+FAIL region-input-over-dock (exit 1, wanted 0)
+FAIL region-input-above (exit 1, wanted 0)
+FAIL region-ingredient-expr (exit 1, wanted 0)
+FAIL region-fixed-dock (exit 1, wanted 0)
+FAIL region-fixed-document (exit 1, wanted 0)
+FAIL region-tools (exit 1, wanted 0)
+FAIL region-laws-row (exit 1, wanted 0)
+FAIL region-unknown-owner (exit 127, wanted 1)
+FAIL region-no-owners-readback (exit 127, wanted 1)
+FAIL reveal-scrolls-column-before-click (exit 0, wanted 0)
+     calls: cliclick -e 20 c:1100,740
+41 passed, 10 failed

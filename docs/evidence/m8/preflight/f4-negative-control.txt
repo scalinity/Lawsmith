@@ -1,0 +1,22 @@
+FAIL expired-click (exit 0, wanted 5)
+ok   allowed-click
+ok   old-runner-click
+ok   outside-input-keys
+FAIL chord-reserve (exit 0, wanted 5)
+FAIL drag-reserve (exit 0, wanted 5)
+FAIL drag-retry-after-deadline (exit 0, wanted 5)
+FAIL drag-retry-outside-input (exit 0, wanted 4)
+FAIL save-after-panel-wait (exit 1, wanted 5)
+FAIL alert-after-deadline (exit 0, wanted 5)
+FAIL open-press-after-deadline (exit 0, wanted 5)
+FAIL lock-wait-bounded (exit 0, wanted 5)
+FAIL quiet-wait-bounded (exit 4, wanted 5)
+FAIL launch-needs-lock (exit 1, wanted 3)
+FAIL launch-reserve (exit 1, wanted 5)
+FAIL activate-after-deadline (exit 0, wanted 5)
+FAIL seed-takes-lock-first (exit 1, wanted 0)
+FAIL seed-after-deadline (exit 0, wanted 5)
+FAIL record-reserve (exit 1, wanted 5)
+FAIL window-after-deadline (exit 1, wanted 5)
+ok   m8-requires-deadline
+4 passed, 17 failed

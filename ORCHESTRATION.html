@@ -416,13 +416,13 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-11: M8 on branch <code>m8</code>; Sol’s three review findings fixed at producer <code>38271e1</code> (first candidate <code>f9d55dd</code>) from accepted main <code>0d2f609</code>; re-review, native and owner checks pending</span>
+    <span>Realigned 2026-10-11: M8 on branch <code>m8</code>; review findings F1–F7 fixed, F1–F3 closed by Sol; producer <code>7a296c8</code>, harness <code>c40d41f</code> from accepted main <code>0d2f609</code>; F4–F7 re-review, native and owner checks pending</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>M8’s review findings are fixed. Native checks come next.</h1>
-    <p class="lede">Opus 5.5 authored M8 on <code>m8</code> from accepted <code>main</code> <code>0d2f609</code>: five bundled editable examples, a grid surface whose scene card never scrolls, the selected law’s inspector in the right context column with its own collapse, Interface Scale 100–200%, law names in the viewport, selection through overlaps, reduced orbit motion and Compare from here computing A at once. GPT-6.1 Sol reviewed candidate <code>f9d55dd</code> and raised three P2 findings: collapsed controls read back as zero boxes, traffic-light checks accepted missing observations, and the inspector sat outside the contextual right panel. All three are fixed and pushed; the final producer <code>38271e1</code> passes 704 Vitest and 27 Rust and builds. Nothing native has run. Next: Sol’s re-review of the fixes, then a new owner-approved hands-off window for <code>m8-visual</code>, <code>m8-keyboard</code>, the adapted earlier scenarios and P0–P3, and the owner’s AC8 exploration and real keyboard/trackpad checks. M8 is not accepted; M9 remains gated by M8 acceptance.</p>
+    <h1>M8 is ready for a new native window, after Sol re-reviews F4–F7.</h1>
+    <p class="lede">Opus 5.5 authored M8 on <code>m8</code> from accepted <code>main</code> <code>0d2f609</code>: five bundled editable examples, a grid surface whose scene card never scrolls, the selected law’s inspector in the right context column, Interface Scale 100–200%, law names in the viewport, selection through overlaps, reduced orbit motion and Compare from here computing A at once. GPT-6.1 Sol reviewed in two rounds. It closed F1–F2 and confirmed F3’s placement; its native preflight raised F4–F7, and those fixes now await re-review. F4 gates every native action on the window’s deadline and on quiet input. F5 restores the owner’s preferences exactly. F6 verifies display changes. F7 reveals controls by the region that holds them. Producer <code>7a296c8</code> passes 705 Vitest and 27 Rust and builds. Harness <code>c40d41f</code> adds <code>m8-perf</code> for P0–P3 under SPEC §18.2 at 60 Hz with the final default visuals. Nothing native has run. Next: Sol’s re-review, a new owner-approved window of about 100 minutes for the private campaign, then the owner’s AC8 exploration and real keyboard/trackpad checks. M8 is not accepted; M9 remains gated by M8 acceptance.</p>
     <cite><code>docs/evidence/M7.md</code> Status and Owner acceptance; <code>docs/evidence/M8.md</code> Status, Commands and outcomes; <code>docs/MILESTONES.md</code> M8</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
@@ -678,9 +678,9 @@
           </div>
           <div class="unit-body">
             <dl class="facts">
-              <dt>Models</dt><dd>Opus 5.5 authored candidate <code>f9d55dd</code> and the fixes; GPT-6.1 Sol reviewed it independently (F1–F3, all P2) and re-reviews the fixes. If Claude limits bind, GPT-6 Astra authors further fixes.</dd>
-              <dt>Graph permits</dt><dd class="soft">In review on branch <code>m8</code>, pushed to <code>origin/m8</code>: producer <code>38271e1</code> (F1 <code>6357c11</code>, F2 <code>06ab365</code>, F3 <code>38271e1</code>) from accepted <code>main</code> <code>0d2f609</code>. Headless unit checks and the package build passed on it; native, performance and owner criteria are pending.</dd>
-              <dt>Should run</dt><dd class="run">Sol’s re-review of F1–F3 on <code>38271e1</code>. After that, in a new owner-approved hands-off window: <code>m8-visual</code>, <code>m8-keyboard</code>, the adapted <code>m7-compare</code>/<code>m7-perf</code>/<code>m7-r1-panel</code>, layout-affected regressions and P0–P3 with law names on (<code>m2-p0</code>, <code>m3-p1</code>, <code>m4-perf</code> need bounded adaptation to the 60 Hz protocol first). The <code>m8</code> branch owns <code>index.html</code>, <code>src/style.css</code>, <code>src/main.ts</code> and <code>scripts/verify/native</code> until merged. Do not run M9 in parallel or begin it here.</dd>
+              <dt>Models</dt><dd>Opus 5.5 authored candidate <code>f9d55dd</code> and every fix. GPT-6.1 Sol reviews independently: F1–F3 closed or confirmed, F4–F7 re-review pending. If Claude limits bind, GPT-6 Astra authors further fixes.</dd>
+              <dt>Graph permits</dt><dd class="soft">In review on branch <code>m8</code>, pushed to <code>origin/m8</code>: application producer <code>7a296c8</code> (F7), harness <code>c40d41f</code> (F4 <code>f1ec7fb</code>, F5 <code>6c70181</code>, F6 <code>c608e68</code>, performance runner), from accepted <code>main</code> <code>0d2f609</code>. Headless unit checks and the package build passed on <code>7a296c8</code>; native, performance and owner criteria are pending.</dd>
+              <dt>Should run</dt><dd class="run">Sol’s re-review of F4–F7. Then, in a NEW owner-approved hands-off window of about 100 minutes, the private campaign: <code>m8-visual</code>, <code>m8-keyboard</code>, the layout-affected regressions (<code>m2-demo</code>, <code>m2-files</code>, <code>m5-compose</code>, <code>m5-legible</code>, <code>m6a-record</code>, <code>m6a-legible</code>, <code>m6b-seek</code>, <code>m7-compare</code>, <code>m7-r1-panel</code>) and <code>m8-perf</code> P0–P3, which replaces the 120 Hz-era P0/P1/P2 runners for this gate. The <code>m8</code> branch owns <code>index.html</code>, <code>src/style.css</code>, <code>src/main.ts</code> and <code>scripts/verify/native</code> until merged. Do not run M9 in parallel or begin it here.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M7 accepted. Contracts C1–C4, C7.</dd>
@@ -1152,7 +1152,7 @@
       <tbody>
         <tr id="t-m7-native" data-owner="m8" data-short="Comparison fault layout">
           <td data-label="Thread" class="lead">M7 comparison fault presentation and real-device regression checks</td>
-          <td data-label="What the record says">M7 is accepted. Its controlled fault recovery passed: New Alternate and Close were visible and functional, but the fault banner partly overlapped the comparison card at 1280×800. M8 producer <code>38271e1</code> puts the error at the head of a stacked context column above the comparison card, and <code>m8-visual</code> asserts that no card covers another in the fault state at 1280×800, 100% and 200%. Not yet run. Lost synthetic mouse-release observations remain in M7's raw traces; real-trackpad behavior is an M8 owner check. Additional native input requires a new agreed window.</td>
+          <td data-label="What the record says">M7 is accepted. Its controlled fault recovery passed: New Alternate and Close were visible and functional, but the fault banner partly overlapped the comparison card at 1280×800. M8 producer <code>7a296c8</code> puts the error at the head of a stacked context column above the comparison card, and <code>m8-visual</code> asserts that no card covers another in the fault state at 1280×800, 100% and 200%. Not yet run. Lost synthetic mouse-release observations remain in M7's raw traces; real-trackpad behavior is an M8 owner check. Additional native input requires a new agreed window.</td>
           <td data-label="Owner"><a href="#m8">M8</a></td>
           <td data-label="Source"><cite><code>M7.md</code> Owner acceptance, Visible custom presentation and controlled fault, AC1–AC8 and owner inspection; <code>MILESTONES.md</code> M8</cite></td>
         </tr>
@@ -1188,7 +1188,7 @@
         </tr>
         <tr id="t-m2-panel" data-owner="m8" data-short="Panel height">
           <td data-label="Thread" class="lead">M2 finding 8: precise fields scroll</td>
-          <td data-label="What the record says">At 1280×800, Strength and Fade sit below the Scene panel’s visible area; at the built-in display’s height with two or more laws, Rotation and Half extents do too. All stay reachable by scrolling. M5 adds 60 px below a one-leaf law’s Fade. A compound law’s ingredient editor opens below the fold and scrolls itself into view, at 1,795 px of content against 596 visible, taking the file buttons out of view (⌘S still works). M8 producer <code>38271e1</code> keeps the scene card, with the file actions and examples, outside the scrolling panel, and moves the selected law’s fields to the right context column; native captures pending.</td>
+          <td data-label="What the record says">At 1280×800, Strength and Fade sit below the Scene panel’s visible area; at the built-in display’s height with two or more laws, Rotation and Half extents do too. All stay reachable by scrolling. M5 adds 60 px below a one-leaf law’s Fade. A compound law’s ingredient editor opens below the fold and scrolls itself into view, at 1,795 px of content against 596 visible, taking the file buttons out of view (⌘S still works). M8 producer <code>7a296c8</code> keeps the scene card, with the file actions and examples, outside the scrolling panel, and moves the selected law’s fields to the right context column; native captures pending.</td>
           <td data-label="Owner"><a href="#m8">M8</a></td>
           <td data-label="Source"><cite><code>M2.md</code> finding 8; <code>M5.md</code> 1280×800, finding 3</cite></td>
         </tr>
@@ -1212,7 +1212,7 @@
         </tr>
         <tr id="t-m6b-status" data-owner="m8" data-short="Status line">
           <td data-label="Thread" class="lead">M6B finding 8: a deferred Play moves the replay cluster’s buttons</td>
-          <td data-label="What the record says">With Play pressed during a seek, “ Then playing.” wraps the status onto a second line at 1600×1000, and Replay from start, Return to authoring and Cancel seek drop 17 CSS px. No criterion is affected. M8 producer <code>38271e1</code> reserves the replay status’s second line so the buttons stay put; native check at 1600×1000 pending.</td>
+          <td data-label="What the record says">With Play pressed during a seek, “ Then playing.” wraps the status onto a second line at 1600×1000, and Replay from start, Return to authoring and Cancel seek drop 17 CSS px. No criterion is affected. M8 producer <code>7a296c8</code> reserves the replay status’s second line so the buttons stay put; native check at 1600×1000 pending.</td>
           <td data-label="Owner"><a href="#m8">M8</a></td>
           <td data-label="Source"><cite><code>M6B.md</code> finding 8, Owner checks</cite></td>
         </tr>

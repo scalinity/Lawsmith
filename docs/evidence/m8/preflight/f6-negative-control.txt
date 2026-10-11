@@ -1,0 +1,42 @@
+ok   expired-click
+ok   allowed-click
+ok   old-runner-click
+ok   outside-input-keys
+ok   chord-reserve
+ok   drag-reserve
+ok   drag-retry-after-deadline
+ok   drag-retry-outside-input
+ok   save-after-panel-wait
+ok   alert-after-deadline
+ok   open-press-after-deadline
+ok   lock-wait-bounded
+ok   quiet-wait-bounded
+ok   launch-needs-lock
+ok   launch-reserve
+ok   activate-after-deadline
+ok   seed-takes-lock-first
+ok   seed-after-deadline
+ok   record-reserve
+ok   window-after-deadline
+ok   m8-requires-deadline
+ok   prefs-existing-restored
+ok   prefs-absent-removed
+ok   prefs-no-snapshot-no-cleanup
+ok   prefs-early-failure-keeps-domain
+ok   prefs-snapshot-failure-writes-nothing
+ok   prefs-restore-failure-reported
+ok   prefs-snapshot-needs-lock
+ok   prefs-snapshot-private
+FAIL display-set-and-restore (exit 127, wanted 0)
+FAIL display-failure-string (exit 127, wanted 1)
+FAIL display-configure-failed (exit 127, wanted 1)
+FAIL display-wrong-refresh (exit 127, wanted 1)
+FAIL display-wrong-size (exit 127, wanted 1)
+FAIL display-restore-failure (exit 127, wanted 1)
+FAIL display-needs-lock (exit 127, wanted 3)
+FAIL display-after-deadline (exit 127, wanted 5)
+FAIL display-unreadable-original (exit 127, wanted 1)
+ok   m8-cleanup-restores
+FAIL m8-cleanup-failure-fails-run (exit 0, wanted 6)
+ok   m8-cleanup-keeps-failure-code
+31 passed, 10 failed

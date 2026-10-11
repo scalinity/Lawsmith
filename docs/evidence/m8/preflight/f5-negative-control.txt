@@ -1,0 +1,30 @@
+ok   expired-click
+ok   allowed-click
+ok   old-runner-click
+ok   outside-input-keys
+ok   chord-reserve
+ok   drag-reserve
+ok   drag-retry-after-deadline
+ok   drag-retry-outside-input
+ok   save-after-panel-wait
+ok   alert-after-deadline
+ok   open-press-after-deadline
+ok   lock-wait-bounded
+ok   quiet-wait-bounded
+ok   launch-needs-lock
+ok   launch-reserve
+ok   activate-after-deadline
+ok   seed-takes-lock-first
+ok   seed-after-deadline
+ok   record-reserve
+ok   window-after-deadline
+ok   m8-requires-deadline
+FAIL prefs-existing-restored (exit 2, wanted 0)
+FAIL prefs-absent-removed (exit 2, wanted 0)
+FAIL prefs-no-snapshot-no-cleanup (exit 0, wanted 0)
+FAIL prefs-early-failure-keeps-domain (exit 5, wanted 5)
+FAIL prefs-snapshot-failure-writes-nothing (exit 0, wanted 1)
+FAIL prefs-restore-failure-reported (exit 0, wanted 1)
+FAIL prefs-snapshot-needs-lock (exit 127, wanted 1)
+FAIL prefs-snapshot-private (exit 127, wanted 1)
+21 passed, 8 failed
