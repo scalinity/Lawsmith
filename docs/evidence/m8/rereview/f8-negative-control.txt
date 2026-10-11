@@ -1,0 +1,2 @@
+previous c40d41f: ACCEPTED the one-sample capture
+fixed: refused: raw stepMs has 1 samples for steps=7200; raw tickMs has 1 samples for steps=7200; raw editMs has 1 samples for edits=140; raw intervalMs has 1 samples for frame

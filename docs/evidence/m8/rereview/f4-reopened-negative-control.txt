@@ -1,0 +1,69 @@
+ok   expired-click
+ok   allowed-click
+ok   old-runner-click
+ok   outside-input-keys
+ok   chord-reserve
+ok   drag-reserve
+ok   drag-retry-after-deadline
+ok   drag-retry-outside-input
+ok   save-after-panel-wait
+ok   alert-after-deadline
+ok   open-press-after-deadline
+ok   lock-wait-bounded
+ok   quiet-wait-bounded
+ok   launch-needs-lock
+ok   launch-reserve
+ok   activate-after-deadline
+ok   seed-takes-lock-first
+ok   seed-after-deadline
+ok   record-reserve
+ok   window-after-deadline
+ok   m8-requires-deadline
+FAIL drag40-delayed-hits-refused (exit 0, wanted 5)
+ok   drag40-delayed-hits-enough-time
+ok   drag-retry-delayed-hit-refused
+FAIL keys-delayed-front-refused (exit 0, wanted 5)
+ok   keys-delayed-front-enough-time
+FAIL keycode-delayed-front-refused (exit 0, wanted 5)
+ok   keycode-delayed-front-enough-time
+ok   click-delayed-hit-refused
+ok   scroll-delayed-hit-refused
+FAIL window-delayed-front-refused (exit 1, wanted 5)
+ok   window-delayed-front-enough-time
+FAIL tab-delayed-front-refused (exit 5, wanted 5)
+ok   prefs-existing-restored
+ok   prefs-absent-removed
+ok   prefs-no-snapshot-no-cleanup
+ok   prefs-early-failure-keeps-domain
+ok   prefs-snapshot-failure-writes-nothing
+ok   prefs-restore-failure-reported
+ok   prefs-snapshot-needs-lock
+ok   prefs-snapshot-private
+ok   display-set-and-restore
+ok   display-failure-string
+ok   display-configure-failed
+ok   display-wrong-refresh
+ok   display-wrong-size
+ok   display-restore-failure
+ok   display-needs-lock
+ok   display-after-deadline
+ok   display-unreadable-original
+ok   m8-cleanup-restores
+ok   m8-cleanup-failure-fails-run
+ok   m8-cleanup-keeps-failure-code
+ok   region-input-over-dock
+ok   region-input-above
+ok   region-ingredient-expr
+ok   region-fixed-dock
+ok   region-fixed-document
+ok   region-tools
+ok   region-laws-row
+ok   region-unknown-owner
+ok   region-no-owners-readback
+ok   reveal-scrolls-column-before-click
+ok   perf-refuses-recording
+ok   perf-environment-recorded
+ok   perf-workload-must-fit
+ok   perf-requires-deadline
+ok   perf-unknown-workload
+63 passed, 5 failed
