@@ -23,6 +23,52 @@ GATES = {
 }
 COMMON = {'interval95': 20, 'interval99': 34, 'edit95': 50, 'simWall': 0.98}
 SERIES = {'stepMs': 'stepMs', 'editMs': 'editMs', 'intervalMs': 'intervalMs', 'workMs': 'workMs'}
+# How the production capture fills each raw series during the measured minute (src/main.ts timedStep and
+# the frame callback): every completed step pushes stepMs and tickMs; probeMs only while probes are on and
+# trailMs only while trails are not off, once per step; intervalMs and workMs once per frame together;
+# editMs once per accepted edit. The sample counts the event reports must match these lengths exactly.
+COUNTS = {'stepMs': 'steps', 'tickMs': 'steps', 'editMs': 'edits', 'intervalMs': 'frames', 'workMs': 'frames', 'probeMs': 'probeSteps', 'trailMs': 'trailSteps'}
+
+
+def finite(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def series_problems(e):
+    """Every raw series complete, finite and nonnegative, its length the production count, and every
+    reported percentile array exactly four finite values equal to the recomputation."""
+    problems = []
+    raw = e.get('raw') or {}
+    samples = e.get('samples') or {}
+    for key, count in COUNTS.items():
+        values = raw.get(key)
+        n = samples.get(count)
+        if not isinstance(values, list):
+            problems.append(f'raw {key} missing')
+            continue
+        if not (isinstance(n, int) and not isinstance(n, bool) and n >= 0):
+            problems.append(f'sample count {count} is {n!r}')
+        elif len(values) != n:
+            problems.append(f'raw {key} has {len(values)} samples for {count}={n}')
+        if not all(finite(v) and v >= 0 for v in values):
+            problems.append(f'raw {key} holds a non-finite or negative value')
+        reported = e.get(key)
+        if values:
+            if not (isinstance(reported, list) and len(reported) == 4 and all(finite(v) for v in reported)):
+                problems.append(f'reported {key} is {reported!r}, not four finite percentiles')
+            elif all(finite(v) and v >= 0 for v in values):
+                again = percentiles(values)
+                if any(abs(a - b) > 0.0015 for a, b in zip(again, reported)):
+                    problems.append(f'{key} reported {reported}, recomputed {again}')
+        elif reported is not None:
+            problems.append(f'reported {key} {reported!r} without samples')
+    steps = samples.get('steps')
+    if steps != e.get('ticks'):
+        problems.append(f'{steps} step samples for {e.get("ticks")} ticks')
+    for count in ('probeSteps', 'trailSteps'):
+        if samples.get(count) not in (0, steps):
+            problems.append(f'{count}={samples.get(count)} is neither 0 nor the {steps} steps')
+    return problems
 
 
 def events(path, kind):
@@ -63,9 +109,9 @@ def check_run(e, workload):
     need(e.get('incomplete') is None, f'incomplete: {e.get("incomplete")}')
     need((e.get('wallMs') or 0) >= 60000, f'measured {e.get("wallMs")} ms, not 60 s')
     samples = e.get('samples') or {}
-    need(samples.get('edits', 0) >= (50 if p3 else 1), f'{samples.get("edits", 0)} accepted edits measured')
-    need(samples.get('frames', 0) >= 3000, f'{samples.get("frames", 0)} frames')
-    need(samples.get('steps', -1) == e.get('ticks'), f'{samples.get("steps")} step samples for {e.get("ticks")} ticks')
+    need((samples.get('edits') or 0) >= (50 if p3 else 1), f'{samples.get("edits", 0)} accepted edits measured')
+    need((samples.get('frames') or 0) >= 3000, f'{samples.get("frames", 0)} frames')
+    problems.extend(series_problems(e))
     if p3:
         need(0 < (e.get('ticks') or 0) <= 7200, f'{e.get("ticks")} P3 ticks')
     # Protocol: 1600×1000 CSS, DPR capped at 1.5, a canvas at that ratio, 60 Hz callbacks.
@@ -75,15 +121,13 @@ def check_run(e, workload):
     pr = v.get('pixelRatio') or 0
     need(dpr >= 1.5 and pr == 1.5, f'DPR {dpr} rendered at {pr}, not capped at 1.5')
     need(v.get('canvas') == [round(1600 * pr), round(1000 * pr)], f'canvas {v.get("canvas")} at pixel ratio {pr}')
-    # Independent recomputation from the raw arrays, compared with what the app reported.
+    # The gates read the recomputation from the raw arrays, never the reported values.
     raw = e.get('raw') or {}
     got = {}
     for key in SERIES:
-        values = raw.get(key) or []
+        values = raw.get(key) if isinstance(raw.get(key), list) and all(finite(v) and v >= 0 for v in raw.get(key)) else []
         got[key] = percentiles(values)
         need(got[key] is not None, f'no {key} samples')
-        if got[key] is not None and e.get(key) is not None:
-            need(all(abs(a - b) <= 0.0015 for a, b in zip(got[key], e[key])), f'{key} reported {e[key]}, recomputed {got[key]}')
     if all(got[k] is not None for k in SERIES):
         need(15.5 <= got['intervalMs'][0] <= 18.5, f'median callback interval {got["intervalMs"][0]} ms is not 60 Hz')
         need(got['stepMs'][1] <= g['step95'] and got['stepMs'][2] <= g['step99'], f'step p95/p99 {got["stepMs"][1:3]} over {g["step95"]}/{g["step99"]} ms')

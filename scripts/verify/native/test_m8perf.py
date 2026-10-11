@@ -16,18 +16,22 @@ def series(n, value, tail=None):
     return values
 
 
-def capture(workload='P0'):
-    raw = {'stepMs': series(7200, 0.8, 3.0), 'editMs': series(140, 16.0, 30.0), 'intervalMs': series(3600, 16.7, 25.0), 'workMs': series(3600, 3.0, 9.0)}
+def capture(workload='P0', run=1):
+    """A complete capture shaped as the production event: every raw series at its production count."""
+    probes_on = workload == 'P2'
+    raw = {'stepMs': series(7200, 0.8, 3.0), 'tickMs': series(7200, 1.1, 3.4), 'editMs': series(140, 16.0, 30.0),
+           'intervalMs': series(3600, 16.7, 25.0), 'workMs': series(3600, 3.0, 9.0),
+           'probeMs': series(7200, 0.9, 1.5) if probes_on else [], 'trailMs': series(7200, 0.05, 0.2)}
     e = {
-        'kind': 'p3-run' if workload == 'P3' else 'p0-run', 'mode': 'packaged', 'run': 1, 'invalid': None, 'incomplete': None,
+        'kind': 'p3-run' if workload == 'P3' else 'p0-run', 'mode': 'packaged', 'run': run, 'invalid': None, 'incomplete': None,
         'wallMs': 60010.5, 'ticks': 7200, 'simWallRatio': 0.9998,
-        'samples': {'steps': 7200, 'edits': 140, 'frames': 3600},
+        'samples': {'steps': 7200, 'edits': 140, 'frames': 3600, 'probeSteps': 7200 if probes_on else 0, 'trailSteps': 7200},
         'viewport': {'css': [1600, 1000], 'devicePixelRatio': 2, 'pixelRatio': 1.5, 'canvas': [2400, 1500]},
         'raw': raw, 'bodies': 64, 'arrows': 120,
         'workload': {'title': 'Sideways Rain', 'laws': 1, 'primitiveLeaves': 1, 'fixedColliders': 1, 'allBodyContacts': False},
         'visualization': {'probes': {'enabled': False, 'live': 0}, 'trails': {'mode': 'selected', 'count': 0}},
     }
-    for key in m8perf.SERIES:
+    for key in m8perf.COUNTS:
         e[key] = m8perf.percentiles(raw[key])
     if workload == 'P1':
         e.update(bodies=200, arrows=240)
@@ -91,6 +95,41 @@ class Runs(unittest.TestCase):
 
     def test_reported_percentiles_must_match_the_raw_samples(self):
         self.fails('P0', lambda e: e.update(stepMs=[0.5, 0.5, 0.5, 0.5]))
+
+    def test_reviewer_repro_one_sample_per_metric_is_refused(self):
+        # F8: one raw sample per metric while the event claims 7200 steps, 3600 frames and 140 edits.
+        def one(e):
+            for key in e['raw']:
+                e['raw'][key] = e['raw'][key][:1]
+                e[key] = m8perf.percentiles(e['raw'][key])
+        self.fails('P0', one)
+
+    def test_truncated_or_missing_series(self):
+        self.fails('P0', lambda e: e['raw'].update(stepMs=e['raw']['stepMs'][:-1]))
+        self.fails('P0', lambda e: e['raw'].update(workMs=e['raw']['workMs'][:3000]))
+        self.fails('P0', lambda e: e['raw'].pop('tickMs'))
+        self.fails('P2', lambda e: e['raw'].update(probeMs=[]))
+        self.fails('P0', lambda e: e['raw'].update(editMs=None))
+
+    def test_inconsistent_counts(self):
+        self.fails('P0', lambda e: e['samples'].update(frames=3500))
+        self.fails('P0', lambda e: e['samples'].update(steps=7199))
+        self.fails('P0', lambda e: e['samples'].update(trailSteps=10))
+        self.fails('P0', lambda e: e['samples'].update(edits=True))
+        self.fails('P0', lambda e: e['samples'].pop('probeSteps'))
+
+    def test_non_finite_or_negative_samples(self):
+        for bad in (float('nan'), float('inf'), -0.5, None, '1.0'):
+            self.fails('P0', lambda e, bad=bad: e['raw']['intervalMs'].__setitem__(10, bad))
+        self.fails('P0', lambda e: e['raw']['editMs'].__setitem__(0, float('-inf')))
+
+    def test_reported_percentiles_exactly_four_matching(self):
+        self.fails('P0', lambda e: e.pop('stepMs'))
+        self.fails('P0', lambda e: e.update(editMs=e['editMs'][:3]))
+        self.fails('P0', lambda e: e.update(workMs=e['workMs'] + [9.0]))
+        self.fails('P0', lambda e: e.update(intervalMs=e['intervalMs'][:3] + [99.0]))   # max differs
+        self.fails('P0', lambda e: e.update(tickMs=[1.1, 1.1, 1.1, float('nan')]))
+        self.fails('P0', lambda e: e.update(probeMs=[0, 0, 0, 0]))                      # reported without samples
 
     def test_workloads(self):
         self.fails('P0', lambda e: e['visualization'].update(trails={'mode': 'off', 'count': 0}))   # P0 keeps default visuals
