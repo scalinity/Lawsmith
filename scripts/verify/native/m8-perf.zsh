@@ -19,8 +19,9 @@
 # the raw samples; nothing is averaged across runs.
 source ${0:A:h}/lib.zsh
 source ${0:A:h}/m8lib.zsh
-WORKLOADS=(${@:-P0 P1 P2 P3})
-for w in $WORKLOADS; do [[ $w == P[0-3] ]] || { print -u2 "unknown workload $w"; exit 2 }; done
+# The named workloads, or all four in order. ${@:-P0 P1 P2 P3} would make the default one word (M8 R22).
+if (( $# )); then WORKLOADS=("$@"); else WORKLOADS=(P0 P1 P2 P3); fi
+for w in "${WORKLOADS[@]}"; do [[ $w == P[0-3] ]] || { print -u2 "unknown workload $w"; exit 2 }; done
 mkdir -p $QA_STATE/scenes
 for f in p1-workshop p2-probes p3-futures; do cp ${NATIVE:h}/scenes/$f.lawsmith.json $QA_STATE/scenes/; done
 # A workload needs about five minutes: launch and setup, three warmed 70 s captures, quitting.
