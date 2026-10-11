@@ -90,7 +90,7 @@ osascript -l JavaScript $NATIVE/display.js set 1728 1117 60 >/dev/null
 launch m7-r1-panel $QA_STATE/recovery
 activate; window_size; open_fixture
 expect backend "packaged WebGPU" "e['backend']=='WebGPU' and e['mode']=='packaged'"
-if [[ ${QA_R1_DETAILS_ONLY:-0} != 1 ]]; then
+if [[ ${QA_R1_DETAILS_ONLY:-0} != 1 && ${QA_R1_ORDINARY_ONLY:-0} != 1 ]]; then
 baseline
 steps_to 120
 press_expect add-directional control
@@ -111,7 +111,8 @@ expect layout "New clears Push and history" "e['comparison']['suffix']==0 and e[
 close_comparison
 fi
 
-segment "R1 selected law details and ordinary replay"
+if [[ ${QA_R1_ORDINARY_ONLY:-0} != 1 ]]; then
+segment "R1 selected law details"
 baseline
 edit_value controls.law-label 'Custom current law'
 layout; local color=(${=$(point swatches.#c58ae5)}); click $color[1] $color[2]
@@ -135,7 +136,8 @@ expect layout "selected local undo retained" "e['inputValues']['law-fade']=='0' 
 press_expect redo history; layout
 expect layout "selected local redo retained" "e['inputValues']['law-fade']=='0.4' and e['selectedField']['edgeFade']==0.4"
 close_comparison
-open_fixture
+fi
+segment "R1 ordinary recording replay"
 press_expect run-record recording
 steps_to 120; press_expect add-directional control
 steps_to 396; press_expect run-stop recording
