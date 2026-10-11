@@ -4,7 +4,7 @@ The earlier version of this list was paused after your first exploration of the 
 
 Write down what actually happens, in your own words. A step you could not observe is UNVERIFIED, not a pass. Nothing here asks you to run tests or repeat earlier milestones.
 
-**The repaired app is built.** Before you start:
+**Wait for the next build.** The package below was built before the emitter-lock fix and the Hide HUD view. Once it is rebuilt, before you start:
 1. Save anything you want to keep in the Lawsmith window that is open now, then quit it (⌘Q). That window is the old `fa4e223` build, which does not contain the repairs; please stop testing it.
 2. Open exactly `/Users/danny/Documents/Apps/Lawsmith/src-tauri/target/release/bundle/macos/Lawsmith.app`.
 
@@ -52,6 +52,8 @@ Turn on System Settings → Accessibility → Display → Reduce motion. Orbit t
 - At 100%, 150% and 200%: is there room to see the scene? Use the section bar, **More** on the Recording card, and **Draw options**, which starts folded and stays as you leave it.
 - **Delete** under the Laws list names the selected law. Undo brings the law back.
 - **Emitter** (in the Scene section): set a spawn rate and how many seconds to keep each body, then **Apply and reset**. The line below shows the exact result. Typed values stay while you do other things, until you apply or **Revert**. Undo brings back the previous rate, and its tooltip says it resets the scene.
+- **Emitter lock:** start the app, then change the Emitter's rate without selecting anything first; it should be editable. Press **Record from tick 0**: the Emitter block should say why it is locked and offer **Stop recording**. Do the same during a replay (**Return to authoring**) and a comparison (**Close comparison**).
+- **Hide HUD:** press <kbd>H</kbd>, or **Hide HUD** at the bottom right. Only the scene should remain; play with <kbd>Space</kbd> and orbit. Press <kbd>H</kbd> or <kbd>Esc</kbd>: everything returns as it was, including folded cards and the selected law. Try typing an h in a number field: it types and hides nothing.
 - **Swirl:** add a Swirl law on its own. Its details suggest adding Pull and Drag to keep bodies circling; try it.
 - **Trails:** choose Selected body, click a moving body, and watch its path. Then try Up to 32 bodies.
 - **Fault:** open `scripts/verify/scenes/m8-comparison-fault.lawsmith.json` (⌘O), choose **Compare from here**, set Strength to 200, and Play. A red error naming a speed of about 350 m/s should appear. That is the expected fault, and it is different from the amber "Acceleration limit reached" line. Scroll to the red error and use **New Alternate** and **Close**. Note whether they work.
@@ -71,7 +73,7 @@ Date / display:
 3 Keyboard and files at 200%: unreachable controls; lost focus; save/open:
 4 Trackpad: move and rotate in the view; window drag 100% / 200%; window buttons:
 5 Reduce motion:
-6 Looking: room at 100/150/200%; Delete; Emitter rate and lifetime (and Undo); trails; fault error and its buttons:
+6 Looking: room at 100/150/200%; Delete; Emitter rate and lifetime (and Undo); emitter lock reasons; Hide HUD and restore; trails; fault error and its buttons:
 7 Replay:
 Anything else:
 ```

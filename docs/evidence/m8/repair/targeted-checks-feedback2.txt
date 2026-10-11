@@ -1,0 +1,23 @@
+M8 owner feedback 2 (emitter lock, immersive view): author's targeted checks. Source and headless only:
+no build, no app launch, no native input. Run in the checkout on branch m8.
+
+## 952ce3b (emitter lock refresh and visible reason)
+npx tsc --noEmit                                  exit 0
+npx vitest run (12 files: emitterControls, compactLayout, focusLayout, focusRestore, keyboardReadback,
+  layoutReadback, sectionJump, inspectorPlacement, conditionsRefresh, replayPanel, trailNote, historyTitle)
+                                                  exit 0; 12 files, 99 passed
+Negative control: with the lock reason removed from the frame loop's panel signature, 2 of 40 in
+  emitterControls fail: "unlocks on the next frame when the launch freeze ends with no document change"
+  and "unlocks on the next frame when a recording stops, a replay returns or a comparison closes". Its
+  replay leg fails only through the stand-in, because production already includes readOnly() in the
+  signature. Source restored afterwards.
+
+## 577ad1f (immersive view, H)
+npx tsc --noEmit                                  exit 0
+npx vitest run tests/hudToggle.test.js tests/emitterControls.test.js tests/compactLayout.test.js tests/focusLayout.test.js tests/focusRestore.test.js tests/keyboardReadback.test.js tests/layoutReadback.test.js tests/sectionJump.test.js tests/inspectorPlacement.test.js tests/conditionsRefresh.test.js tests/replayPanel.test.js tests/trailNote.test.js tests/historyTitle.test.js tests/lawGesture.test.ts
+                                                  exit 0; 14 files, 122 passed
+Negative control: with hudKey reduced to event.key.toLowerCase() === 'h', the isContentEditable test
+  removed and the alert restore made unconditional, 3 of 19 in hudToggle fail (modifier and Caps Lock,
+  editable element, restore once). Source restored afterwards.
+
+Not run: the full suite, a build, any native or performance check.
