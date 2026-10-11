@@ -1,0 +1,184 @@
+[qa 03:30:35] segment: M8 visual matrix
+[qa 03:30:35] Lawsmith preferences snapshotted (originally present)
+[qa 03:30:37] display is 1728x1117@120
+[qa 03:30:44] launched pid 76479, window at 224,104, log m8-visual.log
+[qa 03:30:44] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 03:30:44] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 03:30:52] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 2, "title": "Sideways Rain", "mode": "packaged", "t": 11208}  [document] example sideways-rain opened
+[qa 03:30:55] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 100%
+[qa 03:30:55] captured m8-sideways-rain-1280x800-100.png
+[qa 03:30:55] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+[qa 03:31:00] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] Interface Scale 150%
+[qa 03:31:00] captured m8-sideways-rain-1280x800-150.png
+[qa 03:31:00] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+[qa 03:31:07] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 200%
+[qa 03:31:07] captured m8-sideways-rain-1280x800-200.png
+[qa 03:31:07] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+[qa 03:31:14] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 3, "title": "Catch and Release", "mode": "packaged", "t": 33000}  [document] example catch-and-release opened
+[qa 03:31:16] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 100%
+[qa 03:31:17] captured m8-catch-and-release-1280x800-100.png
+[qa 03:31:17] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+[qa 03:31:22] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] Interface Scale 150%
+[qa 03:31:22] captured m8-catch-and-release-1280x800-150.png
+[qa 03:31:22] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+[qa 03:31:29] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 200%
+[qa 03:31:29] captured m8-catch-and-release-1280x800-200.png
+[qa 03:31:29] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+[qa 03:31:35] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 4, "title": "Drag Pocket", "mode": "packaged", "t": 54322}  [document] example drag-pocket opened
+[qa 03:31:38] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "9045cb88b39a433d", "engineHash": "cc858a1c0dfd989d"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 100%
+[qa 03:31:38] captured m8-drag-pocket-1280x800-100.png
+[qa 03:31:38] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "9045cb88b39a433d", "engineHash": "cc858a1c0dfd989d"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+[qa 03:31:43] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "9045cb88b39a433d", "engineHash": "cc858a1c0dfd989d"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] Interface Scale 150%
+[qa 03:31:43] captured m8-drag-pocket-1280x800-150.png
+[qa 03:31:43] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "9045cb88b39a433d", "engineHash": "cc858a1c0dfd989d"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+[qa 03:31:50] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "9045cb88b39a433d", "engineHash": "cc858a1c0dfd989d"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 200%
+[qa 03:31:50] captured m8-drag-pocket-1280x800-200.png
+[qa 03:31:50] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "9045cb88b39a433d", "engineHash": "cc858a1c0dfd989d"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "drag-pocket", "law": "pocket"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 2}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+[qa 03:31:57] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 5, "title": "Storm Bottle", "mode": "packaged", "t": 75855}  [document] example storm-bottle opened
+[qa 03:31:59] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "919719a53433a4cc", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 100%
+[qa 03:32:00] captured m8-storm-bottle-1280x800-100.png
+[qa 03:32:00] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "919719a53433a4cc", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+[qa 03:32:05] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "919719a53433a4cc", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] Interface Scale 150%
+[qa 03:32:05] captured m8-storm-bottle-1280x800-150.png
+[qa 03:32:05] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "919719a53433a4cc", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+[qa 03:32:12] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "919719a53433a4cc", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 200%
+[qa 03:32:12] captured m8-storm-bottle-1280x800-200.png
+[qa 03:32:12] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "919719a53433a4cc", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "storm-bottle", "law": "storm-bottle"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+[qa 03:32:18] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 6, "title": "Two Futures", "mode": "packaged", "t": 97410}  [document] example two-futures opened
+[qa 03:32:21] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 100%
+[qa 03:32:21] captured m8-two-futures-1280x800-100.png
+[qa 03:32:21] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+[qa 03:32:26] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] Interface Scale 150%
+[qa 03:32:26] captured m8-two-futures-1280x800-150.png
+[qa 03:32:26] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": f  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+[qa 03:32:33] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 200%
+[qa 03:32:33] captured m8-two-futures-1280x800-200.png
+[qa 03:32:33] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "example", "pass": true, "example": "two-futures", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+[qa 03:32:41] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 7, "title": "Sideways Rain", "mode": "packaged", "t": 120173}  [document] example sideways-rain opened
+[qa 03:32:44] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": false  [layout] Interface Scale 100%
+[qa 03:32:44] captured m8-sideways-rain-900x600-100.png
+[qa 03:32:44] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": false  [layout] content 900×600
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+[qa 03:32:49] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 150%
+[qa 03:32:49] captured m8-sideways-rain-900x600-150.png
+[qa 03:32:49] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": fal  [layout] content 900×600
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+[qa 03:32:56] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": false  [layout] Interface Scale 200%
+[qa 03:32:56] captured m8-sideways-rain-900x600-200.png
+[qa 03:32:56] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": false  [layout] content 900×600
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+[qa 03:33:03] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 8, "title": "Catch and Release", "mode": "packaged", "t": 142045}  [document] example catch-and-release opened
+[qa 03:33:06] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": false  [layout] Interface Scale 100%
+[qa 03:33:06] captured m8-catch-and-release-900x600-100.png
+[qa 03:33:06] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": false  [layout] content 900×600
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1, "pixelRatio": 1.5}
+[qa 03:33:11] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 150%
+[qa 03:33:11] captured m8-catch-and-release-900x600-150.png
+[qa 03:33:11] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 1.5, "reducedMotion": false, "panelCollapsed": fal  [layout] content 900×600
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 1.5, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 1.5, "pixelRatio": 1.5}
+[qa 03:33:18] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": false  [layout] Interface Scale 200%
+[qa 03:33:18] captured m8-catch-and-release-900x600-200.png
+[qa 03:33:18] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "6e4558878f8fb57c", "engineHash": "1b79a5ce1689ba83"}, "viewport": [900, 600], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1350, 900], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": false  [layout] content 900×600
+{"check": "example", "pass": true, "example": "catch-and-release", "law": "pull"}
+{"check": "surface", "pass": true, "viewport": [900, 600], "scale": 2, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check": "labels", "pass": true, "labels": 1}
+{"check": "scale", "pass": true, "from": 1, "to": 2, "pixelRatio": 1.5}
+[qa 03:33:22] FAIL: outside input 0.0269954s ago (our last event 1.0152859687805176s ago): yielding to the owner 4
+[qa 03:33:24] display restored: 1168x755@120 (original 1168x755@120)
+[qa 03:33:24] Lawsmith preferences restored (originally present)
