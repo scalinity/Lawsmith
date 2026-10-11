@@ -179,6 +179,11 @@ export class DocumentWorkflow<C extends Candidate = SimulationHost, R extends Ca
     return this.explicit('new', () => this.replace('new', defaultDocument(), null, 0));
   }
 
+  /** A bundled example: an unbound, clean document through the same guard and candidate world as New. */
+  openExample(document: SceneDocument): Promise<boolean | null> {
+    return this.explicit('example', () => this.replace('example', document, null, 0));
+  }
+
   /** Save Recording (SPEC §13.2): the immutable record, never the scene; a running recording is stopped first. */
   saveRecording(): Promise<boolean | null> {
     return this.explicit('save-recording', () => this.saveRecordingNow());

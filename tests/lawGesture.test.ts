@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import type { Object3D, PerspectiveCamera } from 'three';
-import { LawInteraction, type GestureEnd } from '../src/interaction/lawGesture';
+import { LawInteraction, nextPick, type GestureEnd } from '../src/interaction/lawGesture';
 import { RUN_LIMITS } from '../src/persistence/runFile';
 import { initSimulation } from '../src/simulation/host';
 import { moveTo, session } from './support/run';
@@ -135,5 +135,20 @@ describe('LawInteraction.release at a recording limit (SPEC §13.3; AC7)', () =>
     expect(law.release('quiesce')).toBe(true);
     expect(ends).toHaveLength(1);
     expect(s.controller.lawState('push')!.field).toEqual(moveTo(-0.5)(ends[0]!.start));
+  });
+});
+
+describe('selection through overlapping laws (M8)', () => {
+  const hits = [{ id: 'pocket' }, { id: 'pull' }, { id: 'swirl' }];
+  it('a click selects the nearest law under the pointer, and clicking the selected one again reaches the next behind it', () => {
+    expect(nextPick(hits, null)).toBe('pocket');
+    expect(nextPick(hits, 'other')).toBe('pocket');
+    expect(nextPick(hits, 'pocket')).toBe('pull');
+    expect(nextPick(hits, 'pull')).toBe('swirl');
+    expect(nextPick(hits, 'swirl')).toBe('pocket');
+  });
+  it('a single law stays selected, and a miss clears the selection', () => {
+    expect(nextPick([{ id: 'pocket' }], 'pocket')).toBe('pocket');
+    expect(nextPick([], 'pocket')).toBeNull();
   });
 });

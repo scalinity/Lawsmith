@@ -10,6 +10,7 @@ import type { ChooseOutcome, DocumentIo, IoFailure, OpenOutcome, RecoverySlot } 
 import { parseRecovery } from '../src/persistence/recovery';
 import { parseScene } from '../src/persistence/sceneFile';
 import { DocumentWorkflow, suggestedName, type WorkflowApp } from '../src/persistence/workflow';
+import { EXAMPLES, exampleDocument } from '../src/scenes/examples';
 import stormBottle from '../examples/storm-bottle.lawsmith.json?raw';
 import { wrapIngredient } from '../src/domain/ingredients';
 import { SimulationHost, initSimulation } from '../src/simulation/host';
@@ -469,6 +470,29 @@ describe('transactional Open (SPEC §15.2)', () => {
     expect(t.io.asked).toHaveLength(1);
     t.io.askQueue.push('discard');
     expect(await t.workflow.newScene()).toBe(true);
+    expect(t.workflow.fileName).toBeNull();
+    expect(t.workflow.dirty).toBe(false);
+  });
+
+  it('a bundled example (M8) replaces through the same guard: cancel keeps the scene, discard opens it unbound and clean', async () => {
+    const t = await setup();
+    t.io.chooseQueue.push('a.lawsmith.json');
+    t.edit();
+    await t.workflow.save();
+    t.edit();
+    const before = t.controller.snapshot(t.controller.camera);
+    const storm = exampleDocument(EXAMPLES.find((e) => e.key === 'storm-bottle')!);
+    t.io.askQueue.push('cancel');
+    expect(await t.workflow.openExample(storm)).toBe(false);
+    expect(t.io.asked).toHaveLength(1);
+    expect(t.disposed).toHaveLength(1);
+    expect(t.controller.snapshot(t.controller.camera)).toEqual(before);
+    expect(t.workflow.fileName).toBe('a.lawsmith.json');
+    expect(t.workflow.dirty).toBe(true);
+    expect(t.frozen()).toBe(false);
+    t.io.askQueue.push('discard');
+    expect(await t.workflow.openExample(storm)).toBe(true);
+    expect(t.controller.metadata.title).toBe('Storm Bottle');
     expect(t.workflow.fileName).toBeNull();
     expect(t.workflow.dirty).toBe(false);
   });

@@ -28,10 +28,12 @@ open_fixture() {
   wait_log document $(( n + 1 )) 15
   expect document "fixture opened" "e['action']=='open' and e['outcome']=='committed'"
 }
-baseline() {
+# compare_from: Compare from here forks and starts A's default 600-tick horizon itself (M8), so the
+# fork, the start and the commit are three comparison events.
+compare_from() {
   local n=$(count comparison)
-  press_expect baseline-compute comparison
-  wait_log comparison $(( n + 2 )) 20
+  press_expect compare-from comparison
+  wait_log comparison $(( n + 3 )) 20
   expect comparison "600 tick baseline committed" "e['action']=='baseline-committed' and e['horizon']==600 and e['metrics']['elapsedMs'] <= 3000 and e['bytes'] <= 67108864"
   layout
   BASELINE_HASH=$(field layout comparison.receipt.baselineHash)
@@ -63,8 +65,7 @@ layout
 expect layout "1280×800 and known law selected" "e['viewport']==[1280,800] and e['selected']=='sideways'"
 SOURCE_AUTHORITY=$(field layout authority)
 record_start m7-two-futures 100
-press_expect compare-from comparison
-baseline
+compare_from
 shot m7-01-common-fork
 reveal_strength
 keys kd:cmd t:a ku:cmd t:2 kp:return
@@ -120,8 +121,7 @@ expect m7-fixtures "packaged independent M7 fixtures completed" "e.get('complete
 numeric_check fixtures
 say "20 view/context cycles"
 for i in {1..20}; do
-  press_expect compare-from comparison
-  baseline
+  compare_from
   press_expect step sim-control
   replay_events=$(count comparison)
   press_expect alternate-replay comparison

@@ -34,7 +34,8 @@ open_fixture() {
 baseline() {
   layout; SOURCE_AUTHORITY=$(field layout authority)
   local n=$(count comparison)
-  press_expect compare-from comparison; press_expect baseline-compute comparison
+  # Compare from here starts A's default horizon itself (M8): fork, start and commit.
+  press_expect compare-from comparison
   wait_log comparison $(( n + 3 )) 15
   layout; expect layout "real baseline through 600" "e['comparison']['horizon']==600 and e['comparison']['tick']==0"
   BASELINE_HASH=$(field layout comparison.receipt.baselineHash)

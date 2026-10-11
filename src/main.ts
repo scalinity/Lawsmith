@@ -14,6 +14,7 @@ import { defaultDocument } from './persistence/defaultScene';
 import { nativeIo } from './persistence/io';
 import { createDocument, semanticDigest } from './persistence/sceneFile';
 import { DocumentWorkflow, type RecoveryOffer } from './persistence/workflow';
+import { EXAMPLES, exampleDocument, type Example } from './scenes/examples';
 import { identifyBackend, isQualifiedWebGPU, probeRenderedPixels, watchGPUErrors } from './rendering/backend';
 import { createRenderer, createViewport, MAX_PIXEL_RATIO } from './rendering/viewport';
 import { createComparisonView } from './rendering/comparisonView';
@@ -82,7 +83,7 @@ function withTimeout<T>(work: Promise<T>, what: string): Promise<T> {
 function showFailure(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   report('failure', { message, facts });
-  for (const id of ['status', 'tools', 'diagnostics', 'panel', 'transport', 'overlays', 'run']) $(id).hidden = true;
+  for (const id of ['status', 'tools', 'diagnostics', 'document', 'panel', 'transport', 'overlays', 'run']) $(id).hidden = true;
   $('failure-summary').textContent = message;
   $('failure-detail').textContent = JSON.stringify(facts, null, 2);
   $('failure').hidden = false;
@@ -130,6 +131,7 @@ const BUSY_TEXT: Record<string, string> = {
   'save-as': 'Saving…',
   open: 'Opening…',
   new: 'Starting a new scene…',
+  example: 'Opening the example…',
   recover: 'Recovering…',
   'save-recording': 'Saving the recording…',
   'open-recording': 'Opening the recording…',
@@ -313,7 +315,7 @@ async function start() {
   let cameraMoved = false;
   const applyFreeze = () => {
     frozen = guardFrozen || launchPending;
-    for (const id of ['panel', 'tools', 'transport', 'overlays', 'run', 'comparison']) $(id).inert = frozen;
+    for (const id of ['document', 'panel', 'tools', 'transport', 'overlays', 'run', 'comparison']) $(id).inert = frozen;
     // Replay is read-only (SPEC §13.2): its laws are inspected, never edited; playback and the camera still work.
     const locked = readOnly();
     document.body.dataset.context = comparing() ? 'comparison' : replaying() ? 'replay' : 'authoring';
@@ -605,6 +607,10 @@ async function start() {
     cameraMoved = false;
   };
 
+  /** The bundled example the authored document was opened from, for its invitation; any other load clears it. */
+  let openedExample: { example: Example; document: SceneDocument } | null = null;
+  let pendingExample: { example: Example; document: SceneDocument } | null = null;
+
   const workflow = new DocumentWorkflow(nativeIo, {
     controller: authoring,
     quiesce: (reason) => {
@@ -659,6 +665,7 @@ async function start() {
       world.showScene(candidate.view);
       applyFreeze();
       applyCamera(document.presentation.camera);
+      openedExample = pendingExample?.document === document ? pendingExample : null;
       ingredientPanel.reset();
       interaction.select(document.semantic.fields[0]?.id ?? null);
       setExplained(null, 'load');
@@ -908,6 +915,64 @@ async function start() {
     supportGroup.append(button);
   }
 
+  // Bundled examples (SPEC §19): opened through the same guard and candidate world as New.
+  const exampleMenu = $<HTMLSelectElement>('example-open');
+  for (const example of EXAMPLES) exampleMenu.add(new Option(example.title, example.key));
+  exampleMenu.addEventListener('change', () => {
+    const example = EXAMPLES.find((e) => e.key === exampleMenu.value);
+    exampleMenu.value = '';
+    if (!example || frozen) return;
+    if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
+    const chosen = exampleDocument(example);
+    pendingExample = { example, document: chosen };
+    void workflow.openExample(chosen).then((outcome) => {
+      pendingExample = null;
+      report('file-control', { action: 'example', example: example.key, outcome, tick: host.tick, playing: scheduler.playing });
+      renderPanel();
+    });
+  });
+
+  // The laws, inspector and settings collapse completely; the scene card stays.
+  const sceneColumn = $('scene-column');
+  const panelToggle = $<HTMLButtonElement>('panel-toggle');
+  panelToggle.addEventListener('click', () => {
+    const collapsed = sceneColumn.dataset.collapsed !== 'true';
+    sceneColumn.dataset.collapsed = String(collapsed);
+    panelToggle.setAttribute('aria-expanded', String(!collapsed));
+    panelToggle.textContent = collapsed ? 'Show laws' : 'Hide laws';
+    report('control', { panel: collapsed ? 'collapsed' : 'expanded' });
+  });
+
+  // Interface Scale (SPEC §11.3): text and controls reflow; the renderer's pixel ratio and the simulation never read it.
+  const UI_SCALES = [1, 1.25, 1.5, 1.75, 2] as const;
+  const scaleMenu = $<HTMLSelectElement>('ui-scale');
+  let uiScale = 1;
+  const setInterfaceScale = (scale: number, source: string) => {
+    if (!(UI_SCALES as readonly number[]).includes(scale)) return;
+    uiScale = scale;
+    document.documentElement.style.setProperty('--ui-scale', String(scale));
+    scaleMenu.value = String(scale);
+    report('control', { interfaceScale: scale, source, pixelRatio: renderer.getPixelRatio(), canvas: [renderer.domElement.width, renderer.domElement.height] });
+  };
+  const stepInterfaceScale = (direction: -1 | 1) => {
+    const at = UI_SCALES.indexOf(uiScale as (typeof UI_SCALES)[number]);
+    setInterfaceScale(UI_SCALES[Math.min(UI_SCALES.length - 1, Math.max(0, at + direction))]!, 'keyboard');
+  };
+  scaleMenu.addEventListener('change', () => setInterfaceScale(Number(scaleMenu.value), 'control'));
+
+  // Reduced motion (SPEC §11.3): the camera's glide after an orbit is decoration; the simulation is content and stays under Play.
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const applyMotionPreference = () => {
+    viewport.orbit.enableDamping = !reducedMotion.matches;
+    if (reducedMotion.matches) viewport.haltInertia();
+    $('motion-preference').textContent = reducedMotion.matches
+      ? 'Reduce motion is on in macOS, so the camera stops as soon as you let go.'
+      : 'The camera glides briefly after you orbit; Reduce motion in macOS turns that off.';
+    report('control', { reducedMotion: reducedMotion.matches });
+  };
+  reducedMotion.addEventListener('change', applyMotionPreference);
+  applyMotionPreference();
+
   /** Numeric equivalents of a registry entry's controls (SPEC §11.3): labeled, bounded, one edit each. */
   function controlInputs(container: HTMLElement, target: 'region' | 'primitive', controls: readonly ScalarControl<never>[]) {
     container.replaceChildren(
@@ -971,7 +1036,9 @@ async function start() {
     const busy = workflow.busy;
     const file = workflow.fileName;
     $('doc-title').textContent = editor().metadata.title;
-    $('doc-invitation').hidden = editor().metadata.title !== 'Two Futures';
+    const invitation = $('doc-invitation');
+    invitation.hidden = openedExample === null;
+    invitation.textContent = openedExample?.example.invitation ?? '';
     const state = $('doc-state');
     state.dataset.dirty = String(workflow.dirty);
     state.textContent = busy
@@ -986,6 +1053,7 @@ async function start() {
           ? `Saved to ${file}`
           : 'Not saved to a file';
     for (const id of ['file-new', 'file-open']) $<HTMLButtonElement>(id).disabled = busy !== null;
+    exampleMenu.disabled = busy !== null;
     for (const id of ['file-save', 'file-save-as']) $<HTMLButtonElement>(id).disabled = busy !== null || readOnly() || comparing();
     const message = $('doc-message');
     message.hidden = workflow.message === null;
@@ -1391,6 +1459,8 @@ async function start() {
       awaited.clear();
       showContext('compare');
       report('comparison', { action: 'fork', identity: comparison.identity, address: comparison.address, ...comparison.counts() });
+      // A comparison is for comparing: A's default horizon starts at once, yielding and cancelable.
+      computeBaseline(COMPARISON_LIMITS.initialTicks);
     } catch (error) { comparisonFailed(error); }
   });
   $('baseline-compute').addEventListener('click', () => computeBaseline(COMPARISON_LIMITS.initialTicks));
@@ -1484,7 +1554,6 @@ async function start() {
     $<HTMLButtonElement>('baseline-extend').disabled = !!c.working || c.horizon === c.address.tick || c.horizon - c.address.tick >= COMPARISON_LIMITS.ticks || !!workflow.busy;
     $<HTMLButtonElement>('alternate-export').disabled = c.replaying || !!workflow.busy;
     for (const id of ['alternate-replay', 'alternate-new', 'comparison-close']) $<HTMLButtonElement>(id).disabled = !!workflow.busy || !!interaction.gesture;
-    document.documentElement.style.setProperty('--run-reserve', `${$('comparison').offsetHeight + 8}px`);
   }
   /** The displayed replay's end check, once it reached its frozen address. */
   let replayCheck: FinalCheckResult | null = null;
@@ -1992,9 +2061,6 @@ async function start() {
       button.hidden = !shown.includes(key as keyof typeof runButtons);
       button.disabled = busy;
     }
-    // The body readout starts below this cluster, however tall its state makes it.
-    const reserve = runParts.root.hidden ? 0 : runParts.root.offsetHeight + 8;
-    document.documentElement.style.setProperty('--run-reserve', `${reserve}px`);
   }
 
   runButtons.record.addEventListener('click', () => runFile('record'));
@@ -2105,7 +2171,7 @@ async function start() {
       return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
     };
     const controls: Record<string, number[] | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #explain, #trail-mode, #run, #comparison, #diagnostics, button[id], input[id]')) {
+    for (const element of document.querySelectorAll<HTMLElement>('#document, #doc-invitation, #panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #display, #explain, #trail-mode, #run, #comparison, #sim-error, #diagnostics, #scene-column, #context-column, #dock, button[id], input[id], select[id]')) {
       controls[element.id] = box(element);
     }
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) controls[`mode-${button.dataset.mode}`] = box(button);
@@ -2194,6 +2260,20 @@ async function start() {
       authority: authorityReceipt(host),
       viewport: [window.innerWidth, window.innerHeight],
       devicePixelRatio: window.devicePixelRatio,
+      pixelRatio: renderer.getPixelRatio(),
+      canvas: [renderer.domElement.width, renderer.domElement.height],
+      interfaceScale: uiScale,
+      reducedMotion: reducedMotion.matches,
+      panelCollapsed: sceneColumn.dataset.collapsed === 'true',
+      // Keyboard focus as drawn: the focused control, whether it shows its ring, and where it is.
+      focus: (() => {
+        const e = document.activeElement;
+        if (!(e instanceof HTMLElement) || e === document.body) return null;
+        const style = getComputedStyle(e);
+        return { id: e.id || null, tag: e.tagName.toLowerCase(), label: e.getAttribute('aria-label') ?? e.textContent?.trim().slice(0, 60) ?? '', focusVisible: e.matches(':focus-visible'), outline: [style.outlineStyle, style.outlineWidth], box: box(e) };
+      })(),
+      example: openedExample?.example.key ?? null,
+      lawLabels: Object.fromEntries([...lawLabelSpans].map(([id, span]) => [id, { text: span.textContent, selected: span.dataset.selected === 'true', enabled: span.dataset.enabled === 'true', box: box(span) }])),
       controls,
       laws,
       inputs,
@@ -2611,6 +2691,11 @@ async function start() {
         // Author undo outside text editing; a focused text field keeps its own undo (SPEC §11.1).
         event.preventDefault();
         undo(event.shiftKey);
+      } else if (key === '=' || key === '+' || key === '-' || key === '0') {
+        // Interface Scale, as macOS apps zoom: ⌘+ larger, ⌘− smaller, ⌘0 actual size.
+        event.preventDefault();
+        if (key === '0') setInterfaceScale(1, 'keyboard');
+        else stepInterfaceScale(key === '-' ? -1 : 1);
       }
       return;
     }
@@ -2620,6 +2705,8 @@ async function start() {
       return;
     }
     if (event.target instanceof HTMLButtonElement && (event.key === ' ' || event.key === 'Enter')) return;
+    // A focused pop-up menu (examples, Interface Scale) keeps its own keys: type-to-select, Space opens it.
+    if (event.target instanceof HTMLSelectElement) return;
     // A readback changes nothing, so it also works while edits are frozen.
     if (event.key === 'L') return layoutReport();
     if (frozen) return;
@@ -2772,6 +2859,60 @@ async function start() {
     }
     const o = host.explanation;
     return o && o.bodyId === explained ? o : null;
+  };
+
+  // Law names over their supports: the top of each visible law's support, projected each frame.
+  const lawLabelsHost = $('law-labels');
+  const lawLabelSpans = new Map<string, HTMLSpanElement>();
+  const labelAnchor = new Vector3();
+  const labelAxis = new Vector3();
+  const labelRotation = new Quaternion();
+  const placeLawLabels = () => {
+    // The canvas fills the window; reading the window's size forces no layout in the frame loop.
+    const rect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+    const shown = new Set<string>();
+    for (const field of host.appliedFields()) {
+      const p = lawPresentation(field.id);
+      if (!p.visible) continue;
+      shown.add(field.id);
+      let span = lawLabelSpans.get(field.id);
+      if (!span) {
+        span = document.createElement('span');
+        lawLabelsHost.append(span);
+        lawLabelSpans.set(field.id, span);
+      }
+      const selected = field.id === interaction.selectedId;
+      const signature = JSON.stringify([p.label, p.color, field.enabled, selected]);
+      if (span.dataset.signature !== signature) {
+        span.dataset.signature = signature;
+        span.dataset.selected = String(selected);
+        span.dataset.enabled = String(field.enabled);
+        span.style.setProperty('--law-color', p.color);
+        span.textContent = p.label; // text, never markup (SPEC §15.2)
+        if (!field.enabled) {
+          const off = document.createElement('span');
+          off.className = 'off';
+          off.textContent = ' off';
+          span.append(off);
+        }
+      }
+      // The support's highest point, in world Y, whatever its rotation.
+      const bounds = regionDescriptor(field.region.kind).bounds(field.region);
+      labelRotation.set(...field.pose.rotation);
+      let top = 0;
+      for (let i = 0; i < 3; i++) top += Math.abs(labelAxis.set(i === 0 ? 1 : 0, i === 1 ? 1 : 0, i === 2 ? 1 : 0).applyQuaternion(labelRotation).y) * bounds[i]!;
+      labelAnchor.set(field.pose.position[0], field.pose.position[1] + top, field.pose.position[2]).project(viewport.camera);
+      span.hidden = labelAnchor.z > 1;
+      const left = `${Math.round(rect.left + ((labelAnchor.x + 1) / 2) * rect.width)}px`;
+      const topPx = `${Math.round(rect.top + ((1 - labelAnchor.y) / 2) * rect.height)}px`;
+      if (span.style.left !== left) span.style.left = left;
+      if (span.style.top !== topPx) span.style.top = topPx;
+    }
+    for (const [id, span] of lawLabelSpans) {
+      if (shown.has(id)) continue;
+      span.remove();
+      lawLabelSpans.delete(id);
+    }
   };
 
   const placeLabels = (labels: readonly ExplainLabel[]) => {
@@ -3005,6 +3146,7 @@ async function start() {
       if (runs.comparison) { ghosts?.update(runs.comparison, ghostsShown); renderComparison(); }
       interaction.syncProxy();
       drawLaws();
+      placeLawLabels();
       updateExplanation();
       syncControls();
       renderRun();
@@ -3139,7 +3281,7 @@ async function start() {
   }, 500);
 
   $('status').hidden = true;
-  for (const id of ['tools', 'panel', 'transport', 'overlays', 'run']) $(id).hidden = false;
+  for (const id of ['tools', 'document', 'panel', 'transport', 'overlays', 'run']) $(id).hidden = false;
   overlay.hidden = false;
   renderPanel();
   reportDigest('startup');

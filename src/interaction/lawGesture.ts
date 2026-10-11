@@ -15,6 +15,15 @@ export type TransformMode = 'translate' | 'rotate' | 'scale';
 
 /** A press that moves less than this (CSS px) before release is a click (selection). */
 const CLICK_SLOP_PX = 4;
+
+/**
+ * Selection through overlaps: a click picks the nearest law under the pointer, and clicking again
+ * where the selected law overlaps others selects the next one behind it, wrapping to the nearest.
+ */
+export function nextPick(hits: readonly { id: string }[], selectedId: string | null): string | null {
+  const at = hits.findIndex((h) => h.id === selectedId);
+  return hits[at < 0 ? 0 : (at + 1) % hits.length]?.id ?? null;
+}
 /** A press within this distance (CSS px) of a handle's projected center grabs it. */
 const HANDLE_PICK_PX = 14;
 
@@ -179,7 +188,7 @@ export class LawInteraction {
       if (!press || press.onGizmo || event.button !== 0) return;
       if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > CLICK_SLOP_PX) return;
       if (o.clickBody(event.clientX, event.clientY)) return;
-      this.select(this.pickLaw(event.clientX, event.clientY)?.id ?? null);
+      this.select(nextPick(this.pickLaws(event.clientX, event.clientY), this.selectedId));
     });
     canvas.addEventListener('pointercancel', () => this.cancel('pointercancel'));
     // Capture also ends normally inside TransformControls' own pointerup, just before it finishes
@@ -283,19 +292,23 @@ export class LawInteraction {
 
   /** The nearest pickable law whose semantic support the view ray enters, or null on a miss. */
   pickLaw(clientX: number, clientY: number): { id: string; distance: number } | null {
+    return this.pickLaws(clientX, clientY)[0] ?? null;
+  }
+
+  /** Every pickable law whose semantic support the view ray enters, nearest first. */
+  pickLaws(clientX: number, clientY: number): { id: string; distance: number }[] {
     this.toNdc(clientX, clientY);
     this.raycaster.setFromCamera(this.ndc, this.o.camera);
-    let nearest: { id: string; distance: number } | null = null;
+    const hits: { id: string; distance: number }[] = [];
     for (const f of this.o.pickable()) {
       this.position.set(...f.pose.position);
       this.inverse.compose(this.position, this.rotation.set(...f.pose.rotation), this.one).invert();
       // Rotation is rigid, so the local ray parameter is the world distance.
       const ray = this.raycaster.ray.clone().applyMatrix4(this.inverse);
       const distance = regionDescriptor(f.region.kind).rayEntry(f.region, ray.origin.toArray() as unknown as Vec3, ray.direction.toArray() as unknown as Vec3);
-      if (distance === null) continue;
-      if (!nearest || distance < nearest.distance) nearest = { id: f.id, distance };
+      if (distance !== null) hits.push({ id: f.id, distance });
     }
-    return nearest;
+    return hits.sort((a, b) => a.distance - b.distance);
   }
 
   /** The handle whose projected center is nearest the pointer within the pick radius; nearer the camera wins a tie. */

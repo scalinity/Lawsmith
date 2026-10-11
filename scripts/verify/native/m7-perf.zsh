@@ -27,10 +27,10 @@ sleep 0.5
 layout
 expect layout "P3 viewport and body workload" "e['viewport']==[1600,1000] and len(e['bodies'])==100"
 press trails-off
-press_expect compare-from comparison
+# Compare from here starts A's default horizon itself (M8): fork, start and commit.
 n=$(count comparison)
-press_expect baseline-compute comparison
-wait_log comparison $(( n + 2 )) 20
+press_expect compare-from comparison
+wait_log comparison $(( n + 3 )) 20
 expect comparison "P3 construction ≤3s and budget" "e['action']=='baseline-committed' and e['horizon']==600 and e['metrics']['elapsedMs'] <= 3000 and e['bytes'] <= 67108864"
 n=$(count comparison)
 keys kd:shift t:k ku:shift

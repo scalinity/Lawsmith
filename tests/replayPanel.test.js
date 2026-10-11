@@ -66,6 +66,8 @@ function panel(s, selectedId = null) {
     supportGroup: $('law-support'), regionParams: $('law-region-params'), primitiveParams: $('law-params'),
     triples: new Map(['position', 'rotation'].map((key) => [key, Array.from({ length: 3 }, () => new Element('input'))])),
     EYE: '', EYE_OFF: '', BUSY_TEXT: {}, DEGREES: 180 / Math.PI, renderCount: 0,
+    // M8: no bundled example is open here; the examples menu is a plain control.
+    openedExample: null, exampleMenu: $('example-open'),
   });
   const shown = source.match(/  let (shownRevision|shownPanelSignature) = (.*);/).slice(1);
   const frameStart = source.indexOf('      // The panel follows applied changes');

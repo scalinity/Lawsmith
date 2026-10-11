@@ -1,4 +1,8 @@
 :root {
+  /* Interface Scale (SPEC §11.3): every interface length is a multiple of --u. The canvas, the
+     renderer's pixel ratio and the simulation never read it. */
+  --ui-scale: 1;
+  --u: calc(var(--ui-scale) * 1px);
   --shell: #141311;
   /* The shell at 55%: a panel inset that lets the canvas behind it show through. */
   --shell-veil: rgb(20 19 17 / 0.55);
@@ -40,7 +44,7 @@ body {
   overflow: hidden;
   background: var(--shell);
   color: var(--text);
-  font: 13px/1.4 var(--sans);
+  font: calc(13 * var(--u))/1.4 var(--sans);
   -webkit-user-select: none;
   user-select: none;
 }
@@ -52,28 +56,112 @@ body {
   display: block;
 }
 
+/* The application surface: a transparent grid over the viewport (SPEC §11.1). The top row is the
+   invisible drag band and the tools; the scene column runs down the left, time and context down the
+   right, the dock sits bottom right and the developer readout bottom left. Only panels take input. */
+#shell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  column-gap: calc(12 * var(--u));
+  row-gap: calc(12 * var(--u));
+  padding-bottom: calc(12 * var(--u));
+  pointer-events: none;
+}
+
+#scene-column,
+#context-column,
+#dock {
+  pointer-events: auto;
+  min-height: 0;
+}
+
+#scene-column {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 * var(--u));
+  width: min(calc(284 * var(--u)), 44vw);
+  max-height: 100%;
+  margin-left: calc(12 * var(--u));
+}
+
+/* Collapsed: the laws, inspector and settings go; the scene's name and file actions stay. */
+#scene-column[data-collapsed="true"] #panel {
+  display: none;
+}
+
+#document {
+  flex: none;
+  padding: calc(10 * var(--u)) calc(12 * var(--u));
+  box-sizing: border-box;
+  border: 1px solid var(--hairline);
+  border-radius: calc(12 * var(--u));
+  background: rgb(33 31 28 / 0.9);
+}
+
+#context-column {
+  grid-column: 3;
+  grid-row: 2;
+  align-self: start;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: calc(8 * var(--u));
+  /* Whatever the scene column leaves, so the two never meet at any scale. */
+  max-width: min(calc(440 * var(--u)), calc(100vw - min(calc(284 * var(--u)), 44vw) - 36 * var(--u)), 50vw);
+  max-height: 100%;
+  overflow-y: auto;
+  margin-right: calc(12 * var(--u));
+}
+
+#context-column > * {
+  flex: none;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#dock {
+  grid-column: 3;
+  grid-row: 3;
+  justify-self: end;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: calc(8 * var(--u));
+  max-width: 50vw;
+  margin-right: calc(12 * var(--u));
+}
+
 /* Transparent to the pointer except for its two children. */
 #top-rail {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
+  grid-column: 1 / -1;
+  grid-row: 1;
   display: flex;
   align-items: center;
+  min-height: calc(40 * var(--u));
   pointer-events: none;
 }
 
 #drag-region {
-  flex: 1;
+  flex: 1 0 120px;
   align-self: stretch;
   pointer-events: auto;
 }
 
 #tools {
   display: flex;
-  gap: 8px;
-  margin: 0 12px 0 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: calc(8 * var(--u));
+  margin: 0 calc(12 * var(--u)) 0 calc(8 * var(--u));
+  padding: calc(6 * var(--u)) 0;
   pointer-events: auto;
 }
 
@@ -81,11 +169,12 @@ body {
   display: none;
 }
 
+/* A minimum height, so a label that must wrap in a narrow column grows the button instead of spilling. */
 button {
-  height: 28px;
-  padding: 0 10px;
-  border: 1px solid var(--hairline);
-  border-radius: 8px;
+  min-height: calc(28 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(8 * var(--u));
   background: var(--card);
   color: var(--text-secondary);
   font: inherit;
@@ -98,14 +187,14 @@ button:hover {
 }
 
 button:focus-visible {
-  outline: 2px solid var(--teal);
-  outline-offset: 1px;
+  outline: calc(2 * var(--u)) solid var(--teal);
+  outline-offset: calc(1 * var(--u));
 }
 
 .segmented {
   display: flex;
-  border: 1px solid var(--hairline);
-  border-radius: 8px;
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(8 * var(--u));
   overflow: hidden;
 }
 
@@ -115,7 +204,7 @@ button:focus-visible {
 }
 
 .segmented button + button {
-  border-left: 1px solid var(--hairline);
+  border-left: calc(1 * var(--u)) solid var(--hairline);
 }
 
 .segmented button[aria-pressed="true"],
@@ -125,8 +214,8 @@ button:focus-visible {
 }
 
 kbd {
-  margin-left: 4px;
-  font: 11px var(--mono);
+  margin-left: calc(4 * var(--u));
+  font: calc(11 * var(--u)) var(--mono);
   color: var(--text-tertiary);
 }
 
@@ -141,6 +230,8 @@ kbd {
 }
 
 #status[hidden],
+#document[hidden],
+#doc-invitation[hidden],
 #diagnostics[hidden],
 #failure[hidden],
 #panel[hidden],
@@ -154,33 +245,72 @@ kbd {
   display: none;
 }
 
-/* The Scene panel: one column under the traffic lights, clear of the drag band. It scrolls on
-   its own rather than growing over the viewport. */
+/* The Scene panel: laws, the selected law's inspector and scene settings, under the document card.
+   It scrolls on its own rather than growing over the viewport. */
 #panel {
-  position: fixed;
-  top: 52px;
-  left: 12px;
-  width: 284px;
-  max-height: calc(100vh - 52px - 150px);
+  flex: 0 1 auto;
+  min-height: 0;
   overflow-y: auto;
   box-sizing: border-box;
   border: 1px solid var(--hairline);
-  border-radius: 12px;
+  border-radius: calc(12 * var(--u));
   background: rgb(33 31 28 / 0.9);
 }
 
 #panel > section {
-  padding: 10px 12px;
+  padding: calc(10 * var(--u)) calc(12 * var(--u));
 }
 
 #panel > section + section {
-  border-top: 1px solid var(--hairline);
+  border-top: calc(1 * var(--u)) solid var(--hairline);
+}
+
+/* The scene's name and the panel's collapse control share one line. */
+.doc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(8 * var(--u));
+}
+
+.doc-head button {
+  flex: none;
+}
+
+/* Native pop-up menus in the buttons' shape. */
+select {
+  height: calc(28 * var(--u));
+  padding: 0 calc(8 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(8 * var(--u));
+  background: var(--card);
+  color: var(--text-secondary);
+  font: inherit;
+}
+
+select:focus-visible {
+  outline: calc(2 * var(--u)) solid var(--teal);
+  outline-offset: calc(1 * var(--u));
+}
+
+#example-open {
+  display: block;
+  width: 100%;
+  margin-top: calc(8 * var(--u));
+}
+
+/* An example's next move, in the scene card: read before anything moves. */
+#doc-invitation {
+  margin: calc(8 * var(--u)) 0 0;
+  padding-left: calc(8 * var(--u));
+  border-left: calc(2 * var(--u)) solid var(--teal);
+  color: var(--text);
 }
 
 /* The scene's name is the document's identity: the one editorial moment on screen. */
 #doc-title {
-  margin: 2px 0 2px;
-  font: 400 18px/1.25 var(--serif);
+  margin: calc(2 * var(--u)) 0 calc(2 * var(--u));
+  font: 400 calc(18 * var(--u))/1.25 var(--serif);
   color: var(--text);
   overflow-wrap: anywhere;
 }
@@ -188,16 +318,16 @@ kbd {
 #doc-state {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 0 0 10px;
-  font-size: 12px;
+  gap: calc(6 * var(--u));
+  margin: 0 0 calc(10 * var(--u));
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
 #doc-state[data-dirty="true"]::before {
   content: "";
-  width: 7px;
-  height: 7px;
+  width: calc(7 * var(--u));
+  height: calc(7 * var(--u));
   border-radius: 50%;
   background: var(--lavender);
   flex: none;
@@ -205,18 +335,18 @@ kbd {
 
 .file-actions {
   display: flex;
-  gap: 6px;
+  gap: calc(6 * var(--u));
 }
 
 .file-actions button,
 .law-actions button {
-  padding: 0 8px;
+  padding: 0 calc(8 * var(--u));
   white-space: nowrap;
 }
 
 .note {
-  margin: 9px 0 0;
-  font-size: 11.5px;
+  margin: calc(9 * var(--u)) 0 0;
+  font-size: calc(11.5 * var(--u));
   line-height: 1.45;
   color: var(--text-tertiary);
 }
@@ -224,8 +354,8 @@ kbd {
 #doc-message,
 #doc-recovery,
 #details-error {
-  margin: 8px 0 0;
-  font-size: 12px;
+  margin: calc(8 * var(--u)) 0 0;
+  font-size: calc(12 * var(--u));
   line-height: 1.4;
   color: var(--text-secondary);
   -webkit-user-select: text;
@@ -242,14 +372,14 @@ kbd {
 }
 
 #panel h2 {
-  margin: 0 0 8px;
-  font: 600 12px/1.4 var(--sans);
+  margin: 0 0 calc(8 * var(--u));
+  font: 600 calc(12 * var(--u))/1.4 var(--sans);
   color: var(--text-secondary);
 }
 
 #law-list {
   display: grid;
-  gap: 4px;
+  gap: calc(4 * var(--u));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -257,19 +387,19 @@ kbd {
 
 .law-row {
   display: flex;
-  gap: 4px;
+  gap: calc(4 * var(--u));
 }
 
 .law-select {
   flex: 1;
   min-width: 0;
   height: auto;
-  min-height: 38px;
-  padding: 4px 8px;
+  min-height: calc(38 * var(--u));
+  padding: calc(4 * var(--u)) calc(8 * var(--u));
   display: grid;
   justify-items: start;
   text-align: left;
-  border-left: 3px solid var(--law-color, var(--teal));
+  border-left: calc(3 * var(--u)) solid var(--law-color, var(--teal));
 }
 
 .law-select[aria-pressed="true"] {
@@ -287,14 +417,14 @@ kbd {
 }
 
 .law-meta {
-  font: 11px var(--mono);
+  font: calc(11 * var(--u)) var(--mono);
   color: var(--text-tertiary);
 }
 
 /* Visibility (display only) and enabled (the law's effect) are different kinds of control. */
 .law-visible {
-  width: 34px;
-  min-height: 38px;
+  width: calc(34 * var(--u));
+  min-height: calc(38 * var(--u));
   height: auto;
   padding: 0;
   display: grid;
@@ -302,8 +432,8 @@ kbd {
 }
 
 .law-visible svg {
-  width: 16px;
-  height: 16px;
+  width: calc(16 * var(--u));
+  height: calc(16 * var(--u));
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -316,8 +446,8 @@ kbd {
 }
 
 .law-enabled {
-  width: 44px;
-  min-height: 38px;
+  width: calc(44 * var(--u));
+  min-height: calc(38 * var(--u));
   height: auto;
 }
 
@@ -332,7 +462,7 @@ kbd {
 
 .law-actions {
   display: flex;
-  gap: 6px;
+  gap: calc(6 * var(--u));
 }
 
 /* The selected law's name with the actions that apply to it. */
@@ -340,8 +470,8 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: calc(8 * var(--u));
+  margin-bottom: calc(8 * var(--u));
 }
 
 #panel .details-head h2 {
@@ -354,45 +484,45 @@ kbd {
 
 #law-list:empty::after {
   content: "No laws in this scene.";
-  font-size: 12px;
+  font-size: calc(12 * var(--u));
   color: var(--text-tertiary);
 }
 
 .field-row {
   display: grid;
-  grid-template-columns: 74px 1fr;
+  grid-template-columns: calc(74 * var(--u)) 1fr;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 12px;
+  gap: calc(8 * var(--u));
+  margin-bottom: calc(8 * var(--u));
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
 #law-colors {
   display: flex;
-  gap: 8px;
+  gap: calc(8 * var(--u));
 }
 
 .swatch {
-  width: 20px;
-  height: 20px;
+  width: calc(20 * var(--u));
+  height: calc(20 * var(--u));
   padding: 0;
   border-radius: 50%;
-  border: 1px solid var(--hairline);
+  border: calc(1 * var(--u)) solid var(--hairline);
   background: var(--swatch);
 }
 
 .swatch[aria-checked="true"] {
-  outline: 2px solid var(--text-secondary);
-  outline-offset: 2px;
+  outline: calc(2 * var(--u)) solid var(--text-secondary);
+  outline-offset: calc(2 * var(--u));
 }
 
 .triple {
   display: grid;
-  grid-template-columns: 74px repeat(3, 1fr);
+  grid-template-columns: calc(74 * var(--u)) repeat(3, 1fr);
   align-items: center;
-  gap: 6px;
-  margin: 0 0 6px;
+  gap: calc(6 * var(--u));
+  margin: 0 0 calc(6 * var(--u));
   padding: 0;
   border: 0;
 }
@@ -400,7 +530,7 @@ kbd {
 .triple legend {
   float: left;
   padding: 0;
-  font-size: 12px;
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
@@ -410,24 +540,24 @@ kbd {
 
 #panel input {
   min-width: 0;
-  height: 26px;
+  height: calc(26 * var(--u));
   box-sizing: border-box;
-  padding: 0 6px;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
+  padding: 0 calc(6 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(6 * var(--u));
   background: var(--shell);
   color: var(--text);
-  font: 11.5px var(--mono);
+  font: calc(11.5 * var(--u)) var(--mono);
   -webkit-user-select: text;
   user-select: text;
 }
 
 #panel input[type="text"] {
-  font: 12px var(--sans);
+  font: calc(12 * var(--u)) var(--sans);
 }
 
 #panel input:focus-visible {
-  outline: 2px solid var(--teal);
+  outline: calc(2 * var(--u)) solid var(--teal);
   outline-offset: 0;
 }
 
@@ -438,34 +568,34 @@ kbd {
 .pair-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 4px;
+  gap: calc(8 * var(--u));
+  margin-top: calc(4 * var(--u));
 }
 
 .pair-fields label {
   display: grid;
-  gap: 4px;
-  font-size: 12px;
+  gap: calc(4 * var(--u));
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
 .legend {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  font-size: 11.5px;
+  gap: calc(8 * var(--u));
+  margin-top: calc(10 * var(--u));
+  font-size: calc(11.5 * var(--u));
   color: var(--text-tertiary);
 }
 
 .legend + .legend {
-  margin-top: 6px;
+  margin-top: calc(6 * var(--u));
 }
 
 .legend button {
   margin-left: auto;
-  height: 24px;
-  padding: 0 8px;
+  height: calc(24 * var(--u));
+  padding: 0 calc(8 * var(--u));
 }
 
 .legend button[aria-pressed="true"] {
@@ -475,9 +605,9 @@ kbd {
 /* A drag sample: a dot, because drag has no direction of its own. */
 .dot-glyph {
   flex: none;
-  width: 8px;
-  height: 8px;
-  margin: 0 5px;
+  width: calc(8 * var(--u));
+  height: calc(8 * var(--u));
+  margin: 0 calc(5 * var(--u));
   border-radius: 50%;
   background: var(--text-secondary);
 }
@@ -489,8 +619,8 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: calc(8 * var(--u));
+  margin-bottom: calc(8 * var(--u));
 }
 
 #panel .laws-head h2 {
@@ -499,25 +629,25 @@ kbd {
 
 .law-shelf {
   display: flex;
-  gap: 4px;
+  gap: calc(4 * var(--u));
 }
 
 .law-shelf button {
-  height: 24px;
-  padding: 0 7px;
-  border-top: 2px solid var(--law-color, var(--hairline));
+  height: calc(24 * var(--u));
+  padding: 0 calc(7 * var(--u));
+  border-top: calc(2 * var(--u)) solid var(--law-color, var(--hairline));
 }
 
 .segmented.compact button {
-  height: 24px;
-  padding: 0 8px;
+  height: calc(24 * var(--u));
+  padding: 0 calc(8 * var(--u));
 }
 
 .param-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 6px;
+  gap: calc(8 * var(--u));
+  margin-top: calc(6 * var(--u));
 }
 
 .param-fields:empty,
@@ -527,19 +657,19 @@ kbd {
 
 .param-fields label {
   display: grid;
-  gap: 4px;
-  font-size: 12px;
+  gap: calc(4 * var(--u));
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
 .kind {
-  margin: 10px 0 0;
-  font-size: 12px;
+  margin: calc(10 * var(--u)) 0 0;
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
 .kind .unit {
-  font: 11px var(--mono);
+  font: calc(11 * var(--u)) var(--mono);
 }
 
 #law-sampling[data-skips="true"] {
@@ -548,9 +678,9 @@ kbd {
 
 /* M5 ingredients: one law's short list of primitives, each with its own gains and masks. */
 .ingredients {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--hairline);
+  margin-top: calc(12 * var(--u));
+  padding-top: calc(10 * var(--u));
+  border-top: calc(1 * var(--u)) solid var(--hairline);
 }
 
 .ingredients[hidden],
@@ -561,13 +691,13 @@ kbd {
 
 #panel h3 {
   margin: 0;
-  font: 600 12px/1.4 var(--sans);
+  font: 600 calc(12 * var(--u))/1.4 var(--sans);
   color: var(--text-secondary);
 }
 
 #ingredient-list {
   display: grid;
-  gap: 4px;
+  gap: calc(4 * var(--u));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -579,19 +709,19 @@ kbd {
 
 .ingredient-row {
   display: flex;
-  gap: 4px;
+  gap: calc(4 * var(--u));
 }
 
 .ingredient-select {
   flex: 1;
   min-width: 0;
   height: auto;
-  min-height: 32px;
-  padding: 3px 8px;
+  min-height: calc(32 * var(--u));
+  padding: calc(3 * var(--u)) calc(8 * var(--u));
   display: grid;
   justify-items: start;
   text-align: left;
-  border-left: 3px solid var(--law-color, var(--teal));
+  border-left: calc(3 * var(--u)) solid var(--law-color, var(--teal));
 }
 
 .ingredient-select[aria-pressed="true"] {
@@ -602,34 +732,34 @@ kbd {
 
 .ingredient-remove {
   height: auto;
-  min-height: 32px;
-  padding: 0 8px;
+  min-height: calc(32 * var(--u));
+  padding: 0 calc(8 * var(--u));
   color: var(--text-secondary);
 }
 
 .crumbs {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  font-size: 11.5px;
+  gap: calc(8 * var(--u));
+  margin-bottom: calc(6 * var(--u));
+  font-size: calc(11.5 * var(--u));
   color: var(--text-secondary);
 }
 
 .crumbs button {
-  height: 24px;
-  padding: 0 8px;
+  height: calc(24 * var(--u));
+  padding: 0 calc(8 * var(--u));
 }
 
 .ingredients .note {
-  margin-top: 6px;
+  margin-top: calc(6 * var(--u));
 }
 
 #ingredient-detail {
-  margin-top: 8px;
-  padding: 8px;
-  border: 1px solid var(--hairline);
-  border-radius: 8px;
+  margin-top: calc(8 * var(--u));
+  padding: calc(8 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(8 * var(--u));
   background: var(--shell-veil);
 }
 
@@ -638,17 +768,17 @@ kbd {
 }
 
 .modifier {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--hairline);
+  margin-top: calc(8 * var(--u));
+  padding-top: calc(8 * var(--u));
+  border-top: calc(1 * var(--u)) solid var(--hairline);
 }
 
 .modifier-head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-  font-size: 12px;
+  gap: calc(6 * var(--u));
+  margin-bottom: calc(6 * var(--u));
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
@@ -658,40 +788,40 @@ kbd {
 }
 
 .modifier-head button {
-  height: 24px;
-  padding: 0 7px;
+  height: calc(24 * var(--u));
+  padding: 0 calc(7 * var(--u));
 }
 
 .modifier .triple {
-  grid-template-columns: 62px repeat(3, 1fr);
+  grid-template-columns: calc(62 * var(--u)) repeat(3, 1fr);
 }
 
 .modifier .note {
-  margin: 0 0 6px;
+  margin: 0 0 calc(6 * var(--u));
 }
 
 .modifier-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+  gap: calc(6 * var(--u));
+  margin-top: calc(8 * var(--u));
 }
 
 .modifier-actions button,
 #ingredient-detail > button {
-  height: 26px;
-  padding: 0 9px;
+  height: calc(26 * var(--u));
+  padding: 0 calc(9 * var(--u));
 }
 
 .live {
-  margin: 6px 0 0;
-  font: 11px/1.4 var(--mono);
+  margin: calc(6 * var(--u)) 0 0;
+  font: calc(11 * var(--u))/1.4 var(--mono);
   color: var(--lavender);
 }
 
 /* A compound law's row in the body readout is followed by its ingredients' parts of it. */
 .readout-row.ingredient > span:nth-child(2) {
-  padding-left: 10px;
+  padding-left: calc(10 * var(--u));
   color: var(--text-secondary);
 }
 
@@ -702,8 +832,8 @@ kbd {
 /* 0.6 m of arrow = 12 m/s²; the glyph is only a key, not to scale. */
 .arrow-glyph {
   flex: none;
-  width: 18px;
-  height: 2px;
+  width: calc(18 * var(--u));
+  height: calc(2 * var(--u));
   background: var(--lavender);
   position: relative;
 }
@@ -711,16 +841,16 @@ kbd {
 .arrow-glyph::after {
   content: "";
   position: absolute;
-  right: -4px;
-  top: -3px;
-  border-left: 5px solid var(--lavender);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  right: calc(-4 * var(--u));
+  top: calc(-3 * var(--u));
+  border-left: calc(5 * var(--u)) solid var(--lavender);
+  border-top: calc(4 * var(--u)) solid transparent;
+  border-bottom: calc(4 * var(--u)) solid transparent;
 }
 
 .pair {
   display: flex;
-  gap: 4px;
+  gap: calc(4 * var(--u));
 }
 
 button:disabled {
@@ -731,24 +861,24 @@ button:disabled {
 
 #recovery-offer {
   position: fixed;
-  top: 52px;
+  top: calc(52 * var(--u));
   left: 50%;
   translate: -50% 0;
-  width: min(440px, calc(100vw - 48px));
+  width: min(calc(440 * var(--u)), calc(100vw - calc(48 * var(--u))));
   box-sizing: border-box;
-  padding: 16px 18px 14px;
-  border: 1px solid var(--divider);
-  border-radius: 12px;
+  padding: calc(16 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u));
+  border: calc(1 * var(--u)) solid var(--divider);
+  border-radius: calc(12 * var(--u));
   background: var(--card);
 }
 
 #recovery-offer h2 {
-  margin: 0 0 6px;
-  font: 400 17px/1.3 var(--serif);
+  margin: 0 0 calc(6 * var(--u));
+  font: 400 calc(17 * var(--u))/1.3 var(--serif);
 }
 
 #recovery-offer p {
-  margin: 0 0 14px;
+  margin: 0 0 calc(14 * var(--u));
   color: var(--text-secondary);
   line-height: 1.45;
 }
@@ -756,7 +886,7 @@ button:disabled {
 .offer-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: calc(8 * var(--u));
 }
 
 button.primary {
@@ -766,20 +896,19 @@ button.primary {
 }
 
 #transport {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  padding: 6px;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+  gap: calc(8 * var(--u));
+  padding: calc(6 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(12 * var(--u));
   background: rgb(33 31 28 / 0.88);
 }
 
 #play {
-  min-width: 96px;
+  min-width: calc(96 * var(--u));
 }
 
 #play[aria-pressed="true"] {
@@ -788,24 +917,20 @@ button.primary {
 }
 
 #clock {
-  min-width: 150px;
-  padding: 0 6px;
-  font: 11px var(--mono);
+  min-width: calc(150 * var(--u));
+  padding: 0 calc(6 * var(--u));
+  font: calc(11 * var(--u)) var(--mono);
   color: var(--text-secondary);
 }
 
+/* A simulation error heads the context column, above the recording and comparison it concerns. */
 #sim-error {
-  position: fixed;
-  top: 52px;
-  left: 50%;
-  translate: -50% 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  max-width: min(560px, calc(100vw - 48px));
-  padding: 8px 8px 8px 14px;
-  border: 1px solid var(--danger);
-  border-radius: 10px;
+  gap: calc(12 * var(--u));
+  padding: calc(8 * var(--u)) calc(8 * var(--u)) calc(8 * var(--u)) calc(14 * var(--u));
+  border: calc(1 * var(--u)) solid var(--danger);
+  border-radius: calc(10 * var(--u));
   background: var(--card);
 }
 
@@ -815,10 +940,11 @@ button.primary {
 }
 
 #diagnostics {
-  position: fixed;
-  left: 12px;
-  bottom: 12px;
-  margin: 0;
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: start;
+  align-self: end;
+  margin: 0 0 0 12px;
   padding: 8px 10px;
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -833,43 +959,43 @@ button.primary {
   top: 50%;
   left: 50%;
   translate: -50% -50%;
-  width: min(560px, calc(100vw - 48px));
-  max-height: calc(100vh - 80px);
+  width: min(calc(560 * var(--u)), calc(100vw - calc(48 * var(--u))));
+  max-height: calc(100vh - calc(80 * var(--u)));
   overflow-y: auto;
   box-sizing: border-box;
-  padding: 24px 28px;
-  border: 1px solid var(--divider);
-  border-radius: 14px;
+  padding: calc(24 * var(--u)) calc(28 * var(--u));
+  border: calc(1 * var(--u)) solid var(--divider);
+  border-radius: calc(14 * var(--u));
   background: var(--card);
   -webkit-user-select: text;
   user-select: text;
 }
 
 #failure h1 {
-  margin: 0 0 8px;
-  font: 400 24px/1.25 var(--serif);
+  margin: 0 0 calc(8 * var(--u));
+  font: 400 calc(24 * var(--u))/1.25 var(--serif);
 }
 
 #failure-summary {
-  margin: 0 0 16px;
+  margin: 0 0 calc(16 * var(--u));
   color: var(--text-secondary);
 }
 
 #failure-detail {
   margin: 0;
-  padding: 12px;
-  border-radius: 8px;
+  padding: calc(12 * var(--u));
+  border-radius: calc(8 * var(--u));
   background: var(--shell);
   color: var(--text-tertiary);
-  font: 11px/1.5 var(--mono);
+  font: calc(11 * var(--u))/1.5 var(--mono);
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 /* Motion: explain a body, probes and trails. */
 #motion .laws-head button {
-  height: 24px;
-  padding: 0 8px;
+  height: calc(24 * var(--u));
+  padding: 0 calc(8 * var(--u));
 }
 
 .note.first {
@@ -877,7 +1003,7 @@ button.primary {
 }
 
 .segmented.spread {
-  margin-top: 6px;
+  margin-top: calc(6 * var(--u));
 }
 
 .segmented.spread button {
@@ -885,23 +1011,22 @@ button.primary {
 }
 
 #trail-mode button {
-  padding: 0 9px;
+  padding: 0 calc(9 * var(--u));
 }
 
 #arrows-scope button {
-  padding: 0 9px;
+  padding: 0 calc(9 * var(--u));
 }
 
 /* What to draw (arrows, probes, trails): a cluster above the transport, always reachable, never scrolled away. */
 #overlays {
-  position: fixed;
-  right: 12px;
-  bottom: 64px;
   display: flex;
-  gap: 6px;
-  padding: 6px;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: calc(6 * var(--u));
+  padding: calc(6 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(12 * var(--u));
   background: rgb(33 31 28 / 0.88);
 }
 
@@ -915,8 +1040,8 @@ button.primary {
 }
 
 #motion-error {
-  margin: 8px 0 0;
-  font-size: 12px;
+  margin: calc(8 * var(--u)) 0 0;
+  font-size: calc(12 * var(--u));
   color: var(--danger);
 }
 
@@ -927,9 +1052,9 @@ button.primary {
 /* Probe: a small diamond, never a sphere. */
 .probe-glyph {
   flex: none;
-  width: 7px;
-  height: 7px;
-  margin: 0 6px;
+  width: calc(7 * var(--u));
+  height: calc(7 * var(--u));
+  margin: 0 calc(6 * var(--u));
   rotate: 45deg;
   background: var(--probe);
 }
@@ -937,23 +1062,18 @@ button.primary {
 /* Trail: a line fading into the shell. */
 .trail-glyph {
   flex: none;
-  width: 18px;
-  height: 2px;
+  width: calc(18 * var(--u));
+  height: calc(2 * var(--u));
   background: linear-gradient(90deg, var(--shell), var(--trail-selected));
 }
 
 /* The explained body, on the right (SPEC §11.1). It scrolls rather than reaching the transport. */
 #explain {
-  position: fixed;
-  top: calc(52px + var(--run-reserve, 0px));
-  right: 12px;
-  width: 312px;
-  max-height: calc(100vh - 52px - 124px - var(--run-reserve, 0px));
-  overflow-y: auto;
+  width: calc(312 * var(--u));
   box-sizing: border-box;
-  padding: 10px 12px 12px;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+  padding: calc(10 * var(--u)) calc(12 * var(--u)) calc(12 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(12 * var(--u));
   background: rgb(33 31 28 / 0.9);
 }
 
@@ -967,7 +1087,7 @@ button.primary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: calc(8 * var(--u));
 }
 
 #explain h2 {
@@ -976,47 +1096,47 @@ button.primary {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 600 12px/1.4 var(--sans);
+  font: 600 calc(12 * var(--u))/1.4 var(--sans);
   color: var(--text-secondary);
 }
 
 .ident {
-  font: 12px var(--mono);
+  font: calc(12 * var(--u)) var(--mono);
   color: var(--text);
 }
 
 #explain-close {
-  height: 24px;
-  padding: 0 8px;
+  height: calc(24 * var(--u));
+  padding: 0 calc(8 * var(--u));
 }
 
 #explain h3 {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 12px 0 4px;
-  font: 600 12px/1.4 var(--sans);
+  gap: calc(7 * var(--u));
+  margin: calc(12 * var(--u)) 0 calc(4 * var(--u));
+  font: 600 calc(12 * var(--u))/1.4 var(--sans);
   color: var(--text);
 }
 
 .transition {
-  margin: 8px 0 0;
-  font: 11.5px var(--mono);
+  margin: calc(8 * var(--u)) 0 0;
+  font: calc(11.5 * var(--u)) var(--mono);
   color: var(--text-secondary);
 }
 
 /* Vector readouts: a glyph, a name, the magnitude and the three components, all tabular. */
 .readout {
-  margin-top: 6px;
+  margin-top: calc(6 * var(--u));
 }
 
 .readout-row {
   display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) repeat(4, 42px);
+  grid-template-columns: calc(14 * var(--u)) minmax(0, 1fr) repeat(4, calc(42 * var(--u)));
   align-items: baseline;
-  column-gap: 4px;
-  padding: 2px 0;
-  font: 11px/1.4 var(--mono);
+  column-gap: calc(4 * var(--u));
+  padding: calc(2 * var(--u)) 0;
+  font: calc(11 * var(--u))/1.4 var(--mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
 }
@@ -1029,23 +1149,23 @@ button.primary {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 11.5px var(--sans);
+  font: calc(11.5 * var(--u)) var(--sans);
 }
 
 .readout-row.head {
   padding-bottom: 0;
-  font-size: 10.5px;
+  font-size: calc(10.5 * var(--u));
   color: var(--text-tertiary);
 }
 
 .readout-row.head > span:nth-child(2) {
-  font-size: 10.5px;
+  font-size: calc(10.5 * var(--u));
 }
 
 .readout-row.total {
-  margin-top: 2px;
-  padding-top: 4px;
-  border-top: 1px solid var(--hairline);
+  margin-top: calc(2 * var(--u));
+  padding-top: calc(4 * var(--u));
+  border-top: calc(1 * var(--u)) solid var(--hairline);
   color: var(--text);
 }
 
@@ -1059,7 +1179,7 @@ button.primary {
 
 .readout-row .sub {
   grid-column: 2 / -1;
-  font: 10.5px var(--sans);
+  font: calc(10.5 * var(--u)) var(--sans);
   color: var(--text-tertiary);
   text-align: left;
 }
@@ -1069,9 +1189,9 @@ button.primary {
 .contact {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 8px 0 0;
-  font-size: 11.5px;
+  gap: calc(7 * var(--u));
+  margin: calc(8 * var(--u)) 0 0;
+  font-size: calc(11.5 * var(--u));
   line-height: 1.45;
   color: var(--text-secondary);
 }
@@ -1088,9 +1208,9 @@ button.primary {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 7px;
-  margin: 8px 0 0;
-  font-size: 11px;
+  gap: calc(4 * var(--u)) calc(7 * var(--u));
+  margin: calc(8 * var(--u)) 0 0;
+  font-size: calc(11 * var(--u));
   color: var(--text-tertiary);
 }
 
@@ -1101,52 +1221,52 @@ button.primary {
   position: relative;
   flex: none;
   display: inline-block;
-  width: 14px;
+  width: calc(14 * var(--u));
   height: 0;
   vertical-align: middle;
 }
 
 /* Velocity: a thin shaft with an open chevron. */
 .velocity-glyph {
-  border-top: 1px solid var(--text-secondary);
+  border-top: calc(1 * var(--u)) solid var(--text-secondary);
 }
 
 .velocity-glyph::after {
   content: "";
   position: absolute;
   right: 0;
-  top: -4px;
-  width: 6px;
-  height: 6px;
-  border-top: 1px solid var(--text-secondary);
-  border-right: 1px solid var(--text-secondary);
+  top: calc(-4 * var(--u));
+  width: calc(6 * var(--u));
+  height: calc(6 * var(--u));
+  border-top: calc(1 * var(--u)) solid var(--text-secondary);
+  border-right: calc(1 * var(--u)) solid var(--text-secondary);
   rotate: 45deg;
 }
 
 /* External acceleration: a solid shaft and a filled head. */
 .acceleration-glyph {
-  border-top: 2px solid var(--text);
+  border-top: calc(2 * var(--u)) solid var(--text);
 }
 
 .acceleration-glyph::after {
   content: "";
   position: absolute;
-  right: -3px;
-  top: -5px;
-  border-left: 6px solid var(--text);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  right: calc(-3 * var(--u));
+  top: calc(-5 * var(--u));
+  border-left: calc(6 * var(--u)) solid var(--text);
+  border-top: calc(4 * var(--u)) solid transparent;
+  border-bottom: calc(4 * var(--u)) solid transparent;
 }
 
 /* A law's share: a thin line in that law's color. */
 .share-glyph {
-  border-top: 1px solid var(--law-color, var(--text-tertiary));
+  border-top: calc(1 * var(--u)) solid var(--law-color, var(--text-tertiary));
 }
 
 .contact-glyph {
   flex: none;
-  width: 13px;
-  height: 13px;
+  width: calc(13 * var(--u));
+  height: calc(13 * var(--u));
   stroke: currentColor;
   stroke-width: 1.2;
   fill: none;
@@ -1155,10 +1275,10 @@ button.primary {
 .cap-glyph {
   flex: none;
   display: inline-block;
-  width: 3px;
-  height: 10px;
-  border-left: 1.5px solid var(--text);
-  border-right: 1.5px solid var(--text);
+  width: calc(3 * var(--u));
+  height: calc(10 * var(--u));
+  border-left: calc(1.5 * var(--u)) solid var(--text);
+  border-right: calc(1.5 * var(--u)) solid var(--text);
 }
 
 /* Viewport labels at vector tips; never a pointer target. */
@@ -1171,33 +1291,61 @@ button.primary {
 
 #explain-labels span {
   position: absolute;
-  padding: 1px 5px;
-  border-radius: 5px;
+  padding: calc(1 * var(--u)) calc(5 * var(--u));
+  border-radius: calc(5 * var(--u));
   background: rgb(20 19 17 / 0.72);
-  font: 11px var(--mono);
+  font: calc(11 * var(--u)) var(--mono);
   white-space: nowrap;
   color: var(--text);
-  translate: 8px -50%;
+  translate: calc(8 * var(--u)) -50%;
 }
 
 #explain-labels span[data-key="velocity"] {
   color: var(--text-secondary);
 }
 
-/* M6A recording and replay: top right, below the tools and above the body readout, over the scene's
-   open sky. The bottom left belongs to the diagnostics overlay and the bottom right to the switches and
-   transport; the readout moves down by this cluster's height (--run-reserve), so neither covers the other. */
-#run, #comparison {
+/* Law names over their supports. A haloed label in the law's own ink: the name carries identity, the
+   underline marks the selected law and the word "off" a disabled one, so none of them rests on color. */
+#law-labels {
   position: fixed;
-  top: 52px;
-  right: 12px;
-  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#law-labels span {
+  position: absolute;
+  translate: -50% -100%;
+  padding-bottom: calc(4 * var(--u));
+  font: 500 calc(11 * var(--u))/1.2 var(--sans);
+  white-space: nowrap;
+  color: var(--law-color, var(--text-secondary));
+  text-shadow: 0 0 calc(3 * var(--u)) var(--shell), 0 0 calc(1 * var(--u)) var(--shell);
+}
+
+#law-labels span[data-selected="true"] {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: calc(1.5 * var(--u));
+  text-underline-offset: calc(3 * var(--u));
+}
+
+#law-labels span[data-enabled="false"] {
+  color: var(--text-tertiary);
+}
+
+#law-labels .off {
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* M6A recording and replay, and M7's comparison: in the context column, above the body readout. */
+#run, #comparison {
   box-sizing: border-box;
   width: max-content;
-  max-width: min(440px, calc(100vw - 320px));
-  padding: 8px 10px 8px;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+  padding: calc(8 * var(--u)) calc(10 * var(--u)) calc(8 * var(--u));
+  border: calc(1 * var(--u)) solid var(--hairline);
+  border-radius: calc(12 * var(--u));
   background: rgb(33 31 28 / 0.88);
 }
 
@@ -1206,11 +1354,11 @@ button.primary {
   display: none;
 }
 
-#comparison { border-color: var(--comparison-edge); width: 390px; }
-#comparison h2 { margin: 0; font: 500 15px var(--serif); }
-#comparison p { margin: 6px 0; }
-#comparison-inspect { font: 11px/1.5 var(--mono); white-space: pre-line; }
-#comparison .note, #comparison .run-head span { color: var(--text-secondary); font-size: 11px; }
+#comparison { border-color: var(--comparison-edge); width: calc(390 * var(--u)); }
+#comparison h2 { margin: 0; font: 500 calc(15 * var(--u)) var(--serif); }
+#comparison p { margin: calc(6 * var(--u)) 0; }
+#comparison-inspect { font: calc(11 * var(--u))/1.5 var(--mono); white-space: pre-line; }
+#comparison .note, #comparison .run-head span { color: var(--text-secondary); font-size: calc(11 * var(--u)); }
 
 #run[data-state="replay"] {
   border-color: var(--replay-edge);
@@ -1219,52 +1367,58 @@ button.primary {
 .run-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: calc(10 * var(--u));
 }
 
 #run-title {
   margin: 0;
-  font-size: 12px;
+  font-size: calc(12 * var(--u));
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 /* The one display moment: which experiment you are looking at. */
 #run[data-state="replay"] #run-title {
-  font: 15px/1.25 var(--serif);
+  font: calc(15 * var(--u))/1.25 var(--serif);
   color: var(--lavender);
 }
 
 #run-tag {
-  font-size: 11px;
+  font-size: calc(11 * var(--u));
   color: var(--text-tertiary);
 }
 
 #run-status {
-  margin: 3px 0 0;
-  font-size: 12px;
+  margin: calc(3 * var(--u)) 0 0;
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
+/* A replay's status can grow a second line ("Then playing.") during a seek: room for it is kept, so
+   the buttons below never move under the pointer. */
+#run[data-state="replay"] #run-status {
+  min-height: calc(2 * 1.4em);
+}
+
 #run-status .count {
-  font: 11px var(--mono);
+  font: calc(11 * var(--u)) var(--mono);
   color: var(--text);
 }
 
 #run-status .dot {
   display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 6px;
+  width: calc(7 * var(--u));
+  height: calc(7 * var(--u));
+  margin-right: calc(6 * var(--u));
   border-radius: 50%;
   background: var(--recording);
-  vertical-align: 1px;
+  vertical-align: calc(1 * var(--u));
 }
 
 #run-meter {
-  height: 2px;
-  margin: 6px 0 2px;
-  border-radius: 1px;
+  height: calc(2 * var(--u));
+  margin: calc(6 * var(--u)) 0 calc(2 * var(--u));
+  border-radius: calc(1 * var(--u));
   background: var(--hairline);
   overflow: hidden;
 }
@@ -1285,9 +1439,9 @@ button.primary {
 #run-timeline {
   display: block;
   width: 100%;
-  min-width: 240px;
-  height: 24px;
-  margin: 2px 0 0;
+  min-width: calc(240 * var(--u));
+  height: calc(24 * var(--u));
+  margin: calc(2 * var(--u)) 0 0;
   background: transparent;
   -webkit-appearance: none;
   appearance: none;
@@ -1295,16 +1449,16 @@ button.primary {
 }
 
 #run-timeline::-webkit-slider-runnable-track {
-  height: 3px;
-  border-radius: 2px;
+  height: calc(3 * var(--u));
+  border-radius: calc(2 * var(--u));
   background: linear-gradient(to right, var(--lavender) 0 var(--timeline-fill, 0%), var(--text-tertiary) var(--timeline-fill, 0%) 100%);
 }
 
 #run-timeline::-webkit-slider-thumb {
-  width: 14px;
-  height: 14px;
-  margin-top: -5.5px;
-  border: 1px solid var(--shell);
+  width: calc(14 * var(--u));
+  height: calc(14 * var(--u));
+  margin-top: calc(-5.5 * var(--u));
+  border: calc(1 * var(--u)) solid var(--shell);
   border-radius: 50%;
   background: var(--lavender);
   -webkit-appearance: none;
@@ -1312,9 +1466,9 @@ button.primary {
 }
 
 #run-timeline:focus-visible {
-  outline: 2px solid var(--teal);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: calc(2 * var(--u)) solid var(--teal);
+  outline-offset: calc(2 * var(--u));
+  border-radius: calc(4 * var(--u));
 }
 
 #run-timeline:disabled {
@@ -1328,8 +1482,8 @@ button.primary {
 }
 
 #run-check {
-  margin: 4px 0 0;
-  font-size: 12px;
+  margin: calc(4 * var(--u)) 0 0;
+  font-size: calc(12 * var(--u));
   color: var(--text-secondary);
 }
 
@@ -1344,8 +1498,8 @@ button.primary {
 .run-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 7px;
+  gap: calc(6 * var(--u));
+  margin-top: calc(7 * var(--u));
 }
 
 #run-stop {

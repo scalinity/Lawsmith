@@ -1,0 +1,128 @@
+{
+  "format": "lawsmith.scene",
+  "metadata": {
+    "title": "Controlled comparison speed fault",
+    "description": "Source travels at 200 m/s. B receives 200 m/s2 inside a rotated supported box. B crosses the 350 m/s live speed limit before leaving support; A remains unforced."
+  },
+  "presentation": {
+    "arrows": true,
+    "camera": {
+      "position": [
+        150,
+        160,
+        400
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    "laws": [
+      {
+        "id": "sideways",
+        "label": "Sideways",
+        "color": "#55aaa4",
+        "visible": true
+      }
+    ]
+  },
+  "requiredCapabilities": [
+    "primitive.directional.v1",
+    "region.box.v1"
+  ],
+  "schemaVersion": 1,
+  "semantic": {
+    "bodies": [
+      {
+        "id": "traveler",
+        "type": "dynamic",
+        "massKg": 1,
+        "initialPose": {
+          "position": [
+            0,
+            -100,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "initialLinearVelocity": [
+          0,
+          200,
+          0
+        ],
+        "initialAngularVelocity": [
+          0,
+          0,
+          0
+        ],
+        "collider": {
+          "kind": "sphere",
+          "radius": 0.18
+        },
+        "material": {
+          "friction": 0,
+          "restitution": 0
+        },
+        "collisionMode": "fixedOnly"
+      }
+    ],
+    "emitters": [],
+    "fields": [
+      {
+        "id": "sideways",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0.3826834323650898,
+            0.9238795325112867
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            100,
+            100,
+            100
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0.7071067811865476,
+            0.7071067811865476,
+            0
+          ],
+          "strength": 0
+        }
+      }
+    ],
+    "seed": 1279350577,
+    "simulation": {
+      "ambientAcceleration": [
+        0,
+        0,
+        0
+      ],
+      "maxAppliedAcceleration": 200,
+      "maxLiveBodies": 256,
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "stepDenominator": 120,
+      "stepNumerator": 1
+    },
+    "units": "m-kg-s"
+  }
+}

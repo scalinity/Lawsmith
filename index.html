@@ -11,234 +11,278 @@
     <div id="viewport"></div>
     <!-- Labels at the explained body's vector tips: viewport content, beneath every panel. -->
     <div id="explain-labels" aria-hidden="true"></div>
+    <!-- Law names beside their supports (SPEC §11.2): identity that does not rest on color. The Laws list
+         carries the same names for assistive technology. -->
+    <div id="law-labels" aria-hidden="true"></div>
 
-    <!-- Top area of the continuous surface. Only #drag-region moves the window, and it steps
-         aside wherever a law or its handles lie beneath it; the canvas is a separate hit target. -->
-    <div id="top-rail">
-      <div id="drag-region" data-tauri-drag-region></div>
-      <div id="tools" hidden>
-        <div class="pair" role="group" aria-label="History">
-          <button type="button" id="undo" disabled>Undo <kbd>⌘Z</kbd></button>
-          <button type="button" id="redo" disabled>Redo <kbd>⇧⌘Z</kbd></button>
+    <!-- The application surface (SPEC §11.1): a transparent grid over the full-window viewport. Only its
+         panels take the pointer; the gaps between them belong to the canvas. -->
+    <div id="shell">
+
+      <!-- Top area of the continuous surface. Only #drag-region moves the window, and it steps
+           aside wherever a law or its handles lie beneath it; the canvas is a separate hit target. -->
+      <div id="top-rail">
+        <div id="drag-region" data-tauri-drag-region></div>
+        <div id="tools" hidden>
+          <div class="pair" role="group" aria-label="History">
+            <button type="button" id="undo" disabled title="Undo your last change to the laws. Motion that already happened stays as it was.">Undo <kbd>⌘Z</kbd></button>
+            <button type="button" id="redo" disabled title="Redo the change you undid. Motion that already happened stays as it was.">Redo <kbd>⇧⌘Z</kbd></button>
+          </div>
+          <div class="segmented" role="group" aria-label="Transform mode">
+            <button type="button" data-mode="translate" aria-pressed="true">Move <kbd>T</kbd></button>
+            <button type="button" data-mode="rotate" aria-pressed="false">Rotate <kbd>R</kbd></button>
+            <button type="button" data-mode="scale" aria-pressed="false" title="Handles for extent, fade, strength and core radius; a selected ingredient adds its own and its masks’">Adjust <kbd>S</kbd></button>
+          </div>
+          <button type="button" id="frame-view">Frame <kbd>F</kbd></button>
+          <button type="button" id="reset-view">Reset view</button>
         </div>
-        <div class="segmented" role="group" aria-label="Transform mode">
-          <button type="button" data-mode="translate" aria-pressed="true">Move <kbd>T</kbd></button>
-          <button type="button" data-mode="rotate" aria-pressed="false">Rotate <kbd>R</kbd></button>
-          <button type="button" data-mode="scale" aria-pressed="false" title="Handles for extent, fade, strength and core radius; a selected ingredient adds its own and its masks’">Adjust <kbd>S</kbd></button>
-        </div>
-        <button type="button" id="frame-view">Frame <kbd>F</kbd></button>
-        <button type="button" id="reset-view">Reset view</button>
       </div>
-    </div>
 
-    <aside id="panel" aria-label="Scene" hidden>
-      <section id="document" aria-labelledby="doc-title">
-        <h1 id="doc-title">Falling stream</h1>
-        <p id="doc-state">Not saved to a file</p>
-        <div class="file-actions" role="group" aria-label="Scene file">
-          <button type="button" id="file-new">New</button>
-          <button type="button" id="file-open" title="Open a scene (⌘O)">Open…</button>
-          <button type="button" id="file-save" title="Save the setup (⌘S)">Save</button>
-          <button type="button" id="file-save-as" title="Save the setup to a new file (⇧⌘S)">Save As…</button>
-        </div>
-        <p class="note">Save keeps the setup: laws, bodies and emitters, not the current motion. A scene opens paused at tick 0.</p>
-        <p id="doc-message" role="status" hidden></p>
-        <p id="doc-invitation" class="note" hidden>Compare, compute A, change Sideways strength to 2, then Play.</p>
-        <p id="doc-recovery" hidden></p>
-      </section>
+      <div id="scene-column">
+        <!-- The scene's identity and file actions stay in view; only the panel below scrolls. -->
+        <section id="document" aria-labelledby="doc-title" hidden>
+          <div class="doc-head">
+            <h1 id="doc-title">Falling stream</h1>
+            <button type="button" id="panel-toggle" aria-expanded="true" aria-controls="panel">Hide laws</button>
+          </div>
+          <p id="doc-state">Not saved to a file</p>
+          <div class="file-actions" role="group" aria-label="Scene file">
+            <button type="button" id="file-new">New</button>
+            <button type="button" id="file-open" title="Open a scene (⌘O)">Open…</button>
+            <button type="button" id="file-save" title="Save the setup (⌘S)">Save</button>
+            <button type="button" id="file-save-as" title="Save the setup to a new file (⇧⌘S)">Save As…</button>
+          </div>
+          <select id="example-open" aria-label="Open an example" title="Opens an editable example, paused at tick 0">
+            <option value="" selected>Open an example…</option>
+          </select>
+          <p id="doc-invitation" hidden></p>
+          <p class="note">Save keeps the setup: laws, bodies and emitters, not the current motion. A scene opens paused at tick 0.</p>
+          <p id="doc-message" role="status" hidden></p>
+          <p id="doc-recovery" hidden></p>
+        </section>
 
-      <section id="laws" aria-labelledby="laws-title">
-        <div class="laws-head">
-          <h2 id="laws-title">Laws</h2>
-          <div class="law-shelf" role="group" aria-label="Add a law at the view’s focus point" id="law-shelf"></div>
-        </div>
-        <ul id="law-list"></ul>
-        <div class="legend" title="Arrows sample the selected law densely and other laws sparsely.">
-          <span class="arrow-glyph" aria-hidden="true"></span>
-          <span>Drive A, 1 m of arrow = 20 m/s²</span>
-          <button type="button" id="arrows-toggle" aria-pressed="true">Arrows</button>
-        </div>
-        <div class="legend" title="Drag has no direction of its own, so it shows dots instead of arrows.">
-          <span class="dot-glyph" aria-hidden="true"></span>
-          <span>Drag K, dot area ∝ K; 5 cm ≈ 2 s⁻¹</span>
-        </div>
-      </section>
+        <aside id="panel" aria-label="Laws and scene settings" hidden>
+
+          <section id="laws" aria-labelledby="laws-title">
+            <div class="laws-head">
+              <h2 id="laws-title">Laws</h2>
+              <div class="law-shelf" role="group" aria-label="Add a law at the view’s focus point" id="law-shelf"></div>
+            </div>
+            <ul id="law-list"></ul>
+            <div class="legend" title="Arrows sample the selected law densely and other laws sparsely.">
+              <span class="arrow-glyph" aria-hidden="true"></span>
+              <span>Drive A, 1 m of arrow = 20 m/s²</span>
+              <button type="button" id="arrows-toggle" aria-pressed="true">Arrows</button>
+            </div>
+            <div class="legend" title="Drag has no direction of its own, so it shows dots instead of arrows.">
+              <span class="dot-glyph" aria-hidden="true"></span>
+              <span>Drag K, dot area ∝ K; 5 cm ≈ 2 s⁻¹</span>
+            </div>
+          </section>
 
 
-      <section id="details" aria-labelledby="details-title" hidden>
-        <div class="details-head">
-          <h2 id="details-title">Sideways</h2>
-          <div class="law-actions">
-            <button type="button" id="law-duplicate">Duplicate</button>
-            <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
+          <section id="details" aria-labelledby="details-title" hidden>
+            <div class="details-head">
+              <h2 id="details-title">Sideways</h2>
+              <div class="law-actions">
+                <button type="button" id="law-duplicate">Duplicate</button>
+                <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
+              </div>
+            </div>
+            <div class="field-row">
+              <label for="law-label">Name</label>
+              <input id="law-label" type="text" maxlength="200" spellcheck="false" autocomplete="off" />
+            </div>
+            <div class="field-row">
+              <span class="label" id="color-label">Color</span>
+              <div id="law-colors" role="radiogroup" aria-labelledby="color-label"></div>
+            </div>
+            <fieldset class="triple" data-property="position">
+              <legend>Position <span class="unit">m</span></legend>
+              <input type="number" step="0.1" aria-label="Position x" data-axis="0" />
+              <input type="number" step="0.1" aria-label="Position y" data-axis="1" />
+              <input type="number" step="0.1" aria-label="Position z" data-axis="2" />
+            </fieldset>
+            <fieldset class="triple" data-property="rotation">
+              <legend>Rotation <span class="unit">°</span></legend>
+              <input type="number" step="5" aria-label="Rotation about x" data-axis="0" />
+              <input type="number" step="5" aria-label="Rotation about y" data-axis="1" />
+              <input type="number" step="5" aria-label="Rotation about z" data-axis="2" />
+            </fieldset>
+            <div class="field-row">
+              <span class="label" id="support-label">Support</span>
+              <div class="segmented compact" id="law-support" role="radiogroup" aria-labelledby="support-label"></div>
+            </div>
+            <div class="param-fields" id="law-region-params"></div>
+            <p class="kind" id="law-kind"></p>
+            <div class="param-fields" id="law-params"></div>
+            <div class="param-fields">
+              <label>Fade <input id="law-fade" type="number" step="0.05" min="0" max="1" /></label>
+            </div>
+            <!-- M5: the law's ingredients, a short list inside the one law, not a graph. -->
+            <div class="ingredients" id="ingredients" role="group" aria-labelledby="ingredients-title" hidden>
+              <div class="laws-head">
+                <h3 id="ingredients-title">Ingredients</h3>
+                <div class="law-shelf" role="group" aria-label="Add an ingredient to this law" id="ingredient-shelf"></div>
+              </div>
+              <div class="crumbs" id="ingredient-crumbs" hidden>
+                <button type="button" id="ingredient-up">Back</button>
+                <span id="ingredient-level"></span>
+              </div>
+              <ol id="ingredient-list"></ol>
+              <p class="note" id="ingredients-note"></p>
+              <div id="ingredient-detail" hidden></div>
+            </div>
+            <p id="details-error" role="alert" hidden></p>
+            <p class="note" id="law-sampling"></p>
+          </section>
+
+          <section id="motion" aria-labelledby="motion-title">
+            <div class="laws-head">
+              <h2 id="motion-title">Motion</h2>
+              <button type="button" id="explain-nearest" title="Explain the body nearest the view’s focus point (B)">Explain a body <kbd>B</kbd></button>
+            </div>
+            <p class="note first">Click a body to see what the laws did to it in the last step.</p>
+            <div class="legend">
+              <span class="probe-glyph" aria-hidden="true"></span>
+              <span>Probes: massless, no collisions, moved by the laws</span>
+            </div>
+            <div class="pair-fields" id="probe-settings">
+              <label>Probes <input id="probe-count" type="number" min="0" max="2000" step="100" aria-label="Probe count" /></label>
+              <label>Seed <input id="probe-seed" type="number" min="1" max="4294967295" step="1" aria-label="Probe seed" /></label>
+            </div>
+            <div class="legend">
+              <span class="trail-glyph" aria-hidden="true"></span>
+              <span>Trails: where bodies were, every 4 ticks, for 10 s</span>
+            </div>
+            <p id="motion-error" role="alert" hidden></p>
+          </section>
+
+          <section id="display" aria-labelledby="display-title">
+            <h2 id="display-title">Display</h2>
+            <div class="field-row">
+              <label for="ui-scale">Interface scale</label>
+              <select id="ui-scale" title="Text and controls only (⌘+ ⌘− ⌘0); the simulation and the rendering stay as they are">
+                <option value="1" selected>100%</option>
+                <option value="1.25">125%</option>
+                <option value="1.5">150%</option>
+                <option value="1.75">175%</option>
+                <option value="2">200%</option>
+              </select>
+            </div>
+            <p class="note" id="motion-preference"></p>
+          </section>
+        </aside>
+      </div>
+
+      <!-- Time and context, top right: an error first, then recording or replay, the comparison and the
+           explained body. They stack, so none covers another; the column scrolls when they outgrow it. -->
+      <div id="context-column">
+        <div id="sim-error" role="alert" hidden>
+          <p id="sim-error-text"></p>
+          <button type="button" id="sim-error-reset">Reset scene</button>
+        </div>
+        <!-- Recording and replay (SPEC §11.1, §13.2, §14.2). Top right, over the scene's open sky. A replay
+             has a timeline: moving it seeks, and the replay stays read-only. -->
+        <section id="run" aria-labelledby="run-title" data-state="idle" hidden>
+          <div class="run-head">
+            <h2 id="run-title">Recording</h2>
+            <span id="run-tag" hidden>Read-only</span>
+          </div>
+          <p id="run-status" aria-live="polite"></p>
+          <div id="run-meter" role="progressbar" aria-labelledby="run-status" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span id="run-fill"></span></div>
+          <input type="range" id="run-timeline" min="0" max="0" step="1" value="0" aria-label="Seek the replay to a tick" title="Drag or click to seek; the replay shows the recorded state at that tick" hidden />
+          <p id="run-check" hidden></p>
+          <div class="run-actions" role="group" aria-label="Recording">
+            <button type="button" id="run-record" title="Resets the motion to tick 0, keeping your laws, and records every change you make so it can be replayed exactly">Record from tick 0</button>
+            <button type="button" id="run-stop">Stop recording</button>
+            <button type="button" id="run-replay" title="Rebuilds the recording’s starting scene and plays back what you changed, without touching your scene">Replay recording</button>
+            <button type="button" id="run-restart" title="Starts the replay again from the recording’s original tick 0">Replay from start</button>
+            <button type="button" id="run-return" title="Back to your scene as you left it, paused">Return to authoring</button>
+            <button type="button" id="run-save" title="Saves the recording, not the scene">Save recording…</button>
+            <button type="button" id="run-open">Open recording…</button>
+            <button type="button" id="compare-from">Compare from here</button>
+            <!-- Last, so its coming and going moves no other button under the pointer. -->
+            <button type="button" id="run-cancel" title="Stops seeking; the replay stays where it is">Cancel seek</button>
+          </div>
+        </section>
+        <section id="comparison" aria-labelledby="comparison-title" hidden>
+          <div class="run-head"><h2 id="comparison-title">Two futures</h2><span>Session only</span></div>
+          <p class="note">A · outlined baseline &nbsp; B · solid alternate</p>
+          <p id="comparison-status" role="status"></p>
+          <p id="comparison-inspect"></p>
+          <div class="run-actions" role="group" aria-label="Comparison">
+            <button type="button" id="baseline-compute">Compute baseline</button>
+            <button type="button" id="baseline-cancel">Cancel baseline</button>
+            <button type="button" id="baseline-extend">Extend baseline +5 s</button>
+            <button type="button" id="alternate-replay">Replay Alternate</button>
+            <button type="button" id="alternate-new">New Alternate — clear edits</button>
+            <button type="button" id="baseline-ghosts" aria-pressed="true">A outlines</button>
+            <button type="button" id="alternate-export">Export Alternate Setup…</button>
+            <button type="button" id="comparison-close">Close comparison</button>
+          </div>
+        </section>
+        <!-- The explained body (SPEC §11.1, §12): what the laws submitted for it, kept apart from its
+             velocity and from contacts. Shown only while a body is explained. -->
+        <aside id="explain" aria-labelledby="explain-title" hidden>
+          <div class="explain-head">
+            <h2 id="explain-title">Body <span id="explain-id" class="ident"></span></h2>
+            <button type="button" id="explain-close" aria-label="Stop explaining this body" title="Stop explaining (Esc)">Close</button>
+          </div>
+          <div class="segmented compact spread" id="explain-mode" role="radiogroup" aria-label="Which step">
+            <button type="button" role="radio" id="explain-applied" data-view="applied" aria-checked="true">Last step</button>
+            <button type="button" role="radio" id="explain-preview" data-view="preview" aria-checked="false" title="While paused: what the next step would submit now">Next step</button>
+          </div>
+          <p id="explain-transition" class="transition"></p>
+          <p id="explain-empty" class="note" hidden></p>
+          <div id="explain-detail">
+            <div class="readout" role="table" aria-label="Sampled state">
+              <div class="readout-row head" role="row"><span role="columnheader"></span><span role="columnheader">Sampled</span><span role="columnheader">size</span><span role="columnheader">x</span><span role="columnheader">y</span><span role="columnheader">z</span></div>
+              <div class="readout-row" role="row" id="explain-center"></div>
+              <div class="readout-row" role="row" id="explain-velocity"></div>
+            </div>
+            <h3><span class="acceleration-glyph" aria-hidden="true"></span>External law acceleration <span class="unit">m/s²</span></h3>
+            <div class="readout" role="table" aria-label="External law acceleration">
+              <div id="explain-shares" role="rowgroup"></div>
+              <div class="readout-row total" role="row" id="explain-submitted"></div>
+              <div class="readout-row muted" role="row" id="explain-instantaneous"></div>
+            </div>
+            <p id="explain-factors" class="factors"></p>
+            <p id="explain-limiter" class="limiter"></p>
+            <p id="explain-contact" class="contact"></p>
+            <div class="readout" role="table" aria-label="After the step">
+              <div class="readout-row" role="row" id="explain-after"></div>
+            </div>
+            <p class="note">Each law’s share, and each ingredient’s part of it, uses this step’s β and λ. It is not what removing it would leave: removing a drag also changes β, λ and every later step.</p>
+            <p class="scale-key"><span class="velocity-glyph" aria-hidden="true"></span>1 m = 5 m/s <span class="acceleration-glyph" aria-hidden="true"></span>1 m = 20 m/s² <span class="cap-glyph" aria-hidden="true"></span>drawn arrow capped at 2 m; numbers never are</p>
+          </div>
+        </aside>
+      </div>
+
+      <!-- What to draw, then the simulation's own controls: bottom right, never scrolled away. -->
+      <div id="dock">
+        <div id="overlays" role="group" aria-label="What to draw" hidden>
+          <div class="segmented" id="arrows-scope" role="radiogroup" aria-label="Arrows for" title="Only what is drawn changes. Every law keeps acting.">
+            <button type="button" role="radio" id="arrows-every" data-scope="all" aria-checked="true">All arrows</button>
+            <button type="button" role="radio" id="arrows-selected" data-scope="selected" aria-checked="false">Selected law</button>
+          </div>
+          <button type="button" id="probes-toggle" aria-pressed="false" title="Massless probes moved by the laws; they never touch bodies">Probes</button>
+          <div class="segmented" id="trail-mode" role="radiogroup" aria-label="Trails">
+            <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="No trails">No trail</button>
+            <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true" title="The explained body’s trail">Body</button>
+            <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false" title="Trails of up to 32 bodies">32</button>
           </div>
         </div>
-        <div class="field-row">
-          <label for="law-label">Name</label>
-          <input id="law-label" type="text" maxlength="200" spellcheck="false" autocomplete="off" />
+        <div id="transport" role="group" aria-label="Simulation" hidden>
+          <button type="button" id="play">Play <kbd>Space</kbd></button>
+          <button type="button" id="step">Step <kbd>.</kbd></button>
+          <button type="button" id="reset">Reset <kbd>⇧R</kbd></button>
+          <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
         </div>
-        <div class="field-row">
-          <span class="label" id="color-label">Color</span>
-          <div id="law-colors" role="radiogroup" aria-labelledby="color-label"></div>
-        </div>
-        <fieldset class="triple" data-property="position">
-          <legend>Position <span class="unit">m</span></legend>
-          <input type="number" step="0.1" aria-label="Position x" data-axis="0" />
-          <input type="number" step="0.1" aria-label="Position y" data-axis="1" />
-          <input type="number" step="0.1" aria-label="Position z" data-axis="2" />
-        </fieldset>
-        <fieldset class="triple" data-property="rotation">
-          <legend>Rotation <span class="unit">°</span></legend>
-          <input type="number" step="5" aria-label="Rotation about x" data-axis="0" />
-          <input type="number" step="5" aria-label="Rotation about y" data-axis="1" />
-          <input type="number" step="5" aria-label="Rotation about z" data-axis="2" />
-        </fieldset>
-        <div class="field-row">
-          <span class="label" id="support-label">Support</span>
-          <div class="segmented compact" id="law-support" role="radiogroup" aria-labelledby="support-label"></div>
-        </div>
-        <div class="param-fields" id="law-region-params"></div>
-        <p class="kind" id="law-kind"></p>
-        <div class="param-fields" id="law-params"></div>
-        <div class="param-fields">
-          <label>Fade <input id="law-fade" type="number" step="0.05" min="0" max="1" /></label>
-        </div>
-        <!-- M5: the law's ingredients, a short list inside the one law, not a graph. -->
-        <div class="ingredients" id="ingredients" role="group" aria-labelledby="ingredients-title" hidden>
-          <div class="laws-head">
-            <h3 id="ingredients-title">Ingredients</h3>
-            <div class="law-shelf" role="group" aria-label="Add an ingredient to this law" id="ingredient-shelf"></div>
-          </div>
-          <div class="crumbs" id="ingredient-crumbs" hidden>
-            <button type="button" id="ingredient-up">Back</button>
-            <span id="ingredient-level"></span>
-          </div>
-          <ol id="ingredient-list"></ol>
-          <p class="note" id="ingredients-note"></p>
-          <div id="ingredient-detail" hidden></div>
-        </div>
-        <p id="details-error" role="alert" hidden></p>
-        <p class="note" id="law-sampling"></p>
-      </section>
-
-      <section id="motion" aria-labelledby="motion-title">
-        <div class="laws-head">
-          <h2 id="motion-title">Motion</h2>
-          <button type="button" id="explain-nearest" title="Explain the body nearest the view’s focus point (B)">Explain a body <kbd>B</kbd></button>
-        </div>
-        <p class="note first">Click a body to see what the laws did to it in the last step.</p>
-        <div class="legend">
-          <span class="probe-glyph" aria-hidden="true"></span>
-          <span>Probes: massless, no collisions, moved by the laws</span>
-        </div>
-        <div class="pair-fields" id="probe-settings">
-          <label>Probes <input id="probe-count" type="number" min="0" max="2000" step="100" aria-label="Probe count" /></label>
-          <label>Seed <input id="probe-seed" type="number" min="1" max="4294967295" step="1" aria-label="Probe seed" /></label>
-        </div>
-        <div class="legend">
-          <span class="trail-glyph" aria-hidden="true"></span>
-          <span>Trails: where bodies were, every 4 ticks, for 10 s</span>
-        </div>
-        <p id="motion-error" role="alert" hidden></p>
-      </section>
-
-    </aside>
-
-    <!-- The explained body (SPEC §11.1, §12): what the laws submitted for it, kept apart from its
-         velocity and from contacts. Shown only while a body is explained. -->
-    <aside id="explain" aria-labelledby="explain-title" hidden>
-      <div class="explain-head">
-        <h2 id="explain-title">Body <span id="explain-id" class="ident"></span></h2>
-        <button type="button" id="explain-close" aria-label="Stop explaining this body" title="Stop explaining (Esc)">Close</button>
       </div>
-      <div class="segmented compact spread" id="explain-mode" role="radiogroup" aria-label="Which step">
-        <button type="button" role="radio" id="explain-applied" data-view="applied" aria-checked="true">Last step</button>
-        <button type="button" role="radio" id="explain-preview" data-view="preview" aria-checked="false" title="While paused: what the next step would submit now">Next step</button>
-      </div>
-      <p id="explain-transition" class="transition"></p>
-      <p id="explain-empty" class="note" hidden></p>
-      <div id="explain-detail">
-        <div class="readout" role="table" aria-label="Sampled state">
-          <div class="readout-row head" role="row"><span role="columnheader"></span><span role="columnheader">Sampled</span><span role="columnheader">size</span><span role="columnheader">x</span><span role="columnheader">y</span><span role="columnheader">z</span></div>
-          <div class="readout-row" role="row" id="explain-center"></div>
-          <div class="readout-row" role="row" id="explain-velocity"></div>
-        </div>
-        <h3><span class="acceleration-glyph" aria-hidden="true"></span>External law acceleration <span class="unit">m/s²</span></h3>
-        <div class="readout" role="table" aria-label="External law acceleration">
-          <div id="explain-shares" role="rowgroup"></div>
-          <div class="readout-row total" role="row" id="explain-submitted"></div>
-          <div class="readout-row muted" role="row" id="explain-instantaneous"></div>
-        </div>
-        <p id="explain-factors" class="factors"></p>
-        <p id="explain-limiter" class="limiter"></p>
-        <p id="explain-contact" class="contact"></p>
-        <div class="readout" role="table" aria-label="After the step">
-          <div class="readout-row" role="row" id="explain-after"></div>
-        </div>
-        <p class="note">Each law’s share, and each ingredient’s part of it, uses this step’s β and λ. It is not what removing it would leave: removing a drag also changes β, λ and every later step.</p>
-        <p class="scale-key"><span class="velocity-glyph" aria-hidden="true"></span>1 m = 5 m/s <span class="acceleration-glyph" aria-hidden="true"></span>1 m = 20 m/s² <span class="cap-glyph" aria-hidden="true"></span>drawn arrow capped at 2 m; numbers never are</p>
-      </div>
-    </aside>
-
-    <div id="transport" role="group" aria-label="Simulation" hidden>
-      <button type="button" id="play">Play <kbd>Space</kbd></button>
-      <button type="button" id="step">Step <kbd>.</kbd></button>
-      <button type="button" id="reset">Reset <kbd>⇧R</kbd></button>
-      <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
+      <pre id="diagnostics" hidden></pre>
     </div>
 
-    <!-- Recording and replay (SPEC §11.1, §13.2, §14.2). Top right, over the scene's open sky. A replay
-         has a timeline: moving it seeks, and the replay stays read-only. -->
-    <section id="run" aria-labelledby="run-title" data-state="idle" hidden>
-      <div class="run-head">
-        <h2 id="run-title">Recording</h2>
-        <span id="run-tag" hidden>Read-only</span>
-      </div>
-      <p id="run-status" aria-live="polite"></p>
-      <div id="run-meter" role="progressbar" aria-labelledby="run-status" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span id="run-fill"></span></div>
-      <input type="range" id="run-timeline" min="0" max="0" step="1" value="0" aria-label="Seek the replay to a tick" title="Drag or click to seek; the replay shows the recorded state at that tick" hidden />
-      <p id="run-check" hidden></p>
-      <div class="run-actions" role="group" aria-label="Recording">
-        <button type="button" id="run-record" title="Resets the motion to tick 0, keeping your laws, and records every change you make so it can be replayed exactly">Record from tick 0</button>
-        <button type="button" id="run-stop">Stop recording</button>
-        <button type="button" id="run-replay" title="Rebuilds the recording’s starting scene and plays back what you changed, without touching your scene">Replay recording</button>
-        <button type="button" id="run-restart" title="Starts the replay again from the recording’s original tick 0">Replay from start</button>
-        <button type="button" id="run-return" title="Back to your scene as you left it, paused">Return to authoring</button>
-        <button type="button" id="run-save" title="Saves the recording, not the scene">Save recording…</button>
-        <button type="button" id="run-open">Open recording…</button>
-        <button type="button" id="compare-from">Compare from here</button>
-        <!-- Last, so its coming and going moves no other button under the pointer. -->
-        <button type="button" id="run-cancel" title="Stops seeking; the replay stays where it is">Cancel seek</button>
-      </div>
-    </section>
-    <section id="comparison" aria-labelledby="comparison-title" hidden>
-      <div class="run-head"><h2 id="comparison-title">Two futures</h2><span>Session only</span></div>
-      <p class="note">A · outlined baseline &nbsp; B · solid alternate</p>
-      <p id="comparison-status" role="status"></p>
-      <p id="comparison-inspect"></p>
-      <div class="run-actions" role="group" aria-label="Comparison">
-        <button type="button" id="baseline-compute">Compute baseline</button>
-        <button type="button" id="baseline-cancel">Cancel baseline</button>
-        <button type="button" id="baseline-extend">Extend baseline +5 s</button>
-        <button type="button" id="alternate-replay">Replay Alternate</button>
-        <button type="button" id="alternate-new">New Alternate — clear edits</button>
-        <button type="button" id="baseline-ghosts" aria-pressed="true">A outlines</button>
-        <button type="button" id="alternate-export">Export Alternate Setup…</button>
-        <button type="button" id="comparison-close">Close comparison</button>
-      </div>
-    </section>
-    <div id="overlays" role="group" aria-label="What to draw" hidden>
-      <div class="segmented" id="arrows-scope" role="radiogroup" aria-label="Arrows for" title="Only what is drawn changes. Every law keeps acting.">
-        <button type="button" role="radio" id="arrows-every" data-scope="all" aria-checked="true">All arrows</button>
-        <button type="button" role="radio" id="arrows-selected" data-scope="selected" aria-checked="false">Selected law</button>
-      </div>
-      <button type="button" id="probes-toggle" aria-pressed="false" title="Massless probes moved by the laws; they never touch bodies">Probes</button>
-      <div class="segmented" id="trail-mode" role="radiogroup" aria-label="Trails">
-        <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="No trails">No trail</button>
-        <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true" title="The explained body’s trail">Body</button>
-        <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false" title="Trails of up to 32 bodies">32</button>
-      </div>
-    </div>
 
     <section id="recovery-offer" role="alertdialog" aria-labelledby="recovery-title" aria-describedby="recovery-text" hidden>
       <h2 id="recovery-title">Unsaved work from an earlier session</h2>
@@ -250,12 +294,7 @@
     </section>
 
     <p id="status" role="status">Starting…</p>
-    <pre id="diagnostics" hidden></pre>
 
-    <div id="sim-error" role="alert" hidden>
-      <p id="sim-error-text"></p>
-      <button type="button" id="sim-error-reset">Reset scene</button>
-    </div>
 
     <section id="failure" role="alert" hidden>
       <h1>Lawsmith could not start</h1>
