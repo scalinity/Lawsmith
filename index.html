@@ -65,6 +65,13 @@
         </section>
 
         <aside id="panel" aria-label="Laws and scene settings" hidden>
+          <!-- Focus layout (large Interface Scale or a cramped window): one column holds every section; this bar jumps between them. -->
+          <nav id="panel-nav" aria-label="Sections" hidden>
+            <button type="button" data-section="laws">Laws</button>
+            <button type="button" data-section="details">Details</button>
+            <button type="button" data-section="motion">Scene</button>
+            <button type="button" data-section="run">Recording</button>
+          </nav>
 
           <section id="laws" aria-labelledby="laws-title">
             <div class="laws-head">
@@ -140,6 +147,7 @@
           <div class="run-head">
             <h2 id="run-title">Recording</h2>
             <span id="run-tag" hidden>Read-only</span>
+            <button type="button" id="run-toggle" aria-expanded="false" aria-controls="run" title="Show every recording action, or only the ones you need now">More</button>
           </div>
           <p id="run-status" aria-live="polite"></p>
           <div id="run-meter" role="progressbar" aria-labelledby="run-status" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span id="run-fill"></span></div>
@@ -293,6 +301,7 @@
           <button type="button" id="step">Step <kbd>.</kbd></button>
           <button type="button" id="reset">Reset <kbd>⇧R</kbd></button>
           <output id="clock" aria-live="off">tick 0 · 0.000 s</output>
+          <button type="button" id="draw-toggle" aria-expanded="true" aria-controls="overlays" title="Arrows, probes and trails: what the view draws">Draw options</button>
         </div>
       </div>
       <pre id="diagnostics" hidden></pre>

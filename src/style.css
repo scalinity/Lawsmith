@@ -1615,3 +1615,66 @@ body[data-context="replay"] #law-shelf {
   grid-column: 2 / 4;
   max-width: none;
 }
+
+/* Drawing options fold behind "Draw options" (folded by default in the focus layout). */
+#overlays[data-folded="true"] {
+  display: none;
+}
+
+/* The recording card, collapsed: each state's own actions and its live status stay; the idle
+   explanation, the limit meter, the check and the secondary actions wait behind More. */
+#run[data-collapsed="true"] #run-meter,
+#run[data-collapsed="true"] #run-check,
+#run[data-collapsed="true"] #run-restart,
+#run[data-collapsed="true"] #run-save,
+#run[data-collapsed="true"] #run-open,
+#run[data-collapsed="true"][data-state="idle"] #run-status {
+  display: none;
+}
+
+#run-toggle {
+  margin-left: auto;
+  min-height: calc(22 * var(--u));
+  padding: 0 calc(8 * var(--u));
+  font-size: calc(11.5 * var(--u));
+}
+
+/* Focus layout: one column. The section bar stays at the top of the scrolling panel. */
+#panel-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(4 * var(--u));
+  padding: calc(6 * var(--u)) calc(8 * var(--u));
+  border-bottom: 1px solid var(--hairline);
+  background: var(--card);
+}
+
+#panel-nav[hidden] {
+  display: none;
+}
+
+:root[data-focus="true"] #panel > #details,
+:root[data-focus="true"] #panel > #explain,
+:root[data-focus="true"] #panel > #run,
+:root[data-focus="true"] #panel > #comparison {
+  width: auto;
+  max-width: none;
+  margin: calc(8 * var(--u)) calc(10 * var(--u));
+}
+
+/* Hide laws in the focus layout folds the Laws and Scene sections only: the details and the recording
+   that share the column stay reachable. */
+:root[data-focus="true"] #scene-column[data-collapsed="true"] #panel {
+  display: block;
+}
+
+:root[data-focus="true"] #scene-column[data-collapsed="true"] #panel > #laws,
+:root[data-focus="true"] #scene-column[data-collapsed="true"] #panel > #motion,
+:root[data-focus="true"] #scene-column[data-collapsed="true"] #panel > #display,
+:root[data-focus="true"] #scene-column[data-collapsed="true"] #panel-nav [data-section="laws"],
+:root[data-focus="true"] #scene-column[data-collapsed="true"] #panel-nav [data-section="motion"] {
+  display: none;
+}

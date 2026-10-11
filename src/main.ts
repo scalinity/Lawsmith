@@ -986,6 +986,7 @@ async function start() {
     document.documentElement.style.setProperty('--ui-scale', String(scale));
     scaleMenu.value = String(scale);
     applyCompact();
+    applyFocus();
     report('control', { interfaceScale: scale, source, pixelRatio: renderer.getPixelRatio(), canvas: [renderer.domElement.width, renderer.domElement.height] });
   };
   // Compact (M8 R18): when the window is shorter than 360 interface units (900×600 at 175% and 200%), the
@@ -1003,6 +1004,66 @@ async function start() {
   }
   applyCompact();
   window.addEventListener('resize', applyCompact);
+
+  // Focus (M8 owner feedback): above 100% Interface Scale with under 1,100 interface units of width, or in
+  // the compact arrangement, two opposing columns leave no viewport. The selected law's details, the
+  // explained body, the recording and the comparison then join the Scene panel's single scrolling column,
+  // in reading order, with a bar that jumps between sections; the right column keeps only the error and
+  // the conditions. The same nodes move, so their listeners, focus and refresh are untouched. Drawing
+  // options fold in focus and open when it ends; the person can toggle them either way.
+  const panelEl = $('panel');
+  const panelNav = $('panel-nav');
+  const lawsSection = $('laws');
+  const detailsCard = $('details');
+  const explainCard = $('explain');
+  const runCard = $('run');
+  const comparisonCard = $('comparison');
+  const contextHome = [...contextColumn.children];
+  const drawToggle = $<HTMLButtonElement>('draw-toggle');
+  const setDrawFolded = (folded: boolean) => {
+    overlaysCluster.dataset.folded = String(folded);
+    drawToggle.setAttribute('aria-expanded', String(!folded));
+  };
+  drawToggle.addEventListener('click', () => {
+    setDrawFolded(overlaysCluster.dataset.folded !== 'true');
+    report('control', { drawOptions: overlaysCluster.dataset.folded === 'true' ? 'folded' : 'open' });
+  });
+  function applyFocus() {
+    const focus = document.documentElement.dataset.compact === 'true' || (uiScale > 1 && window.innerWidth / uiScale < 1100);
+    if (document.documentElement.dataset.focus === String(focus)) return;
+    document.documentElement.dataset.focus = String(focus);
+    panelNav.hidden = !focus;
+    if (focus) {
+      lawsSection.after(detailsCard, explainCard);
+      panelEl.append(runCard, comparisonCard);
+    } else {
+      contextColumn.append(...contextHome);
+      if (document.documentElement.dataset.compact === 'true') contextColumn.append(overlaysCluster);
+    }
+    setDrawFolded(focus);
+    report('control', { layout: focus ? 'focus' : 'wide' });
+  }
+  applyFocus();
+  window.addEventListener('resize', applyFocus);
+  panelNav.addEventListener('click', (event) => {
+    const id = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-section]')?.dataset.section;
+    const target = id ? document.getElementById(id) : null;
+    if (!target || target.hidden) return;
+    target.scrollIntoView({ block: 'start' });
+    report('control', { section: id });
+  });
+  // The recording card shows only the actions its state needs until More is pressed.
+  const runToggle = $<HTMLButtonElement>('run-toggle');
+  const setRunCollapsed = (collapsed: boolean) => {
+    runCard.dataset.collapsed = String(collapsed);
+    runToggle.setAttribute('aria-expanded', String(!collapsed));
+    runToggle.textContent = collapsed ? 'More' : 'Less';
+  };
+  setRunCollapsed(true);
+  runToggle.addEventListener('click', () => {
+    setRunCollapsed(runCard.dataset.collapsed !== 'true');
+    report('control', { recordingCard: runCard.dataset.collapsed === 'true' ? 'collapsed' : 'expanded' });
+  });
   const stepInterfaceScale = (direction: -1 | 1) => {
     const at = UI_SCALES.indexOf(uiScale as (typeof UI_SCALES)[number]);
     setInterfaceScale(UI_SCALES[Math.min(UI_SCALES.length - 1, Math.max(0, at + direction))]!, 'keyboard');
@@ -2353,6 +2414,9 @@ async function start() {
       // The explained body's center now, and the panel's scroll extent (it must not scroll sideways).
       explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
       compact: document.documentElement.dataset.compact === 'true',
+      focusLayout: document.documentElement.dataset.focus === 'true',
+      drawFolded: $('overlays').dataset.folded === 'true',
+      recordingCollapsed: $('run').dataset.collapsed === 'true',
       scroll: Object.fromEntries(['panel', 'context-column', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
       comparison: runs.comparison ? { ...runs.comparison.counts(), receipt: comparisonReceipt(), address: runs.comparison.address, tick: host.tick, cursor: host.lastAppliedSequence, replaying: runs.comparison.replaying, working: !!runs.comparison.working, status: $('comparison-status').textContent, inspect: $('comparison-inspect').textContent, box: box($('comparison')) } : null,
