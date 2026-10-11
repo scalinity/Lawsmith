@@ -415,8 +415,11 @@ select:focus-visible {
   color: var(--text-secondary);
 }
 
+/* One column that may shrink to the panel (M8 R19): an auto column took the row's widest content and ran
+   5 px past the panel at 900×600 and 200%. */
 #law-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: calc(4 * var(--u));
   margin: 0;
   padding: 0;
@@ -455,6 +458,8 @@ select:focus-visible {
 }
 
 .law-meta {
+  max-width: 100%;
+  overflow-wrap: anywhere;
   font: calc(11 * var(--u)) var(--mono);
   color: var(--text-tertiary);
 }
