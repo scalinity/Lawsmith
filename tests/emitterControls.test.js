@@ -11,22 +11,30 @@ const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const start = source.indexOf('  const TICKS_PER_SECOND = 1000 / STEP_MS;');
 const end = source.indexOf("  emitterApply.addEventListener('click', applyEmitter);\n", start) + "  emitterApply.addEventListener('click', applyEmitter);\n".length;
 
-function page({ recording = false, comparison = false, frozen = false, busy = null, seek = null, ok = true, emitter = { id: 'stream', intervalTicks: 8, lifetimeTicks: 512 } } = {}) {
+function page({ recording = false, comparison = false, frozen = false, busy = null, seek = null, ok = true, emitter = { id: 'stream', intervalTicks: 8, lifetimeTicks: 512 }, emitters = null } = {}) {
   const calls = [];
-  const el = (id) => ({ id, value: '', hidden: false, disabled: false, textContent: '', title: '', attrs: {}, toggleAttribute(k, v) { this.attrs[k] = v; }, addEventListener() {} });
-  const nodes = Object.fromEntries(['emitter', 'emitter-rate', 'emitter-life', 'emitter-apply', 'emitter-error', 'emitter-now', 'sim-error'].map((id) => [id, el(id)]));
+  const el = (id) => ({
+    id, value: '', hidden: false, disabled: false, textContent: '', title: '', attrs: {}, listeners: {}, options: [],
+    toggleAttribute(k, v) { this.attrs[k] = v; }, removeAttribute(k) { delete this.attrs[k]; },
+    addEventListener(type, fn) { this.listeners[type] = fn; },
+    replaceChildren(...o) { this.options = o; },
+  });
+  const nodes = Object.fromEntries(['emitter', 'emitter-rate', 'emitter-life', 'emitter-apply', 'emitter-revert', 'emitter-pick', 'emitter-pick-row', 'emitter-error', 'emitter-now', 'sim-error'].map((id) => [id, el(id)]));
+  const list = emitters ?? (emitter ? [emitter] : []);
   const authoring = {
-    scene: { emitters: emitter ? [emitter] : [], simulation: { maxLiveBodies: 256 } },
+    generation: 1,
+    scene: { emitters: list, simulation: { maxLiveBodies: 256 } },
     setEmitterSchedule: (id, s) => { calls.push(['set', id, s]); return ok ? { ok: true, value: { revision: 2 } } : { ok: false, reason: 'refused' }; },
   };
   const context = createContext({
-    $: (id) => nodes[id], STEP_MS: 1000 / 120, document: { activeElement: null }, authoring,
+    $: (id) => nodes[id], STEP_MS: 1000 / 120, document: { activeElement: null, createElement: () => ({}) }, authoring,
     blocked: () => frozen, comparing: () => comparison, runs: { recordingState: recording ? 'recording' : 'idle' }, workflow: { busy }, pendingSeek: seek,
-    setPlaying: (p, r) => calls.push(['play', p, r]), settleNow: () => {}, edited: () => calls.push(['edited']), renderPanel: () => {},
+    setPlaying: (p, r) => calls.push(['play', p, r]), settleNow: () => {}, edited: () => calls.push(['edited']), renderPanel: () => context.renderEmitter(),
     report: () => {}, runIndex: 0, editsSinceReset: 0, p0: null, host: { tick: 0 },
   });
   runInContext(`${stripTypeScriptTypes(source.slice(start, end))}\nglobalThis.applyEmitter = applyEmitter; globalThis.renderEmitter = renderEmitter;`, context);
-  return { nodes, calls, context };
+  const type = (id, value) => { nodes[id].value = value; nodes[id].listeners.input(); };
+  return { nodes, calls, context, authoring, type };
 }
 
 describe('Emitter controls', () => {
@@ -91,4 +99,61 @@ describe('Emitter controls', () => {
     p.context.renderEmitter();
     expect(p.nodes.emitter.hidden).toBe(true);
   });
+
+  it('keeps both typed values through unrelated refreshes until Apply', () => {
+    const p = page();
+    p.context.renderEmitter();
+    p.type('emitter-rate', '30');
+    p.type('emitter-life', '20');
+    p.context.renderEmitter(); // a law selection, edit or context refresh re-renders the panel
+    p.context.renderEmitter();
+    expect([p.nodes['emitter-rate'].value, p.nodes['emitter-life'].value]).toEqual(['30', '20']);
+    expect(p.nodes['emitter-revert'].hidden).toBe(false);
+    p.context.applyEmitter();
+    expect(p.calls).toContainEqual(['set', 'stream', { intervalTicks: 4, lifetimeTicks: 2400 }]);
+    expect(p.nodes['emitter-revert'].hidden).toBe(true);
+  });
+
+  it('Revert, a new document and a refused value each handle the draft as stated', () => {
+    const p = page();
+    p.context.renderEmitter();
+    p.type('emitter-rate', '30');
+    p.nodes['emitter-revert'].listeners.click();
+    expect(p.nodes['emitter-rate'].value).toBe('15');
+    p.type('emitter-rate', '30');
+    p.authoring.generation = 2; // a new document replaces the old
+    p.context.renderEmitter();
+    expect(p.nodes['emitter-rate'].value).toBe('15');
+    p.type('emitter-rate', '500'); // out of range: refused, the draft stays to be fixed
+    p.context.applyEmitter();
+    expect(p.calls.filter((c) => c[0] === 'set')).toEqual([]);
+    p.context.renderEmitter();
+    expect(p.nodes['emitter-rate'].value).toBe('500');
+  });
+
+  it('with two emitters, a selector by ID picks the one to edit and the other is never touched', () => {
+    const a = { id: 'left', intervalTicks: 8, lifetimeTicks: 512 };
+    const b = { id: 'right', intervalTicks: 12, lifetimeTicks: 900 };
+    const p = page({ emitters: [a, b] });
+    p.context.renderEmitter();
+    expect(p.nodes['emitter-pick-row'].hidden).toBe(false);
+    expect(p.nodes['emitter-pick'].options.map((o) => o.value)).toEqual(['left', 'right']);
+    p.type('emitter-rate', '30'); // a draft for "left"…
+    p.nodes['emitter-pick'].value = 'right';
+    p.nodes['emitter-pick'].listeners.change(); // …is dropped when switching
+    expect(p.nodes['emitter-rate'].value).toBe('10');
+    p.type('emitter-life', '20');
+    p.context.applyEmitter();
+    expect(p.calls.filter((c) => c[0] === 'set')).toEqual([['set', 'right', { intervalTicks: 12, lifetimeTicks: 2400 }]]);
+  });
+
+  it('a single emitter shows no selector, and the selector locks with the rest', () => {
+    const one = page();
+    one.context.renderEmitter();
+    expect(one.nodes['emitter-pick-row'].hidden).toBe(true);
+    const locked = page({ recording: true, emitters: [{ id: 'a', intervalTicks: 8, lifetimeTicks: 512 }, { id: 'b', intervalTicks: 8, lifetimeTicks: 512 }] });
+    locked.context.renderEmitter();
+    expect(locked.nodes['emitter-pick'].disabled).toBe(true);
+  });
 });
+

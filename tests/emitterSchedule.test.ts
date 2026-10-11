@@ -128,4 +128,19 @@ describe('setEmitterSchedule', () => {
     if (!reopened.ok) throw reopened.error;
     expect(reopened.document.semantic.emitters[0]).toMatchObject({ id: emitter.id, seed: emitter.seed, intervalTicks: 12, lifetimeTicks: 3600 });
   });
+
+  it('in a scene with two emitters, changes only the one named and keeps the other exactly', () => {
+    const base = exampleDocument(EXAMPLES.find((e) => e.key === 'sideways-rain')!);
+    const first = base.semantic.emitters[0]!;
+    const second = { ...first, id: 'second-stream', seed: 0x1234abcd, pose: { ...first.pose, position: [2, 6, 0] as const } };
+    const document = { ...base, semantic: cloneFrozen({ ...base.semantic, emitters: [first, second] }) };
+    const host = new SimulationHost(cloneFrozen(document.semantic));
+    const controller = new DocumentController(document as typeof base, host);
+    expect(controller.setEmitterSchedule('second-stream', { intervalTicks: 20, lifetimeTicks: 600 }).ok).toBe(true);
+    const [a, b] = controller.scene.emitters;
+    expect(a).toEqual(first);
+    expect(b).toEqual({ ...second, intervalTicks: 20, lifetimeTicks: 600 });
+    host.dispose();
+  });
 });
+

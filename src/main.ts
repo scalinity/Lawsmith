@@ -885,9 +885,21 @@ async function start() {
   const emitterRate = $<HTMLInputElement>('emitter-rate');
   const emitterLife = $<HTMLInputElement>('emitter-life');
   const emitterApply = $<HTMLButtonElement>('emitter-apply');
+  const emitterRevert = $<HTMLButtonElement>('emitter-revert');
+  const emitterPick = $<HTMLSelectElement>('emitter-pick');
   const emitterError = $('emitter-error');
   const emitterNow = $('emitter-now');
   const emitterLocked = () => blocked() || comparing() || runs.recordingState === 'recording' || workflow.busy !== null || pendingSeek !== null;
+  /** The emitter the block edits: the one picked by ID (a scene may have several), else the first. */
+  let emitterId: string | null = null;
+  /**
+   * Values typed but not applied, kept through unrelated refreshes until Apply, Revert, a switch to another
+   * emitter or a new document (M8 review R-FB5). Keyed by document generation and emitter ID, so a draft
+   * never carries over to another emitter or document.
+   */
+  let emitterDraft: { key: string; rate: string | null; life: string | null } | null = null;
+  const currentEmitter = () => authoring.scene.emitters.find((e) => e.id === emitterId) ?? authoring.scene.emitters[0];
+  const draftKey = () => `${authoring.generation}:${emitterId ?? ''}`;
   const describeSchedule = (intervalTicks: number, lifetimeTicks: number) => {
     const perSecond = TICKS_PER_SECOND / intervalTicks;
     const seconds = lifetimeTicks / TICKS_PER_SECOND;
@@ -897,16 +909,51 @@ async function start() {
     return `Now: a body every ${intervalTicks} ticks (${Number(perSecond.toFixed(2))} per second), each kept for ${lifetimeTicks} ticks (${Number(seconds.toFixed(2))} s).${fit}`;
   };
   const renderEmitter = () => {
-    const emitter = authoring.scene.emitters[0];
+    const emitters = authoring.scene.emitters;
+    const emitter = currentEmitter();
     $('emitter').hidden = !emitter;
-    if (!emitter) return;
-    if (document.activeElement !== emitterRate) emitterRate.value = String(Number((TICKS_PER_SECOND / emitter.intervalTicks).toFixed(4)));
-    if (document.activeElement !== emitterLife) emitterLife.value = String(Number((emitter.lifetimeTicks / TICKS_PER_SECOND).toFixed(4)));
+    if (!emitter) {
+      emitterId = null;
+      emitterDraft = null;
+      return;
+    }
+    emitterId = emitter.id;
+    if (emitterDraft && emitterDraft.key !== draftKey()) emitterDraft = null;
+    // Several emitters: pick one by its ID; the others are never touched.
+    $('emitter-pick-row').hidden = emitters.length < 2;
+    const ids = emitters.map((e) => e.id);
+    if ([...emitterPick.options].map((o) => o.value).join('\n') !== ids.join('\n')) {
+      emitterPick.replaceChildren(...ids.map((id) => Object.assign(document.createElement('option'), { value: id, textContent: id })));
+    }
+    emitterPick.value = emitter.id;
+    if (emitterDraft?.rate == null) emitterRate.value = String(Number((TICKS_PER_SECOND / emitter.intervalTicks).toFixed(4)));
+    if (emitterDraft?.life == null) emitterLife.value = String(Number((emitter.lifetimeTicks / TICKS_PER_SECOND).toFixed(4)));
+    emitterRevert.hidden = emitterDraft === null;
     emitterNow.textContent = describeSchedule(emitter.intervalTicks, emitter.lifetimeTicks);
     const locked = emitterLocked();
-    emitterRate.disabled = emitterLife.disabled = emitterApply.disabled = locked;
-    emitterApply.title = locked ? 'Stop recording, replay or comparison first' : 'Rebuilds the scene from tick 0 with this rate and lifetime. Undo restores the previous ones.';
+    emitterPick.disabled = emitterRate.disabled = emitterLife.disabled = emitterApply.disabled = emitterRevert.disabled = locked;
+    emitterApply.title = locked ? 'Stop recording, replay or comparison first' : `Rebuilds the scene from tick 0 with this rate and lifetime for ${emitter.id}. Undo restores the previous ones.`;
   };
+  const keepDraft = (field: 'rate' | 'life', input: HTMLInputElement) => {
+    if (!emitterDraft || emitterDraft.key !== draftKey()) emitterDraft = { key: draftKey(), rate: null, life: null };
+    emitterDraft[field] = input.value;
+    emitterRevert.hidden = false;
+  };
+  emitterRate.addEventListener('input', () => keepDraft('rate', emitterRate));
+  emitterLife.addEventListener('input', () => keepDraft('life', emitterLife));
+  const clearEmitterDraft = () => {
+    emitterDraft = null;
+    emitterError.hidden = true;
+    emitterRate.removeAttribute('aria-invalid');
+    emitterLife.removeAttribute('aria-invalid');
+    renderEmitter();
+  };
+  emitterRevert.addEventListener('click', clearEmitterDraft);
+  emitterPick.addEventListener('change', () => {
+    emitterId = emitterPick.value;
+    clearEmitterDraft();
+    report('control', { emitterPicked: emitterId });
+  });
   /** After an emitter change or its undo: the world was rebuilt at tick 0, so the run starts afresh, paused. */
   const emitterReset = (reason: string) => {
     setPlaying(false, reason);
@@ -917,7 +964,7 @@ async function start() {
     report('sim-control', { action: 'reset', reason, tick: host.tick, run: runIndex, emitters: authoring.scene.emitters.map((e) => ({ id: e.id, intervalTicks: e.intervalTicks, lifetimeTicks: e.lifetimeTicks })) });
   };
   const applyEmitter = () => {
-    const emitter = authoring.scene.emitters[0];
+    const emitter = currentEmitter();
     if (!emitter || emitterLocked()) return;
     const rate = emitterRate.value.trim() === '' ? NaN : Number(emitterRate.value);
     const life = emitterLife.value.trim() === '' ? NaN : Number(emitterLife.value);
@@ -932,6 +979,7 @@ async function start() {
     setPlaying(false, 'emitter');
     settleNow();
     const result = authoring.setEmitterSchedule(emitter.id, schedule);
+    if (result.ok || result.reason === 'nothing changed') emitterDraft = null;
     if (result.ok) {
       emitterReset('emitter');
       edited();
