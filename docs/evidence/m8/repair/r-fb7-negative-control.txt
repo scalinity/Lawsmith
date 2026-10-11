@@ -1,0 +1,4 @@
+R-FB7 negative control: scripts/verify/native/test_m8_focus_layout.py run against the previous m8-visual.zsh (bf2698e), other files current
+FAIL: test_the_branch_presses_each_toggle_twice_and_checks_the_state_between (__main__.FocusTogglesExercised.test_the_branch_presses_each_toggle_twice_and_checks_the_state_between)
+Ran 10 tests in 0.004s
+FAILED (failures=1)

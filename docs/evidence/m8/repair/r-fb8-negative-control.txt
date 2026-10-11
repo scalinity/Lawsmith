@@ -1,0 +1,4 @@
+R-FB8 negative control: tests/emitterControls.test.js with only RATE_RANGE's upper bound returned to 1000 / (STEP_SECONDS * 1000) (119.99999999999999), source restored afterwards
+     × accepts the range ends: rate 120, keep 1 s 4ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 28 passed (29)
