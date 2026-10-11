@@ -73,9 +73,10 @@ open_example() {
 # tab_to PREDICATE [LIMIT]: Tab until the focused control satisfies a Python predicate on `f` (the layout's
 # focus), checking that every stop shows its focus ring inside the window.
 # The pinned Wry sets WKPreferences.tabFocusesLinks to YES (wry 0.57.0, src/wkwebview/mod.rs). In WebKit
-# that makes ordinary Tab reach buttons as well as fields, whatever macOS Keyboard navigation is set to,
-# while Option-Tab leaves them out (M8 G4: attempt 10's Option-Tab walk skipped every button). So the
-# walk uses ordinary Tab and neither depends on nor changes the owner's setting.
+# that makes ordinary Tab reach buttons as well as fields whatever macOS Keyboard navigation is set to.
+# Option-Tab leaves buttons out when full keyboard access is off (M8 G4: attempt 10's Option-Tab walk
+# skipped every button); with it on, every control is included either way. So the walk uses ordinary
+# Tab, which is right under both settings and neither depends on nor changes the owner's.
 tab_to() {
   local i
   for (( i = 0; i < ${2:-120}; i++ )); do
