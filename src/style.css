@@ -22,7 +22,7 @@
   --danger: #e0806b;
   /* Probes are dim dust beside the lit bodies; trails fade into the shell. */
   --probe: #908b83;
-  --trail: #6f6a62;
+  --trail: #8c867c;
   --trail-selected: #d8d3ca;
   /* The physical acceleration limiter, when it scales a step. */
   --caution: #d9a35b;
@@ -1085,6 +1085,12 @@ button.primary {
 
 .segmented.spread button {
   flex: 1;
+}
+
+#trail-note {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: right;
 }
 
 #trail-mode button {

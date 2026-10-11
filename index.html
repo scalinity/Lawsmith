@@ -281,10 +281,12 @@
           </div>
           <button type="button" id="probes-toggle" aria-pressed="false" title="Massless probes moved by the laws; they never touch bodies">Probes</button>
           <div class="segmented" id="trail-mode" role="radiogroup" aria-label="Trails">
-            <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="No trails">No trail</button>
-            <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true" title="The explained body’s trail">Body</button>
-            <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false" title="Trails of up to 32 bodies">32</button>
+            <button type="button" role="radio" id="trails-off" data-trails="off" aria-checked="false" title="Draw no paths">Trails off</button>
+            <button type="button" role="radio" id="trails-selected" data-trails="selected" aria-checked="true" title="The path of the body you clicked, as it moves">Selected body</button>
+            <button type="button" role="radio" id="trails-all" data-trails="all" aria-checked="false" title="The paths of up to 32 moving bodies">Up to 32 bodies</button>
           </div>
+          <!-- Trails record where bodies went after they move; the selected-body trail needs a clicked body. -->
+          <p class="note" id="trail-note" role="status" hidden>Click a moving body to draw the path it travels.</p>
         </div>
         <div id="transport" role="group" aria-label="Simulation" hidden>
           <button type="button" id="play">Play <kbd>Space</kbd></button>
