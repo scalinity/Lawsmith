@@ -488,19 +488,38 @@ PREFS_SNAPSHOT=
 PREFS_ORIGINAL=
 receipt() { print -r -- "$1" >> $QA_OUT/cleanup.jsonl }
 
+# prefs_state: sets PREFS_STATE to present, absent or unknown (with PREFS_ERROR). "absent" is only the
+# exact answer this macOS gives for a domain that does not exist, exit 1 with "Error: Domain 'NAME' not
+# found." for this domain; any other failure is unknown, never absence. `defaults export` cannot decide
+# it: it exports an empty dictionary for a missing domain. The domain's values are never printed.
+prefs_state() {
+  local out code
+  out=$(defaults read $PREFS_DOMAIN 2>&1 >/dev/null); code=$?
+  PREFS_ERROR=
+  if (( code == 0 )); then PREFS_STATE=present
+  elif (( code == 1 )) && [[ $out == "Error: Domain '$PREFS_DOMAIN' not found." ]]; then PREFS_STATE=absent
+  else PREFS_STATE=unknown; PREFS_ERROR="exit $code: ${out//\"/'}"
+  fi
+}
+
 snapshot_preferences() {
   [[ -n $PREFS_SNAPSHOT ]] && return 0
   [[ -n $LOCK_HOLDER ]] || fail "the preferences are snapshotted only under the GUI lock"
   [[ ${QA_STATE:A} != ${REPO}(|/*) ]] || fail "QA_STATE is inside the repository; the preference snapshot must stay private"
   local file=$QA_STATE/preferences-original.plist
   rm -f $file
-  if defaults read $PREFS_DOMAIN >/dev/null 2>&1; then
-    defaults export $PREFS_DOMAIN $file >/dev/null 2>&1 && [[ -s $file ]] || fail "could not snapshot the existing Lawsmith preferences; nothing was changed"
-    PREFS_ORIGINAL=present
-  else
-    : > $file
-    PREFS_ORIGINAL=absent
-  fi
+  prefs_state
+  case $PREFS_STATE in
+    present)
+      defaults export $PREFS_DOMAIN $file >/dev/null 2>&1 && [[ -s $file ]] || fail "could not snapshot the existing Lawsmith preferences; nothing was changed"
+      PREFS_ORIGINAL=present ;;
+    absent)
+      : > $file
+      PREFS_ORIGINAL=absent ;;
+    *)
+      receipt "{\"preferences\":\"unknown\",\"error\":\"$PREFS_ERROR\"}"
+      fail "could not establish whether Lawsmith preferences exist ($PREFS_ERROR); nothing was changed" ;;
+  esac
   PREFS_SNAPSHOT=$file
   receipt "{\"preferences\":\"snapshot\",\"original\":\"$PREFS_ORIGINAL\",\"sha256\":\"$(shasum -a 256 $file | cut -d' ' -f1)\"}"
   say "Lawsmith preferences snapshotted (originally $PREFS_ORIGINAL)"
@@ -513,15 +532,18 @@ restore_preferences() {
   local after=$QA_STATE/preferences-restored.plist outcome=restored
   defaults delete $PREFS_DOMAIN >/dev/null 2>&1
   if [[ $PREFS_ORIGINAL == absent ]]; then
-    defaults read $PREFS_DOMAIN >/dev/null 2>&1 && outcome=failed
+    # Only a confirmed absence restores an absent original; an unreadable domain is a failure.
+    prefs_state
+    [[ $PREFS_STATE == absent ]] || outcome=failed
   else
     rm -f $after
-    if ! defaults import $PREFS_DOMAIN $PREFS_SNAPSHOT >/dev/null 2>&1 || ! defaults export $PREFS_DOMAIN $after >/dev/null 2>&1 \
+    if ! defaults import $PREFS_DOMAIN $PREFS_SNAPSHOT >/dev/null 2>&1 || ! { prefs_state; [[ $PREFS_STATE == present ]] } \
+      || ! defaults export $PREFS_DOMAIN $after >/dev/null 2>&1 \
       || ! cmp -s <(plutil -convert xml1 -o - $PREFS_SNAPSHOT) <(plutil -convert xml1 -o - $after); then
       outcome=failed
     fi
   fi
-  receipt "{\"preferences\":\"$outcome\",\"original\":\"$PREFS_ORIGINAL\"}"
+  receipt "{\"preferences\":\"$outcome\",\"original\":\"$PREFS_ORIGINAL\",\"error\":\"$PREFS_ERROR\"}"
   say "Lawsmith preferences $outcome (originally $PREFS_ORIGINAL)"
   [[ $outcome == restored ]] && PREFS_SNAPSHOT=
   [[ $outcome == restored ]]

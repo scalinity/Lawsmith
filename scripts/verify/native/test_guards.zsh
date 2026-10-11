@@ -33,9 +33,20 @@ run_case() {
     ioreg() { print -r -- "    | |   \"HIDIdleTime\" = $(( $(<$IDLE_FILE) * 1000000000 ))" }
     defaults() {
       print -r -- "defaults $*" >> $CALLS
+      # The real semantics on this macOS: a missing domain reads as exit 1 with exactly this message, and
+      # exports as an empty dictionary with exit 0. READ_FAILS injects any other read failure.
       case $1 in
-        read) [[ -f $DOMAIN_FILE ]] ;;
-        export) [[ -f $DOMAIN_FILE && -z $EXPORT_FAILS ]] && cp $DOMAIN_FILE $3 ;;
+        read)
+          if [[ -n $READ_FAILS ]] && (( $(cat $CALLS.reads 2>/dev/null || print 0) >= ${READ_FAILS_AFTER:-0} )); then
+            print -u2 -r -- $READ_FAILS; return ${READ_CODE:-1}
+          fi
+          print $(( $(cat $CALLS.reads 2>/dev/null || print 0) + 1 )) > $CALLS.reads
+          if [[ -f $DOMAIN_FILE ]]; then print -r -- '{ OwnerValue = hidden; }'; return 0; fi
+          print -u2 -r -- "Error: Domain '$2' not found."; return 1 ;;
+        export)
+          [[ -n $EXPORT_FAILS ]] && return 1
+          if [[ -f $DOMAIN_FILE ]]; then cp $DOMAIN_FILE $3
+          else print -r -- '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict/></plist>' > $3; fi ;;
         import) [[ -z $IMPORT_FAILS ]] && cp $3 $DOMAIN_FILE ;;
         delete) [[ -f $DOMAIN_FILE ]] && rm $DOMAIN_FILE ;;
       esac
@@ -134,6 +145,13 @@ run_case prefs-snapshot-failure-writes-nothing 1 "unset QA_DEADLINE; print -r --
 run_case prefs-restore-failure-reported 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; seed_folder \$QA_STATE/scenes; IMPORT_FAILS=1; restore_preferences" 'grep -q "\"preferences\":\"failed\"" $ROOT/prefs-restore-failure-reported/out/cleanup.jsonl && [[ -s $ROOT/prefs-restore-failure-reported/state/preferences-original.plist ]]'
 run_case prefs-snapshot-needs-lock 1 'unset QA_DEADLINE; snapshot_preferences' 'none prefs-snapshot-needs-lock "defaults "'
 run_case prefs-snapshot-private 1 'unset QA_DEADLINE; QA_STATE=$REPO/qa-state-inside; command sleep 30 & LOCK_HOLDER=$!; snapshot_preferences' 'none prefs-snapshot-private "defaults "'
+
+# --- F5 (reopened): only the exact not-found answer is absence; any other read failure stops the run ----
+run_case prefs-existing-unexpected-read-failure 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; READ_FAILS='Error: could not read domain (cfprefsd unavailable)'; trap 'restore_preferences' EXIT; seed_folder \$QA_STATE/scenes" 'none prefs-existing-unexpected-read-failure seed-preferences && none prefs-existing-unexpected-read-failure "defaults delete" && none prefs-existing-unexpected-read-failure "defaults export" && same_plist $ROOT/prefs-existing-unexpected-read-failure/domain.plist && grep -q "\"preferences\":\"unknown\"" $ROOT/prefs-existing-unexpected-read-failure/out/cleanup.jsonl'
+run_case prefs-existing-read-crash 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; READ_FAILS='zsh: segmentation fault'; READ_CODE=139; seed_folder \$QA_STATE/scenes" 'none prefs-existing-read-crash seed-preferences && none prefs-existing-read-crash "defaults delete" && same_plist $ROOT/prefs-existing-read-crash/domain.plist'
+run_case prefs-not-found-for-another-domain 1 "unset QA_DEADLINE; READ_FAILS=\"Error: Domain 'local.other' not found.\"; seed_folder \$QA_STATE/scenes" 'none prefs-not-found-for-another-domain seed-preferences'
+run_case prefs-confirmed-absent-seeds 0 'unset QA_DEADLINE; seed_folder $QA_STATE/scenes; grep -q "\"original\":\"absent\"" $QA_OUT/cleanup.jsonl' 'has prefs-confirmed-absent-seeds seed-preferences && none prefs-confirmed-absent-seeds "defaults export"'
+run_case prefs-cleanup-unknown-read-is-failure 1 "unset QA_DEADLINE; seed_folder \$QA_STATE/scenes; print -r -- '$QA_WRITES' > \$DOMAIN_FILE; READ_FAILS='Error: could not read domain'; READ_FAILS_AFTER=1; restore_preferences" 'grep -q "\"preferences\":\"failed\"" $ROOT/prefs-cleanup-unknown-read-is-failure/out/cleanup.jsonl && none prefs-cleanup-unknown-read-is-failure "\"preferences\":\"restored\""'
 
 # --- F6: a display change is its exact token and readback; only a change QA made is restored ---------
 LOCKED='command sleep 30 & LOCK_HOLDER=$!; LAST_INPUT=$EPOCHREALTIME'
