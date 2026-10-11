@@ -3323,7 +3323,14 @@ async function start() {
 
   $('status').hidden = true;
   for (const id of ['tools', 'document', 'panel', 'transport', 'overlays', 'run']) $(id).hidden = false;
-  overlay.hidden = false;
+  // The developer readout is optional (SPEC §16): off by default, so it never takes room from the
+  // instrument's controls; Display → Developer readout shows it.
+  const readoutToggle = $<HTMLButtonElement>('diagnostics-toggle');
+  readoutToggle.addEventListener('click', () => {
+    overlay.hidden = !overlay.hidden;
+    readoutToggle.setAttribute('aria-pressed', String(!overlay.hidden));
+    report('control', { diagnostics: overlay.hidden ? 'hidden' : 'shown' });
+  });
   renderPanel();
   reportDigest('startup');
 

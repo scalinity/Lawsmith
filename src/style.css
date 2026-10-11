@@ -78,16 +78,25 @@ body {
   min-height: 0;
 }
 
+/* The scene column runs to the bottom of the window. Under pressure the scene card's copy gives way first,
+   then the panel down to a usable height; only when even that cannot fit (a small window at a large
+   Interface Scale) does the whole column scroll, so every control stays reachable. */
 #scene-column {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 2 / 4;
   align-self: start;
   display: flex;
   flex-direction: column;
   gap: calc(8 * var(--u));
   width: min(calc(284 * var(--u)), 44vw);
   max-height: 100%;
+  overflow-y: auto;
   margin-left: calc(12 * var(--u));
+}
+
+/* The developer readout, when shown, keeps the bottom left. */
+#shell:has(> #diagnostics:not([hidden])) #scene-column {
+  grid-row: 2;
 }
 
 /* Collapsed: the laws, inspector and settings go; the scene's name and file actions stay. */
@@ -96,7 +105,9 @@ body {
 }
 
 #document {
-  flex: none;
+  display: flex;
+  flex-direction: column;
+  flex: 0 4 auto;
   padding: calc(10 * var(--u)) calc(12 * var(--u));
   box-sizing: border-box;
   border: 1px solid var(--hairline);
@@ -249,7 +260,7 @@ kbd {
    It scrolls on its own rather than growing over the viewport. */
 #panel {
   flex: 0 1 auto;
-  min-height: 0;
+  min-height: calc(120 * var(--u));
   overflow-y: auto;
   box-sizing: border-box;
   border: 1px solid var(--hairline);
@@ -276,6 +287,17 @@ kbd {
 
 .details-head button {
   flex: none;
+}
+
+/* The scene card's copy (invitation, note, messages) scrolls inside the card when space is short. */
+.doc-notes {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#display > button {
+  margin-top: calc(8 * var(--u));
 }
 
 /* The scene's name and the panel's collapse control share one line. */

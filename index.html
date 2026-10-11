@@ -55,10 +55,13 @@
           <select id="example-open" aria-label="Open an example" title="Opens an editable example, paused at tick 0">
             <option value="" selected>Open an example…</option>
           </select>
-          <p id="doc-invitation" hidden></p>
-          <p class="note">Save keeps the setup: laws, bodies and emitters, not the current motion. A scene opens paused at tick 0.</p>
-          <p id="doc-message" role="status" hidden></p>
-          <p id="doc-recovery" hidden></p>
+          <!-- The card's copy gives way first when space is short: it scrolls here, the controls above stay put. -->
+          <div class="doc-notes">
+            <p id="doc-invitation" hidden></p>
+            <p class="note">Save keeps the setup: laws, bodies and emitters, not the current motion. A scene opens paused at tick 0.</p>
+            <p id="doc-message" role="status" hidden></p>
+            <p id="doc-recovery" hidden></p>
+          </div>
         </section>
 
         <aside id="panel" aria-label="Laws and scene settings" hidden>
@@ -115,6 +118,7 @@
               </select>
             </div>
             <p class="note" id="motion-preference"></p>
+            <button type="button" id="diagnostics-toggle" aria-pressed="false" aria-controls="diagnostics">Developer readout</button>
           </section>
         </aside>
       </div>
