@@ -1,0 +1,9 @@
+× reads back exactly once from a text field, consuming the chord
+× reads back exactly once from a number field, consuming the chord
+× reads back exactly once from a text area, consuming the chord
+× reads back exactly once from a pop-up menu (the first native attempt), consuming the chord
+× reads back exactly once from a button, consuming the chord
+× reads back exactly once from the page, consuming the chord
+× reads back while edits are frozen (a guard or launch recovery in progress)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+Tests  7 failed | 6 passed (13)

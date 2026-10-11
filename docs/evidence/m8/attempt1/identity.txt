@@ -1,0 +1,9 @@
+producer b88462d1d7c3176cf2352624381dd82e3e56ae05
+tree src 09f2cb5d8f1fddeee706e8c23d14b2097f72f505 tests 3d3475a72216cfe1ac55ae0c8cd9f1023dd689c4 src-tauri 16bcdef28db4aaddff11c351dc18b8a7515636bd index.html 015dbdfbb2480c4e4a4324553287c43a7785a231 package-lock 4906219efb1735e1c5307100cd76b5227f146c02 Cargo.lock b8c7e5235b2c6288339f9f7756489ef9bd10c76a
+executable 91de2b277ef4539bbbffa995ca97df96e0166b43e0a3fe5098bd989eff3e0879
+dist/index.html be082e8c0e0f5b5dcd9bf1fa078820b838aff1fe9b0b528c0c34d52a2fca008e 19736
+dist/assets/index-BszhxAq-.js 2c5bee9ca44f2348d2b6b2e48a6cb21fb1df86d29b5f3f0f432ade484f6dc407 5596967
+dist/assets/index-CT6RgaC7.css 06b8ff42e8d95bb4a3f75c4088882a2ed81045abad58c9c5998099a8f0dc7b41 25129
+node v26.10.0 npm 12.2.0 rustc 1.99.0 (b940084d7 2026-09-28) cargo 1.99.0 (5f94df478 2026-08-27)
+macOS 27.2 (26B5101f) arm64
+fault strings in dist/assets: 0

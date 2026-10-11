@@ -1,0 +1,10 @@
+[qa 02:25:17] segment: M8 visual matrix
+[qa 02:25:17] Lawsmith preferences snapshotted (originally present)
+[qa 02:25:19] display is 1728x1117@120
+[qa 02:25:26] launched pid 73633, window at 224,104, log m8-visual.log
+[qa 02:25:26] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-_RVX_ROR.js sha256:63e43232846813664615748a8e9fc920c2c2b958588861e96b5c7ca259cc71ef", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 02:25:26] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 02:25:34] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 2, "title": "Sideways Rain", "mode": "packaged", "t": 11415}  [document] example sideways-rain opened
+[qa 02:25:47] FAIL: timed out waiting for 2 'layout' events
+[qa 02:25:49] display restored: 1168x755@120 (original 1168x755@120)
+[qa 02:25:49] Lawsmith preferences restored (originally present)
