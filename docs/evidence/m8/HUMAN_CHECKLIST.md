@@ -63,11 +63,12 @@ Turn on System Settings → Accessibility → Display → Reduce motion. Orbit t
 
 ## 7. Replay seek and Space (still required)
 
-Record a short experiment (**Record from tick 0**, change something, **Stop recording**), then **Replay recording**. While a seek on the replay timeline is still pending:
-- Press Play. Note whether the replay status line wraps or moves the buttons.
-- Press Space on the real keyboard. Note whether it plays from the seek's target.
+Record a short experiment (**Record from tick 0**, change something, **Stop recording**), then **Replay recording**, and pause the replay. Then make two separate seeks, each from a paused replay. Press only one key or button during each seek; pressing both on the same seek cancels the request.
 
-If a seek finishes too quickly to observe either, record UNVERIFIED.
+1. **Play during a seek.** Click a point on the replay timeline, then straight away click **Play** once. While the seek is still working, the status line may add "Then playing." Note whether that wraps the status or moves the buttons beside it. When the seek finishes, the replay should play from the point you chose.
+2. **Space during a seek.** Pause again. Click a different point on the timeline, then straight away press Space once on the real keyboard (do not click Play). When the seek finishes, the replay should play from the latest point you chose.
+
+While a seek is still working, the scene keeps showing where it was until the new point is ready. A seek may finish too quickly to see this. If you could not observe either case, record it as UNVERIFIED.
 
 ## Observations template
 
@@ -81,7 +82,7 @@ Date / display (built-in, More Space, external):
 4 Trackpad: law move in the viewport; law rotation in the viewport; window drag 100% / 200% (any jump?); traffic lights:
 5 Reduce motion: on / off:
 6 Visual: examples and scales; labels; panels; comparison; fault banner 100% / 200%; readout:
-7 Seek: deferred-Play layout; Space during a pending seek:
+7 Seek: first seek with Play (status wrap or button movement; played from the point?); second seek with one Space (played from the latest point?):
 Anything else:
 ```
 
