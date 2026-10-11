@@ -145,5 +145,13 @@ run_case region-no-owners-readback 1 'print -r -- "[lawsmith] {\"kind\":\"layout
 REVEAL="$(typeset -f layout_line); QA_DEADLINE=\$(( EPOCHSECONDS + 600 )); LAST_INPUT=\$EPOCHREALTIME; WIN_X=0; WIN_Y=0; eval \"\$(sed -n '/^reveal_strength() {/,/^}/p' \$HERE/m7-compare.zsh)\"; print -r -- \"\$(layout_line 1050 727)\" > \$APP_LOG; layout() { [[ -f \$QA_STATE/scrolled ]] && print -r -- \"\$(layout_line 1050 400)\" >> \$APP_LOG; true }; osascript() { case \"\$*\" in *windows.js\\ hit*) print -r -- '{\"pid\":4242}' ;; *scroll.js*) print -r -- \"scroll \$*\" >> \$CALLS; : > \$QA_STATE/scrolled ;; *) ;; esac }; reveal_strength"
 run_case reveal-scrolls-column-before-click 0 "$REVEAL" 'has reveal-scrolls-column-before-click "scroll .*scroll.js -100" && has reveal-scrolls-column-before-click "m:908,352" && [[ $(grep -n "scroll.js" $ROOT/reveal-scrolls-column-before-click/calls | head -1 | cut -d: -f1) -lt $(grep -n "c:1100,413" $ROOT/reveal-scrolls-column-before-click/calls | cut -d: -f1) ]] && none reveal-scrolls-column-before-click "c:1100,740"'
 
+# --- M8 performance runner: its own guards, extracted from m8-perf.zsh -------------------------------
+PERF='eval "$(sed -n "/^environment() {/,/^}/p;/^prepare() {/,/^}/p" $HERE/m8-perf.zsh)"; sysctl() { print stub }; pmset() { print -r -- "pmset $*" }'
+run_case perf-refuses-recording 1 "$PERF; pgrep() { [[ \$* == '-x screencapture' ]] }; environment P0-1" '[[ ! -e $ROOT/perf-refuses-recording/out/environment-P0-1.txt ]]'
+run_case perf-environment-recorded 0 "$PERF; pgrep() { false }; environment P0-1; grep -q 'display 1168x755@120' \$QA_OUT/environment-P0-1.txt && grep -q 'pmset -g therm' \$QA_OUT/environment-P0-1.txt"
+run_case perf-workload-must-fit 5 "$PERF; WORKLOAD_SECONDS=330; QA_DEADLINE=\$(( EPOCHSECONDS + 200 )); prepare P1" 'none perf-workload-must-fit "open " && none perf-workload-must-fit cliclick'
+run_case perf-requires-deadline 1 'unset QA_DEADLINE; source $HERE/m8-perf.zsh P0' 'none perf-requires-deadline "open "'
+run_case perf-unknown-workload 2 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8-perf.zsh P7' 'none perf-unknown-workload "open "'
+
 print -r -- "$passed passed, $failed failed"
 (( failed == 0 ))
