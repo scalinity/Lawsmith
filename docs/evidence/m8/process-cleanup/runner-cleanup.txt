@@ -1,0 +1,26 @@
+# Test-runner cleanup: test_guards.zsh at c13d1bb (old) and on this branch (new), run to completion and
+# cancelled by TERM or INT. Counted 1.5 s after the run from private before/after ps snapshots: new processes
+# reparented to launchd that are 'sleep 30' stand-in holders or Python flock helpers on a test_guards temporary
+# lock. 'temp roots left' = new test_guards temporary directories (removed afterwards by exact path).
+# exit=-15 is the launcher's (Python's) report of a process ended by signal 15 with no handler.
+old-success: exit=0 87 passed, 0 failed (34.6 s)
+  new launchd-reparented 'sleep 30' dummies=5; new launchd-reparented temp-lock python processes=2
+  temp roots left by this run: 0
+new-success: exit=0 87 passed, 0 failed; 7 case children stopped after their case; 0 stale lock holders (36.8 s)
+  new launchd-reparented 'sleep 30' dummies=0; new launchd-reparented temp-lock python processes=0
+  temp roots left by this run: 0
+old-TERM-4s: TERM after 4.0s: exit=-15, ended 0.0s after the signal (4.1 s)
+  new launchd-reparented 'sleep 30' dummies=0; new launchd-reparented temp-lock python processes=0
+  temp roots left by this run: 1
+old-TERM-15s: TERM after 15.0s: exit=-15, ended 0.0s after the signal (15.1 s)
+  new launchd-reparented 'sleep 30' dummies=0; new launchd-reparented temp-lock python processes=1
+  temp roots left by this run: 1
+new-TERM-4s: TERM after 4.0s: exit=143, ended 0.4s after the signal (4.5 s)
+  new launchd-reparented 'sleep 30' dummies=0; new launchd-reparented temp-lock python processes=0
+  temp roots left by this run: 0
+new-INT-9s: INT after 9.0s: exit=130, ended 0.2s after the signal (9.3 s)
+  new launchd-reparented 'sleep 30' dummies=0; new launchd-reparented temp-lock python processes=0
+  temp roots left by this run: 0
+new-TERM-15s: TERM after 15.0s: exit=143, ended 1.5s after the signal (16.6 s)
+  new launchd-reparented 'sleep 30' dummies=0; new launchd-reparented temp-lock python processes=0
+  temp roots left by this run: 0

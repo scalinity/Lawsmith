@@ -65,6 +65,20 @@ The owner uses this Mac while sessions run, so synthetic input is scheduled and 
 
 Evidence lives in one `docs/evidence/M<n>.md` per milestone, shaped like M0's. Every figure traces to a captured log, command output or image.
 
+## Process lifecycle
+
+Every task, in every milestone, ends with no process running that it started and no longer needs. A stale lock holder blocks the next session's GUI work, and a stray app or recorder confuses the owner.
+
+1. **Own by identity, from the start.** When you start a process, record what identifies it: its PID with its start time, or a unique temporary path in its arguments. Arrange its cleanup in the same step (a trap or a recorded list).
+2. **Clean up on every exit.** Success, failure, cancel, timeout and signals all run the same cleanup, and stopped children are reaped. zsh skips `EXIT` traps on `SIGTERM`, so `lib.zsh` traps `TERM` to exit through them. `SIGKILL` runs no trap at all, so a helper that must not outlive its parent checks the parent itself, as the GUI lock holder does.
+3. **Bound every wait.** Each test subprocess runs under a watchdog (`/usr/bin/timeout`) or a finite deadline.
+4. **Check before reporting.** After a check, confirm that none of the task's processes is still running, for example with `pgrep -f` on the run's temporary directory. Report any leftover, then stop it by its recorded identity.
+5. **Stop only what you own.** Never use broad patterns (`pkill python`, `killall`), and never stop a process you cannot prove this task started. An unknown process holding the GUI lock is reported, not killed.
+6. **Release the Mac before debugging** (Native QA 3): stop owned processes and restore state first.
+7. **Hand off long-lived services explicitly.** A dev server or app meant to outlive the task is named in the report, with its PID and how to stop it.
+
+`test_guards.zsh` and `test_lock_lifecycle.zsh` show the pattern: `own`, `reap`, and a sweep of the temporary directory. This adds no permission prompts and no test campaigns; "Test scope" still decides what runs.
+
 ## Reviews
 
 When a review report arrives (from a reviewer agent, a code-review run or the owner), run the `address` skill on it: `/address` in Claude Code, `source-command-address` in Codex. Address **every** finding, whether critical, warning or suggestion. A finding is closed by a fix, verified by re-running the checks it affects. There is one exception. If a fix would break a SPEC or MILESTONES contract or an owner decision, answer the finding in writing with the evidence and surface it to the owner as an open item. Record the review and its resolution in the milestone's evidence file. `address` commits and pushes each fix to the current branch; close-out still merges that branch.

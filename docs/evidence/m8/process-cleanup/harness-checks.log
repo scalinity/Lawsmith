@@ -1,0 +1,13 @@
+# Group 6 at working tree over c13d1bb (lib.zsh, test_guards.zsh, test_lock_lifecycle.zsh changed); 2026-10-11T20:39:34Z
+zsh -n: 35 native scripts, 0 failures
+$ python3 -I scripts/verify/native/test_campaign_runners.py
+Ran 4 tests in 0.006s
+OK
+exit=0
+$ python3 -I scripts/verify/native/test_press_reach.py
+Ran 9 tests in 0.001s
+OK
+exit=0
+$ zsh scripts/verify/native/test_guards.zsh
+87 passed, 0 failed; 7 case children stopped after their case; 0 stale lock holders
+exit=0

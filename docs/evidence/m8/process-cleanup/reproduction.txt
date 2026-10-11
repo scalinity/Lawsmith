@@ -1,0 +1,20 @@
+# Exploratory reproduction (private stub runner over each lib.zsh; disposable flock files; no GUI).
+# Counts: lock-helper processes naming the scenario's temporary lock, 1.5 s after the runner ended, then
+# after the competing holder was stopped. 'cleaned owned helper' = removed by its exact temporary lock path.
+original normal: runner exit=0; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+original deadline-fail: runner exit=5; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+original held-TERM: runner exit=143; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+original held-KILL: runner exit=137; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+original waiting-TERM: runner exit=143; helpers 1.5s after=1 lock=held; after competitor gone=0 lock=free
+original waiting-KILL: runner exit=137; helpers 1.5s after=1 lock=held; after competitor gone=0 lock=free
+original waiting-deadline: runner exit=5; helpers 1.5s after=0 lock=held; after competitor gone=0 lock=free
+original race-KILL: runner exit=137; helpers 1.5s after=1 lock=held; after competitor gone=1 lock=held
+  cleaned owned helper (argv names race-KILL temp lock)
+fixed normal: runner exit=0; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+fixed deadline-fail: runner exit=5; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+fixed held-TERM: runner exit=143; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+fixed held-KILL: runner exit=137; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
+fixed waiting-TERM: runner exit=143; helpers 1.5s after=0 lock=held; after competitor gone=0 lock=free
+fixed waiting-KILL: runner exit=137; helpers 1.5s after=0 lock=held; after competitor gone=0 lock=free
+fixed waiting-deadline: runner exit=5; helpers 1.5s after=0 lock=held; after competitor gone=0 lock=free
+fixed race-KILL: runner exit=137; helpers 1.5s after=0 lock=free; after competitor gone=0 lock=free
