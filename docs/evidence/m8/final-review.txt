@@ -1,0 +1,21 @@
+M8 independent final review receipt
+
+reviewer          GPT-6.1 Sol, read-only source and receipt analysis (no native actions, builds, tests or mutations)
+reviewed commit   626c761c909dab8ad6a41bc669c1d01e44c8837e
+verdict           REMEDIATION VERIFIED; no actionable findings; G3 CLOSED
+what it covers    1b7a42e3f3a1d7d6a1f7151c6d3331debc30513d  initial qualification evidence (attempts 7-12, dispositions, ORCHESTRATION)
+                  0ae30b8b331945c472438ad0da62711d2bcc65a4  publication receipt naming 1b7a42e
+                  1762ba2a513dbcc298569c36e631ad0ef591b045  G3 label-only harness repair
+                  626c761c909dab8ad6a41bc669c1d01e44c8837e  G3 docs and narrowed fault-state claims
+identities        application fa4e22378c355050f388e070001a0236896f6af4
+                  native matrix harness 361dcd9d2d4dabaedefdd57aecd1e4d2514b64e8 (attempt 8)
+                  native performance/replay harness 92be14f4b76f3564763f6b505f3349169166df5f (attempt 12)
+                  label-only harness head 1762ba2a513dbcc298569c36e631ad0ef591b045
+                  accepted main 0d2f60904cfc690a26020bbae72ff8c78615a30e
+root checks       read-only at 626c761: application/tests/index/runtime/pins equal fa4e223; package hashes match r19;
+                  protected SPEC/MILESTONES/pins/M0-M7 unchanged; .claude/.codex untracked; one clean worktree;
+                  git diff --check 0d2f609..HEAD exit 2 only on preserved raw receipts under docs/evidence/m8,
+                  exit 0 excluding docs/evidence/m8
+not established   visible fault banner in view; window dragging; keyboard access; six unrun regressions;
+                  owner checks (AC8 deferred, no observations supplied); acceptance
+This receipt is added by the commit after 626c761; it names only commits that already existed.
