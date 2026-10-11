@@ -165,7 +165,8 @@ for pct in 100 200; do
   press_expect play sim-control
   wait_log simulation-fault $(( f + 1 )) 15
   layout
-  expect layout "fault shown with recovery actions" "e['controls']['sim-error'] is not None and e['controls']['alternate-new'] is not None and e['controls']['comparison-close'] is not None"
+  # The readback reports DOM presence and geometry, not visible pixels: the banner may lie scrolled out of view (M8 G3).
+  expect layout "fault banner and recovery controls present in the DOM" "e['controls']['sim-error'] is not None and e['controls']['alternate-new'] is not None and e['controls']['comparison-close'] is not None"
   m8q surface
   shot m8-comparison-fault-$pct
   press_expect alternate-new comparison
