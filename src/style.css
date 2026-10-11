@@ -252,6 +252,7 @@ kbd {
 #details-error[hidden],
 #recovery-offer[hidden],
 #transport[hidden],
+#conditions[hidden],
 #sim-error[hidden] {
   display: none;
 }
@@ -977,6 +978,17 @@ button.primary {
 #sim-error p {
   margin: 0;
   color: var(--text);
+}
+
+/* Conditions the run is under, beneath any error: one plain line each, in the caution color's frame. */
+#conditions {
+  margin: 0;
+  padding: calc(8 * var(--u)) calc(12 * var(--u));
+  border: calc(1 * var(--u)) solid var(--caution);
+  border-radius: calc(10 * var(--u));
+  background: var(--card);
+  color: var(--text);
+  white-space: pre-line;
 }
 
 #diagnostics {

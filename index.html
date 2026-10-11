@@ -130,6 +130,8 @@
           <p id="sim-error-text"></p>
           <button type="button" id="sim-error-reset">Reset scene</button>
         </div>
+        <!-- Conditions the scene is running under (skipped births, the acceleration limit, slowdown), shown only while they hold. -->
+        <p id="conditions" role="status" hidden></p>
         <!-- Recording and replay (SPEC §11.1, §13.2, §14.2). Top right, over the scene's open sky. A replay
              has a timeline: moving it seeks, and the replay stays read-only. -->
         <section id="run" aria-labelledby="run-title" data-state="idle" hidden>

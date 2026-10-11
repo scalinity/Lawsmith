@@ -46,6 +46,7 @@ import { driveScheduledFrame, FixedStepScheduler } from './simulation/scheduler'
 import { fnv64 } from './simulation/checkpoints';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
 import { createIngredientPanel } from './ui/ingredientPanel';
+import { PlayPace, conditionLines } from './ui/conditions';
 import { ingredientBreakdown } from './simulation/observation';
 
 const mode = import.meta.env.DEV ? 'dev' : 'packaged';
@@ -2200,7 +2201,7 @@ async function start() {
     const box = layoutBox;
     const controls: Record<string, number[] | null> = {};
     const owners: Record<string, string | null> = {};
-    for (const element of document.querySelectorAll<HTMLElement>('#top-rail, #document, #doc-invitation, #panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #display, #explain, #trail-mode, #run, #comparison, #sim-error, #diagnostics, #scene-column, #context-column, #dock, button[id], input[id], select[id]')) {
+    for (const element of document.querySelectorAll<HTMLElement>('#top-rail, #document, #doc-invitation, #panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #display, #explain, #trail-mode, #run, #comparison, #sim-error, #conditions, #diagnostics, #scene-column, #context-column, #dock, button[id], input[id], select[id]')) {
       controls[element.id] = box(element);
       owners[element.id] = layoutOwner(element);
     }
@@ -3140,6 +3141,7 @@ async function start() {
   const intervals: number[] = [];
   const work: number[] = [];
   const frameSteps: number[] = [];
+  const pace = new PlayPace(STEP_MS);
   const edits: number[] = [];
   let stalls = 0;
   let firstFrameAt = 0;
@@ -3245,6 +3247,7 @@ async function start() {
       pushBounded(intervals, interval, 240);
       pushBounded(work, frameWork, 240);
       pushBounded(frameSteps, stepsThisFrame, 240);
+      pace.frame(interval, stepsThisFrame, scheduler.playing);
       if (p0) {
         if (!scheduler.playing && !(p0.comparison && runs.comparison?.atHorizon)) p0.invalid ??= 'paused during capture';
         if (p0.phase === 'warmup' && submitted - p0.phaseStart >= 10_000) {
@@ -3274,9 +3277,29 @@ async function start() {
     },
   });
 
+  // The conditions SPEC §5.4 and §16 require on screen stay visible with the developer readout closed.
+  const conditionsBox = $('conditions');
+  let limitedBefore = host.limitedSteps;
+  let limitedHost = host;
+  let shownConditions = '';
+  const refreshConditions = () => {
+    // Only an increase on the same world means the limiter acted since the last refresh; a reset or a switch
+    // to another context (replay, comparison) starts a new count.
+    if (host !== limitedHost) { limitedHost = host; limitedBefore = host.limitedSteps; }
+    const newlyLimited = Math.max(host.limitedSteps - limitedBefore, 0);
+    limitedBefore = host.limitedSteps;
+    const ratio = pace.ratio();
+    const conditions = conditionLines({ skippedBirths: host.skippedEmissions, newlyLimited, pace: ratio });
+    if (conditions.join('\n') === shownConditions) return;
+    shownConditions = conditions.join('\n');
+    conditionsBox.textContent = shownConditions;
+    conditionsBox.hidden = !conditions.length;
+    report('conditions', { skippedBirths: host.skippedEmissions, limiterActive: newlyLimited > 0, simWallRatio: ratio === null ? null : round3(ratio), shown: conditions });
+  };
   const overlay = $('diagnostics');
   let lastPacingReport = performance.now();
   setInterval(() => {
+    refreshConditions();
     const i = [...intervals].sort((a, b) => a - b);
     const w = [...work].sort((a, b) => a - b);
     const s = [...stepTimes].sort((a, b) => a - b);
