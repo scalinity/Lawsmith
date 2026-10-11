@@ -1678,3 +1678,10 @@ body[data-context="replay"] #law-shelf {
 :root[data-focus="true"] #scene-column[data-collapsed="true"] #panel-nav [data-section="motion"] {
   display: none;
 }
+
+/* A section heading the section bar moved focus to: a ring like any focused control's. */
+h2[tabindex="-1"]:focus {
+  outline: calc(2 * var(--u)) solid var(--teal);
+  outline-offset: calc(2 * var(--u));
+}
+

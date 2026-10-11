@@ -1079,12 +1079,23 @@ async function start() {
   }
   applyFocus();
   window.addEventListener('resize', applyFocus);
+  // A section jump scrolls the panel so the section's heading sits just below the sticky bar, whatever
+  // height the bar has wrapped to, and moves keyboard focus to that heading, so Tab continues inside the
+  // section rather than along the bar (M8 review R-FB3).
+  const SECTION_HEADINGS: Record<string, string> = { laws: 'laws-title', details: 'details-title', motion: 'motion-title', run: 'run-title' };
+  const jumpToSection = (id: string) => {
+    const target = document.getElementById(id);
+    const heading = document.getElementById(SECTION_HEADINGS[id] ?? '');
+    if (!target || target.hidden || !heading || target.offsetParent === null) return false;
+    const gap = 6 * uiScale;
+    panelEl.scrollTop += target.getBoundingClientRect().top - panelEl.getBoundingClientRect().top - panelNav.getBoundingClientRect().height - gap;
+    heading.focus({ preventScroll: true });
+    return true;
+  };
   panelNav.addEventListener('click', (event) => {
     const id = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-section]')?.dataset.section;
-    const target = id ? document.getElementById(id) : null;
-    if (!target || target.hidden) return;
-    target.scrollIntoView({ block: 'start' });
-    report('control', { section: id });
+    if (!id) return;
+    report('control', { section: id, shown: jumpToSection(id) });
   });
   // The recording card shows only the actions its state needs until More is pressed.
   const runToggle = $<HTMLButtonElement>('run-toggle');

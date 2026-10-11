@@ -75,7 +75,7 @@
 
           <section id="laws" aria-labelledby="laws-title">
             <div class="laws-head">
-              <h2 id="laws-title">Laws</h2>
+              <h2 id="laws-title" tabindex="-1">Laws</h2>
               <div class="law-shelf" role="group" aria-label="Add a law at the view’s focus point" id="law-shelf"></div>
             </div>
             <ul id="law-list"></ul>
@@ -95,7 +95,7 @@
 
           <section id="motion" aria-labelledby="motion-title">
             <div class="laws-head">
-              <h2 id="motion-title">Motion</h2>
+              <h2 id="motion-title" tabindex="-1">Motion</h2>
               <button type="button" id="explain-nearest" title="Explain the body nearest the view’s focus point (B)">Explain a body <kbd>B</kbd></button>
             </div>
             <p class="note first">Click a body to see what the laws did to it in the last step.</p>
@@ -145,7 +145,7 @@
              has a timeline: moving it seeks, and the replay stays read-only. -->
         <section id="run" aria-labelledby="run-title" data-state="idle" hidden>
           <div class="run-head">
-            <h2 id="run-title">Recording</h2>
+            <h2 id="run-title" tabindex="-1">Recording</h2>
             <span id="run-tag" hidden>Read-only</span>
             <button type="button" id="run-toggle" aria-expanded="false" aria-controls="run" title="Show every recording action, or only the ones you need now">More</button>
           </div>
@@ -186,7 +186,7 @@
              the Laws list on the left still selects. -->
         <section id="details" aria-labelledby="details-title" hidden>
           <div class="details-head">
-            <h2 id="details-title">Sideways</h2>
+            <h2 id="details-title" tabindex="-1">Sideways</h2>
             <button type="button" id="details-toggle" aria-expanded="true" aria-controls="details-body">Hide details</button>
           </div>
           <div id="details-body">
