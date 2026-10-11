@@ -1453,7 +1453,9 @@ async function start() {
         primitiveParams.dataset.kind = leaf.kind;
         controlInputs(primitiveParams, 'primitive', primitive.controls as readonly ScalarControl<never>[]);
       }
-      $('law-kind').textContent = `${primitive.title} · ${primitive.summary(leaf)}: ${primitive.describe(leaf)}`;
+      // A swirl only turns bodies (SPEC §5.3: tangential, no confinement); say how to keep them circling.
+      const keepCircling = leaf.kind === 'vortexY' ? ' To keep bodies circling, add Pull and Drag from its Ingredients row, as Storm Bottle does.' : '';
+      $('law-kind').textContent = `${primitive.title} · ${primitive.summary(leaf)}: ${primitive.describe(leaf)}.${keepCircling}`;
       for (const input of primitiveParams.querySelectorAll<HTMLInputElement>('input')) show(input, fmt(primitive.controls.find((c) => c.key === input.dataset.control)!.get(leaf), 3));
     }
     show(fadeInput, fmt(law.edgeFade, 3));
