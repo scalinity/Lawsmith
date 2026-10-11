@@ -1,0 +1,14 @@
+## zsh scripts/verify/native/test_guards.zsh (G4 harness, in the checkout): exit 0
+ok   tab-delayed-front-refused
+ok   tab-sends-plain-tab
+87 passed, 0 failed
+
+## negative control: the same suite in a temporary copy of scripts/verify/native with the previous m8lib.zsh (d74159f): exit 1
+ok   tab-delayed-front-refused
+FAIL tab-sends-plain-tab (exit 0, wanted 0)
+77 passed, 10 failed
+     calls: osascript -e tell application "System Events" to key code 48 using option down
+
+## location control: the same temporary copy with the G4 m8lib.zsh
+the same nine preference/seed/R1-cleanup cases fail there as with the previous m8lib.zsh (they depend on the
+checkout's location); tab-sends-plain-tab passes. Only tab-sends-plain-tab distinguishes the two sources.
