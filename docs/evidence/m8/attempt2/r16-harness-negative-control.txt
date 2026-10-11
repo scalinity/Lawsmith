@@ -1,0 +1,18 @@
+## m8q.surface, previous (9499bcd), on every layout readback in attempt 2 m8-visual.log
+ 1 scale 1 panel 362/505 px: pass
+ 2 scale 1 panel 318/505 px: pass
+ 3 scale 1.5 panel 132/756 px: pass
+ 4 scale 2 panel 0/1009 px: pass
+ 5 scale 1 panel 318/505 px: pass
+ 6 scale 1 panel 300/505 px: pass
+ 7 scale 1.5 panel 104/756 px: pass
+ 8 scale 2 panel 0/1009 px: REFUSED: document [24, 108, 563.2, 522.8] overlaps diagnostics [12, 626, 532, 150]; panel [24, 646.8, 563.2, 2] overlaps diagnostics [12, 626, 532, 150]
+## m8q.surface, new (6f33971), on every layout readback in attempt 2 m8-visual.log
+ 1 scale 1 panel 362/505 px: pass
+ 2 scale 1 panel 318/505 px: pass
+ 3 scale 1.5 panel 132/756 px: pass
+ 4 scale 2 panel 0/1009 px: REFUSED: the Scene panel shows 0 px of its 1009 px content
+ 5 scale 1 panel 318/505 px: pass
+ 6 scale 1 panel 300/505 px: pass
+ 7 scale 1.5 panel 104/756 px: pass
+ 8 scale 2 panel 0/1009 px: REFUSED: document [24, 108, 563.2, 522.8] overlaps diagnostics [12, 626, 532, 150]; panel [24, 646.8, 563.2, 2] overlaps diagnostics [12, 626, 532, 150]; the Scene panel shows 0 px of its 1009 px content

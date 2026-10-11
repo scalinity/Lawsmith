@@ -1,0 +1,36 @@
+{
+  "scenario": "m8-visual",
+  "producer": "b88462d1d7c3176cf2352624381dd82e3e56ae05",
+  "harness": "9499bcd80c0e15bb128d652a83aca6da409bb4cc",
+  "head": "f787402e9ecc075249bf24e1c68968c1fc8e1c35",
+  "package": {
+    "src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/lawsmith": "91de2b277ef4539bbbffa995ca97df96e0166b43e0a3fe5098bd989eff3e0879",
+    "dist/index.html": "be082e8c0e0f5b5dcd9bf1fa078820b838aff1fe9b0b528c0c34d52a2fca008e",
+    "dist/assets/index-BszhxAq-.js": "2c5bee9ca44f2348d2b6b2e48a6cb21fb1df86d29b5f3f0f432ade484f6dc407",
+    "dist/assets/index-CT6RgaC7.css": "06b8ff42e8d95bb4a3f75c4088882a2ed81045abad58c9c5998099a8f0dc7b41"
+  },
+  "session": "<kept private: approval session metadata>",
+  "expectedSeconds": 600,
+  "lockAcquiredAtUTC": "2026-10-11T06:35:50.940925+00:00",
+  "displayBefore": "1168x755@120",
+  "preferencesBefore": "present",
+  "qaDeadline": "<kept private: derived from the approved deadline>",
+  "hardTimeoutSeconds": 900,
+  "startedAtUTC": "2026-10-11T06:35:50.995400+00:00",
+  "ownedProcessGroup": 24561,
+  "exitCode": 1,
+  "elapsedSeconds": 60.031,
+  "finishedAtUTC": "2026-10-11T06:36:51.026093+00:00",
+  "cleanup": {
+    "terminatedOwned": [],
+    "survivors": [],
+    "escalation": [],
+    "preferences": "restored",
+    "display": "restored",
+    "errors": [],
+    "notRunningOrNotOurs": [
+      24649
+    ],
+    "guiLock": "held by this driver"
+  }
+}
