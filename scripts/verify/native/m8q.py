@@ -23,8 +23,9 @@ FIXED = ['play', 'step', 'reset', 'undo', 'redo', 'file-new', 'file-open', 'file
          'example-open', 'panel-toggle', 'frame-view', 'reset-view', 'mode-translate', 'mode-rotate', 'mode-scale']
 # Regions that must never cover one another.
 REGIONS = ['document', 'panel', 'context-column', 'dock', 'tools', 'diagnostics']
-# Cards stacked inside the context column: none may cover another (M7's fault banner did).
-CARDS = ['sim-error', 'run', 'comparison', 'explain']
+# Cards stacked inside the context column, the selected law's inspector among them: none may cover another
+# (M7's fault banner did).
+CARDS = ['sim-error', 'run', 'comparison', 'details', 'explain']
 SCROLLERS = {'panel': 'panel', 'context-column': 'context-column'}
 EPS = 0.5
 

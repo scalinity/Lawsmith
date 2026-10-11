@@ -47,15 +47,16 @@ except (StopIteration, KeyError, IndexError, TypeError):
     b = None
 if b: print(round($WIN_X + b[0] + b[2] / 2), round($WIN_Y + b[1] + b[3] / 2), round(b[1]), round(b[3]))"
 }
-# reveal EXPR: scrolls the Scene panel with real wheel steps over it until that box lies inside its
-# visible area, then clicks its center. Only the panel scrolls; the pointer stays over the panel.
+# reveal EXPR: scrolls the region that holds that box (lib.zsh scroller: the Scene panel, or the right
+# context column with the inspector) with real wheel steps over its left edge until the box lies inside
+# its visible area, then clicks its center. Only that region scrolls; the pointer stays over it.
 reveal() {
   local i p panel
   for i in {1..30}; do
     layout
     p=(${=$(box "$1")})
     [[ -n $p[1] ]] || fail "the layout has no box for $1"
-    panel=(${=$(logq field $APP_LOG layout controls.panel | tr -d '[],')})
+    panel=(${=$(scroller $(( p[1] - WIN_X )) $(( p[2] - WIN_Y )))})
     if (( p[3] >= panel[2] + 4 && p[3] + p[4] <= panel[2] + panel[4] - 4 )); then
       click $p[1] $p[2]
       return 0

@@ -265,6 +265,19 @@ kbd {
   border-top: calc(1 * var(--u)) solid var(--hairline);
 }
 
+/* Collapsed: the inspector keeps its title line and its Show details control; its fields go. */
+#details[data-collapsed="true"] #details-body {
+  display: none;
+}
+
+#details[data-collapsed="true"] .details-head {
+  margin-bottom: 0;
+}
+
+.details-head button {
+  flex: none;
+}
+
 /* The scene's name and the panel's collapse control share one line. */
 .doc-head {
   display: flex;
@@ -371,7 +384,8 @@ select:focus-visible {
   color: var(--text-tertiary);
 }
 
-#panel h2 {
+#panel h2,
+#details h2 {
   margin: 0 0 calc(8 * var(--u));
   font: 600 calc(12 * var(--u))/1.4 var(--sans);
   color: var(--text-secondary);
@@ -463,6 +477,7 @@ select:focus-visible {
 .law-actions {
   display: flex;
   gap: calc(6 * var(--u));
+  margin-bottom: calc(8 * var(--u));
 }
 
 /* The selected law's name with the actions that apply to it. */
@@ -474,7 +489,7 @@ select:focus-visible {
   margin-bottom: calc(8 * var(--u));
 }
 
-#panel .details-head h2 {
+#details .details-head h2 {
   margin: 0;
   min-width: 0;
   overflow: hidden;
@@ -538,7 +553,8 @@ select:focus-visible {
   color: var(--text-tertiary);
 }
 
-#panel input {
+#panel input,
+#details input {
   min-width: 0;
   height: calc(26 * var(--u));
   box-sizing: border-box;
@@ -552,16 +568,18 @@ select:focus-visible {
   user-select: text;
 }
 
-#panel input[type="text"] {
+#details input[type="text"] {
   font: calc(12 * var(--u)) var(--sans);
 }
 
-#panel input:focus-visible {
+#panel input:focus-visible,
+#details input:focus-visible {
   outline: calc(2 * var(--u)) solid var(--teal);
   outline-offset: 0;
 }
 
-#panel input[aria-invalid="true"] {
+#panel input[aria-invalid="true"],
+#details input[aria-invalid="true"] {
   border-color: var(--danger);
 }
 
@@ -689,7 +707,7 @@ select:focus-visible {
   display: none;
 }
 
-#panel h3 {
+#details h3 {
   margin: 0;
   font: 600 calc(12 * var(--u))/1.4 var(--sans);
   color: var(--text-secondary);
@@ -1068,6 +1086,8 @@ button.primary {
 }
 
 /* The explained body, on the right (SPEC §11.1). It scrolls rather than reaching the transport. */
+/* The selected law's inspector shares the explained body's card: contextual, in the right column. */
+#details,
 #explain {
   width: calc(312 * var(--u));
   box-sizing: border-box;
@@ -1514,7 +1534,7 @@ button.primary {
 }
 
 /* Replay is read-only: semantic controls stay readable but take no input. */
-body[data-context="replay"] #details,
+body[data-context="replay"] #details-body,
 body[data-context="replay"] #law-shelf {
   opacity: 0.62;
 }

@@ -19,14 +19,15 @@ seed_folder $QA_STATE/scenes
 EXAMPLES=('sideways-rain:Sideways Rain:sideways' 'catch-and-release:Catch and Release:pull' 'drag-pocket:Drag Pocket:pocket' 'storm-bottle:Storm Bottle:storm-bottle' 'two-futures:Two Futures:sideways')
 SCALES=(100 150 200)
 
-# reveal_input LABEL: scrolls the Scene panel over its left edge until the inspector input LABEL is in view, then clicks it.
+# reveal_input LABEL: scrolls the region holding it (the inspector's context column) over its left edge until the inspector input LABEL is in view, then clicks it.
 reveal_input() {
   local i p panel
   for i in {1..30}; do
     layout
     p=(${=$(logq field $APP_LOG layout "inputs.$1" | tr -d '[],')})
     [[ -n $p[1] && $p[1] != null ]] || fail "no inspector input $1"
-    panel=(${=$(logq field $APP_LOG layout controls.panel | tr -d '[],')})
+    # The inspector is in the right context column: scroll whichever region holds the input.
+    panel=(${=$(scroller $(( ${p[1]%.*} + ${p[3]%.*} / 2 )) $(( ${p[2]%.*} + ${p[4]%.*} / 2 )))})
     if (( p[2] >= panel[2] + 4 && p[2] + p[4] <= panel[2] + panel[4] - 4 )); then
       click $(( WIN_X + ${p[1]%.*} + ${p[3]%.*} / 2 )) $(( WIN_Y + ${p[2]%.*} + ${p[4]%.*} / 2 ))
       return 0
@@ -131,6 +132,25 @@ for pct in 100 200; do
   press_expect panel-toggle control
   layout
   expect layout "panel expanded again" "e['panelCollapsed'] is False and e['controls']['panel'] is not None and e['controls']['panel'][2] > 0 and e['controls']['panel'][3] > 0"
+done
+
+# The inspector collapses on its own, in the right column; Hide laws leaves it, and both together give the
+# viewport back. Its toggle stays reachable while collapsed.
+for pct in 100 200; do
+  set_scale $pct
+  press_expect details-toggle control
+  layout
+  expect layout "inspector collapsed" "e['detailsCollapsed'] is True and e['controls']['details'] is not None and e['controls']['details-toggle'] is not None and e['controls']['law-duplicate'] is None and all(v is None for v in e['inputs'].values())"
+  m8q surface
+  press_expect panel-toggle control
+  layout
+  expect layout "both collapsed" "e['panelCollapsed'] is True and e['detailsCollapsed'] is True and e['controls']['panel-toggle'] is not None"
+  m8q surface
+  shot m8-both-collapsed-$pct
+  press_expect panel-toggle control
+  press_expect details-toggle control
+  layout
+  expect layout "inspector expanded again" "e['detailsCollapsed'] is False and e['controls']['law-duplicate'] is not None and e['controls']['law-duplicate'][2] > 0"
 done
 
 # Comparison controls: Compare from here computes A at once.

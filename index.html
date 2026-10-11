@@ -81,62 +81,6 @@
           </section>
 
 
-          <section id="details" aria-labelledby="details-title" hidden>
-            <div class="details-head">
-              <h2 id="details-title">Sideways</h2>
-              <div class="law-actions">
-                <button type="button" id="law-duplicate">Duplicate</button>
-                <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
-              </div>
-            </div>
-            <div class="field-row">
-              <label for="law-label">Name</label>
-              <input id="law-label" type="text" maxlength="200" spellcheck="false" autocomplete="off" />
-            </div>
-            <div class="field-row">
-              <span class="label" id="color-label">Color</span>
-              <div id="law-colors" role="radiogroup" aria-labelledby="color-label"></div>
-            </div>
-            <fieldset class="triple" data-property="position">
-              <legend>Position <span class="unit">m</span></legend>
-              <input type="number" step="0.1" aria-label="Position x" data-axis="0" />
-              <input type="number" step="0.1" aria-label="Position y" data-axis="1" />
-              <input type="number" step="0.1" aria-label="Position z" data-axis="2" />
-            </fieldset>
-            <fieldset class="triple" data-property="rotation">
-              <legend>Rotation <span class="unit">°</span></legend>
-              <input type="number" step="5" aria-label="Rotation about x" data-axis="0" />
-              <input type="number" step="5" aria-label="Rotation about y" data-axis="1" />
-              <input type="number" step="5" aria-label="Rotation about z" data-axis="2" />
-            </fieldset>
-            <div class="field-row">
-              <span class="label" id="support-label">Support</span>
-              <div class="segmented compact" id="law-support" role="radiogroup" aria-labelledby="support-label"></div>
-            </div>
-            <div class="param-fields" id="law-region-params"></div>
-            <p class="kind" id="law-kind"></p>
-            <div class="param-fields" id="law-params"></div>
-            <div class="param-fields">
-              <label>Fade <input id="law-fade" type="number" step="0.05" min="0" max="1" /></label>
-            </div>
-            <!-- M5: the law's ingredients, a short list inside the one law, not a graph. -->
-            <div class="ingredients" id="ingredients" role="group" aria-labelledby="ingredients-title" hidden>
-              <div class="laws-head">
-                <h3 id="ingredients-title">Ingredients</h3>
-                <div class="law-shelf" role="group" aria-label="Add an ingredient to this law" id="ingredient-shelf"></div>
-              </div>
-              <div class="crumbs" id="ingredient-crumbs" hidden>
-                <button type="button" id="ingredient-up">Back</button>
-                <span id="ingredient-level"></span>
-              </div>
-              <ol id="ingredient-list"></ol>
-              <p class="note" id="ingredients-note"></p>
-              <div id="ingredient-detail" hidden></div>
-            </div>
-            <p id="details-error" role="alert" hidden></p>
-            <p class="note" id="law-sampling"></p>
-          </section>
-
           <section id="motion" aria-labelledby="motion-title">
             <div class="laws-head">
               <h2 id="motion-title">Motion</h2>
@@ -222,6 +166,67 @@
             <button type="button" id="comparison-close">Close comparison</button>
           </div>
         </section>
+        <!-- The selected law's inspector: contextual, on the right (SPEC §11.1). Its body collapses on its own;
+             the Laws list on the left still selects. -->
+        <section id="details" aria-labelledby="details-title" hidden>
+          <div class="details-head">
+            <h2 id="details-title">Sideways</h2>
+            <button type="button" id="details-toggle" aria-expanded="true" aria-controls="details-body">Hide details</button>
+          </div>
+          <div id="details-body">
+            <div class="law-actions">
+              <button type="button" id="law-duplicate">Duplicate</button>
+              <button type="button" id="law-delete" title="Delete the selected law (⌫)">Delete</button>
+            </div>
+            <div class="field-row">
+              <label for="law-label">Name</label>
+              <input id="law-label" type="text" maxlength="200" spellcheck="false" autocomplete="off" />
+            </div>
+            <div class="field-row">
+              <span class="label" id="color-label">Color</span>
+              <div id="law-colors" role="radiogroup" aria-labelledby="color-label"></div>
+            </div>
+            <fieldset class="triple" data-property="position">
+              <legend>Position <span class="unit">m</span></legend>
+              <input type="number" step="0.1" aria-label="Position x" data-axis="0" />
+              <input type="number" step="0.1" aria-label="Position y" data-axis="1" />
+              <input type="number" step="0.1" aria-label="Position z" data-axis="2" />
+            </fieldset>
+            <fieldset class="triple" data-property="rotation">
+              <legend>Rotation <span class="unit">°</span></legend>
+              <input type="number" step="5" aria-label="Rotation about x" data-axis="0" />
+              <input type="number" step="5" aria-label="Rotation about y" data-axis="1" />
+              <input type="number" step="5" aria-label="Rotation about z" data-axis="2" />
+            </fieldset>
+            <div class="field-row">
+              <span class="label" id="support-label">Support</span>
+              <div class="segmented compact" id="law-support" role="radiogroup" aria-labelledby="support-label"></div>
+            </div>
+            <div class="param-fields" id="law-region-params"></div>
+            <p class="kind" id="law-kind"></p>
+            <div class="param-fields" id="law-params"></div>
+            <div class="param-fields">
+              <label>Fade <input id="law-fade" type="number" step="0.05" min="0" max="1" /></label>
+            </div>
+            <!-- M5: the law's ingredients, a short list inside the one law, not a graph. -->
+            <div class="ingredients" id="ingredients" role="group" aria-labelledby="ingredients-title" hidden>
+              <div class="laws-head">
+                <h3 id="ingredients-title">Ingredients</h3>
+                <div class="law-shelf" role="group" aria-label="Add an ingredient to this law" id="ingredient-shelf"></div>
+              </div>
+              <div class="crumbs" id="ingredient-crumbs" hidden>
+                <button type="button" id="ingredient-up">Back</button>
+                <span id="ingredient-level"></span>
+              </div>
+              <ol id="ingredient-list"></ol>
+              <p class="note" id="ingredients-note"></p>
+              <div id="ingredient-detail" hidden></div>
+            </div>
+            <p id="details-error" role="alert" hidden></p>
+            <p class="note" id="law-sampling"></p>
+          </div>
+        </section>
+
         <!-- The explained body (SPEC §11.1, §12): what the laws submitted for it, kept apart from its
              velocity and from contacts. Shown only while a body is explained. -->
         <aside id="explain" aria-labelledby="explain-title" hidden>

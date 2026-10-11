@@ -182,6 +182,22 @@ click() { idle_gate; guard_point $1 $2; cliclick -e 20 c:$1,$2; touched; sleep 0
 # under the pointer, never the scene behind it.
 scroll_at() { idle_gate; guard_point $1 $2; cliclick -e 20 m:$1,$2; osascript -l JavaScript $NATIVE/scroll.js $3 >/dev/null; touched; sleep 0.35 }
 
+# scroller X Y: the box ("x y w h", content-view points) of the region that holds content point (X,Y)
+# in the last layout. A point in the scene card, the tools or the dock gets that fixed region, which never
+# scrolls; otherwise the right context column (inspector, recording, comparison, explained body) when X
+# lies in its span, else the left Scene panel. The reveal helpers scroll that region over its left edge.
+scroller() {
+  logq last $APP_LOG layout | python3 -I -c '
+import json, sys
+c = json.load(sys.stdin)["controls"]
+x, y = float(sys.argv[1]), float(sys.argv[2])
+def holds(b): return b is not None and b[0] <= x <= b[0] + b[2] and b[1] <= y <= b[1] + b[3]
+fixed = [c.get(k) for k in ("document", "tools", "dock") if holds(c.get(k))]
+column = c.get("context-column")
+b = fixed[0] if fixed else column if column and column[0] <= x <= column[0] + column[2] else c["panel"]
+print(*b)' $1 $2
+}
+
 # drag X1 Y1 X2 Y2 [STEPS]: press, move in steps, release; both ends are hit-tested. A synthetic
 # mouse-up is sometimes lost (M0 finding 1; WebKit reads button state from the hardware, so a later
 # synthetic move does not reveal it). If a law gesture began but did not end, the release is sent

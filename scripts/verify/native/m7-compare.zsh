@@ -45,9 +45,10 @@ reveal_strength() {
   for i in {1..25}; do
     layout
     p=(${=$(point inputs.Strength)})
-    panel=(${=$(logq field $APP_LOG layout controls.panel | tr -d '[],')})
+    panel=(${=$(scroller $(( p[1] - WIN_X )) $(( p[2] - WIN_Y )))})
     if (( p[2] > WIN_Y + panel[2] + 8 && p[2] < WIN_Y + panel[2] + panel[4] - 8 )); then click $p[1] $p[2]; return 0; fi
-    scroll_at $(( WIN_X + 25 )) $(( WIN_Y + 350 )) -100
+    local sx=$(( WIN_X + ${panel[1]%.*} + 8 )) sy=$(( WIN_Y + ${panel[2]%.*} + ${panel[4]%.*} / 2 ))
+    if (( p[2] <= WIN_Y + panel[2] + 8 )); then scroll_at $sx $sy 100; else scroll_at $sx $sy -100; fi
   done
   fail "strength did not become visible"
 }

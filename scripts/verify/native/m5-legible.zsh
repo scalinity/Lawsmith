@@ -36,7 +36,7 @@ reveal() {
     layout
     p=(${=$(box "$1")})
     [[ -n $p[1] ]] || fail "the layout has no box for $1"
-    panel=(${=$(logq field $APP_LOG layout controls.panel | tr -d '[],')})
+    panel=(${=$(scroller $(( p[1] - WIN_X )) $(( p[2] - WIN_Y )))})
     if (( p[3] >= panel[2] + 4 && p[3] + p[4] <= panel[2] + panel[4] - 4 )); then
       click $p[1] $p[2]
       return 0

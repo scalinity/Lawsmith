@@ -326,11 +326,12 @@ async function start() {
   let cameraMoved = false;
   const applyFreeze = () => {
     frozen = guardFrozen || launchPending;
-    for (const id of ['document', 'panel', 'tools', 'transport', 'overlays', 'run', 'comparison']) $(id).inert = frozen;
+    for (const id of ['document', 'panel', 'details', 'tools', 'transport', 'overlays', 'run', 'comparison']) $(id).inert = frozen;
     // Replay is read-only (SPEC §13.2): its laws are inspected, never edited; playback and the camera still work.
     const locked = readOnly();
     document.body.dataset.context = comparing() ? 'comparison' : replaying() ? 'replay' : 'authoring';
-    for (const id of ['details', 'law-shelf']) $(id).inert = locked;
+    // The inspector's fields, not its collapse control: a replay's law can still be shown or folded away.
+    for (const id of ['details-body', 'law-shelf']) $(id).inert = locked;
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) b.disabled = locked;
     $<HTMLButtonElement>('reset').disabled = locked || comparing();
     $<HTMLButtonElement>('arrows-toggle').disabled = locked;
@@ -952,6 +953,16 @@ async function start() {
     panelToggle.setAttribute('aria-expanded', String(!collapsed));
     panelToggle.textContent = collapsed ? 'Show laws' : 'Hide laws';
     report('control', { panel: collapsed ? 'collapsed' : 'expanded' });
+  });
+
+  // The selected law's inspector collapses on its own, in the right column; selection is unchanged.
+  const detailsToggle = $<HTMLButtonElement>('details-toggle');
+  detailsToggle.addEventListener('click', () => {
+    const collapsed = details.dataset.collapsed !== 'true';
+    details.dataset.collapsed = String(collapsed);
+    detailsToggle.setAttribute('aria-expanded', String(!collapsed));
+    detailsToggle.textContent = collapsed ? 'Show details' : 'Hide details';
+    report('control', { details: collapsed ? 'collapsed' : 'expanded' });
   });
 
   // Interface Scale (SPEC §11.3): text and controls reflow; the renderer's pixel ratio and the simulation never read it.
@@ -2272,6 +2283,7 @@ async function start() {
       interfaceScale: uiScale,
       reducedMotion: reducedMotion.matches,
       panelCollapsed: sceneColumn.dataset.collapsed === 'true',
+      detailsCollapsed: details.dataset.collapsed === 'true',
       // Keyboard focus as drawn: the focused control, whether it shows its ring, and where it is.
       focus: (() => {
         const e = document.activeElement;
@@ -2301,7 +2313,7 @@ async function start() {
       lawHandles: interaction.handlesOnScreen(),
       // The explained body's center now, and the panel's scroll extent (it must not scroll sideways).
       explained: explained === null ? null : { id: explained, point: (() => { const i = host.ids.indexOf(explained); return i < 0 ? null : toScreen(new Vector3(host.positions[3 * i]!, host.positions[3 * i + 1]!, host.positions[3 * i + 2]!)); })() },
-      scroll: Object.fromEntries(['panel', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
+      scroll: Object.fromEntries(['panel', 'context-column', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
       comparison: runs.comparison ? { ...runs.comparison.counts(), receipt: comparisonReceipt(), address: runs.comparison.address, tick: host.tick, cursor: host.lastAppliedSequence, replaying: runs.comparison.replaying, working: !!runs.comparison.working, status: $('comparison-status').textContent, inspect: $('comparison-inspect').textContent, box: box($('comparison')) } : null,
       run: {

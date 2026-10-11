@@ -31,14 +31,14 @@ except (StopIteration, KeyError, IndexError, TypeError):
     b = None
 if b: print(round($WIN_X + b[0] + b[2] / 2), round($WIN_Y + b[1] + b[3] / 2), round(b[1]), round(b[3]))"
 }
-# reveal EXPR [KIND]: scrolls the Scene panel until that box is in view, then clicks it (as m6a-record).
+# reveal EXPR [KIND]: scrolls the region holding it (lib.zsh scroller) until that box is in view, then clicks it (as m6a-record).
 reveal() {
   local i p panel
   for i in {1..30}; do
     layout
     p=(${=$(box "$1")})
     [[ -n $p[1] ]] || fail "the layout has no box for $1"
-    panel=(${=$(logq field $APP_LOG layout controls.panel | tr -d '[],')})
+    panel=(${=$(scroller $(( p[1] - WIN_X )) $(( p[2] - WIN_Y )))})
     if (( p[3] >= panel[2] + 4 && p[3] + p[4] <= panel[2] + panel[4] - 4 )); then
       if [[ -n $2 ]]; then click_expect $p[1] $p[2] $2; else click $p[1] $p[2]; fi
       return 0
