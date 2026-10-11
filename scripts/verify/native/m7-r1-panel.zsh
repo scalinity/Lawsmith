@@ -44,10 +44,17 @@ steps_to() {
   local current=$(field layout authority.tick)
   local n=$(( $1 - current ))
   (( n >= 0 )) || fail "step target is behind displayed world"
-  if (( n )); then
-    local dots=$(python3 -I -c "print('.' * $n)")
+  local batch target dots
+  # Long injected text bursts can lose key events. Check every bounded batch; never fill a deficit.
+  while (( n )); do
+    batch=$(( n > 32 ? 32 : n ))
+    target=$(( current + batch ))
+    dots=$(python3 -I -c "print('.' * $batch)")
     keys t:$dots
-  fi
+    layout; expect layout "exact injected step batch through $target" "e['authority']['tick']==$target and e['playing'] is False"
+    current=$target
+    n=$(( $1 - current ))
+  done
   layout; expect layout "exact paused boundary $1" "e['authority']['tick']==$1 and e['playing'] is False"
 }
 reveal() {
