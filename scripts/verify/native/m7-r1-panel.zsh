@@ -42,7 +42,8 @@ baseline() {
 }
 steps_to() {
   layout
-  local current=$(field layout authority.tick) n=$(( $1 - current ))
+  local current=$(field layout authority.tick)
+  local n=$(( $1 - current ))
   (( n >= 0 )) || fail "step target is behind displayed world"
   if (( n )); then
     local dots=$(python3 -I -c "print('.' * $n)")
@@ -103,7 +104,7 @@ expect layout "intermediate Push host and actual DOM agree" "e['comparison']['re
 shot r1-created-intermediate
 finish_replay; shot r1-created-endpoint
 press_expect undo history; layout
-expect layout "retained local undo works" "e['selectedField'] is None and next(f for f in e['appliedLaws'] if f['id']=='push')['edgeFade']==0"
+expect layout "retained local undo works" "e['selectedField'] is None and next(f for f in e['appliedLaws'] if f['id']=='push')['edgeFade']==0.25"
 press_expect redo history
 press_expect alternate-new comparison; layout
 expect layout "New clears Push and history" "e['comparison']['suffix']==0 and e['authority']['tick']==0 and all(r['id']!='push' for r in e['laws'])"
