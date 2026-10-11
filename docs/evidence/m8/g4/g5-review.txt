@@ -1,0 +1,16 @@
+M8 G5 independent review receipt
+
+reviewer        GPT-6.1 Sol, read-only documentation review (no mutations, tests, builds or native actions)
+reviewed commit 29d8ea0933e65209cd60a8dd7bd7d4c3353fbcd2
+scope           delta 180433d..29d8ea0: docs/evidence/M8.md, ORCHESTRATION.html, docs/evidence/m8/g4/g5-identity-receipt.txt
+verdict         G5 CLOSED, no actionable findings
+found           both stale current-head statements corrected; consistent roles: current source 65befdc, G4 functional
+                producer c7cf5bf, historical G3 repair 1762ba2, native matrix producer 361dcd9, performance/replay producer
+                92be14f, unchanged application fa4e223; historical receipts remain historical
+unchanged       repaired keyboard behavior PENDING / UNVERIFIED; owner exploration (AC8 deferred); both approved intervals
+                ended; qualification boundaries; M9 gated
+root checks     read-only at 29d8ea0: one clean worktree on m8; local and live origin m8 equal; accepted main 0d2f609
+                unchanged; application, tests, index, src-tauri and package pins unchanged from fa4e223; SPEC, MILESTONES
+                and M7 evidence unchanged; candidate hashes match r19 (executable faf32375…, index.html 779a5d34…,
+                JS 187e2115…, CSS 0cf37fc6…)
+status          source review findings G1-G5 closed; owner and native qualification remain
