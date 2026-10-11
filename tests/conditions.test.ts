@@ -1,10 +1,7 @@
 // M8 R17: the conditions SPEC §5.4 and §16 require on screen (births skipped at the live-body limit, the
-// acceleration limiter acting, sustained slowdown while playing) stay visible with the developer readout
-// closed. The counters come from real hosts on bundled or accepted QA scenes, the pacing from the
-// production scheduler, and the rendering from the production refresh in src/main.ts (not a copy).
-import { readFileSync } from 'node:fs';
-import { stripTypeScriptTypes } from 'node:module';
-import { createContext, runInContext } from 'node:vm';
+// acceleration limiter acting, sustained slowdown while playing). The counters come from real hosts on
+// bundled or accepted QA scenes and the pacing from the production scheduler; tests/conditionsRefresh.test.js
+// executes the production refresh in src/main.ts.
 import { beforeAll, describe, expect, it } from 'vitest';
 import limiterScene from '../scripts/verify/scenes/m4-limiter.lawsmith.json?raw';
 import { cloneFrozen } from '../src/domain/scene';
@@ -109,68 +106,5 @@ describe('the live-body limit and the limiter, from real hosts', () => {
     expect(host.limitedSteps).toBeGreaterThan(0);
     expect(shown).toContain(true);
     host.dispose();
-  });
-});
-
-// The production refresh, executed with stand-ins for the world and the page.
-const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
-const start = source.indexOf("  const conditionsBox = $('conditions');");
-const end = source.indexOf('\n  };\n', start) + 5;
-
-function production(initialHost: { limitedSteps: number; skippedEmissions: number }, ratio: () => number | null) {
-  const box = { textContent: '', hidden: true };
-  const readout = { textContent: '', hidden: true };
-  const reports: unknown[][] = [];
-  const context = createContext({
-    $: (id: string) => (id === 'conditions' ? box : readout),
-    host: initialHost, pace: { ratio }, conditionLines, round3: (v: number) => Math.round(v * 1000) / 1000,
-    report: (...args: unknown[]) => reports.push(args),
-  });
-  runInContext(`${stripTypeScriptTypes(source.slice(start, end))}\nglobalThis.refresh = refreshConditions;`, context);
-  return { box, readout, reports, context, refresh: () => (context.refresh as () => void)() };
-}
-
-describe('the production condition refresh (src/main.ts)', () => {
-  it('shows a skipped birth with the developer readout closed, and reports it once', () => {
-    const world = { limitedSteps: 0, skippedEmissions: 0 };
-    const page = production(world, () => null);
-    page.refresh();
-    expect(page.box.hidden).toBe(true);
-    expect(page.reports).toEqual([]);
-    world.skippedEmissions = 3;
-    page.refresh();
-    page.refresh();
-    expect(page.box.hidden).toBe(false);
-    expect(page.box.textContent).toBe('3 births skipped: the scene already has as many moving bodies as it allows.');
-    expect(page.readout.hidden).toBe(true);
-    expect(page.reports).toEqual([['conditions', { skippedBirths: 3, limiterActive: false, simWallRatio: null, shown: [page.box.textContent] }]]);
-  });
-
-  it('the limiter shows while its count grows and clears when it stops; overload shows only with a ratio', () => {
-    const world = { limitedSteps: 0, skippedEmissions: 0 };
-    let ratio: number | null = null;
-    const page = production(world, () => ratio);
-    world.limitedSteps = 40;
-    page.refresh();
-    expect(page.box.textContent).toBe('Acceleration limit reached: laws are scaled down. Click a body to see by how much.');
-    page.refresh();
-    expect(page.box.hidden).toBe(true);
-    ratio = 0.5;
-    page.refresh();
-    expect(page.box.textContent).toBe('Running at 0.50× real time: the scene needs more than this Mac can compute each frame.');
-    ratio = null;
-    page.refresh();
-    expect(page.box.hidden).toBe(true);
-    expect(page.reports.map((r) => (r[1] as { shown: string[] }).shown.length)).toEqual([1, 0, 1, 0]);
-  });
-
-  it('switching to another context with a larger limiter count is not a limiter event', () => {
-    const world = { limitedSteps: 0, skippedEmissions: 0 };
-    const page = production(world, () => null);
-    page.refresh();
-    page.context.host = { limitedSteps: 500, skippedEmissions: 0 };
-    page.refresh();
-    expect(page.box.hidden).toBe(true);
-    expect(page.reports).toEqual([]);
   });
 });
