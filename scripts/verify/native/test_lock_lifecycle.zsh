@@ -60,6 +60,8 @@ wait_quiet() { : }
 print $sysparams[pid] > $D/runner.pid
 hold() { : > $D/held; repeat 120 command sleep 0.25 }
 tally() { print -n "$(pgrep -f -- "$GUI_LOCK lawsmith-m2" | wc -l | tr -d ' ') " >> $D/counts }
+# unlock: the negative controls' fault, an adopter that wrongly releases the lent lock.
+unlock() { python3 -I -c 'import fcntl,sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_UN)' $QA_LOCK_FD }
 case $MODE in
   segments) segment a; tally; segment b; tally; segment c; tally; gui_unlock; tally; exit 0 ;;
   exit-held) gui_lock x; tally; exit 0 ;;
@@ -71,13 +73,18 @@ case $MODE in
   term-cleanup) trap ': > $D/cleanup; gui_unlock' EXIT; gui_lock x; hold ;;
   adopt) segment a; segment b; print -r -- $LOCK_HOLDER > $D/adopted; gui_unlock; exit 0 ;;
   adopt-hold) segment a; hold ;;
+  adopt-unlock) segment a; unlock; exit 0 ;;
+  adopt-hold-unlock) segment a; unlock; hold ;;
   lend)  # lends the lock on a descriptor to an adopting runner, then reports whether it still holds it
     exec {lfd}>>$GUI_LOCK
     python3 -I -c 'import fcntl,sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)' $lfd
     QA_LOCK_FD=$lfd zsh $0 $D/adopter $3; print $? > $D/adopter-exit
+    # A fresh, independent open of the lock file must be refused; the lender's own descriptor is not
+    # touched, since locking it again would succeed even after the lock was lost.
     print -n "after-adopter=" > $D/lender; python3 -I -c 'import fcntl,sys
-try: fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX|fcntl.LOCK_NB); print("held-by-lender")
-except BlockingIOError: print("lost")' $lfd >> $D/lender
+f=open(sys.argv[1],"a+")
+try: fcntl.flock(f, fcntl.LOCK_EX|fcntl.LOCK_NB); print("lost")
+except BlockingIOError: print("held-by-lender")' $GUI_LOCK >> $D/lender
     exec {lfd}>&- ;;
 esac
 EOF
@@ -135,6 +142,11 @@ scenario lend-adopt lend adopt; finished
 check "lent lock: the adopter uses it and the lender still holds it after" '[[ $(<$D/adopter-exit) == 0 && $(<$D/adopter/adopted) == inherited:* && $(<$D/lender) == after-adopter=held-by-lender && $(holders $D) == 0 ]]' "adopter exit $(<$D/adopter-exit 2>/dev/null), $(<$D/lender 2>/dev/null)"
 scenario lend-term lend adopt-hold; until_file $D/adopter/held; kill -TERM $(<$D/adopter/runner.pid); finished
 check "lent lock: a terminated adopter leaves it with the lender" '[[ $(<$D/adopter-exit) == 143 && $(<$D/lender) == after-adopter=held-by-lender && $(holders $D) == 0 ]]' "adopter exit $(<$D/adopter-exit 2>/dev/null), $(<$D/lender 2>/dev/null)"
+reap
+scenario lend-unlock lend adopt-unlock; finished
+check "negative control: an adopter that releases the lent lock and exits is detected" '[[ $(<$D/adopter-exit) == 0 && $(<$D/lender) == after-adopter=lost ]]' "adopter exit $(<$D/adopter-exit 2>/dev/null), $(<$D/lender 2>/dev/null)"
+scenario lend-unlock-term lend adopt-hold-unlock; until_file $D/adopter/held; kill -TERM $(<$D/adopter/runner.pid); finished
+check "negative control: an adopter that releases the lent lock and is terminated is detected" '[[ $(<$D/adopter-exit) == 143 && $(<$D/lender) == after-adopter=lost ]]' "adopter exit $(<$D/adopter-exit 2>/dev/null), $(<$D/lender 2>/dev/null)"
 reap
 D=$ROOT/closed-fd; mkdir -p $D/state $D/out
 QA_LOCK_FD=57 LIB=$LIB /usr/bin/timeout 20 zsh $ROOT/runner.zsh $D hold > $D/log 2>&1; STATUS=$?

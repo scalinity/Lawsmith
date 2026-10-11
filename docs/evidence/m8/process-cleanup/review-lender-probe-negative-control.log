@@ -1,0 +1,23 @@
+# Same test with the previous lender probe (flock on the lender's own descriptor) restored in a scratch copy; LIB = fixed lib.zsh
+lock holders before: 0 on this run's temporary locks; 0 on the shared GUI lock (not started by this run, never touched)
+ok   segments: one holder per segment, none after release
+ok   exit while holding: the EXIT trap releases
+ok   contended deadline: exit 5, no holder left, the other holder keeps the lock
+ok   a holder that exits early fails the run and is forgotten, not killed later
+ok   held, runner TERM: holder gone, lock free
+ok   waiting, runner TERM: holder gone while the other holder keeps the lock
+ok   held, runner KILL: holder gone, lock free
+ok   waiting, runner KILL: holder gone while the other holder keeps the lock
+ok   runner killed before its holder started: the holder never takes the lock
+ok   runner TERM: its own EXIT cleanup runs
+ok   lent lock: the adopter uses it and the lender still holds it after
+ok   lent lock: a terminated adopter leaves it with the lender
+FAIL negative control: an adopter that releases the lent lock and exits is detected
+     adopter exit 0, after-adopter=held-by-lender
+FAIL negative control: an adopter that releases the lent lock and is terminated is detected
+     adopter exit 143, after-adopter=held-by-lender
+ok   a closed descriptor is refused (exit 3) and no holder starts
+ok   a descriptor on another file is refused (exit 3) and no holder starts
+lock holders after: 0 on this run's temporary locks; 0 on the shared GUI lock; 0 processes still naming this run's directory
+14 passed, 2 failed
+exit=1
