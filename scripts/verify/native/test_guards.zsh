@@ -99,5 +99,18 @@ run_case record-reserve 5 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EP
 run_case window-after-deadline 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS - 1 )); LAST_INPUT=$EPOCHREALTIME; window_size 1280 800' 'none window-after-deadline "set size"'
 run_case m8-requires-deadline 1 'unset QA_DEADLINE; source $HERE/m8lib.zsh'
 
+# --- F5: the owner's preferences are snapshotted under the lock and restored exactly ----------------
+PLIST='<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>OwnerSetting</key><string>kept</string></dict></plist>'
+QA_WRITES='<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>NSOSPLastRootDirectory</key><string>qa</string></dict></plist>'
+same_plist() { cmp -s <(plutil -convert xml1 -o - $1) <(print -r -- $PLIST | plutil -convert xml1 -o - -) }
+run_case prefs-existing-restored 0 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; seed_folder \$QA_STATE/scenes; print -r -- '$QA_WRITES' > \$DOMAIN_FILE; restore_preferences && grep -q '\"original\":\"present\"' \$QA_OUT/cleanup.jsonl && grep -q '\"preferences\":\"restored\"' \$QA_OUT/cleanup.jsonl" 'same_plist $ROOT/prefs-existing-restored/domain.plist && has prefs-existing-restored "defaults import"'
+run_case prefs-absent-removed 0 "unset QA_DEADLINE; seed_folder \$QA_STATE/scenes; print -r -- '$QA_WRITES' > \$DOMAIN_FILE; restore_preferences && [[ ! -e \$DOMAIN_FILE ]] && grep -q '\"original\":\"absent\"' \$QA_OUT/cleanup.jsonl" 'none prefs-absent-removed "defaults import"'
+run_case prefs-no-snapshot-no-cleanup 0 "print -r -- '$PLIST' > \$DOMAIN_FILE; restore_preferences" 'none prefs-no-snapshot-no-cleanup defaults && same_plist $ROOT/prefs-no-snapshot-no-cleanup/domain.plist'
+run_case prefs-early-failure-keeps-domain 5 "print -r -- '$PLIST' > \$DOMAIN_FILE; trap 'restore_preferences' EXIT; QA_DEADLINE=\$(( EPOCHSECONDS - 1 )); seed_folder \$QA_STATE/scenes" 'none prefs-early-failure-keeps-domain "defaults delete" && same_plist $ROOT/prefs-early-failure-keeps-domain/domain.plist'
+run_case prefs-snapshot-failure-writes-nothing 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; EXPORT_FAILS=1; seed_folder \$QA_STATE/scenes" 'none prefs-snapshot-failure-writes-nothing seed-preferences && same_plist $ROOT/prefs-snapshot-failure-writes-nothing/domain.plist'
+run_case prefs-restore-failure-reported 1 "unset QA_DEADLINE; print -r -- '$PLIST' > \$DOMAIN_FILE; seed_folder \$QA_STATE/scenes; IMPORT_FAILS=1; restore_preferences" 'grep -q "\"preferences\":\"failed\"" $ROOT/prefs-restore-failure-reported/out/cleanup.jsonl && [[ -s $ROOT/prefs-restore-failure-reported/state/preferences-original.plist ]]'
+run_case prefs-snapshot-needs-lock 1 'unset QA_DEADLINE; snapshot_preferences' 'none prefs-snapshot-needs-lock "defaults "'
+run_case prefs-snapshot-private 1 'unset QA_DEADLINE; QA_STATE=$REPO/qa-state-inside; command sleep 30 & LOCK_HOLDER=$!; snapshot_preferences' 'none prefs-snapshot-private "defaults "'
+
 print -r -- "$passed passed, $failed failed"
 (( failed == 0 ))

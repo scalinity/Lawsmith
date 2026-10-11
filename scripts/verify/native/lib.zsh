@@ -343,12 +343,14 @@ wait_depth() {
 # Open and Save panels start in the last folder the app used. Seeding that folder before a launch
 # makes them start in the disposable QA folder, so no navigation is needed: synthetic Return and
 # Escape do not reliably reach the Go to Folder sheet of this macOS release, so it is never used.
-# The preferences domain is Lawsmith's own; restore_preferences removes what QA added.
+# The preferences domain is Lawsmith's own, and may hold the owner's settings: it is snapshotted first,
+# and restore_preferences puts back exactly what was there.
 seed_folder() {
   running && fail "seed the panel folder before launching"
   # A preference write is a native mutation: it happens under the GUI lock, after a quiet check.
   [[ -n $LOCK_HOLDER ]] || segment "seed the Open and Save folder"
   idle_gate 2
+  snapshot_preferences
   osascript -l JavaScript -e "ObjC.import('Foundation');
     const url = \$.NSURL.fileURLWithPath('$1');
     const data = url.bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(0, \$(), \$(), null);
@@ -421,9 +423,52 @@ alert_for() {
   alert "$2"
 }
 
-# Removes the preferences domain QA created for Lawsmith (panel folder and sizes); run after the
-# last launch. Only call it when the domain did not exist before QA began.
-restore_preferences() { defaults delete local.lawsmith >/dev/null 2>&1; say "removed QA panel preferences" }
+# --- Preferences: the owner's local.lawsmith domain is snapshotted before QA writes it, and restored
+# exactly. The snapshot lives in QA_STATE, which is private and outside the repository; receipts go to
+# QA_OUT/cleanup.jsonl. Nothing is restored unless this run took the snapshot (and so may have written).
+PREFS_DOMAIN=local.lawsmith
+PREFS_SNAPSHOT=
+PREFS_ORIGINAL=
+receipt() { print -r -- "$1" >> $QA_OUT/cleanup.jsonl }
+
+snapshot_preferences() {
+  [[ -n $PREFS_SNAPSHOT ]] && return 0
+  [[ -n $LOCK_HOLDER ]] || fail "the preferences are snapshotted only under the GUI lock"
+  [[ ${QA_STATE:A} != ${REPO}(|/*) ]] || fail "QA_STATE is inside the repository; the preference snapshot must stay private"
+  local file=$QA_STATE/preferences-original.plist
+  rm -f $file
+  if defaults read $PREFS_DOMAIN >/dev/null 2>&1; then
+    defaults export $PREFS_DOMAIN $file >/dev/null 2>&1 && [[ -s $file ]] || fail "could not snapshot the existing Lawsmith preferences; nothing was changed"
+    PREFS_ORIGINAL=present
+  else
+    : > $file
+    PREFS_ORIGINAL=absent
+  fi
+  PREFS_SNAPSHOT=$file
+  receipt "{\"preferences\":\"snapshot\",\"original\":\"$PREFS_ORIGINAL\",\"sha256\":\"$(shasum -a 256 $file | cut -d' ' -f1)\"}"
+  say "Lawsmith preferences snapshotted (originally $PREFS_ORIGINAL)"
+}
+
+# restore_preferences: puts back the snapshot exactly (or removes the domain if there was none), checks
+# the result and reports it. Cleanup: it runs after the deadline too. Returns non-zero on a mismatch.
+restore_preferences() {
+  [[ -n $PREFS_SNAPSHOT ]] || { say "preferences: no snapshot taken by this run, nothing to restore"; return 0 }
+  local after=$QA_STATE/preferences-restored.plist outcome=restored
+  defaults delete $PREFS_DOMAIN >/dev/null 2>&1
+  if [[ $PREFS_ORIGINAL == absent ]]; then
+    defaults read $PREFS_DOMAIN >/dev/null 2>&1 && outcome=failed
+  else
+    rm -f $after
+    if ! defaults import $PREFS_DOMAIN $PREFS_SNAPSHOT >/dev/null 2>&1 || ! defaults export $PREFS_DOMAIN $after >/dev/null 2>&1 \
+      || ! cmp -s <(plutil -convert xml1 -o - $PREFS_SNAPSHOT) <(plutil -convert xml1 -o - $after); then
+      outcome=failed
+    fi
+  fi
+  receipt "{\"preferences\":\"$outcome\",\"original\":\"$PREFS_ORIGINAL\"}"
+  say "Lawsmith preferences $outcome (originally $PREFS_ORIGINAL)"
+  [[ $outcome == restored ]] && PREFS_SNAPSHOT=
+  [[ $outcome == restored ]]
+}
 
 # Waits for the process under test to end.
 wait_exit() {
