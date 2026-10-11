@@ -91,6 +91,13 @@ def surface(layout):
     for name, scroll in layout.get('scroll', {}).items():
         if scroll['scrollWidth'] > scroll['clientWidth'] + 1:
             problems.append(f'{name} scrolls sideways ({scroll["scrollWidth"]} > {scroll["clientWidth"]})')
+    # A shown Scene panel must be usable, not squeezed to a sliver: at least 100 CSS px of its content in
+    # view, or all of it when it is shorter (the second native attempt found 2 px at 200%, M8 R16).
+    panel_scroll = layout.get('scroll', {}).get('panel') or {}
+    if c.get('panel') and not layout.get('panelCollapsed') and 'clientHeight' in panel_scroll:
+        need = min(panel_scroll['scrollHeight'], 100)
+        if panel_scroll['clientHeight'] < need:
+            problems.append(f'the Scene panel shows {panel_scroll["clientHeight"]} px of its {panel_scroll["scrollHeight"]} px content')
     for key, box in c.items():
         if box is None or key in FIXED or inside(box, w, h):
             continue

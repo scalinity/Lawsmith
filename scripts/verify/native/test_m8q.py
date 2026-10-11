@@ -20,7 +20,7 @@ def layout():
     return {
         'viewport': [1280, 800], 'interfaceScale': 2, 'pixelRatio': 1.5, 'canvas': [1920, 1200], 'playing': False,
         'authority': {'tick': 0, 'cursor': 0, 'stateHash': 's', 'engineHash': 'e'},
-        'controls': controls, 'scroll': {'panel': {'scrollWidth': 282, 'clientWidth': 282}},
+        'controls': controls, 'scroll': {'panel': {'scrollWidth': 282, 'clientWidth': 282, 'scrollHeight': 900, 'clientHeight': 300}},
         'example': 'drag-pocket', 'selected': 'pocket',
         'appliedLaws': [{'id': 'pocket', 'enabled': True}, {'id': 'pull', 'enabled': False}],
         'laws': [{'id': 'pocket', 'visibleState': 'true', 'enabledText': 'On'}, {'id': 'pull', 'visibleState': 'true', 'enabledText': 'Off'}],
@@ -59,6 +59,17 @@ class Surface(unittest.TestCase):
     def test_fault_banner_over_comparison_fails(self):
         value = layout(); value['controls']['sim-error'] = [840, 60, 400, 40]; value['controls']['comparison'] = [878, 80, 390, 200]
         with self.assertRaises(AssertionError): m8q.surface(value)
+
+    def test_squeezed_panel_fails(self):
+        # M8 R16: the second native attempt's 2 px Scene panel at 1280x800 and 200%.
+        value = layout(); value['scroll']['panel'].update(clientHeight=2)
+        with self.assertRaises(AssertionError): m8q.surface(value)
+
+    def test_short_panel_shown_whole_passes_and_collapsed_is_exempt(self):
+        value = layout(); value['scroll']['panel'].update(scrollHeight=60, clientHeight=60)
+        m8q.surface(value)
+        value = layout(); value['scroll']['panel'].update(clientHeight=2); value['panelCollapsed'] = True
+        m8q.surface(value)
 
     def test_unreachable_control_fails(self):
         value = layout(); value['controls']['run-record'] = [400, 900, 80, 28]
