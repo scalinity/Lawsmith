@@ -50,7 +50,7 @@ function setup() {
   doc.activeElement = doc.body;
   context = createContext({
     HTMLElement, HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement, HTMLButtonElement, document: doc,
-    $: (id) => elements.get(id), hudHidden: false, frozen: false, report: spy('report'), applyFreeze: spy('applyFreeze'),
+    $: (id) => elements.get(id), hudHidden: false, frozen: false, viewport: { gizmo: { dragging: false } }, report: spy('report'), applyFreeze: spy('applyFreeze'),
     window: { addEventListener: (type, fn) => { if (type === 'keydown') listener = fn; } },
     pendingSeek: null, explained: null, comparing: () => false, workflow: { busy: null, message: null }, scheduler: { playing: false },
     interaction: { gesture: null, cancel: () => false, select: spy('select') }, runParts: { timeline: {} },
@@ -128,6 +128,23 @@ describe('the immersive view toggle', () => {
     press('h');
     context.setHudHidden(true, 'button');
     expect(hidden()).toBe(false);
+  });
+
+  it('refuses to hide while a law is being dragged, leaving the gizmo and the drag alone (R-HUD2)', () => {
+    for (const start of [() => { context.interaction.gesture = { mode: 'translate' }; }, () => { context.viewport.gizmo.dragging = true; }]) {
+      setup();
+      start();
+      press('h');
+      context.setHudHidden(true, 'button');
+      expect(hidden()).toBe(false);
+      expect(calls.filter((c) => c[0] === 'applyFreeze')).toEqual([]); // gizmo.enabled untouched: its release still commits
+      expect(calls.filter((c) => c[0] === 'report').map((c) => c[2].hud)).toEqual(['refused', 'refused']);
+      expect(others()).toEqual([]); // and nothing else ran: no mode change, cancel or deselect
+      context.interaction.gesture = null;
+      context.viewport.gizmo.dragging = false;
+      press('h'); // the drag released normally: H now hides
+      expect(hidden()).toBe(true);
+    }
   });
 
   it('while hidden, Space and Step still work; other keys do nothing', () => {

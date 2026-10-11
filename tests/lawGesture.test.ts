@@ -1,6 +1,9 @@
 // LawInteraction's release at a recording limit (SPEC §13.3; AC7): the gesture ends at the value the
 // host applied, the pointer is released, and nothing more is submitted. The controls are stubs shaped
 // like the parts LawInteraction touches; the document, host and recorder are real.
+import { readFileSync } from 'node:fs';
+import { stripTypeScriptTypes } from 'node:module';
+import { createContext, runInContext } from 'node:vm';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
@@ -19,6 +22,7 @@ const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 /** TransformControls' events and its public pointerUp, as the pinned three.js implements them. */
 class GizmoStub extends EventTarget {
   mode = 'translate';
+  enabled = true;
   dragging = false;
   axis: string | null = null;
   setMode(mode: string) {
@@ -33,6 +37,8 @@ class GizmoStub extends EventTarget {
     this.dispatchEvent(new Event('objectChange'));
   }
   pointerUp(pointer: { button: number } | null) {
+    // As TransformControls: a disabled control ignores the release, so its drag never ends (M8 review R-HUD2).
+    if (!this.enabled) return;
     if (pointer !== null && pointer.button !== 0) return;
     if (this.dragging && this.axis !== null) this.dispatchEvent(new Event('mouseUp'));
     this.dragging = false;
@@ -91,7 +97,7 @@ function interaction() {
     proxy.position.x = x;
     gizmo.change();
   };
-  return { s, law, canvas, submit, ends, press, sample };
+  return { s, law, canvas, gizmo, submit, ends, press, sample };
 }
 
 describe('LawInteraction.release at a recording limit (SPEC §13.3; AC7)', () => {
@@ -150,5 +156,42 @@ describe('selection through overlapping laws (M8)', () => {
   it('a single law stays selected, and a miss clears the selection', () => {
     expect(nextPick([{ id: 'pocket' }], 'pocket')).toBe('pocket');
     expect(nextPick([], 'pocket')).toBeNull();
+  });
+});
+
+describe('the immersive view during a transform drag (M8 review R-HUD2)', () => {
+  // The production setHudHidden from src/main.ts, run against this real LawInteraction and gizmo. Its
+  // applyFreeze stand-in does what the production one does to the gizmo: disabled while the HUD is hidden.
+  const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  const from = source.indexOf('  let hudFocus: HTMLElement | null = null;');
+  const to = source.indexOf("  $('hud-hide').addEventListener", from);
+  function hud(law: LawInteraction, gizmo: GizmoStub) {
+    const shell = { contains: () => false };
+    const context = createContext({
+      interaction: law, viewport: { gizmo }, frozen: false, hudHidden: false, report: () => {},
+      $: () => shell, document: { activeElement: null, documentElement: { dataset: {} } }, HTMLElement: class {},
+      applyFreeze: () => { gizmo.enabled = !context.hudHidden; },
+    });
+    runInContext(`${stripTypeScriptTypes(source.slice(from, to))}\nglobalThis.setHudHidden = setHudHidden;`, context);
+    return context as unknown as { hudHidden: boolean; setHudHidden: (hidden: boolean, reason: string) => void };
+  }
+
+  it('H mid-drag is refused; the release commits one undo entry; H after it hides', () => {
+    const { s, law, gizmo, ends, press, sample } = interaction();
+    const view = hud(law, gizmo);
+    press();
+    sample(-1);
+    s.boundary();
+    view.setHudHidden(true, 'keyboard');
+    expect([view.hudHidden, gizmo.enabled, law.gesture !== null]).toEqual([false, true, true]);
+    gizmo.pointerUp({ button: 0 });
+    expect(law.gesture).toBeNull();
+    expect(ends).toHaveLength(1);
+    expect(ends[0]!.cancelled).toBe(false);
+    const undone = s.controller.undo();
+    expect(undone.ok && undone.value.transactionId).toBe(ends[0]!.transactionId);
+    expect(s.controller.redo().ok).toBe(true);
+    view.setHudHidden(true, 'keyboard');
+    expect([view.hudHidden, gizmo.enabled]).toEqual([true, false]);
   });
 });

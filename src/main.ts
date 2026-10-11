@@ -369,6 +369,12 @@ async function start() {
   let hudAlertSeen: unknown = null;
   const setHudHidden = (hidden: boolean, reason: string) => {
     if (hidden === hudHidden || (hidden && frozen)) return;
+    // Never mid-drag: hiding disables the gizmo, whose release would then be skipped and leave the drag
+    // without its commit. The drag ends as usual; H after it hides (M8 review R-HUD2).
+    if (hidden && (interaction.gesture !== null || viewport.gizmo.dragging)) {
+      report('control', { hud: 'refused', reason, gesture: true });
+      return;
+    }
     if (hidden) {
       const active = document.activeElement;
       hudFocus = active instanceof HTMLElement && $('shell').contains(active) ? active : null;
