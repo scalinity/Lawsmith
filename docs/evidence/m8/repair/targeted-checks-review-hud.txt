@@ -1,0 +1,29 @@
+M8 owner feedback 2, review fixes R-HUD1 to R-HUD3 (Sol's review of 577ad1f): author's targeted checks.
+Source and headless only: no build, no app launch, no native input, no browser computed style.
+
+## At 8595013508ccc381de110a2b11103513a2b2e953 (final code head)
+npx tsc --noEmit                                  exit 0
+npx vitest run tests/hudToggle.test.js tests/hudGesture.test.js tests/lawGesture.test.ts
+  tests/emitterControls.test.js tests/emitterPickRow.test.js tests/replayPanel.test.js
+  tests/inspectorPlacement.test.js tests/keyboardReadback.test.js tests/focusRestore.test.js
+                                                  exit 0; 9 files, 100 passed
+
+## Negative controls (source restored after each)
+R-HUD1  without the #emitter-pick-row[hidden] rule, emitterPickRow "one emitter: hidden wins over
+        .field-row" fails: the cascade check resolves display to grid, from .field-row.
+R-HUD2  with the mid-drag refusal removed from setHudHidden, hudToggle "refuses to hide while a law is
+        being dragged" and hudGesture "H mid-drag is refused; the release commits one undo entry" fail.
+R-HUD3  without setHudHidden in recordingLimited, the three hudToggle recording-limit cases (duration,
+        commands, bytes) fail.
+
+## Scope of the R-HUD1 check
+emitterPickRow resolves the row's `display` from src/style.css with postcss, matching selectors right to
+left against the row's ancestors as index.html nests them, with no layout data-* states set. It is a
+stylesheet cascade check, not a WebKit computed style; the rendered row is a native check.
+
+## Found while fixing
+724d634 first placed the R-HUD2 drag test in tests/lawGesture.test.ts. That file then imported node:fs,
+node:module and node:vm, which tsc cannot resolve without Node types, so `npx tsc --noEmit` failed at
+724d634. 0465e32 moved the test to tests/hudGesture.test.js and restored lawGesture.test.ts.
+
+Not run: the full suite, a build, any native or performance check.
