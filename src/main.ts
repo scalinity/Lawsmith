@@ -2732,6 +2732,11 @@ async function start() {
         event.preventDefault();
         if (key === '0') setInterfaceScale(1, 'keyboard');
         else stepInterfaceScale(key === '-' ? -1 : 1);
+      } else if (key === 'l' && event.shiftKey) {
+        // ⇧⌘L: the layout readback wherever focus is, a text field or pop-up menu included, and while
+        // frozen. It is read-only and types nothing; plain ⇧L below still serves the viewport.
+        event.preventDefault();
+        layoutReport();
       }
       return;
     }
