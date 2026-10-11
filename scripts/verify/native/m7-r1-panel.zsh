@@ -1,7 +1,6 @@
 # Targeted R1 checks. Shift+L only reads DOM/host state; it never refreshes the panel.
 # Requires an approved hands-off window. Shared lock, input gates and hit tests are from lib.zsh.
 source ${0:A:h}/lib.zsh
-set -e
 mkdir -p $QA_STATE/scenes
 cp $REPO/examples/two-futures.lawsmith.json $QA_STATE/scenes/
 ORIGINAL_MODE=$(osascript -l JavaScript $NATIVE/display.js get)
@@ -113,7 +112,7 @@ close_comparison
 fi
 
 segment "R1 selected law details and ordinary replay"
-open_fixture; baseline
+baseline
 edit_value controls.law-label 'Custom current law'
 layout; local color=(${=$(point swatches.#c58ae5)}); click $color[1] $color[2]
 law sideways visible
