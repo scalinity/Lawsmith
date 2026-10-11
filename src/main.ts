@@ -92,6 +92,17 @@ function showFailure(error: unknown) {
 const ms = (value: number) => value.toFixed(1);
 const round3 = (value: number) => Math.round(value * 1000) / 1000;
 /** Keeps the last `limit` values. */
+/**
+ * A control's box for the layout readback, [x, y, width, height] in CSS pixels, or null when nothing of it
+ * is rendered: a `hidden` attribute or any CSS `display: none` on it or an ancestor (a collapsed panel)
+ * leaves it without client rects, and a zero rectangle would read as a control on screen.
+ */
+function layoutBox(element: Element | null): number[] | null {
+  if (!element || element.closest('[hidden]') || element.getClientRects().length === 0) return null;
+  const r = element.getBoundingClientRect();
+  return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
+}
+
 function pushBounded(values: number[], value: number, limit: number) {
   values.push(value);
   if (values.length > limit) values.shift();
@@ -2165,11 +2176,7 @@ async function start() {
    * QA harness can aim its input and assert the structural layout instead of reading screenshots.
    */
   const layoutReport = () => {
-    const box = (element: Element | null) => {
-      if (!element || (element as HTMLElement).closest('[hidden]')) return null;
-      const r = element.getBoundingClientRect();
-      return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10);
-    };
+    const box = layoutBox;
     const controls: Record<string, number[] | null> = {};
     for (const element of document.querySelectorAll<HTMLElement>('#document, #doc-invitation, #panel, #tools, #transport, #overlays, #drag-region, #recovery-offer, #details, #motion, #display, #explain, #trail-mode, #run, #comparison, #sim-error, #diagnostics, #scene-column, #context-column, #dock, button[id], input[id], select[id]')) {
       controls[element.id] = box(element);

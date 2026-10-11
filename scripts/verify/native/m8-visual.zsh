@@ -125,10 +125,12 @@ for pct in 100 200; do
   set_scale $pct
   press_expect panel-toggle control
   layout
-  expect layout "panel collapsed" "e['panelCollapsed'] is True and e['controls']['panel'] is None and e['controls']['file-open'] is not None"
+  expect layout "panel collapsed" "e['panelCollapsed'] is True and e['controls']['panel'] is None and e['controls']['arrows-toggle'] is None and all(r['select'] is None for r in e['laws']) and e['controls']['file-open'] is not None"
   m8q surface
   shot m8-collapsed-$pct
   press_expect panel-toggle control
+  layout
+  expect layout "panel expanded again" "e['panelCollapsed'] is False and e['controls']['panel'] is not None and e['controls']['panel'][2] > 0 and e['controls']['panel'][3] > 0"
 done
 
 # Comparison controls: Compare from here computes A at once.
