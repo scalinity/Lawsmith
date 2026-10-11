@@ -1,0 +1,22 @@
+producing HEAD d1e375ea6112e4cac01f20ecb5547a4f6b0b6387
+date 2026-10-11T18:45:37Z
+
+## npx tsc --noEmit
+exit=0
+
+## npx vitest run <targeted files>
+ files: tests/authoring.test.ts tests/compactLayout.test.js tests/comparison.test.ts tests/conditionsRefresh.test.js tests/contexts.test.ts tests/determinism.test.ts tests/document.test.ts tests/emitterControls.test.js tests/emitterSchedule.test.ts tests/exampleEngagement.test.ts tests/examples.test.ts tests/expressionFile.test.ts tests/focusLayout.test.js tests/focusRestore.test.js tests/historyTitle.test.js tests/ingredients.test.ts tests/keyboardReadback.test.js tests/lawGesture.test.ts tests/m5scenes.test.ts tests/recording.test.ts tests/recordingCost.test.ts tests/recordingLimits.test.ts tests/replayPanel.test.js tests/runFile.test.ts tests/scenes.test.ts tests/sectionJump.test.js tests/seek.test.ts tests/seekCost.test.ts tests/trailNote.test.js tests/trails.test.ts tests/workflow.test.ts 
+exit=0
+ Test Files  29 passed | 2 skipped (31)
+      Tests  470 passed | 2 skipped (472)
+
+## native harness checks (no native input)
+test_guards.zsh exit=0 87 passed, 0 failed
+test_m8_focus_layout.py exit=0 Ran 8 tests in 0.001s
+test_campaign_runners.py exit=0 Ran 4 tests in 0.005s
+test_m8q.py exit=0 Ran 21 tests in 0.001s
+test_press_reach.py exit=0 Ran 9 tests in 0.000s
+test_m8perf.py exit=0 Ran 20 tests in 0.532s
+test_window_drag.zsh exit=0 6 passed, 0 failed
+test_perf_workloads.zsh exit=0 6 passed, 0 failed
+zsh -n on every runner: done

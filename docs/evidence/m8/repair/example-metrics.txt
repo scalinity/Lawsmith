@@ -1,0 +1,41 @@
+Example engagement metrics (M8 repair)
+producing HEAD d1e375ea6112e4cac01f20ecb5547a4f6b0b6387
+command: npx vitest run tests/zz-metrics.test.ts (temporary harness, text below; deleted after the run)
+exit: 0
+
+catch-and-release: tick 1200 alive 150, inside the pull 150 (1.000); Pull off for 240 ticks: 166 of 180 below y 1 (0.922); limited 0, skipped 0, fault none
+drag-pocket (pocket on): mean speed in the pocket box 1.973 m/s over 1419 samples (ticks 486-1440, every 6); skipped 0, fault none
+drag-pocket (pocket off): mean speed in the pocket box 8.842 m/s over 320 samples (ticks 486-1440, every 6); skipped 0, fault none
+storm-bottle: tick 1440 alive 180, inside the bottle 170 (0.944), ejected beyond 2.2 m 0, mean tangential speed inside 1.764 m/s; limited 0, skipped 0, fault none
+
+The committed, reproducible assertions on these scenes are tests/exampleEngagement.test.ts.
+Earlier tuning variants (strengths, coefficients, placements) ran in an uncommitted scratch harness whose logs were overwritten, so they are not reproduced here.
+
+---- temporary harness ----
+// Example metrics receipt (M8 repair): measured on the committed scenes at the producing HEAD.
+import { appendFileSync } from 'node:fs';
+import { beforeAll, it } from 'vitest';
+import type { FieldDefinition } from '../src/domain/scene';
+import { EXAMPLES, exampleDocument } from '../src/scenes/examples';
+import { SimulationHost, initSimulation } from '../src/simulation/host';
+const OUT = '/tmp/lawsmith-m8/example-metrics.txt';
+const log = (s: string) => appendFileSync(OUT, s + '\n');
+beforeAll(async () => { await initSimulation(); });
+const scene = (k: string) => exampleDocument(EXAMPLES.find((e) => e.key === k)!).semantic;
+const f = (h: SimulationHost, id: string) => h.appliedFields().find((x) => x.id === id)!;
+it('metrics', () => {
+  { const h = new SimulationHost(scene('catch-and-release')); const [cx, cy, cz] = f(h, 'pull').pose.position as unknown as number[];
+    for (let i = 0; i < 1200; i++) h.step();
+    const b = h.canonicalState().bodies; const inside = b.filter((x) => Math.hypot(x.translation[0]! - cx!, x.translation[1]! - cy!, x.translation[2]! - cz!) < 1.6).length;
+    h.submit({ kind: 'putField', field: { ...f(h, 'pull'), enabled: false } as FieldDefinition }, 1); for (let i = 0; i < 240; i++) h.step();
+    const after = h.canonicalState().bodies; const fallen = after.filter((x) => x.translation[1]! < 1).length;
+    log(`catch-and-release: tick 1200 alive ${b.length}, inside the pull ${inside} (${(inside / b.length).toFixed(3)}); Pull off for 240 ticks: ${fallen} of ${after.length} below y 1 (${(fallen / after.length).toFixed(3)}); limited ${h.limitedSteps}, skipped ${h.skippedEmissions}, fault ${h.fault ? 'yes' : 'none'}`); h.dispose(); }
+  for (const on of [true, false]) { const h = new SimulationHost(scene('drag-pocket')); if (!on) h.submit({ kind: 'putField', field: { ...f(h, 'pocket'), enabled: false } as FieldDefinition }, 1);
+    const [bx, by, bz] = f(h, 'pocket').pose.position as unknown as number[]; let n = 0, v = 0;
+    for (let t = 1; t <= 1440; t++) { h.step(); if (t <= 480 || t % 6) continue; for (const b of h.canonicalState().bodies) { const [x, y, z] = b.translation as unknown as number[]; if (Math.abs(x! - bx!) < 1.2 && Math.abs(y! - by!) < 1.2 && Math.abs(z! - bz!) < 1.2) { n++; v += Math.hypot(...b.linvel); } } }
+    log(`drag-pocket (pocket ${on ? 'on' : 'off'}): mean speed in the pocket box ${(v / n).toFixed(3)} m/s over ${n} samples (ticks 486-1440, every 6); skipped ${h.skippedEmissions}, fault ${h.fault ? 'yes' : 'none'}`); h.dispose(); }
+  { const h = new SimulationHost(scene('storm-bottle')); const [ax, ay, az] = f(h, 'storm-bottle').pose.position as unknown as number[];
+    for (let i = 0; i < 1440; i++) h.step(); const b = h.canonicalState().bodies; let inside = 0, ej = 0, tang = 0;
+    for (const x of b) { const rx = x.translation[0]! - ax!, rz = x.translation[2]! - az!, rh = Math.hypot(rx, rz); if (rh < 1.4 && Math.abs(x.translation[1]! - ay!) < 1.8) { inside++; if (rh > 0.05) tang += Math.abs((rz * x.linvel[0]! - rx * x.linvel[2]!) / rh); } if (rh > 2.2) ej++; }
+    log(`storm-bottle: tick 1440 alive ${b.length}, inside the bottle ${inside} (${(inside / b.length).toFixed(3)}), ejected beyond 2.2 m ${ej}, mean tangential speed inside ${(tang / inside).toFixed(3)} m/s; limited ${h.limitedSteps}, skipped ${h.skippedEmissions}, fault ${h.fault ? 'yes' : 'none'}`); h.dispose(); }
+});

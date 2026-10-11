@@ -45,9 +45,10 @@ Turn on System Settings → Accessibility → Display → Reduce motion. Orbit t
 
 ## 6. Looking carefully (AC4, AC5, AC7)
 
-- At 100%, 150% and 200%: is there room to see the scene? Use the section bar, **More** on the Recording card, and **Draw options**.
+- At 100%, 150% and 200%: is there room to see the scene? Use the section bar, **More** on the Recording card, and **Draw options**, which starts folded and stays as you leave it.
 - **Delete** under the Laws list names the selected law. Undo brings the law back.
-- **Emitter** (in the Scene section): set a spawn rate and how many seconds to keep each body, then **Apply and reset**. The line below shows the exact result. Undo should bring back the previous rate.
+- **Emitter** (in the Scene section): set a spawn rate and how many seconds to keep each body, then **Apply and reset**. The line below shows the exact result. Typed values stay while you do other things, until you apply or **Revert**. Undo brings back the previous rate, and its tooltip says it resets the scene.
+- **Swirl:** add a Swirl law on its own. Its details suggest adding Pull and Drag to keep bodies circling; try it.
 - **Trails:** choose Selected body, click a moving body, and watch its path. Then try Up to 32 bodies.
 - **Fault:** open `scripts/verify/scenes/m8-comparison-fault.lawsmith.json` (⌘O), choose **Compare from here**, set Strength to 200, and Play. A red error naming a speed of about 350 m/s should appear. That is the expected fault, and it is different from the amber "Acceleration limit reached" line. Scroll to the red error and use **New Alternate** and **Close**. Note whether they work.
 
