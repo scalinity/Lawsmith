@@ -44,7 +44,7 @@ The mandatory geometry check is 1280×800 content at 200%. That needs More Space
 
 ## 4. Real trackpad (AC2, AC9)
 
-- Drag a law directly in the viewport, for example Sideways Rain's box.
+- Move and turn a law directly in the viewport, without using the details panel. In Sideways Rain, with the box selected, choose **Move** (or press T) and drag its handle. Then choose **Rotate** (or press R) and drag the rotation handle that appears, so the box turns. (**Adjust**, S, changes its extent, not its rotation.)
 - Drag the window by the empty strip along the top, at 100% and at 200%. Note whether it follows your hand exactly, and any jump. Also try clicking the window while it is inactive and dragging straight away.
 - Use the red, yellow and green buttons: close, minimize, full screen and back.
 
@@ -78,7 +78,7 @@ Date / display (built-in, More Space, external):
 1 Exploration (AC8): what I tried; confusion and how I got past it; blockers:
 2 Examples: Sideways Rain / Catch and Release / Drag Pocket / Storm Bottle / Two Futures — actions taken, worked?:
 3 Keyboard pass at 200%: unreachable controls; lost focus; Name-field keys; Save/Open:
-4 Trackpad: law drag; window drag 100% / 200% (any jump?); traffic lights:
+4 Trackpad: law move in the viewport; law rotation in the viewport; window drag 100% / 200% (any jump?); traffic lights:
 5 Reduce motion: on / off:
 6 Visual: examples and scales; labels; panels; comparison; fault banner 100% / 200%; readout:
 7 Seek: deferred-Play layout; Space during a pending seek:
