@@ -3,7 +3,8 @@ with the offending ids and boxes; the scenarios stop on the first failure.
 
   m8q.py surface LOG               last layout: one continuous surface, nothing overlapping, nothing
                                    off the window, scrolling only where a panel scrolls
-  m8q.py lights LOG LIGHTS_JSON    last layout: no control within 6 px of a native traffic light
+  m8q.py lights LOG LIGHTS_JSON    last layout: close, minimize and one green button each observed once
+                                   with finite positive geometry, and no control within 6 px of them
   m8q.py scale LOG BASE_INDEX      last layout against layout BASE_INDEX: Interface Scale changed
                                    neither the simulation nor the renderer's pixel ratio or canvas
   m8q.py example LOG KEY LAW       last layout: example KEY open, LAW selected, its invitation shown
@@ -14,6 +15,7 @@ with the offending ids and boxes; the scenarios stop on the first failure.
 Boxes are [x, y, width, height] in CSS pixels of the content view.
 """
 import json
+import math
 import sys
 
 # Always in view: the top rail, the scene card and the dock never scroll.
@@ -98,10 +100,43 @@ def surface(layout):
     return {'viewport': [w, h], 'scale': layout.get('interfaceScale'), 'checked': len(c)}
 
 
-def lights(layout, frames):
-    """frames: [{name, x, y, w, h}] of the native close/minimize/zoom buttons, in content-view points."""
+GREEN = ('AXZoomButton', 'AXFullScreenButton')
+LIGHT_ROLES = ('AXCloseButton', 'AXMinimizeButton') + GREEN
+
+
+def finite(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def observed_lights(frames):
+    """The native traffic lights as lights.js reads them, or an AssertionError: a missing, duplicated or
+    malformed observation never passes as cleared. Close and minimize appear once each; the green button
+    once, as either AXZoomButton or AXFullScreenButton, whichever the window exposes."""
+    assert isinstance(frames, list) and frames, f'no traffic-light observation: {frames!r}'
     problems = []
     for light in frames:
+        if not isinstance(light, dict) or light.get('name') not in LIGHT_ROLES:
+            problems.append(f'not a traffic light: {light!r}')
+            continue
+        if not all(finite(light.get(k)) for k in ('x', 'y', 'w', 'h')):
+            problems.append(f'{light["name"]} has a non-finite or missing position or size: {light!r}')
+        elif light['w'] <= 0 or light['h'] <= 0:
+            problems.append(f'{light["name"]} has no area: {light!r}')
+    names = [light.get('name') for light in frames if isinstance(light, dict)]
+    for role in ('AXCloseButton', 'AXMinimizeButton'):
+        if names.count(role) != 1:
+            problems.append(f'{role} observed {names.count(role)} times, not once')
+    green = sum(names.count(role) for role in GREEN)
+    if green != 1:
+        problems.append(f'green button observed {green} times (zoom or full screen), not once')
+    assert not problems, '; '.join(problems)
+    return frames
+
+
+def lights(layout, frames):
+    """frames: [{name, x, y, w, h}] of the native traffic lights, in content-view points."""
+    problems = []
+    for light in observed_lights(frames):
         clear = [light['x'] - 6, light['y'] - 6, light['w'] + 12, light['h'] + 12]
         for key, box in layout['controls'].items():
             if box is None or key in ('drag-region', 'top-rail', 'scene-column', 'context-column', 'dock'):
@@ -109,7 +144,7 @@ def lights(layout, frames):
             if overlaps(clear, box):
                 problems.append(f'{key} {box} within 6 px of {light["name"]} {light}')
     assert not problems, '; '.join(problems)
-    return {'lights': len(frames)}
+    return {'lights': sorted(light['name'] for light in frames)}
 
 
 def scale(base, now):

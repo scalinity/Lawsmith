@@ -29,6 +29,13 @@ def layout():
     }
 
 
+def lights():
+    """Three complete traffic lights, clear of every control in layout()."""
+    return [{'name': 'AXCloseButton', 'x': 13, 'y': 14, 'w': 14, 'h': 16},
+            {'name': 'AXMinimizeButton', 'x': 33, 'y': 14, 'w': 14, 'h': 16},
+            {'name': 'AXFullScreenButton', 'x': 53, 'y': 14, 'w': 14, 'h': 16}]
+
+
 class Surface(unittest.TestCase):
     def test_continuous_surface(self):
         m8q.surface(layout())
@@ -60,9 +67,38 @@ class Surface(unittest.TestCase):
 
 class Other(unittest.TestCase):
     def test_lights_clearance(self):
-        m8q.lights(layout(), [{'name': 'close', 'x': 14, 'y': 14, 'w': 12, 'h': 12}])
+        result = m8q.lights(layout(), lights())
+        self.assertEqual(result['lights'], ['AXCloseButton', 'AXFullScreenButton', 'AXMinimizeButton'])
         value = layout(); value['controls']['file-new'] = [20, 20, 56, 28]
-        with self.assertRaises(AssertionError): m8q.lights(value, [{'name': 'close', 'x': 14, 'y': 14, 'w': 12, 'h': 12}])
+        with self.assertRaises(AssertionError): m8q.lights(value, lights())
+
+    def test_green_may_be_zoom_or_full_screen(self):
+        zoom = lights(); zoom[2]['name'] = 'AXZoomButton'
+        m8q.lights(layout(), zoom)
+
+    def test_empty_or_unreadable_observation_fails(self):
+        for frames in ([], None, {}, 'AXCloseButton'):
+            with self.assertRaises(AssertionError): m8q.lights(layout(), frames)
+
+    def test_each_missing_role_fails(self):
+        for index in range(3):
+            frames = lights(); del frames[index]
+            with self.assertRaises(AssertionError): m8q.lights(layout(), frames)
+
+    def test_duplicate_roles_fail(self):
+        for extra in ({'name': 'AXCloseButton', 'x': 70, 'y': 14, 'w': 14, 'h': 16}, {'name': 'AXZoomButton', 'x': 70, 'y': 14, 'w': 14, 'h': 16}):
+            with self.assertRaises(AssertionError): m8q.lights(layout(), lights() + [extra])
+
+    def test_malformed_geometry_fails(self):
+        for key, value in [('x', float('nan')), ('y', float('inf')), ('w', 0), ('h', -14), ('w', float('nan')), ('x', None), ('x', True), ('h', '16')]:
+            frames = lights(); frames[1][key] = value
+            with self.assertRaises(AssertionError): m8q.lights(layout(), frames)
+        frames = lights(); del frames[0]['y']
+        with self.assertRaises(AssertionError): m8q.lights(layout(), frames)
+
+    def test_unknown_role_fails(self):
+        frames = lights(); frames[0]['name'] = 'AXToolbarButton'
+        with self.assertRaises(AssertionError): m8q.lights(layout(), frames)
 
     def test_scale_must_not_change_simulation_or_renderer(self):
         base = layout(); m8q.scale(base, copy.deepcopy(base))
