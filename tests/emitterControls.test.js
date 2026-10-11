@@ -8,7 +8,7 @@ import { createContext, runInContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
 
 const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
-const start = source.indexOf('  const TICKS_PER_SECOND = 1000 / STEP_MS;');
+const start = source.indexOf('  const TICKS_PER_SECOND = Math.round(1 / STEP_SECONDS);');
 const end = source.indexOf("  emitterApply.addEventListener('click', applyEmitter);\n", start) + "  emitterApply.addEventListener('click', applyEmitter);\n".length;
 
 function page({ recording = false, comparison = false, frozen = false, busy = null, seek = null, ok = true, emitter = { id: 'stream', intervalTicks: 8, lifetimeTicks: 512 }, emitters = null } = {}) {
@@ -27,7 +27,7 @@ function page({ recording = false, comparison = false, frozen = false, busy = nu
     setEmitterSchedule: (id, s) => { calls.push(['set', id, s]); return ok ? { ok: true, value: { revision: 2 } } : { ok: false, reason: 'refused' }; },
   };
   const context = createContext({
-    $: (id) => nodes[id], STEP_MS: 1000 / 120, document: { activeElement: null, createElement: () => ({}) }, authoring,
+    $: (id) => nodes[id], STEP_SECONDS: 1 / 120, document: { activeElement: null, createElement: () => ({}) }, authoring,
     blocked: () => frozen, comparing: () => comparison, runs: { recordingState: recording ? 'recording' : 'idle' }, workflow: { busy }, pendingSeek: seek,
     setPlaying: (p, r) => calls.push(['play', p, r]), settleNow: () => {}, edited: () => calls.push(['edited']), renderPanel: () => context.renderEmitter(),
     report: () => {}, runIndex: 0, editsSinceReset: 0, p0: null, host: { tick: 0 },
@@ -155,4 +155,26 @@ describe('Emitter controls', () => {
     locked.context.renderEmitter();
     expect(locked.nodes['emitter-pick'].disabled).toBe(true);
   });
+
+  it.each([
+    ['120', '1', { intervalTicks: 1, lifetimeTicks: 120 }], // the advertised maximum rate: one body every tick
+    ['0.01', '3600', { intervalTicks: 12000, lifetimeTicks: 432000 }], // the minimum rate and the longest lifetime
+    ['15', '0.1', { intervalTicks: 8, lifetimeTicks: 12 }], // the shortest lifetime
+  ])('accepts the range ends: rate %s, keep %s s', (rate, life, schedule) => {
+    const p = page();
+    p.nodes['emitter-rate'].value = rate;
+    p.nodes['emitter-life'].value = life;
+    p.context.applyEmitter();
+    expect(p.calls).toContainEqual(['set', 'stream', schedule]);
+    expect(p.nodes['emitter-error'].hidden).toBe(true);
+  });
+
+  it.each([['120.0001', '1'], ['0.0099', '1'], ['15', '0.0999'], ['15', '3600.01']])('refuses just past the range ends: rate %s, keep %s s', (rate, life) => {
+    const p = page();
+    p.nodes['emitter-rate'].value = rate;
+    p.nodes['emitter-life'].value = life;
+    p.context.applyEmitter();
+    expect(p.calls.filter((c) => c[0] === 'set')).toEqual([]);
+  });
 });
+

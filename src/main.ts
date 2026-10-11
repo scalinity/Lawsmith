@@ -879,7 +879,9 @@ async function start() {
 
   // The emitter's schedule (M8 owner feedback): spawn rate and how long each body is kept, in whole ticks.
   // Applying rebuilds the world from tick 0 (SPEC §5.3); undo does the same. Bodies are always finite-lived.
-  const TICKS_PER_SECOND = 1000 / STEP_MS;
+  // The scene's integer tick rate (120 per second), taken from the step itself: dividing through milliseconds
+  // gives 119.99999999999999 and refused the advertised maximum of 120 per second (M8 review R-FB8).
+  const TICKS_PER_SECOND = Math.round(1 / STEP_SECONDS);
   const RATE_RANGE = [0.01, TICKS_PER_SECOND] as const;
   const LIFE_RANGE = [0.1, 3600] as const;
   const emitterRate = $<HTMLInputElement>('emitter-rate');
