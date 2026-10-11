@@ -102,7 +102,9 @@ wait_quiet() {
 }
 
 # idle_gate [SECONDS]: aborts if any input arrived after our own last synthetic event, and checks the
-# deadline with SECONDS reserved for the action about to start.
+# deadline with SECONDS reserved for the action about to start. Hit and front checks can wait (a covering
+# notification, a reactivation), so every dispatch checks on entry and again, with its complete reserve,
+# after those checks and immediately before the OS call: preparation never spends an action's reserve.
 idle_gate() {
   deadline_gate ${1:-1}
   local idle=$(idle_seconds)
@@ -200,11 +202,11 @@ guard_front() {
   [[ $front == $APP_PID ]] || fail "refused keys: frontmost pid is $front, not $APP_PID" 3
 }
 
-click() { idle_gate; guard_point $1 $2; cliclick -e 20 c:$1,$2; touched; sleep 0.3 }
+click() { idle_gate 1; guard_point $1 $2; idle_gate 1; cliclick -e 20 c:$1,$2; touched; sleep 0.3 }
 
 # scroll_at X Y DY: one wheel step of DY pixels over (X,Y), hit-tested like a click; scrolls the panel
 # under the pointer, never the scene behind it.
-scroll_at() { idle_gate; guard_point $1 $2; cliclick -e 20 m:$1,$2; osascript -l JavaScript $NATIVE/scroll.js $3 >/dev/null; touched; sleep 0.35 }
+scroll_at() { idle_gate 1; guard_point $1 $2; idle_gate 1; cliclick -e 20 m:$1,$2; osascript -l JavaScript $NATIVE/scroll.js $3 >/dev/null; touched; sleep 0.35 }
 
 # region_of EXPR: sets REGION=(x y w h), in content-view points, to the box of the region that holds the
 # layout target EXPR (a dotted path such as inputs.Strength, laws.0.select or controls.play, or a Python
@@ -233,17 +235,20 @@ if box: print(*box)' "$1")})
 # again at the same point, and the harness says so.
 drag() {
   local n=${5:-24} i args=(dd:$1,$2 w:120)
-  # Reserve the whole batched drag: its moves, waits and release, plus a possible resent release.
-  idle_gate $(( (240 + 30 * n) / 1000 + 3 )); guard_point $1 $2; guard_point $3 $4
+  # The whole batch in seconds: its waits (2 × 120 ms and 30 ms per step), 5 ms between its 2n + 2
+  # events, and the half-second settle and gesture check after it. A resent release has its own reserve.
+  local need=$(( (240 + 30.0 * n + 5.0 * (2 * n + 2)) / 1000 + 1.0 ))
+  idle_gate $need; guard_point $1 $2; guard_point $3 $4
   local gestures=$(logq count $APP_LOG gesture)
   for i in {1..$n}; do args+=(dm:$(( $1 + ($3 - $1) * i / n )),$(( $2 + ($4 - $2) * i / n )) w:30); done
   args+=(w:120 du:$3,$4)
+  idle_gate $need
   cliclick -e 5 $args; touched; sleep 0.5
   for i in 1 2; do
     (( $(logq count $APP_LOG gesture) > gestures )) || break
     [[ $(logq field $APP_LOG gesture phase) == '"begin"' ]] || break
     say "the synthetic release was lost; sending it again"
-    idle_gate 1; guard_point $3 $4
+    idle_gate 1; guard_point $3 $4; idle_gate 1
     cliclick du:$3,$4; touched; sleep 0.5
   done
 }
@@ -253,7 +258,9 @@ drag() {
 # Another app can take the front between the check and the keystroke (another session's QA app did,
 # once); a front change seen right after sending is reported as possible misdelivery and stops the run.
 keys() {
-  idle_gate $(( 1 + $# / 10 )); guard_front; cliclick -e 30 "$@"; touched
+  # 30 ms per event, then the front recheck and the settle after it.
+  local need=$(( 0.03 * $# + 1.0 ))
+  idle_gate $need; guard_front; idle_gate $need; cliclick -e 30 "$@"; touched
   local front=$(front_pid)
   if [[ $front != $APP_PID ]]; then
     # Quitting hands the front to the next app; only a change while the app still runs is suspect.
@@ -266,7 +273,7 @@ keys() {
 # key_code N: a named key (48 Tab, 36 Return, 53 Escape, 51 Delete) through System Events; cliclick's
 # named keys do not reach WKWebView or AppKit panels here, while its typed text and chords do.
 key_code() {
-  idle_gate 1; guard_front
+  idle_gate 1; guard_front; idle_gate 1
   osascript -e "tell application \"System Events\" to key code $1" >/dev/null; touched
   sleep 0.4
 }
@@ -356,6 +363,7 @@ seed_folder() {
   [[ -n $LOCK_HOLDER ]] || segment "seed the Open and Save folder"
   idle_gate 2
   snapshot_preferences
+  idle_gate 2
   osascript -l JavaScript -e "ObjC.import('Foundation');
     const url = \$.NSURL.fileURLWithPath('$1');
     const data = url.bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(0, \$(), \$(), null);
@@ -446,6 +454,7 @@ display_set() {
     receipt "{\"display\":\"original\",\"mode\":\"$DISPLAY_ORIGINAL\"}"
   fi
   local want="$1x$2@$3" out now
+  idle_gate 10
   out=$(osascript -l JavaScript $NATIVE/display.js set $1 $2 $3 2>&1)
   [[ $out == set\ * ]] && DISPLAY_CHANGED=1
   [[ $out == "set $want" ]] || fail "the display mode $want was not set: \"$out\""
@@ -551,6 +560,7 @@ record_start() {
   window_origin
   RECORDING=$1
   local before=$(osascript -l JavaScript $NATIVE/windows.js overlays)
+  idle_gate $(( ${2:-100} + 10 ))
   screencapture -x -v -V ${2:-100} -R $WIN_X,$WIN_Y,$WIN_W,$WIN_H $QA_OUT/$1.mov > $QA_OUT/$1.record.log 2>&1 &
   RECORDER=$!
   sleep 1.5

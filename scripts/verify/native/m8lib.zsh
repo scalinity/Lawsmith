@@ -31,7 +31,7 @@ trap m8_cleanup EXIT
 
 window_size() {
   require_lock "resizing the window"
-  idle_gate 3; guard_front
+  idle_gate 3; guard_front; idle_gate 3
   osascript -e "tell application \"System Events\" to tell (first process whose unix id is $APP_PID)
     set position of window \"Lawsmith\" to {40, 45}
     set size of window \"Lawsmith\" to {$1, $2}
@@ -77,7 +77,7 @@ open_example() {
 tab_to() {
   local i
   for (( i = 0; i < ${2:-120}; i++ )); do
-    idle_gate; guard_front
+    idle_gate 1; guard_front; idle_gate 1
     osascript -e 'tell application "System Events" to key code 48 using option down' >/dev/null; touched
     sleep 0.3
     layout

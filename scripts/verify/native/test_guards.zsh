@@ -43,8 +43,12 @@ run_case() {
     osascript() {
       local all="$*"
       case $all in
-        *windows.js\ hit*) print -r -- '{"pid":4242,"owner":"lawsmith"}' ;;
-        *frontmostApplication*) print 4242 ;;
+        *windows.js\ hit*)
+          # HIT_TAKES delays a hit check (after the first HIT_DELAY_AFTER of them), as a covering window would.
+          local hits=$(( $(cat $CALLS.hits 2>/dev/null || print 0) + 1 )); print $hits > $CALLS.hits
+          [[ -n $HIT_TAKES ]] && (( hits > ${HIT_DELAY_AFTER:-0} )) && command sleep $HIT_TAKES
+          print -r -- '{"pid":4242,"owner":"lawsmith"}' ;;
+        *frontmostApplication*) [[ -n $FRONT_TAKES ]] && command sleep $FRONT_TAKES; print 4242 ;;
         *display.js\ get*) print -r -- "$(<$DISPLAY_FILE)" ;;
         *display.js\ set*)
           print -r -- "display-set $all" >> $CALLS
@@ -98,6 +102,25 @@ run_case seed-after-deadline 5 'QA_DEADLINE=$(( EPOCHSECONDS - 1 )); seed_folder
 run_case record-reserve 5 'command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS + 50 )); LAST_INPUT=$EPOCHREALTIME; screencapture() { print -r -- "screencapture $*" >> $CALLS }; record_start clip 100' 'none record-reserve screencapture'
 run_case window-after-deadline 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHSECONDS - 1 )); LAST_INPUT=$EPOCHREALTIME; window_size 1280 800' 'none window-after-deadline "set size"'
 run_case m8-requires-deadline 1 'unset QA_DEADLINE; source $HERE/m8lib.zsh'
+
+# --- F4 (reopened): a slow hit or front check cannot spend the action's reserve -----------------------
+# Each case passes the entry check, then a delayed check leaves less than the action needs: nothing is
+# dispatched. The positive twin has the same delays and enough time.
+# The reviewer's shape: two slow hit checks (1.7 s each) leave about 1.1 s of a 4.5 s window, while the
+# 40-step batch needs 2.85 s.
+run_case drag40-delayed-hits-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 4.5 )); LAST_INPUT=$EPOCHREALTIME; HIT_TAKES=1.7; drag 1 1 50 50 40' 'none drag40-delayed-hits-refused "dd:"'
+run_case drag40-delayed-hits-enough-time 0 'QA_DEADLINE=$(( EPOCHREALTIME + 10 )); LAST_INPUT=$EPOCHREALTIME; HIT_TAKES=1.7; drag 1 1 50 50 40' 'has drag40-delayed-hits-enough-time "dd:1,1"'
+# A resent release whose hit check is slow: the batch went out, the release is not resent.
+run_case drag-retry-delayed-hit-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 3.3 )); LAST_INPUT=$EPOCHREALTIME; HIT_TAKES=2.5; HIT_DELAY_AFTER=2; CLICLICK_GESTURE=1; drag 1 1 50 50 8' 'has drag-retry-delayed-hit-refused "dd:1,1" && none drag-retry-delayed-hit-refused "cliclick du:"'
+run_case keys-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.6 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; keys kd:cmd t:s ku:cmd' 'none keys-delayed-front-refused cliclick'
+run_case keys-delayed-front-enough-time 0 'QA_DEADLINE=$(( EPOCHREALTIME + 5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; keys kd:cmd t:s ku:cmd' 'has keys-delayed-front-enough-time "kd:cmd t:s ku:cmd"'
+run_case keycode-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.6 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; key_code 36' 'none keycode-delayed-front-refused "key code"'
+run_case keycode-delayed-front-enough-time 0 'QA_DEADLINE=$(( EPOCHREALTIME + 5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; key_code 36' 'has keycode-delayed-front-enough-time "key code 36"'
+run_case click-delayed-hit-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.5 )); LAST_INPUT=$EPOCHREALTIME; HIT_TAKES=1.0; click 10 10' 'none click-delayed-hit-refused cliclick'
+run_case scroll-delayed-hit-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.5 )); LAST_INPUT=$EPOCHREALTIME; HIT_TAKES=1.0; scroll_at 10 10 -120' 'none scroll-delayed-hit-refused cliclick'
+run_case window-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHREALTIME + 3.5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_size 1280 800' 'none window-delayed-front-refused "set size"'
+run_case window-delayed-front-enough-time 0 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_origin() { : }; window_size 1280 800; trap - EXIT' 'has window-delayed-front-enough-time "set size"'
+run_case tab-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; QA_DEADLINE=$(( EPOCHREALTIME + 1.6 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; tab_to "True" 1' 'none tab-delayed-front-refused "key code 48"'
 
 # --- F5: the owner's preferences are snapshotted under the lock and restored exactly ----------------
 PLIST='<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>OwnerSetting</key><string>kept</string></dict></plist>'
