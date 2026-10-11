@@ -1,0 +1,56 @@
+[qa 04:56:17] segment: M8 performance: display mode
+[qa 04:56:17] Lawsmith preferences snapshotted (originally present)
+[qa 04:56:20] display is 1728x1117@60
+[qa 04:56:20] segment: M8 P0, about five minutes
+[qa 04:56:24] launched pid 71237, window at 224,104, log m8-perf-P0.log
+[qa 04:56:24] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 04:56:24] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 04:56:29] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] Interface Scale 100%
+[qa 04:56:30] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] 1600×1000 CSS, DPR capped at 1.5, Interface Scale 100%, law names on
+[qa 04:56:35] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 2, "title": "Sideways Rain", "mode": "packaged", "t": 14222}  [document] example sideways-rain opened
+[qa 04:56:57] PASS {"kind": "pacing", "intervalMs": [17, 17, 18], "maxIntervalMs": 18, "workP95Ms": 3, "stallsOver50ms": 0, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 2060, "playing": true, "bodies": 64, "stepMs": [0, 1, 1], "editMs": [7, 8, 8], "editSamples": 24, "simWallRatio": 1.002, "droppedMs": 0, "mode":   [pacing] the stream is at full strength with the law inside it
+[qa 04:57:07] P0 capture 1 measuring
+[qa 04:58:18] P0 capture 2 measuring
+[qa 04:59:16] the synthetic release was lost; sending it again
+[qa 04:59:29] P0 capture 3 measuring
+[qa 05:00:32] the guard asks about the scene
+[qa 05:00:33] segment: M8 P1, about five minutes
+[qa 05:00:52] launched pid 91007, window at 224,104, log m8-perf-P1.log
+[qa 05:00:52] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 05:00:52] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 05:00:57] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] Interface Scale 100%
+[qa 05:00:58] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] 1600×1000 CSS, DPR capped at 1.5, Interface Scale 100%, law names on
+[qa 05:01:13] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "p1-workshop.lawsmith.json", "generation": 2, "title": "P1 Workshop", "bytes": 116788, "readMs": 5.092, "parseMs": 7, "candidateMs": 9, "commitMs": 4, "openMs": 25.092, "mode": "packaged", "t": 17915}  [document] p1-workshop opened
+[qa 05:01:14] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5ab0e73ecbf92e4c", "engineHash": "c3d5dc76e8887771"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] P1 opens with drag-0 selected
+[qa 05:01:30] P1 capture 1 measuring
+[qa 05:02:41] P1 capture 2 measuring
+[qa 05:03:52] P1 capture 3 measuring
+[qa 05:04:10] the synthetic release was lost; sending it again
+[qa 05:04:55] the guard asks about the scene
+[qa 05:04:56] segment: M8 P2, about five minutes
+[qa 05:05:15] launched pid 11251, window at 224,104, log m8-perf-P2.log
+[qa 05:05:15] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 05:05:15] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 05:05:20] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] Interface Scale 100%
+[qa 05:05:21] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] 1600×1000 CSS, DPR capped at 1.5, Interface Scale 100%, law names on
+[qa 05:05:35] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "p2-probes.lawsmith.json", "generation": 2, "title": "P2 Probes", "bytes": 55498, "readMs": 2.184, "parseMs": 5, "candidateMs": 7, "commitMs": 4, "openMs": 18.184, "mode": "packaged", "t": 18046}  [document] p2-probes opened
+[qa 05:05:36] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "2fae7ade1d060ac9", "engineHash": "1e07d1ed4d23400b"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] P2 opens with its drag law selected
+[qa 05:05:54] P2 capture 1 measuring
+[qa 05:07:05] P2 capture 2 measuring
+[qa 05:08:16] P2 capture 3 measuring
+[qa 05:09:19] the guard asks about the scene
+[qa 05:09:20] segment: M8 P3, about five minutes
+[qa 05:09:39] launched pid 30984, window at 224,104, log m8-perf-P3.log
+[qa 05:09:39] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 05:09:39] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 05:09:44] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] Interface Scale 100%
+[qa 05:09:45] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] 1600×1000 CSS, DPR capped at 1.5, Interface Scale 100%, law names on
+[qa 05:09:59] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "p3-futures.lawsmith.json", "generation": 2, "title": "P3 \u2014 Two Futures", "bytes": 72841, "readMs": 2.184, "parseMs": 3, "candidateMs": 6, "commitMs": 3, "openMs": 14.184, "mode": "packaged", "t": 18137}  [document] p3-futures opened
+[qa 05:10:00] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5d9ed786bf87ea86", "engineHash": "ae91a5491e413f67"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [2400, 1500], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fa  [layout] P3 workload
+[qa 05:10:04] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 2, "buffers": 11, "frames": 7201, "identities": 100, "bytes": 50770421, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 7200, "metrics": {"ticks": 7200, "elapsedMs": 936, "batches": 111, "bytes": 50770421,  [comparison] full 7200-tick baseline admitted
+[qa 05:10:05] P3 capture 1: 10 s warmup, fork restored, 60 s measured
+[qa 05:11:15] P3 capture 2: 10 s warmup, fork restored, 60 s measured
+[qa 05:12:26] P3 capture 3: 10 s warmup, fork restored, 60 s measured
+[qa 05:13:39] m8-perf complete: P0 P1 P2 P3
+[qa 05:13:42] display restored: 1168x755@120 (original 1168x755@120)
+[qa 05:13:42] Lawsmith preferences restored (originally present)

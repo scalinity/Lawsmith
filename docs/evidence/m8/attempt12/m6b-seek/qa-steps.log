@@ -1,0 +1,48 @@
+[qa 05:28:13] segment: seed the Open and Save folder
+[qa 05:28:28] Lawsmith preferences snapshotted (originally present)
+[qa 05:28:28] segment: record an intervention on the lab scene
+[qa 05:28:32] launched pid 24108, window at 0,21, log m6b-seek.log
+[qa 05:28:42] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "m6a-lab.lawsmith.json", "generation": 2, "title": "M6A lab", "bytes": 4415, "readMs": 0.048, "parseMs": 2, "candidateMs": 2, "commitMs": 4, "openMs": 8.048, "mode": "packaged", "t": 10399}  [document] the M6A lab opened transactionally
+[qa 05:28:42] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] the packaged build reports a complete, qualified identity
+[qa 05:28:44] recording m6b-seek for 170 s (overlay windows skipped by the hit test: 6311)
+[qa 05:29:03] the synthetic release was lost; sending it again
+[qa 05:29:04] PASS {"kind": "gesture", "phase": "commit", "reason": "stale-buttons", "transformMode": "translate", "handle": null, "samples": 25, "rejected": 0, "pointer": null, "firstRevision": 1, "lastRevision": 25, "field": {"enabled": true, "position": [-0.06829895702384392, 1, 0], "rotation": [0, 0, 0, 1], "regio  [gesture] the push dragged across the stream while it played
+[qa 05:29:21] PASS {"kind": "recording", "action": "stopped", "runId": "run-a3246d60-2448-4403-91c7-45c23e8885c3", "title": "M6A lab", "commands": 29, "finalTick": 3348, "lastAppliedSequence": 29, "stopped": "user", "finalCheck": {"stateSha256": "93742127fcbcbf69aed6430f8b577bc0856e5225cfb84d0f3054688f80c87f60", "engi  [recording] stopped by the user, with a final check
+[qa 05:29:21] recorded run-a3246d60-2448-4403-91c7-45c23e8885c3 to tick 3348; the drag began after tick 450 and ended by tick 2048
+[qa 05:29:21] segment: replay: seek before the intervention, play through it, seek forward to its result and back
+[qa 05:29:39] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "c2946dec66ba469d", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1168, 734], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1752, 1101], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] the replay offers a timeline over the whole recording
+[qa 05:29:39] captured seek-01-replay.png
+[qa 05:29:41] seek: committed {'tick': 331, 'cursor': 0} from root {'tick': 0, 'cursor': 0} steps 331 ms 19
+[qa 05:29:41] PASS {"kind": "seek", "action": "committed", "id": 1, "reason": "timeline", "target": {"tick": 331, "cursor": 0}, "elapsedMs": 19, "source": {"kind": "root", "address": {"tick": 0, "cursor": 0}}, "steps": 331, "batches": 3, "maxBatchMs": 8, "workMs": 17, "restoreMs": 1, "progressShownAfterMs": null, "rej  [seek] before the intervention: nothing cached yet, so rebuilt from the root, out of sight
+[qa 05:29:42] PASS {"kind": "layout", "playing": false, "authority": {"tick": 331, "cursor": 0, "stateHash": "16240f0cbc6465c3", "engineHash": "e84436ac49fcd0ab"}, "viewport": [1168, 734], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1752, 1101], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": f  [layout] the replay shows the requested address, paused, read-only
+[qa 05:29:43] captured seek-02-before-intervention.png
+[qa 05:29:53] seek: committed {'tick': 2246, 'cursor': 25} from checkpoint {'tick': 960, 'cursor': 0} steps 1286 ms 194
+[qa 05:29:53] PASS {"kind": "seek", "action": "committed", "id": 2, "reason": "timeline", "target": {"tick": 2246, "cursor": 25}, "elapsedMs": 194, "source": {"kind": "checkpoint", "address": {"tick": 960, "cursor": 0}}, "steps": 1286, "batches": 23, "maxBatchMs": 9, "workMs": 179, "restoreMs": 6, "progressShownAfterM  [seek] forward to the intervention's result, from a checkpoint
+[qa 05:29:53] captured seek-03-after-intervention.png
+[qa 05:29:55] seek: committed {'tick': 481, 'cursor': 0} from checkpoint {'tick': 480, 'cursor': 0} steps 1 ms 6
+[qa 05:29:55] PASS {"kind": "seek", "action": "committed", "id": 3, "reason": "timeline", "target": {"tick": 481, "cursor": 0}, "elapsedMs": 6, "source": {"kind": "checkpoint", "address": {"tick": 480, "cursor": 0}}, "steps": 1, "batches": 1, "maxBatchMs": 4, "workMs": 4, "restoreMs": 4, "progressShownAfterMs": null,   [seek] back before it again, restored from a checkpoint at or before the target
+[qa 05:30:03] segment: trails start again after a seek, and rebuild from steps
+[qa 05:30:27] PASS {"kind": "layout", "playing": false, "authority": {"tick": 1634, "cursor": 18, "stateHash": "27e87cacce3e26ae", "engineHash": "c014693ea808eea2"}, "viewport": [1168, 734], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1752, 1101], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed":  [layout] trails are stored and drawn while the replay plays
+[qa 05:30:29] seek: committed {'tick': 2088, 'cursor': 25} from checkpoint {'tick': 1920, 'cursor': 25} steps 168 ms 33
+[qa 05:30:30] PASS {"kind": "layout", "playing": false, "authority": {"tick": 2088, "cursor": 25, "stateHash": "d635d395a7bc7fe4", "engineHash": "ffab3a84fc683857"}, "viewport": [1168, 734], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1752, 1101], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed":  [layout] after the seek no trail is stored or drawn, and the status says they start again
+[qa 05:30:30] captured seek-04-trails-start-again.png
+[qa 05:30:37] PASS {"kind": "layout", "playing": false, "authority": {"tick": 2486, "cursor": 26, "stateHash": "0e1af446cac390d9", "engineHash": "fe7db9b75479e795"}, "viewport": [1168, 734], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1752, 1101], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed":  [layout] steps rebuild trails from the seek's address on
+[qa 05:30:37] captured seek-05-trails-rebuilt.png
+[qa 05:30:39] segment: scrub: every commit is the newest request, and the last one is shown
+[qa 05:31:08] PASS  [m6bq latest] every commit was the newest request; the last request is shown: 20 requests, 0 superseded, 20 committed (stale []); the last 24 at {'tick': 2573, 'cursor': 26}, shown {'tick': 2573, 'cursor': 26}
+[qa 05:31:08] captured seek-06-scrubbed.png
+[qa 05:31:08] segment: play on to the recorded end
+[qa 05:31:25] seek: committed {'tick': 3050, 'cursor': 27} from checkpoint {'tick': 2400, 'cursor': 25} steps 650 ms 107
+[qa 05:31:29] PASS {"kind": "replay-complete", "runId": "run-a3246d60-2448-4403-91c7-45c23e8885c3", "tick": 3348, "cursor": 29, "finalTick": 3348, "lastAppliedSequence": 29, "check": {"kind": "match"}, "stateSha256": "93742127fcbcbf69aed6430f8b577bc0856e5225cfb84d0f3054688f80c87f60", "engineSha256": "d97bf45fe31432507  [replay-complete] the replay reached the recorded end exactly after the seeks
+[qa 05:31:29] captured seek-07-end.png
+[qa 05:31:29] waiting for m6b-seek to finish
+[qa 05:31:39] recording m6b-seek.mp4 written
+[qa 05:31:39] PASS  [m6bq seeks] every committed seek held exactly its target; nothing superseded or canceled committed: 25 requested, 25 committed {'root': 1, 'checkpoint': 24}, 0 superseded, 0 canceled
+[qa 05:31:39] segment: the app's M6B fixtures on this recording (Shift+C)
+[qa 05:31:53] PASS {"kind": "m6b-fixtures", "elapsedMs": 6533, "runId": "run-a3246d60-2448-4403-91c7-45c23e8885c3", "finalTick": 3348, "commands": 29, "oracleMs": 357, "compared": 47, "sources": {"root": 7, "checkpoint": 40}, "divergent": [], "targets": [[3265, 27, "root", 64], [2097, 25, "checkpoint", 64], [2103, 25,  [m6b-fixtures] the M6B fixtures in this runtime pass
+[qa 05:31:53] PASS  [m6bq retained] the retained authoring world's digests, at every switch since the replay began, never changed: 68 digests identical, state 93742127fcbc engine d97bf45fe314, by switch {'replay': 22, 'return': 22, 'replay-restart': 24}
+[qa 05:31:53] PASS  [m6bq checkpoints] every replay checkpoint equals the live recording's, including those from restored worlds: every replay checkpoint equals the live one at its address, by origin {'seek-root': 3, 'seek-checkpoint': 8}
+[qa 05:31:53] fixtures: compared 47 {'root': 7, 'checkpoint': 40} cached drawn ms (p50 p95 p99 max) [18, 34, 34, 34] {'recordingSeconds': 27.9, 'applies': False, 'drawnP95Ms': 34, 'pass': True} uncached {'action': 'committed', 'elapsedMs': 421, 'workMs': 394, 'steps': 3348, 'batches': 50, 'firstBatchMs': 8, 'batchMs': [8, 8, 9, 9], 'progressShownAfterMs': 102} {'batches': True, 'progress': True} cancel {'exercised': True, 'action': 'canceled', 'elapsedMs': 116, 'shownUnchanged': True, 'worlds': 2} peak worlds 3
+[qa 05:31:56] the guard asks about the scene
+[qa 05:31:58] the guard asks about the recording
+[qa 05:31:59] m6b-seek complete

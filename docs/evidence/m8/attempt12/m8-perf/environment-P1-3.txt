@@ -1,0 +1,9 @@
+utc 2026-10-11T09:03:41Z
+display 1728x1117@60
+model Mac17,8 memory 51539607552
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=<battery-id>)	80%; AC attached; not charging present: true
+ powermode            0
+Note: No thermal warning level has been recorded
+Note: No performance warning level has been recorded
+Note: No CPU power status has been recorded

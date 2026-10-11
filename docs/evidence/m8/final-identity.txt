@@ -1,0 +1,18 @@
+M8 review candidate identities (recorded at close-out of the native campaign, 2026-10-11)
+
+application/test producer   fa4e22378c355050f388e070001a0236896f6af4
+  receipts                  docs/evidence/m8/r19/unit.log (verify.sh unit exit 0: Vitest 734 passed, 3 skipped; Rust 27 passed)
+                            docs/evidence/m8/r19/build.log (npx tauri build --bundles app exit 0)
+  package                   docs/evidence/m8/r19/identity.txt
+    executable              faf32375ea38d22d2f04e1eccbc4834c9191af5f3b74ce5f22fd39a44f8330f1
+    dist/index.html         779a5d341776aaa99441c9ce6cea5e5ec2842ed7f1c8cefada3237ad9809f2ef
+    index-Bvau8Pzk.js       187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9
+    index-CHDLhImN.css      0cf37fc6e1a454dc654082a6be5cc3b0543816c4990785d287ef1421c5c841a5
+native harness              92be14f4b76f3564763f6b505f3349169166df5f
+  producing harness per result: attempt 8 visual matrix 361dcd9d2d4dabaedefdd57aecd1e4d2514b64e8;
+  attempt 9 window eed3a3179aa00708e892e0846d29d9fb906e8166; attempt 10 keyboard eed3a3179aa00708e892e0846d29d9fb906e8166;
+  attempt 12 m8-perf, m7-r1-panel, m7-compare, m6b-seek 92be14f4b76f3564763f6b505f3349169166df5f
+accepted base main          0d2f60904cfc690a26020bbae72ff8c78615a30e
+private campaign drivers    attempt 7 083fd713…, 8 5f5a6638…, 9 1007eacd…, 10 b3785574…, 11 df06dddd…, 12 98b5f626… (SHA-256 prefixes; bytes kept outside Git)
+approved intervals          2026-10-11 06:24:53–08:04:53 UTC and 08:04:53–09:34:53 UTC; both ended, none active
+The evidence commit that publishes this file is named in docs/evidence/m8/publication.txt, written after it.

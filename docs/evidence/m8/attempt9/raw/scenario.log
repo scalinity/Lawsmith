@@ -1,0 +1,15 @@
+[qa 04:43:53] segment: M8 window dragging from the drag band
+[qa 04:43:53] Lawsmith preferences snapshotted (originally present)
+[qa 04:43:56] display is 1728x1117@120
+[qa 04:44:02] launched pid 11526, window at 224,104, log m8-window.log
+[qa 04:44:02] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 04:44:02] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 04:44:09] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 2, "title": "Sideways Rain", "mode": "packaged", "t": 10374}  [document] example sideways-rain opened
+[qa 04:44:12] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 100%
+[qa 04:44:12] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] content 1280×800
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+[qa 04:44:19] WATCH: the window moved (70,43) for a (80,50) drag from the drag band (M1 jump watch)
+[qa 04:44:21] FAIL: refused input at (240,66): topmost is {"owner":null,"pid":null} 3
+[qa 04:44:23] display restored: 1168x755@120 (original 1168x755@120)
+[qa 04:44:23] Lawsmith preferences restored (originally present)

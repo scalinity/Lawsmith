@@ -1,0 +1,203 @@
+{
+ "workload": "P1",
+ "launch": {
+  "qualification": {
+   "app": "Lawsmith 0.0.0",
+   "build": "packaged",
+   "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9",
+   "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.37.1",
+   "webkit": "22625.2.7.1",
+   "os": "macOS 27.2 (26B5101f)",
+   "arch": "aarch64"
+  },
+  "readyT": 3537
+ },
+ "percentiles": "p50, p95, p99, max",
+ "runs": [
+  {
+   "run": 1,
+   "wallMs": 60017,
+   "ticks": 7201,
+   "samples": {
+    "steps": 7201,
+    "edits": 144,
+    "frames": 3601,
+    "probeSteps": 0,
+    "trailSteps": 7201
+   },
+   "stepMs": [
+    1,
+    2,
+    2,
+    2
+   ],
+   "editMs": [
+    9,
+    12,
+    13,
+    13
+   ],
+   "intervalMs": [
+    17,
+    17,
+    18,
+    23
+   ],
+   "workMs": [
+    4,
+    7,
+    7,
+    8
+   ],
+   "simWallRatio": 1,
+   "bodies": 200,
+   "arrows": 96
+  },
+  {
+   "run": 2,
+   "wallMs": 60017,
+   "ticks": 7203,
+   "samples": {
+    "steps": 7203,
+    "edits": 144,
+    "frames": 3601,
+    "probeSteps": 0,
+    "trailSteps": 7203
+   },
+   "stepMs": [
+    1,
+    2,
+    2,
+    2
+   ],
+   "editMs": [
+    9,
+    13,
+    13,
+    14
+   ],
+   "intervalMs": [
+    17,
+    17,
+    18,
+    24
+   ],
+   "workMs": [
+    4,
+    6,
+    7,
+    8
+   ],
+   "simWallRatio": 1,
+   "bodies": 200,
+   "arrows": 96
+  },
+  {
+   "run": 3,
+   "wallMs": 60000,
+   "ticks": 7200,
+   "samples": {
+    "steps": 7200,
+    "edits": 145,
+    "frames": 3600,
+    "probeSteps": 0,
+    "trailSteps": 7200
+   },
+   "stepMs": [
+    1,
+    2,
+    2,
+    2
+   ],
+   "editMs": [
+    9,
+    11,
+    11,
+    12
+   ],
+   "intervalMs": [
+    17,
+    17,
+    18,
+    24
+   ],
+   "workMs": [
+    4,
+    6,
+    7,
+    8
+   ],
+   "simWallRatio": 1,
+   "bodies": 200,
+   "arrows": 96
+  }
+ ],
+ "worst": [
+  {
+   "gate": "step p95",
+   "limit": 3,
+   "worst": 2,
+   "runs": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "gate": "step p99",
+   "limit": 5,
+   "worst": 2,
+   "runs": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "gate": "CPU work p95",
+   "limit": 14,
+   "worst": 7,
+   "runs": [
+    1
+   ]
+  },
+  {
+   "gate": "interval p95",
+   "limit": 20,
+   "worst": 17,
+   "runs": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "gate": "interval p99",
+   "limit": 34,
+   "worst": 18,
+   "runs": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "gate": "edit p95",
+   "limit": 50,
+   "worst": 13,
+   "runs": [
+    2
+   ]
+  },
+  {
+   "gate": "simulated/wall",
+   "limit": 0.98,
+   "worst": 1,
+   "runs": [
+    1,
+    2,
+    3
+   ]
+  }
+ ]
+}

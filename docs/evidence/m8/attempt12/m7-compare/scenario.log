@@ -1,0 +1,75 @@
+[qa 05:21:05] segment: seed the Open and Save folder
+[qa 05:21:20] Lawsmith preferences snapshotted (originally present)
+[qa 05:21:20] segment: M7 two futures and packaged authority fixtures
+[qa 05:21:23] display is 1728x1117@60
+[qa 05:21:29] launched pid 89251, window at 224,104, log m7-compare.log
+[qa 05:21:29] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 05:21:29] PASS {"kind": "backend", "backend": "WebGPU", "coordinateSystemIsWebGPU": true, "compatibilityMode": false, "samples": 4, "adapter": {"vendor": "apple", "architecture": "apple", "device": "apple", "description": "apple"}, "features": ["bgra8unorm-storage", "clip-distances", "core-features-and-limits", "d  [backend] packaged WebGPU backend
+[qa 05:21:46] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "two-futures.lawsmith.json", "generation": 2, "title": "Two Futures", "bytes": 2378, "readMs": 0.049, "parseMs": 1, "candidateMs": 2, "commitMs": 2, "openMs": 5.049, "mode": "packaged", "t": 15679}  [document] fixture opened
+[qa 05:21:47] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] 1280×800 and known law selected
+[qa 05:21:49] recording m7-two-futures for 100 s (overlay windows skipped by the hit test: 6286)
+[qa 05:21:51] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 43, "batches": 4, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+[qa 05:21:52] captured m7-01-common-fork.png
+[qa 05:22:03] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 1, "stateHash": "243bc43fe2aa83d3", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] B intervention recorded without moving source
+[qa 05:22:09] PASS {"kind": "layout", "playing": false, "authority": {"tick": 384, "cursor": 1, "stateHash": "4ff97a9f38d8aa7a", "engineHash": "a6895e92e4f43221"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": f  [layout] equal tick intervention
+M7 separation: PASS (structured native log)
+[qa 05:22:09] captured m7-02-divergence.png
+M7 ghosts: PASS (structured native log)
+M7 replay: PASS (structured native log)
+[qa 05:22:21] captured m7-03-replayed.png
+[qa 05:22:24] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] New Alternate deliberately clears edits
+[qa 05:22:24] captured m7-04-new.png
+[qa 05:22:29] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] real extension retains fork and reaches 1200
+[qa 05:22:29] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] no fabricated baseline frame
+[qa 05:22:35] PASS {"kind": "document", "action": "export-alternate", "outcome": "saved", "file": "two-futures-alternate.lawsmith.json", "mode": "packaged", "t": 69061}  [document] ordinary alternate setup export
+[qa 05:22:38] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 1, "reducedMotion": false, "panelCollapsed": fal  [layout] source restored at entry address
+[qa 05:22:38] waiting for m7-two-futures to finish
+[qa 05:23:31] recording m7-two-futures.mp4 written
+[qa 05:23:34] PASS {"kind": "m7-fixtures", "complete": true, "mode": "packaged", "t": 128813}  [m7-fixtures] packaged independent M7 fixtures completed
+M7 fixtures: PASS (structured native log)
+[qa 05:23:34] 20 view/context cycles
+[qa 05:23:36] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 5, "batches": 3, "bytes": 26802006, "endpoint  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:23:49] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 17, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:24:03] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 22, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:24:16] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 4, "batches": 3, "bytes": 26802006, "endpoint  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:24:30] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 19, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:24:43] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 17, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:24:57] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 19, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:25:10] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 17, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:25:24] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 18, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:25:38] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 18, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:25:51] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 21, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:26:05] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 18, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:26:19] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 18, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:26:33] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 21, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:26:47] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 6, "batches": 3, "bytes": 26802006, "endpoint  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:27:00] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 4, "batches": 3, "bytes": 26802006, "endpoint  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:27:14] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 17, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:27:28] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 5, "batches": 3, "bytes": 26802006, "endpoint  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:27:42] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 19, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+[qa 05:27:56] PASS {"kind": "comparison", "action": "baseline-committed", "worlds": 1, "generation": 1, "buffers": 8, "frames": 601, "identities": 1, "bytes": 26802006, "suffix": 0, "suffixBytes": 0, "historyBytes": 0, "horizon": 600, "metrics": {"ticks": 600, "elapsedMs": 16, "batches": 3, "bytes": 26802006, "endpoin  [comparison] 600 tick baseline committed
+M7 replay: PASS (structured native log)
+M7 resources: PASS (structured native log)
+[qa 05:28:08] captured m7-05-closed.png
+[qa 05:28:13] display restored: 1168x755@120 (original 1168x755@120)
+[qa 05:28:13] m7-compare complete
+[qa 05:28:13] Lawsmith preferences restored (originally present)

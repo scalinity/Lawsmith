@@ -1,0 +1,11 @@
+[qa 04:47:44] segment: M8 keyboard and native files at 1280×800, 200%
+[qa 04:47:44] Lawsmith preferences snapshotted (originally present)
+[qa 04:47:47] display is 1728x1117@120
+[qa 04:47:53] launched pid 29809, window at 224,104, log m8-keyboard.log
+[qa 04:47:53] PASS {"kind": "qualification", "identity": {"app": "Lawsmith 0.0.0", "build": "packaged", "bundle": "index-Bvau8Pzk.js sha256:187e2115574816008c7b5b0669228c353058b24bed759aa6c9d1323c89aaf4b9", "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.3  [qualification] qualified packaged runtime identity
+[qa 04:48:01] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] Interface Scale 200%
+[qa 04:48:01] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "pixelRatio": 1.5, "canvas": [1920, 1200], "interfaceScale": 2, "reducedMotion": false, "panelCollapsed": fal  [layout] 1280×800 content at 200%
+[qa 04:48:06] PASS {"kind": "document", "action": "example", "outcome": "committed", "file": null, "generation": 2, "title": "Sideways Rain", "mode": "packaged", "t": 17378}  [document] Sideways Rain opened from the keyboard
+[qa 04:48:34] FAIL: M8 focus check failed
+[qa 04:48:37] display restored: 1168x755@120 (original 1168x755@120)
+[qa 04:48:37] Lawsmith preferences restored (originally present)

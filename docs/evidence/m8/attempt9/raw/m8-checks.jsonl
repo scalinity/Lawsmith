@@ -1,0 +1,3 @@
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 1, "checked": 87}
+{"check": "lights", "pass": true, "lights": ["AXCloseButton", "AXFullScreenButton", "AXMinimizeButton"]}
+{"check":"window-drag","pass":false,"scale":1,"from":[240,66],"asked":[80,50],"moved":[70,43]}

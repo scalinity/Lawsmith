@@ -1,0 +1,18 @@
+{"check": "surface", "pass": true, "viewport": [1280, 800], "scale": 2, "checked": 87}
+{"check": "focus", "pass": true, "focus": "example-open"}
+{"check": "example", "pass": true, "example": "sideways-rain", "law": "sideways"}
+{"check": "focus", "pass": true, "focus": "probe-count"}
+{"check": "focus", "pass": true, "focus": "probe-seed"}
+{"check": "focus", "pass": true, "focus": "ui-scale"}
+{"check": "focus", "pass": true, "focus": "law-label"}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": null}
+{"check": "focus", "pass": true, "focus": "law-fade"}

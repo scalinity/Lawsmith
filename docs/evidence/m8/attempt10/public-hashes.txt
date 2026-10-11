@@ -1,0 +1,8 @@
+94bb18fd09c041d94722696ff45eb32c6187e2b32eb2e0ae7b9f58161efae33b  ./campaign-driver.jsonl
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./campaign-driver.stderr
+0f82cc2b51ca218c4a926dfdac2b9fd7790395292820250f52d1f8fa19fe852f  ./raw/cleanup.json
+0f1e4de6ff4fa55b673e2a35b3e5c45d0a5ec94ba38705d9ebe8684839d7534b  ./raw/cleanup.jsonl
+ef574f03e39e4983b0ec83ad87c6a668f118a105dd53e302deb3cf97d079c44b  ./raw/m8-checks.jsonl
+cd292de68cb07c90f09b7c51f7b1323255582d1fd11b9c0ddbb31a58d84b6cc8  ./raw/outcome.json
+89d0a92593f4c9f99ee208f445952355d3f685154adf0464172fd4fd7006cfff  ./raw/qa-steps.log
+13779bc2dcdf8f0718df4fae5588fb430d88cc97674cf037d4bd8b48854376ab  ./raw/scenario.log
