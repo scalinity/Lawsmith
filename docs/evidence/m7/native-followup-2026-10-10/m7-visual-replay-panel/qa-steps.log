@@ -1,0 +1,13 @@
+[qa 19:06:13] segment: M7 both-body equal-tick visual supplement
+[qa 19:06:34] launched pid 94279, window at 224,104, log m7-visual.log
+[qa 19:06:54] recording m7-both-futures for 70 s (overlay windows skipped by the hit test: 2181)
+[qa 19:06:59] captured m7-visual-common.png
+[qa 19:07:11] PASS {"kind": "layout", "playing": false, "authority": {"tick": 150, "cursor": 1, "stateHash": "473c5b481bbbaf23", "engineHash": "f52072de96b2dfc6"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] both-body visual uses common tick and paused authority
+[qa 19:07:11] captured m7-visual-two-futures.png
+[qa 19:07:13] captured m7-visual-ghosts-off.png
+[qa 19:07:19] captured m7-visual-replayed.png
+[qa 19:07:21] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5c1105c0661578a4", "engineHash": "6418751f337aef28"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] New clears suffix and returns fork
+[qa 19:07:22] captured m7-visual-new.png
+[qa 19:07:24] waiting for m7-both-futures to finish
+[qa 19:08:07] recording m7-both-futures.mp4 written
+[qa 19:08:09] m7 visual supplement complete

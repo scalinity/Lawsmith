@@ -1,0 +1,19 @@
+{
+  "candidate": "a6621ea12f4f73cb00908b9abb4490dfcb95b0ac",
+  "nativeCaptureCountPredicate": "PASS on actual 60,001 ms / 7,197 matching steps",
+  "negativeControls": [
+    {
+      "control": "short capture",
+      "rejected": true
+    },
+    {
+      "control": "missing step sample",
+      "rejected": true
+    },
+    {
+      "control": "past computed horizon",
+      "rejected": true
+    }
+  ],
+  "originalScenarioDisposition": "FAIL retained; no retrospective scenario PASS"
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "m5-perf",
+  "label": "m5-perf-replay-panel",
+  "startedAtUTC": "2026-10-10T23:48:51.996958+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 420,
+  "ownedProcessGroup": 93728,
+  "exitCode": 0,
+  "elapsedSeconds": 268.9129011631012,
+  "finishedAtUTC": "2026-10-10T23:53:20.909866+00:00"
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "check": "focused-comparison",
+    "exitCode": 0,
+    "log": "focused-comparison-absence.log"
+  },
+  {
+    "check": "native-assertion-controls",
+    "exitCode": 0,
+    "log": "native-assertion-controls-absence.log"
+  }
+]

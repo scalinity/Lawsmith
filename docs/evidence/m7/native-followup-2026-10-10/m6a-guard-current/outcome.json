@@ -1,0 +1,12 @@
+{
+  "scenario": "m6a-guard",
+  "label": "m6a-guard-current",
+  "startedAtUTC": "2026-10-10T22:46:47.632427+00:00",
+  "codeCandidate": "fd1c7ecafef7681c6c281ba4ec8ed2dde708b43e",
+  "evidenceSourceHead": "fd1c7ecafef7681c6c281ba4ec8ed2dde708b43e",
+  "timeoutSeconds": 300,
+  "ownedProcessGroup": 95292,
+  "exitCode": 1,
+  "elapsedSeconds": 83.00378799438477,
+  "finishedAtUTC": "2026-10-10T22:48:10.636220+00:00"
+}

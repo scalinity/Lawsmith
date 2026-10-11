@@ -1,0 +1,12 @@
+{
+  "scenario": "<private-native-root>/private/short-visual.zsh",
+  "label": "m7-visual-current",
+  "startedAtUTC": "2026-10-10T22:39:45.216121+00:00",
+  "codeCandidate": "fd1c7ecafef7681c6c281ba4ec8ed2dde708b43e",
+  "evidenceSourceHead": "fd1c7ecafef7681c6c281ba4ec8ed2dde708b43e",
+  "timeoutSeconds": 150,
+  "ownedProcessGroup": 60697,
+  "exitCode": 0,
+  "elapsedSeconds": 115.34465909004211,
+  "finishedAtUTC": "2026-10-10T22:41:40.560786+00:00"
+}

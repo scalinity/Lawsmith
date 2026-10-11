@@ -1,0 +1,63 @@
+{
+  "codeCandidate": "a6621ea12f4f73cb00908b9abb4490dfcb95b0ac",
+  "codeTree": "b16f45525032dc046832733975daa1c7d3d4823d",
+  "packagedBuildExit": 0,
+  "packagedExecution": "M7 P3 scenario PASS on current candidate; comparison PASS on identical application/scenario blobs produced by a56fede",
+  "architecture": "arm64",
+  "macOS": [
+    "ProductName: macOS",
+    "ProductVersion: 27.2",
+    "BuildVersion: 26B5101f"
+  ],
+  "startupFaultStrings": {
+    "VITE_LAWSMITH_FAULT": "ABSENT",
+    "rapier-hang": "ABSENT"
+  },
+  "artifacts": [
+    {
+      "path": "dist/assets/index-BlGEIOdO.css",
+      "bytes": 17749,
+      "sha256": "ef53f48a1b4fbcacd1ae3c69dfbf8f7537f91a9735e5fd52a56fa3dc494acaff"
+    },
+    {
+      "path": "dist/assets/index-DAN-URlm.js",
+      "bytes": 5578011,
+      "sha256": "3eef6b2c97144a65daecb9cedb8f7689a09e753b440a23a260063f63db4a6342"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 16383,
+      "sha256": "243295d11664d9493f30d8b7da7f2f9e43a07c32717943e1e67d8e199e361e18"
+    },
+    {
+      "path": "src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/lawsmith",
+      "bytes": 14094432,
+      "sha256": "1aa2601d698126f185b1f427870baae8a62663dcc1976319c7ae4688ab1ede7f"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 58772,
+      "sha256": "aa9f8966a5e92578daf11ad0080f9d94499f2196b0488320a7673d4ad5726942"
+    },
+    {
+      "path": "src-tauri/Cargo.lock",
+      "bytes": 109849,
+      "sha256": "4d29fd4c326adc35ba20a67a64e07cdc1d383f96d8cb9d5db4c2997ac9aeb463"
+    },
+    {
+      "path": "src/fields/kernel.ts",
+      "bytes": 9295,
+      "sha256": "32e5f3b9f41034d65e5de6ed7db80b4f826fc6486873f085366a1f4239f9a248"
+    },
+    {
+      "path": "src/simulation/host.ts",
+      "bytes": 46701,
+      "sha256": "721bce82a1b9572af716c31b996eb9ac6a88b4304cfe4b16f530a516745db9f6"
+    },
+    {
+      "path": "node_modules/@dimforge/rapier3d-compat/dist/rapier_wasm3d_bg.wasm",
+      "bytes": 3082103,
+      "sha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b"
+    }
+  ]
+}

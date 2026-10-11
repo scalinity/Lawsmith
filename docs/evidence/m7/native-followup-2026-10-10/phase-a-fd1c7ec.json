@@ -1,0 +1,71 @@
+{
+  "codeCandidate": "fd1c7ecafef7681c6c281ba4ec8ed2dde708b43e",
+  "checks": [
+    {
+      "check": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "log": "typecheck-fd1c7ec.log"
+    },
+    {
+      "check": "vitest",
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "log": "vitest-fd1c7ec.log"
+    },
+    {
+      "check": "frontend-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "log": "frontend-build-fd1c7ec.log"
+    },
+    {
+      "check": "cargo-test",
+      "command": [
+        "cargo",
+        "test"
+      ],
+      "cwd": "src-tauri",
+      "exitCode": 0,
+      "log": "cargo-test-fd1c7ec.log"
+    },
+    {
+      "check": "cargo-check",
+      "command": [
+        "cargo",
+        "check"
+      ],
+      "cwd": "src-tauri",
+      "exitCode": 0,
+      "log": "cargo-check-fd1c7ec.log"
+    },
+    {
+      "check": "packaged-build",
+      "command": [
+        "npx",
+        "tauri",
+        "build",
+        "--bundles",
+        "app"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "log": "packaged-build-fd1c7ec.log"
+    }
+  ]
+}

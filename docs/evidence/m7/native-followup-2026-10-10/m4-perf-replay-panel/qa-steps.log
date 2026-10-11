@@ -1,0 +1,31 @@
+[qa 19:25:28] segment: P0 with every overlay off, then P2, at 1600×1000 under More Space (about 15 minutes)
+[qa 19:25:44] display → 1728×1117: set 1728x1117@60
+[qa 19:25:51] launched pid 85681, window at 224,104, log perf4.log
+[qa 19:25:54] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "7a2f47534f54f71f", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] the content viewport is 1600×1000 CSS at DPR 2
+[qa 19:25:56] PASS {"kind": "visualization", "change": "trails", "contexts": {"worlds": 1, "peakWorlds": 1, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle", "comparison": null}, "render": {"geometries": 34, "textures": 5,   [visualization] every M4 overlay is off: no probes, no trails, nothing explained
+[qa 19:26:17] PASS {"kind": "pacing", "intervalMs": [17, 18, 18], "maxIntervalMs": 19, "workP95Ms": 3, "stallsOver50ms": 0, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 2202, "playing": true, "bodies": 64, "stepMs": [0, 1, 1], "editMs": [7, 9, 9], "editSamples": 24, "simWallRatio": 1, "droppedMs": 0, "mode": "pac  [pacing] the stream is at full strength with the law inside it
+[qa 19:26:17] captured p0-1600x1000.png
+[qa 19:26:28] P0 run 1 measuring
+[qa 19:26:56] the synthetic release was lost; sending it again
+[qa 19:27:28] PASS {"kind": "p0-run", "comparison": null, "run": 1, "invalid": null, "incomplete": null, "wallMs": 60002, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 64, "arrows": 125, "workload": {"title": "Falling stream", "laws": 1, "lawKinds": ["box", "directional"], "primitiveLeaves": 1, "fixedCol  [p0-run] P0 run 1 is valid and meets its gates
+[qa 19:27:39] P0 run 2 measuring
+[qa 19:28:27] the synthetic release was lost; sending it again
+[qa 19:28:39] PASS {"kind": "p0-run", "comparison": null, "run": 2, "invalid": null, "incomplete": null, "wallMs": 60016, "ticks": 7202, "simWallRatio": 1, "droppedMs": 0, "bodies": 64, "arrows": 125, "workload": {"title": "Falling stream", "laws": 1, "lawKinds": ["box", "directional"], "primitiveLeaves": 1, "fixedCol  [p0-run] P0 run 2 is valid and meets its gates
+[qa 19:28:49] P0 run 3 measuring
+[qa 19:29:50] PASS {"kind": "p0-run", "comparison": null, "run": 3, "invalid": null, "incomplete": null, "wallMs": 60001, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 64, "arrows": 125, "workload": {"title": "Falling stream", "laws": 1, "lawKinds": ["box", "directional"], "primitiveLeaves": 1, "fixedCol  [p0-run] P0 run 3 is valid and meets its gates
+[qa 19:30:01] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "p2-probes.lawsmith.json", "generation": 2, "title": "P2 Probes", "bytes": 55498, "readMs": 2.364, "parseMs": 2, "candidateMs": 3, "commitMs": 5, "openMs": 12.364, "mode": "packaged", "t": 254248}  [document] p2-probes opened
+[qa 19:30:03] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "2fae7ade1d060ac9", "engineHash": "1e07d1ed4d23400b"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] P2 opens with its drag law selected
+[qa 19:30:18] PASS {"kind": "visualization", "change": "trails", "contexts": {"worlds": 1, "peakWorlds": 2, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 0, "checkpointBytes": 0, "selected": "authoring", "recording": "idle", "comparison": null}, "render": {"geometries": 45, "textures": 5,   [visualization] P2's overlays: 2,000 probes and 32 trails
+[qa 19:30:18] PASS {"kind": "pacing", "intervalMs": [17, 17, 18], "maxIntervalMs": 18, "workP95Ms": 5, "stallsOver50ms": 5, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 1210, "playing": true, "bodies": 100, "stepMs": [0, 1, 1], "editMs": [7, 8, 9], "editSamples": 240, "simWallRatio": 1, "droppedMs": 0, "mode": "p  [pacing] 100 bodies are live
+[qa 19:30:18] captured p2-1600x1000.png
+[qa 19:30:29] P2 run 1 measuring
+[qa 19:31:29] PASS {"kind": "p0-run", "comparison": null, "run": 4, "invalid": null, "incomplete": null, "wallMs": 60001, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 100, "arrows": 24, "workload": {"title": "P2 Probes", "laws": 4, "lawKinds": ["box", "cylinderY", "directional", "linearDrag", "softRadia  [p0-run] P2 run 1 is valid and meets its gates
+[qa 19:31:39] P2 run 2 measuring
+[qa 19:32:39] PASS {"kind": "p0-run", "comparison": null, "run": 5, "invalid": null, "incomplete": null, "wallMs": 60014, "ticks": 7202, "simWallRatio": 1, "droppedMs": 0, "bodies": 100, "arrows": 24, "workload": {"title": "P2 Probes", "laws": 4, "lawKinds": ["box", "cylinderY", "directional", "linearDrag", "softRadia  [p0-run] P2 run 2 is valid and meets its gates
+[qa 19:32:50] P2 run 3 measuring
+[qa 19:32:58] the synthetic release was lost; sending it again
+[qa 19:33:51] PASS {"kind": "p0-run", "comparison": null, "run": 6, "invalid": null, "incomplete": null, "wallMs": 60017, "ticks": 7202, "simWallRatio": 1, "droppedMs": 0, "bodies": 100, "arrows": 24, "workload": {"title": "P2 Probes", "laws": 4, "lawKinds": ["box", "cylinderY", "directional", "linearDrag", "softRadia  [p0-run] P2 run 3 is valid and meets its gates
+[qa 19:33:55] display → 1168×755: set 1168x755@60
+[qa 19:33:58] display restored to 1168x755@60
+[qa 19:33:58] m4-perf complete
+[qa 19:33:58] display restored to 1168x755@60

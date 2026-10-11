@@ -1,0 +1,18 @@
+[qa 19:33:59] segment: P1 at 1600×1000 under More Space (about 7 minutes)
+[qa 19:34:14] display → 1728×1117: set 1728x1117@60
+[qa 19:34:22] launched pid 27372, window at 224,104, log p1.log
+[qa 19:34:37] PASS {"kind": "document", "action": "open", "outcome": "committed", "file": "p1-workshop.lawsmith.json", "generation": 2, "title": "P1 Workshop", "bytes": 116788, "readMs": 2.225, "parseMs": 6, "candidateMs": 8, "commitMs": 6, "openMs": 22.225, "mode": "packaged", "t": 13748}  [document] the P1 scene opened
+[qa 19:34:38] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5ab0e73ecbf92e4c", "engineHash": "c3d5dc76e8887771"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] the content viewport is 1600×1000 CSS at DPR 2, with drag-0 selected
+[qa 19:34:50] PASS {"kind": "pacing", "intervalMs": [17, 18, 18], "maxIntervalMs": 18, "workP95Ms": 5, "stallsOver50ms": 3, "devicePixelRatio": 2, "pixelRatio": 1.5, "tick": 840, "playing": true, "bodies": 200, "stepMs": [1, 2, 2], "editMs": null, "editSamples": 0, "simWallRatio": 1, "droppedMs": 0, "mode": "packaged"  [pacing] 200 bodies are live
+[qa 19:34:50] captured p1-1600x1000.png
+[qa 19:35:01] P1 run 1 measuring
+[qa 19:35:29] the synthetic release was lost; sending it again
+[qa 19:36:01] PASS {"kind": "p0-run", "comparison": null, "run": 1, "invalid": null, "incomplete": null, "wallMs": 60016, "ticks": 7202, "simWallRatio": 1, "droppedMs": 0, "bodies": 200, "arrows": 96, "workload": {"title": "P1 Workshop", "laws": 16, "lawKinds": ["box", "cylinderY", "directional", "linearDrag", "softRa  [p0-run] P1 run 1 is valid with the declared workload and meets the M3 gates
+[qa 19:36:12] P1 run 2 measuring
+[qa 19:37:12] PASS {"kind": "p0-run", "comparison": null, "run": 2, "invalid": null, "incomplete": null, "wallMs": 60001, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 200, "arrows": 96, "workload": {"title": "P1 Workshop", "laws": 16, "lawKinds": ["box", "cylinderY", "directional", "linearDrag", "softRa  [p0-run] P1 run 2 is valid with the declared workload and meets the M3 gates
+[qa 19:37:22] P1 run 3 measuring
+[qa 19:38:22] PASS {"kind": "p0-run", "comparison": null, "run": 3, "invalid": null, "incomplete": null, "wallMs": 60000, "ticks": 7200, "simWallRatio": 1, "droppedMs": 0, "bodies": 200, "arrows": 96, "workload": {"title": "P1 Workshop", "laws": 16, "lawKinds": ["box", "cylinderY", "directional", "linearDrag", "softRa  [p0-run] P1 run 3 is valid with the declared workload and meets the M3 gates
+[qa 19:38:26] display → 1168×755: set 1168x755@60
+[qa 19:38:29] display restored to 1168x755@60
+[qa 19:38:29] m3-p1 complete
+[qa 19:38:29] display restored to 1168x755@60

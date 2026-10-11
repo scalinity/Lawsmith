@@ -1,0 +1,33 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/main.rs (target/debug/deps/lawsmith-655ee65bb4758067)
+
+running 27 tests
+test document_io::tests::a_token_serves_only_its_own_kind ... ok
+test document_io::tests::run_names_keep_their_suffix_and_never_pass_as_scenes ... ok
+test document_io::tests::scene_names_keep_the_double_suffix ... ok
+test document_io::tests::tokens_are_opaque_and_session_local ... ok
+test document_io::tests::a_directory_at_the_destination_is_refused ... ok
+test document_io::tests::denied_directory_is_reported_and_preserves_the_existing_file ... ok
+test document_io::tests::read_only_target_is_refused_not_replaced ... ok
+test document_io::tests::write_failure_preserves_the_existing_file ... ok
+test document_io::tests::bounded_read_rejects_oversized_and_non_utf8_files ... ok
+test recovery::tests::interrupted_temporaries_are_cleared_at_launch ... ok
+test recovery::tests::earlier_session_files_are_retired_by_this_session ... ok
+test document_io::tests::existing_permissions_carry_over_and_symlinks_survive ... ok
+test document_io::tests::a_run_reads_to_its_own_limit ... ok
+test document_io::tests::failed_rename_preserves_the_existing_file_and_removes_the_temporary ... ok
+test recovery::tests::a_corrupt_current_is_replaced_without_rotating_over_the_valid_previous ... ok
+test recovery::tests::unreadable_snapshots_are_reported_not_hidden ... ok
+test recovery::tests::discarding_earlier_work_keeps_this_sessions_snapshots ... ok
+test recovery::tests::a_recovery_write_interrupted_before_promotion_keeps_the_valid_previous ... ok
+test recovery::tests::rejects_stale_revisions_and_generations ... ok
+test recovery::tests::a_validated_current_from_an_earlier_session_becomes_the_previous ... ok
+test recovery::tests::termination_without_the_guard_needs_an_empty_idle_store ... ok
+test recovery::tests::a_failed_write_keeps_the_valid_snapshot ... ok
+test recovery::tests::a_failed_discard_keeps_recovery_working ... ok
+test document_io::tests::replaces_and_creates ... ok
+test recovery::tests::discard_retires_written_and_queued_snapshots_of_its_generation ... ok
+test recovery::tests::save_retires_only_through_its_revision ... ok
+test recovery::tests::keeps_current_and_one_previous ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s

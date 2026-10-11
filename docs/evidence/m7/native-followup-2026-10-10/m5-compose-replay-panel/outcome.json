@@ -1,0 +1,12 @@
+{
+  "scenario": "m5-compose",
+  "label": "m5-compose-replay-panel",
+  "startedAtUTC": "2026-10-10T23:39:40.235489+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 520,
+  "ownedProcessGroup": 52388,
+  "exitCode": 0,
+  "elapsedSeconds": 474.27521896362305,
+  "finishedAtUTC": "2026-10-10T23:47:34.510717+00:00"
+}

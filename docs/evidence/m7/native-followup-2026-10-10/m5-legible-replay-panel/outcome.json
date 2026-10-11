@@ -1,0 +1,12 @@
+{
+  "scenario": "m5-legible",
+  "label": "m5-legible-replay-panel",
+  "startedAtUTC": "2026-10-10T23:47:34.538982+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 220,
+  "ownedProcessGroup": 88205,
+  "exitCode": 0,
+  "elapsedSeconds": 77.42910099029541,
+  "finishedAtUTC": "2026-10-10T23:48:51.968086+00:00"
+}

@@ -1,0 +1,15 @@
+{
+  "cleanupAtUTC": "2026-10-11T00:01:58.924361+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "originalDisplayRestored": "1168x755@120",
+  "existingPreferencesRestored": true,
+  "removedQAAddedPreferenceKeys": [
+    "NSNavLastUserSetHideExtensionButtonState",
+    "NSOSPLastRootDirectory"
+  ],
+  "ownedLawsmithPIDs": [],
+  "terminatedOwnedQAInstances": 0,
+  "ownedTestVolumeDetached": true,
+  "sharedGUIUnlocked": true,
+  "nativeInputStopped": true
+}

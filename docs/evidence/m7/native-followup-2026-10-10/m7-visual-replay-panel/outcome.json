@@ -1,0 +1,12 @@
+{
+  "scenario": "<private-native-root>/private/short-visual.zsh",
+  "label": "m7-visual-replay-panel",
+  "startedAtUTC": "2026-10-10T23:06:13.136491+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 160,
+  "ownedProcessGroup": 93320,
+  "exitCode": 0,
+  "elapsedSeconds": 116.2709801197052,
+  "finishedAtUTC": "2026-10-10T23:08:09.407481+00:00"
+}

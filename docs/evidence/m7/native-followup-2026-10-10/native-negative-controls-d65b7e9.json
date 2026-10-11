@@ -1,0 +1,26 @@
+{
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "unmodifiedActualNativeInputs": "PASS",
+  "controls": [
+    {
+      "control": "zero numerical separation",
+      "rejected": true,
+      "reason": "actual separation below 0.5 m or incorrect readout"
+    },
+    {
+      "control": "overshot retained endpoint",
+      "rejected": true,
+      "reason": "frame overshot after replay"
+    },
+    {
+      "control": "growing native resources",
+      "rejected": true,
+      "reason": "resource counts grew or failed to return to steady state"
+    },
+    {
+      "control": "removed absent-counterpart case L",
+      "rejected": true,
+      "reason": "missing stable-ID/absence negative control"
+    }
+  ]
+}

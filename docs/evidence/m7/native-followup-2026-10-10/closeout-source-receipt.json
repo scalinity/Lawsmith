@@ -1,0 +1,46 @@
+{
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "acceptedBase": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "rejectedCandidate": "ccdcf4ef0b4ecb5228d6b36338bdc57a6169dfd7",
+  "sourceManifestEntriesVerified": 122,
+  "protectedPathsUnchangedFromRejected": [
+    "docs/SPEC.md",
+    "docs/MILESTONES.md",
+    "package.json",
+    "package-lock.json",
+    "src-tauri/Cargo.toml",
+    "src-tauri/Cargo.lock",
+    "src/simulation/replay.ts",
+    "src/simulation/checkpoints.ts",
+    "src/simulation/adapter.ts",
+    "src/simulation/host.ts",
+    "src/fields/kernel.ts"
+  ],
+  "sourceTestNativeScriptDelta": [
+    "index.html",
+    "scripts/verify/native/m7-compare.zsh",
+    "scripts/verify/native/m7-perf.zsh",
+    "scripts/verify/native/m7q.py",
+    "scripts/verify/native/test_m7q.py",
+    "src/main.ts",
+    "src/simulation/comparison.ts",
+    "src/simulation/comparisonFixtures.ts",
+    "src/simulation/contexts.ts",
+    "src/simulation/scheduler.ts",
+    "tests/comparison.test.ts",
+    "tests/comparisonRemediation.test.ts"
+  ],
+  "acceptedAndRejectedAncestry": true,
+  "sourceTestScriptWorkingBytesMatchCandidate": true,
+  "noMergeOrM8": true,
+  "closeoutNote": "Evidence-only final commit and remote verification follow; final refs are reported after push.",
+  "verifiedAtUTC": "2026-10-11T00:10:45.137703+00:00",
+  "refStage": "before evidence-only close-out commit",
+  "refs": {
+    "main": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+    "origin/main": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+    "m7": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+    "origin/m7": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce"
+  },
+  "finalPackageArtifactsReverified": 9
+}

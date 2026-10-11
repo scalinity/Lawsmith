@@ -1,0 +1,12 @@
+{
+  "scenario": "m6a-guard",
+  "label": "m6a-guard-replay-panel",
+  "startedAtUTC": "2026-10-10T22:51:31.096143+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 320,
+  "ownedProcessGroup": 16683,
+  "exitCode": 0,
+  "elapsedSeconds": 183.578941822052,
+  "finishedAtUTC": "2026-10-10T22:54:34.675088+00:00"
+}

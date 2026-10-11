@@ -1,0 +1,409 @@
+{
+  "codeCandidate": "a6621ea12f4f73cb00908b9abb4490dfcb95b0ac",
+  "comparisonProducer": "a56fede4ee3b95e43772bb1db606d8fb23beeafb",
+  "priorEvidenceHead": "d8ee82689289e234922304441ac60c0e43f054a3",
+  "authorizedResumeDeadlineUTC": "2026-10-10T22:18:00Z",
+  "P3": "PASS, three independent warm10/restore/measure60 captures",
+  "scenarioExit": 0,
+  "runs": [
+    {
+      "run": 1,
+      "wallMs": 60015,
+      "ticks": 7199,
+      "simWallRatio": 1,
+      "droppedMs": 0,
+      "stepMs": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "editMs": [
+        18,
+        19,
+        19,
+        19
+      ],
+      "workMs": [
+        3,
+        4,
+        4,
+        5
+      ],
+      "intervalMs": [
+        17,
+        18,
+        18,
+        24
+      ],
+      "samples": {
+        "steps": 7199,
+        "edits": 67,
+        "frames": 3601,
+        "probeSteps": 0,
+        "trailSteps": 0
+      },
+      "viewport": {
+        "css": [
+          1600,
+          1000
+        ],
+        "devicePixelRatio": 2,
+        "pixelRatio": 1.5,
+        "canvas": [
+          2400,
+          1500
+        ]
+      },
+      "timerResolutionMs": 1,
+      "comparison": {
+        "worlds": 1,
+        "generation": 4,
+        "buffers": 11,
+        "frames": 7201,
+        "identities": 100,
+        "bytes": 50770421,
+        "suffix": 67,
+        "suffixBytes": 233416,
+        "historyBytes": 0,
+        "horizon": 7200
+      },
+      "workload": {
+        "title": "P3 \u2014 Two Futures",
+        "laws": 4,
+        "lawKinds": [
+          "box",
+          "directional"
+        ],
+        "primitiveLeaves": 4,
+        "fixedColliders": 0,
+        "authoredDynamic": 100,
+        "allBodyContacts": false,
+        "limitedSteps": 0
+      }
+    },
+    {
+      "run": 2,
+      "wallMs": 60021,
+      "ticks": 7200,
+      "simWallRatio": 1,
+      "droppedMs": 0,
+      "stepMs": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "editMs": [
+        17,
+        19,
+        20,
+        20
+      ],
+      "workMs": [
+        3,
+        4,
+        4,
+        8
+      ],
+      "intervalMs": [
+        17,
+        18,
+        18,
+        19
+      ],
+      "samples": {
+        "steps": 7200,
+        "edits": 63,
+        "frames": 3601,
+        "probeSteps": 0,
+        "trailSteps": 0
+      },
+      "viewport": {
+        "css": [
+          1600,
+          1000
+        ],
+        "devicePixelRatio": 2,
+        "pixelRatio": 1.5,
+        "canvas": [
+          2400,
+          1500
+        ]
+      },
+      "timerResolutionMs": 1,
+      "comparison": {
+        "worlds": 1,
+        "generation": 6,
+        "buffers": 11,
+        "frames": 7201,
+        "identities": 100,
+        "bytes": 50770421,
+        "suffix": 63,
+        "suffixBytes": 219472,
+        "historyBytes": 0,
+        "horizon": 7200
+      },
+      "workload": {
+        "title": "P3 \u2014 Two Futures",
+        "laws": 4,
+        "lawKinds": [
+          "box",
+          "directional"
+        ],
+        "primitiveLeaves": 4,
+        "fixedColliders": 0,
+        "authoredDynamic": 100,
+        "allBodyContacts": false,
+        "limitedSteps": 0
+      }
+    },
+    {
+      "run": 3,
+      "wallMs": 60000,
+      "ticks": 7198,
+      "simWallRatio": 1,
+      "droppedMs": 0,
+      "stepMs": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "editMs": [
+        17,
+        20,
+        20,
+        20
+      ],
+      "workMs": [
+        3,
+        4,
+        4,
+        7
+      ],
+      "intervalMs": [
+        17,
+        18,
+        18,
+        20
+      ],
+      "samples": {
+        "steps": 7198,
+        "edits": 60,
+        "frames": 3600,
+        "probeSteps": 0,
+        "trailSteps": 0
+      },
+      "viewport": {
+        "css": [
+          1600,
+          1000
+        ],
+        "devicePixelRatio": 2,
+        "pixelRatio": 1.5,
+        "canvas": [
+          2400,
+          1500
+        ]
+      },
+      "timerResolutionMs": 1,
+      "comparison": {
+        "worlds": 1,
+        "generation": 8,
+        "buffers": 11,
+        "frames": 7201,
+        "identities": 100,
+        "bytes": 50770421,
+        "suffix": 60,
+        "suffixBytes": 209056,
+        "historyBytes": 0,
+        "horizon": 7200
+      },
+      "workload": {
+        "title": "P3 \u2014 Two Futures",
+        "laws": 4,
+        "lawKinds": [
+          "box",
+          "directional"
+        ],
+        "primitiveLeaves": 4,
+        "fixedColliders": 0,
+        "authoredDynamic": 100,
+        "allBodyContacts": false,
+        "limitedSteps": 0
+      }
+    }
+  ],
+  "worstPercentiles": {
+    "stepMs": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "editMs": [
+      18,
+      20,
+      20,
+      20
+    ],
+    "workMs": [
+      3,
+      4,
+      4,
+      8
+    ],
+    "intervalMs": [
+      17,
+      18,
+      18,
+      24
+    ]
+  },
+  "nativeConstruction": [
+    {
+      "kind": "comparison",
+      "action": "baseline-committed",
+      "worlds": 1,
+      "generation": 1,
+      "buffers": 8,
+      "frames": 601,
+      "identities": 100,
+      "bytes": 29623761,
+      "suffix": 0,
+      "suffixBytes": 0,
+      "historyBytes": 0,
+      "horizon": 600,
+      "metrics": {
+        "ticks": 600,
+        "elapsedMs": 120,
+        "batches": 14,
+        "bytes": 29623761,
+        "endpoint": {
+          "tick": 600,
+          "cursor": 0
+        },
+        "endpointIdentity": "d9718dd154480385",
+        "batchMs": [
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "mode": "packaged",
+      "t": 25401
+    },
+    {
+      "kind": "comparison",
+      "action": "baseline-committed",
+      "worlds": 1,
+      "generation": 2,
+      "buffers": 11,
+      "frames": 7201,
+      "identities": 100,
+      "bytes": 50770421,
+      "suffix": 0,
+      "suffixBytes": 0,
+      "historyBytes": 0,
+      "horizon": 7200,
+      "metrics": {
+        "ticks": 7200,
+        "elapsedMs": 1011,
+        "batches": 117,
+        "bytes": 50770421,
+        "endpoint": {
+          "tick": 7200,
+          "cursor": 0
+        },
+        "endpointIdentity": "9d1787d38e3cc24d",
+        "batchMs": [
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "mode": "packaged",
+      "t": 27056
+    }
+  ],
+  "qualification": {
+    "kind": "qualification",
+    "identity": {
+      "app": "Lawsmith 0.0.0",
+      "build": "packaged",
+      "bundle": "index-DAN-URlm.js sha256:3eef6b2c97144a65daecb9cedb8f7689a09e753b440a23a260063f63db4a6342",
+      "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.37.1",
+      "webkit": "22625.2.7.1",
+      "os": "macOS 27.2 (26B5101f)",
+      "arch": "aarch64"
+    },
+    "qualified": true,
+    "fingerprint": {
+      "profile": "lawsmith-m1-rapier-0.21.0",
+      "rapier": "0.21.0",
+      "rapierWasmSha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b",
+      "effective": {
+        "dt": 0.008333333767950535,
+        "numSolverIterations": 4,
+        "numInternalPgsIterations": 1,
+        "maxCcdSubsteps": 1,
+        "lengthUnit": 1,
+        "normalizedAllowedLinearError": 0.004999999888241291,
+        "normalizedPredictionDistance": 0.019999999552965164,
+        "contactErp": 0.0728205069899559
+      },
+      "fieldKernel": "affine-ak-v2",
+      "commands": "lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick",
+      "step": "1/120"
+    },
+    "mode": "packaged",
+    "t": 124
+  },
+  "backend": {
+    "kind": "backend",
+    "backend": "WebGPU",
+    "coordinateSystemIsWebGPU": true,
+    "compatibilityMode": false,
+    "samples": 4,
+    "adapter": {
+      "vendor": "apple",
+      "architecture": "apple",
+      "device": "apple",
+      "description": "apple"
+    },
+    "features": [
+      "bgra8unorm-storage",
+      "clip-distances",
+      "core-features-and-limits",
+      "depth-clip-control",
+      "depth32float-stencil8",
+      "float32-blendable",
+      "float32-filterable",
+      "indirect-first-instance",
+      "rg11b10ufloat-renderable",
+      "shader-f16",
+      "texture-compression-astc",
+      "texture-compression-astc-sliced-3d",
+      "texture-compression-bc",
+      "texture-compression-bc-sliced-3d",
+      "texture-compression-etc2",
+      "texture-formats-tier1",
+      "texture-formats-tier2",
+      "timestamp-query"
+    ],
+    "mode": "packaged",
+    "t": 127
+  },
+  "screenRecording": "OFF",
+  "pending": [
+    "packaged AC7 absent-counterpart case L",
+    "affected older native regressions",
+    "visible comparison fault/presentation",
+    "owner real trackpad",
+    "independent GPT-6 Pro review"
+  ],
+  "originalFailures": "three previous attempts retain FAIL/INVALID and their actual producing candidates; no retrospective scenario PASS"
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "m2-files",
+  "label": "m2-files-replay-panel",
+  "startedAtUTC": "2026-10-10T23:53:22.199915+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 400,
+  "ownedProcessGroup": 15476,
+  "exitCode": 0,
+  "elapsedSeconds": 186.43748807907104,
+  "finishedAtUTC": "2026-10-10T23:56:28.637407+00:00"
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "m6b-long",
+  "label": "m6b-long-replay-panel",
+  "startedAtUTC": "2026-10-10T23:20:46.684253+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 400,
+  "ownedProcessGroup": 64316,
+  "exitCode": 0,
+  "elapsedSeconds": 281.6960451602936,
+  "finishedAtUTC": "2026-10-10T23:25:28.380302+00:00"
+}

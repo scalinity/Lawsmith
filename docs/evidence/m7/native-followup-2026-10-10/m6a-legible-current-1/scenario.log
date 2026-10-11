@@ -1,0 +1,16 @@
+[qa 18:24:10] segment: the recording controls at 1280×800 and at the minimum window
+[qa 18:24:11] display → 1728×1117: set 1728x1117@120
+[qa 18:24:18] launched pid 95288, window at 224,104, log m6a-legible.log
+[qa 18:24:31] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "c2946dec66ba469d", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] the content viewport is 1280×800 CSS, the Storm Bottle selected
+[qa 18:24:32] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "c2946dec66ba469d", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] idle at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:24:33] run cluster idle at 1280×800: [913.1, 52, 354.9, 117.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 18:24:33] captured m6a-1280x800-idle.png
+[qa 18:24:39] PASS {"kind": "layout", "playing": true, "authority": {"tick": 316, "cursor": 0, "stateHash": "f9b6d34b7c28f6fb", "engineHash": "584974b0a3cf667d"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":  [layout] recording at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:24:39] run cluster recording at 1280×800: [1020.3, 52, 247.7, 125.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 18:24:39] captured m6a-1280x800-recording.png
+[qa 18:24:44] PASS {"kind": "layout", "playing": false, "authority": {"tick": 600, "cursor": 0, "stateHash": "7292289d49c8639f", "engineHash": "ea196808e819d5d8"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] recorded at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:24:44] run cluster recorded at 1280×800: [828, 52, 440, 151.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 18:24:55] FAIL {"kind": "layout", "playing": false, "authority": {"tick": 600, "cursor": 0, "stateHash": "7292289d49c8639f", "engineHash": "ea196808e819d5d8"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] replay at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:24:55] FAIL: expectation failed: replay at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:24:55] display → 1168×755: set 1168x755@120
+[qa 18:24:58] display restored to 1168x755@120

@@ -1,0 +1,3652 @@
+{
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "scenarios": [
+    {
+      "name": "m6a-guard",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m6a-guard",
+        "label": "m6a-guard-replay-panel",
+        "startedAtUTC": "2026-10-10T22:51:31.096143+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 320,
+        "ownedProcessGroup": 16683,
+        "exitCode": 0,
+        "elapsedSeconds": 183.578941822052,
+        "finishedAtUTC": "2026-10-10T22:54:34.675088+00:00"
+      }
+    },
+    {
+      "name": "m7-compare",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m7-compare",
+        "label": "m7-compare-replay-panel",
+        "startedAtUTC": "2026-10-10T22:54:34.700775+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 650,
+        "ownedProcessGroup": 32242,
+        "exitCode": 0,
+        "elapsedSeconds": 438.01914167404175,
+        "finishedAtUTC": "2026-10-10T23:01:52.719926+00:00"
+      }
+    },
+    {
+      "name": "m7-perf",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m7-perf",
+        "label": "m7-perf-replay-panel",
+        "startedAtUTC": "2026-10-10T23:01:52.763671+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 360,
+        "ownedProcessGroup": 71969,
+        "exitCode": 0,
+        "elapsedSeconds": 260.3285539150238,
+        "finishedAtUTC": "2026-10-10T23:06:13.092229+00:00"
+      }
+    },
+    {
+      "name": "m7-visual",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "<private-native-root>/private/short-visual.zsh",
+        "label": "m7-visual-replay-panel",
+        "startedAtUTC": "2026-10-10T23:06:13.136491+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 160,
+        "ownedProcessGroup": 93320,
+        "exitCode": 0,
+        "elapsedSeconds": 116.2709801197052,
+        "finishedAtUTC": "2026-10-10T23:08:09.407481+00:00"
+      }
+    },
+    {
+      "name": "m6a-record",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m6a-record",
+        "label": "m6a-record-replay-panel",
+        "startedAtUTC": "2026-10-10T23:08:09.474636+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 360,
+        "ownedProcessGroup": 314,
+        "exitCode": 0,
+        "elapsedSeconds": 308.3505709171295,
+        "finishedAtUTC": "2026-10-10T23:13:17.825212+00:00"
+      }
+    },
+    {
+      "name": "m6a-legible",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m6a-legible",
+        "label": "m6a-legible-replay-panel",
+        "startedAtUTC": "2026-10-10T23:13:17.855999+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 180,
+        "ownedProcessGroup": 27696,
+        "exitCode": 0,
+        "elapsedSeconds": 78.93965315818787,
+        "finishedAtUTC": "2026-10-10T23:14:36.795657+00:00"
+      }
+    },
+    {
+      "name": "m6a-pace",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m6a-pace",
+        "label": "m6a-pace-replay-panel",
+        "startedAtUTC": "2026-10-10T23:14:36.838043+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 300,
+        "ownedProcessGroup": 33404,
+        "exitCode": 0,
+        "elapsedSeconds": 141.21326398849487,
+        "finishedAtUTC": "2026-10-10T23:16:58.051313+00:00"
+      }
+    },
+    {
+      "name": "m6b-seek",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m6b-seek",
+        "label": "m6b-seek-replay-panel",
+        "startedAtUTC": "2026-10-10T23:16:58.077865+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 360,
+        "ownedProcessGroup": 44076,
+        "exitCode": 0,
+        "elapsedSeconds": 228.57634091377258,
+        "finishedAtUTC": "2026-10-10T23:20:46.654212+00:00"
+      }
+    },
+    {
+      "name": "m6b-long",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m6b-long",
+        "label": "m6b-long-replay-panel",
+        "startedAtUTC": "2026-10-10T23:20:46.684253+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 400,
+        "ownedProcessGroup": 64316,
+        "exitCode": 0,
+        "elapsedSeconds": 281.6960451602936,
+        "finishedAtUTC": "2026-10-10T23:25:28.380302+00:00"
+      }
+    },
+    {
+      "name": "m4-perf",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m4-perf",
+        "label": "m4-perf-replay-panel",
+        "startedAtUTC": "2026-10-10T23:25:28.405501+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 650,
+        "ownedProcessGroup": 85386,
+        "exitCode": 0,
+        "elapsedSeconds": 510.6487879753113,
+        "finishedAtUTC": "2026-10-10T23:33:59.054295+00:00"
+      }
+    },
+    {
+      "name": "m3-p1",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m3-p1",
+        "label": "m3-p1-replay-panel",
+        "startedAtUTC": "2026-10-10T23:33:59.081158+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 420,
+        "ownedProcessGroup": 26996,
+        "exitCode": 0,
+        "elapsedSeconds": 270.37594175338745,
+        "finishedAtUTC": "2026-10-10T23:38:29.457105+00:00"
+      }
+    },
+    {
+      "name": "m5-compose",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m5-compose",
+        "label": "m5-compose-replay-panel",
+        "startedAtUTC": "2026-10-10T23:39:40.235489+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 520,
+        "ownedProcessGroup": 52388,
+        "exitCode": 0,
+        "elapsedSeconds": 474.27521896362305,
+        "finishedAtUTC": "2026-10-10T23:47:34.510717+00:00"
+      }
+    },
+    {
+      "name": "m5-legible",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m5-legible",
+        "label": "m5-legible-replay-panel",
+        "startedAtUTC": "2026-10-10T23:47:34.538982+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 220,
+        "ownedProcessGroup": 88205,
+        "exitCode": 0,
+        "elapsedSeconds": 77.42910099029541,
+        "finishedAtUTC": "2026-10-10T23:48:51.968086+00:00"
+      }
+    },
+    {
+      "name": "m5-perf",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m5-perf",
+        "label": "m5-perf-replay-panel",
+        "startedAtUTC": "2026-10-10T23:48:51.996958+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 420,
+        "ownedProcessGroup": 93728,
+        "exitCode": 0,
+        "elapsedSeconds": 268.9129011631012,
+        "finishedAtUTC": "2026-10-10T23:53:20.909866+00:00"
+      }
+    },
+    {
+      "name": "m2-files",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m2-files",
+        "label": "m2-files-replay-panel",
+        "startedAtUTC": "2026-10-10T23:53:22.199915+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 400,
+        "ownedProcessGroup": 15476,
+        "exitCode": 0,
+        "elapsedSeconds": 186.43748807907104,
+        "finishedAtUTC": "2026-10-10T23:56:28.637407+00:00"
+      }
+    },
+    {
+      "name": "m2-guard",
+      "result": "PASS",
+      "outcome": {
+        "scenario": "m2-guard",
+        "label": "m2-guard-replay-panel",
+        "startedAtUTC": "2026-10-10T23:56:28.675669+00:00",
+        "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+        "timeoutSeconds": 450,
+        "ownedProcessGroup": 30585,
+        "exitCode": 0,
+        "elapsedSeconds": 309.28637981414795,
+        "finishedAtUTC": "2026-10-11T00:01:37.962057+00:00"
+      }
+    }
+  ],
+  "comparison": {
+    "pausedPair": {
+      "id": "traveler",
+      "tick": 396,
+      "baseline": [
+        3.299971103668213,
+        0,
+        0
+      ],
+      "alternate": [
+        3.299971103668213,
+        10.878756523132324,
+        0
+      ],
+      "separation": 10.878756523132324
+    },
+    "retained": {
+      "authority": {
+        "tick": 396,
+        "cursor": 1,
+        "stateHash": "b3f27a65f1ad3fc6",
+        "engineHash": "16e6e7c5f2cfcdc2"
+      },
+      "baselineHash": "191a45395e8fb09e",
+      "pair": {
+        "id": "traveler",
+        "tick": 396,
+        "baseline": [
+          3.299971103668213,
+          0,
+          0
+        ],
+        "alternate": [
+          3.299971103668213,
+          10.878756523132324,
+          0
+        ],
+        "separation": 10.878756523132324
+      },
+      "framePastHorizon": false
+    },
+    "completed": {
+      "kind": "comparison",
+      "action": "alternate-complete",
+      "playing": false,
+      "worlds": 1,
+      "generation": 2,
+      "buffers": 8,
+      "frames": 601,
+      "identities": 1,
+      "bytes": 26802006,
+      "suffix": 1,
+      "suffixBytes": 3416,
+      "historyBytes": 6616,
+      "horizon": 600,
+      "receipt": {
+        "authority": {
+          "tick": 396,
+          "cursor": 1,
+          "stateHash": "b3f27a65f1ad3fc6",
+          "engineHash": "16e6e7c5f2cfcdc2"
+        },
+        "baselineHash": "191a45395e8fb09e",
+        "pair": {
+          "id": "traveler",
+          "tick": 396,
+          "baseline": [
+            3.299971103668213,
+            0,
+            0
+          ],
+          "alternate": [
+            3.299971103668213,
+            10.878756523132324,
+            0
+          ],
+          "separation": 10.878756523132324
+        },
+        "framePastHorizon": false
+      },
+      "mode": "packaged",
+      "t": 52386
+    },
+    "fixtures": [
+      {
+        "kind": "m7-fixtures",
+        "case": "A common fork",
+        "pass": true,
+        "address": {
+          "tick": 519,
+          "cursor": 0
+        },
+        "mode": "packaged",
+        "t": 125181
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "B/G/H actual baseline through contacts, births and deaths",
+        "pass": true,
+        "divergence": null,
+        "metrics": {
+          "ticks": 600,
+          "elapsedMs": 357,
+          "batches": [
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "bytes": 29659990,
+          "endpoint": {
+            "tick": 1119,
+            "cursor": 0
+          },
+          "endpointIdentity": "57d5b0cb3e51b7b6"
+        },
+        "mode": "packaged",
+        "t": 125541
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "B no-op alternate and actual pose samples",
+        "pass": true,
+        "divergence": null,
+        "poses": true,
+        "mode": "packaged",
+        "t": 125943
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "N/O real extension preserves old samples",
+        "pass": true,
+        "horizon": 1719,
+        "bytes": 32180426,
+        "mode": "packaged",
+        "t": 126071
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F effective absolute triangle",
+        "pass": true,
+        "divergence": null,
+        "forkTick": 519,
+        "expectedGain": 0.49,
+        "localZeroGain": 0.1975,
+        "expectedDelta": 0.008166666666666666,
+        "actualDelta": 0.008167266845703125,
+        "inside": true,
+        "ticks": 600,
+        "bytes": 29638662,
+        "mode": "packaged",
+        "t": 126770
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "C independent analytic intervention",
+        "pass": true,
+        "y": 1.0020860433578491,
+        "expectedY": 1,
+        "tolerance": 0.016766666666666666,
+        "separation": 1.0020860433578491,
+        "limitedSteps": 0,
+        "mode": "packaged",
+        "t": 126788
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "I retained suffix replay",
+        "pass": true,
+        "expected": {
+          "tick": 120,
+          "cursor": 1
+        },
+        "actual": {
+          "tick": 120,
+          "cursor": 1
+        },
+        "completeStateEqual": true,
+        "engineEqual": true,
+        "mode": "packaged",
+        "t": 126789
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "J/K new alternate and private buffers",
+        "pass": true,
+        "mode": "packaged",
+        "t": 126790
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "P late commit refusal",
+        "pass": true,
+        "horizon": 600,
+        "canceledResult": "canceled",
+        "framePastHorizon": false,
+        "mode": "packaged",
+        "t": 126790
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "Q memory boundary",
+        "pass": true,
+        "bytes": 26802006,
+        "limit": 67108864,
+        "mode": "packaged",
+        "t": 126790
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "L stable identities and absent counterparts",
+        "pass": true,
+        "tick": 8,
+        "kept": {
+          "id": "kept",
+          "tick": 8,
+          "baseline": [
+            2,
+            3,
+            4
+          ],
+          "alternate": [
+            2,
+            3,
+            4
+          ],
+          "separation": 0
+        },
+        "dead": {
+          "id": "dead",
+          "tick": 8,
+          "baseline": [
+            9,
+            9,
+            9
+          ],
+          "alternate": null,
+          "separation": null
+        },
+        "born": {
+          "id": "born",
+          "tick": 8,
+          "baseline": null,
+          "alternate": [
+            5,
+            6,
+            7
+          ],
+          "separation": null
+        },
+        "indexSeparation": 10.488088481701515,
+        "unequalTickRejected": true,
+        "mode": "packaged",
+        "t": 126790
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "D/E independent linear prefix",
+        "pass": true,
+        "mode": "packaged",
+        "t": 126797
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "D/E source tail and inner same-tick cursor excluded",
+        "pass": true,
+        "fork": {
+          "tick": 60,
+          "cursor": 1
+        },
+        "cursor": 1,
+        "sourceCommands": 2,
+        "mode": "packaged",
+        "t": 126800
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "D/E nonvacuous source-tail control",
+        "pass": true,
+        "cleanTick": 180,
+        "contaminatedTick": 180,
+        "lawChanged": true,
+        "mode": "packaged",
+        "t": 126801
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "R twenty cycles",
+        "pass": true,
+        "cycles": [
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          },
+          {
+            "worlds": 1,
+            "generation": 3,
+            "buffers": 8,
+            "frames": 21,
+            "identities": 1,
+            "bytes": 26781542,
+            "suffix": 0,
+            "suffixBytes": 0,
+            "historyBytes": 0,
+            "horizon": 200
+          }
+        ],
+        "worlds": {
+          "allocated": 2,
+          "peak": 6
+        },
+        "mode": "packaged",
+        "t": 126810
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F1 paused boundary 0",
+        "pass": true,
+        "mode": "packaged",
+        "t": 126811
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F1 paused boundary 73",
+        "pass": true,
+        "mode": "packaged",
+        "t": 126812
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F1 frame budget 2",
+        "pass": true,
+        "budget": 2,
+        "steps": 1,
+        "samples": 1,
+        "address": {
+          "tick": 1,
+          "cursor": 2
+        },
+        "playing": false,
+        "mode": "packaged",
+        "t": 126819
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F1 frame budget 8",
+        "pass": true,
+        "budget": 8,
+        "steps": 1,
+        "samples": 1,
+        "address": {
+          "tick": 1,
+          "cursor": 2
+        },
+        "playing": false,
+        "mode": "packaged",
+        "t": 126824
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 immediate refusal replay 0/false",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127020
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 editing after New 0/false",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127020
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 immediate refusal replay 0/true",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127144
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 editing after New 0/true",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127144
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 immediate refusal replay 7/false",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127384
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 editing after New 7/false",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127384
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 immediate refusal replay 7/true",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127508
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F2 editing after New 7/true",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127509
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F3 completed-step probes and late negative control",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127542
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F4 importable title 8180",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127543
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F4 importable title 8181",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127544
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F4 importable title 8192",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127544
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "source law presentation",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127545
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F5 comparison fault recovery",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127545
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "F5 close returns retained source",
+        "pass": true,
+        "mode": "packaged",
+        "t": 127545
+      },
+      {
+        "kind": "m7-fixtures",
+        "case": "resources released",
+        "pass": true,
+        "outside": 1,
+        "after": {
+          "allocated": 1,
+          "peak": 6
+        },
+        "mode": "packaged",
+        "t": 127545
+      },
+      {
+        "kind": "m7-fixtures",
+        "complete": true,
+        "mode": "packaged",
+        "t": 127545
+      }
+    ],
+    "caseCount": 35,
+    "resourceCycles": [
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 141222
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 155154
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 169304
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 183422
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 197571
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 211771
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 225937
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 240221
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 254421
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 268721
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 283121
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 297471
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 311921
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 326304
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 340855
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 355237
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 369804
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 385587
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 400537
+      },
+      {
+        "kind": "visual-resources",
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 6,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "mode": "packaged",
+        "t": 416704
+      }
+    ],
+    "returnedSource": {
+      "kind": "layout",
+      "playing": false,
+      "authority": {
+        "tick": 0,
+        "cursor": 0,
+        "stateHash": "5c1105c0661578a4",
+        "engineHash": "6418751f337aef28"
+      },
+      "viewport": [
+        1280,
+        800
+      ],
+      "devicePixelRatio": 2,
+      "controls": {
+        "drag-region": [
+          0,
+          0,
+          696,
+          40
+        ],
+        "tools": [
+          704,
+          5,
+          564,
+          30
+        ],
+        "undo": [
+          704,
+          5,
+          75.7,
+          28
+        ],
+        "redo": [
+          783.8,
+          5,
+          81.1,
+          28
+        ],
+        "frame-view": [
+          1098.3,
+          5,
+          74.3,
+          28
+        ],
+        "reset-view": [
+          1180.7,
+          5,
+          87.3,
+          28
+        ],
+        "panel": [
+          12,
+          52,
+          284,
+          598
+        ],
+        "file-new": [
+          25,
+          -200.7,
+          44.9,
+          28
+        ],
+        "file-open": [
+          75.9,
+          -200.7,
+          61.1,
+          28
+        ],
+        "file-save": [
+          143,
+          -200.7,
+          47.1,
+          28
+        ],
+        "file-save-as": [
+          196.1,
+          -200.7,
+          76.4,
+          28
+        ],
+        "add-directional": [
+          96.3,
+          8,
+          46,
+          24
+        ],
+        "add-softRadial": [
+          146.3,
+          8,
+          38.1,
+          24
+        ],
+        "add-vortexY": [
+          188.4,
+          8,
+          45.4,
+          24
+        ],
+        "add-linearDrag": [
+          237.8,
+          8,
+          45.2,
+          24
+        ],
+        "arrows-toggle": [
+          227,
+          91.2,
+          56,
+          24
+        ],
+        "details": [
+          13,
+          147.3,
+          282,
+          711.1
+        ],
+        "law-duplicate": [
+          144.5,
+          158.3,
+          75.3,
+          28
+        ],
+        "law-delete": [
+          225.8,
+          158.3,
+          57.2,
+          28
+        ],
+        "law-label": [
+          107,
+          194.3,
+          176,
+          26
+        ],
+        "support-box": [
+          108,
+          354.9,
+          37,
+          24
+        ],
+        "support-sphere": [
+          145,
+          354.9,
+          57.1,
+          24
+        ],
+        "support-cylinderY": [
+          202.1,
+          354.9,
+          63.9,
+          24
+        ],
+        "law-fade": [
+          25,
+          675.1,
+          125,
+          26
+        ],
+        "ingredient-up": null,
+        "motion": [
+          13,
+          858.5,
+          282,
+          221.5
+        ],
+        "explain-nearest": [
+          162.7,
+          869.5,
+          120.3,
+          24
+        ],
+        "probe-count": [
+          25,
+          1001.8,
+          125,
+          26
+        ],
+        "probe-seed": [
+          158,
+          1001.8,
+          125,
+          26
+        ],
+        "explain": null,
+        "explain-close": null,
+        "explain-applied": null,
+        "explain-preview": null,
+        "transport": [
+          830.2,
+          746,
+          437.8,
+          42
+        ],
+        "play": [
+          837.2,
+          753,
+          96,
+          28
+        ],
+        "step": [
+          941.2,
+          753,
+          64.4,
+          28
+        ],
+        "reset": [
+          1013.5,
+          753,
+          77.5,
+          28
+        ],
+        "run": [
+          834.1,
+          52,
+          433.9,
+          89.6
+        ],
+        "run-timeline": null,
+        "run-record": [
+          845.1,
+          104.6,
+          134,
+          28
+        ],
+        "run-stop": null,
+        "run-replay": null,
+        "run-restart": null,
+        "run-return": null,
+        "run-save": null,
+        "run-open": [
+          985.1,
+          104.6,
+          126.6,
+          28
+        ],
+        "compare-from": [
+          1117.7,
+          104.6,
+          139.3,
+          28
+        ],
+        "run-cancel": null,
+        "comparison": null,
+        "baseline-compute": null,
+        "baseline-cancel": null,
+        "baseline-extend": null,
+        "alternate-replay": null,
+        "alternate-new": null,
+        "baseline-ghosts": null,
+        "alternate-export": null,
+        "comparison-close": null,
+        "overlays": [
+          853.8,
+          692,
+          414.2,
+          44
+        ],
+        "arrows-every": [
+          861.8,
+          700,
+          77.4,
+          28
+        ],
+        "arrows-selected": [
+          939.2,
+          700,
+          95.8,
+          28
+        ],
+        "probes-toggle": [
+          1042,
+          699,
+          64.5,
+          28
+        ],
+        "trail-mode": [
+          1112.5,
+          699,
+          148.5,
+          30
+        ],
+        "trails-off": [
+          1113.5,
+          700,
+          61.7,
+          28
+        ],
+        "trails-selected": [
+          1175.2,
+          700,
+          50,
+          28
+        ],
+        "trails-all": [
+          1225.2,
+          700,
+          34.8,
+          28
+        ],
+        "recovery-offer": null,
+        "recovery-discard": null,
+        "recovery-accept": null,
+        "diagnostics": [
+          12,
+          638,
+          532,
+          150
+        ],
+        "sim-error-reset": null,
+        "mode-translate": [
+          873.8,
+          6,
+          67.1,
+          28
+        ],
+        "mode-rotate": [
+          940.9,
+          6,
+          74.9,
+          28
+        ],
+        "mode-scale": [
+          1015.8,
+          6,
+          73.5,
+          28
+        ]
+      },
+      "laws": [
+        {
+          "id": "sideways",
+          "label": "Sideways",
+          "select": [
+            25,
+            40,
+            172,
+            41.2
+          ],
+          "visible": [
+            201,
+            40,
+            34,
+            41.2
+          ],
+          "enabled": [
+            239,
+            40,
+            44,
+            41.2
+          ]
+        }
+      ],
+      "inputs": {
+        "law-label": [
+          107,
+          194.3,
+          176,
+          26
+        ],
+        "Position x": [
+          25,
+          273.1,
+          74,
+          26
+        ],
+        "Position y": [
+          105,
+          273.1,
+          55.3,
+          26
+        ],
+        "Position z": [
+          166.3,
+          273.1,
+          55.3,
+          26
+        ],
+        "Rotation about x": [
+          25,
+          321.9,
+          74,
+          26
+        ],
+        "Rotation about y": [
+          105,
+          321.9,
+          55.3,
+          26
+        ],
+        "Rotation about z": [
+          166.3,
+          321.9,
+          55.3,
+          26
+        ],
+        "Half extent x": [
+          25,
+          429.5,
+          125,
+          26
+        ],
+        "Half extent y": [
+          158,
+          429.5,
+          125,
+          26
+        ],
+        "Half extent z": [
+          25,
+          505.1,
+          125,
+          26
+        ],
+        "Strength": [
+          25,
+          622.3,
+          125,
+          26
+        ],
+        "law-fade": [
+          25,
+          675.1,
+          125,
+          26
+        ]
+      },
+      "swatches": {
+        "#55aaa4": [
+          107,
+          228.3,
+          20,
+          20
+        ],
+        "#c58ae5": [
+          135,
+          228.3,
+          20,
+          20
+        ],
+        "#d9a35b": [
+          163,
+          228.3,
+          20,
+          20
+        ],
+        "#7aa7d9": [
+          191,
+          228.3,
+          20,
+          20
+        ]
+      },
+      "ingredients": {
+        "law": "sideways",
+        "level": null,
+        "focus": null,
+        "shelf": {
+          "directional": [
+            100.2,
+            724.1,
+            46,
+            24
+          ],
+          "softRadial": [
+            150.2,
+            724.1,
+            38.1,
+            24
+          ],
+          "vortexY": [
+            192.3,
+            724.1,
+            45.4,
+            24
+          ],
+          "linearDrag": [
+            241.8,
+            724.1,
+            45.2,
+            24
+          ]
+        },
+        "rows": [],
+        "buttons": [],
+        "fields": [],
+        "live": [],
+        "up": null,
+        "detail": null,
+        "note": "Add one to combine it with this law\u2019s primitive.",
+        "box": [
+          25,
+          713.1,
+          258,
+          59.7
+        ]
+      },
+      "selected": "sideways",
+      "selectedField": {
+        "id": "sideways",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            50,
+            10,
+            10
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0
+        }
+      },
+      "arrows": 0,
+      "transformMode": "translate",
+      "support": [
+        -265051.7,
+        -133586.8,
+        4975.8,
+        1173
+      ],
+      "handles": [
+        {
+          "name": "X",
+          "points": [
+            [
+              468.5,
+              457.3
+            ]
+          ]
+        },
+        {
+          "name": "X",
+          "points": [
+            [
+              570.9,
+              474.2
+            ]
+          ]
+        },
+        {
+          "name": "Y",
+          "points": [
+            [
+              521,
+              517.3
+            ]
+          ]
+        },
+        {
+          "name": "Y",
+          "points": [
+            [
+              516.1,
+              411.6
+            ]
+          ]
+        },
+        {
+          "name": "Z",
+          "points": [
+            [
+              544.5,
+              444.9
+            ]
+          ]
+        },
+        {
+          "name": "Z",
+          "points": [
+            [
+              489.9,
+              488.4
+            ]
+          ]
+        },
+        {
+          "name": "XYZ",
+          "points": [
+            [
+              518.6,
+              465.5
+            ]
+          ]
+        },
+        {
+          "name": "XY",
+          "points": [
+            [
+              543.5,
+              442.9
+            ]
+          ]
+        },
+        {
+          "name": "YZ",
+          "points": [
+            [
+              503.2,
+              449.4
+            ]
+          ]
+        },
+        {
+          "name": "XZ",
+          "points": [
+            [
+              531.1,
+              481.2
+            ]
+          ]
+        }
+      ],
+      "lawHandles": [],
+      "explained": null,
+      "scroll": {
+        "panel": {
+          "scrollWidth": 282,
+          "clientWidth": 282,
+          "scrollHeight": 1344,
+          "clientHeight": 596,
+          "scrollTop": 317
+        },
+        "explain": {
+          "scrollWidth": 0,
+          "clientWidth": 0,
+          "scrollHeight": 0,
+          "clientHeight": 0,
+          "scrollTop": 0
+        }
+      },
+      "visualization": {
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 3,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        },
+        "render": {
+          "geometries": 31,
+          "textures": 5,
+          "objects": 115
+        },
+        "probes": {
+          "enabled": false,
+          "count": 2000,
+          "seed": 1,
+          "live": 0
+        },
+        "trails": {
+          "mode": "selected",
+          "count": 0
+        },
+        "explained": null,
+        "explainMode": "applied",
+        "arrowScope": "all",
+        "bytes": {
+          "probePositions": 48000,
+          "probeVelocities": 48000,
+          "probeAlive": 2000,
+          "probeBirths": 16000,
+          "trailPositions": 115200,
+          "trailTicks": 76800,
+          "trailRings": 256,
+          "probeInstances": 128000,
+          "trailLinePositions": 229632,
+          "trailLineColors": 229632,
+          "shareLines": 3168,
+          "shareInstances": 5016
+        },
+        "totalBytes": 901704,
+        "drawn": {
+          "trailVertices": 0,
+          "probeInstances": 0,
+          "shareArrows": 0
+        },
+        "comparison": null,
+        "ghostsShown": true
+      },
+      "comparison": null,
+      "run": {
+        "state": "idle",
+        "title": "Recording",
+        "status": "Resets the motion to tick 0, then records what you change.",
+        "check": null,
+        "meter": null,
+        "box": [
+          834.1,
+          52,
+          433.9,
+          89.6
+        ],
+        "buttons": {
+          "record": [
+            845.1,
+            104.6,
+            134,
+            28
+          ],
+          "stop": null,
+          "replay": null,
+          "restart": null,
+          "return": null,
+          "cancel": null,
+          "save": null,
+          "open": [
+            985.1,
+            104.6,
+            126.6,
+            28
+          ]
+        },
+        "recording": null,
+        "record": null,
+        "replay": null,
+        "timeline": null,
+        "seeking": null,
+        "contexts": {
+          "worlds": 1,
+          "peakWorlds": 3,
+          "authoring": 1,
+          "replay": 0,
+          "candidates": 0,
+          "seeking": 0,
+          "checkpoints": 0,
+          "checkpointBytes": 0,
+          "selected": "authoring",
+          "recording": "idle",
+          "comparison": null
+        }
+      },
+      "camera": [
+        10,
+        9.000000000000004,
+        18
+      ],
+      "viewProjection": [
+        1.406286448893799,
+        -0.2981680629819701,
+        -0.34092513102337657,
+        -0.34075466845786484,
+        2.0939964713351025e-17,
+        2.269728316168873,
+        -0.34092513102337674,
+        -0.340754668457865,
+        -0.5468891745698106,
+        -0.7667178762393516,
+        -0.8766646226315397,
+        -0.8762262903202238,
+        -4.218859346681398,
+        -3.644952443391835,
+        22.157490671799362,
+        22.246411926463463
+      ],
+      "bodies": [
+        {
+          "id": "traveler",
+          "world": [
+            0,
+            0,
+            0
+          ],
+          "point": [
+            518.6,
+            465.5
+          ]
+        }
+      ],
+      "mode": "packaged",
+      "t": 68289
+    }
+  },
+  "P3": {
+    "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+    "P3": "PASS",
+    "worstPercentiles": {
+      "stepMs": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "workMs": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "intervalMs": [
+        17,
+        18,
+        18,
+        19
+      ],
+      "editMs": [
+        18,
+        19,
+        20,
+        20
+      ]
+    },
+    "construction": [
+      {
+        "kind": "comparison",
+        "action": "baseline-committed",
+        "worlds": 1,
+        "generation": 1,
+        "buffers": 8,
+        "frames": 601,
+        "identities": 100,
+        "bytes": 29623761,
+        "suffix": 0,
+        "suffixBytes": 0,
+        "historyBytes": 0,
+        "horizon": 600,
+        "metrics": {
+          "ticks": 600,
+          "elapsedMs": 125,
+          "batches": 14,
+          "bytes": 29623761,
+          "endpoint": {
+            "tick": 600,
+            "cursor": 0
+          },
+          "endpointIdentity": "d9718dd154480385",
+          "batchMs": [
+            8,
+            8,
+            8,
+            8
+          ]
+        },
+        "mode": "packaged",
+        "t": 25123
+      },
+      {
+        "kind": "comparison",
+        "action": "baseline-committed",
+        "worlds": 1,
+        "generation": 2,
+        "buffers": 11,
+        "frames": 7201,
+        "identities": 100,
+        "bytes": 50770421,
+        "suffix": 0,
+        "suffixBytes": 0,
+        "historyBytes": 0,
+        "horizon": 7200,
+        "metrics": {
+          "ticks": 7200,
+          "elapsedMs": 1060,
+          "batches": 123,
+          "bytes": 50770421,
+          "endpoint": {
+            "tick": 7200,
+            "cursor": 0
+          },
+          "endpointIdentity": "9d1787d38e3cc24d",
+          "batchMs": [
+            8,
+            8,
+            8,
+            8
+          ]
+        },
+        "mode": "packaged",
+        "t": 26823
+      }
+    ],
+    "qualification": {
+      "kind": "qualification",
+      "identity": {
+        "app": "Lawsmith 0.0.0",
+        "build": "packaged",
+        "bundle": "index-DsgD8sW5.js sha256:abf7bc7d07e211663b9b4ef6ad5180be1b45dcb0d65b2b3f396243aab992559a",
+        "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.37.1",
+        "webkit": "22625.2.7.1",
+        "os": "macOS 27.2 (26B5101f)",
+        "arch": "aarch64"
+      },
+      "qualified": true,
+      "fingerprint": {
+        "profile": "lawsmith-m1-rapier-0.21.0",
+        "rapier": "0.21.0",
+        "rapierWasmSha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b",
+        "effective": {
+          "dt": 0.008333333767950535,
+          "numSolverIterations": 4,
+          "numInternalPgsIterations": 1,
+          "maxCcdSubsteps": 1,
+          "lengthUnit": 1,
+          "normalizedAllowedLinearError": 0.004999999888241291,
+          "normalizedPredictionDistance": 0.019999999552965164,
+          "contactErp": 0.0728205069899559
+        },
+        "fieldKernel": "affine-ak-v2",
+        "commands": "lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick",
+        "step": "1/120"
+      },
+      "mode": "packaged",
+      "t": 126
+    },
+    "backend": {
+      "kind": "backend",
+      "backend": "WebGPU",
+      "coordinateSystemIsWebGPU": true,
+      "compatibilityMode": false,
+      "samples": 4,
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "apple",
+        "device": "apple",
+        "description": "apple"
+      },
+      "features": [
+        "bgra8unorm-storage",
+        "clip-distances",
+        "core-features-and-limits",
+        "depth-clip-control",
+        "depth32float-stencil8",
+        "float32-blendable",
+        "float32-filterable",
+        "indirect-first-instance",
+        "rg11b10ufloat-renderable",
+        "shader-f16",
+        "texture-compression-astc",
+        "texture-compression-astc-sliced-3d",
+        "texture-compression-bc",
+        "texture-compression-bc-sliced-3d",
+        "texture-compression-etc2",
+        "texture-formats-tier1",
+        "texture-formats-tier2",
+        "timestamp-query"
+      ],
+      "mode": "packaged",
+      "t": 128
+    },
+    "measurementLimits": "CPU submission/callback timing, managed resources; not GPU-execution or process-RSS proof."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "m2-guard",
+  "label": "m2-guard-replay-panel",
+  "startedAtUTC": "2026-10-10T23:56:28.675669+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 450,
+  "ownedProcessGroup": 30585,
+  "exitCode": 0,
+  "elapsedSeconds": 309.28637981414795,
+  "finishedAtUTC": "2026-10-11T00:01:37.962057+00:00"
+}

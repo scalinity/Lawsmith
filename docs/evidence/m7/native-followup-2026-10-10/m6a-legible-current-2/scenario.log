@@ -1,0 +1,26 @@
+[qa 18:26:45] segment: the recording controls at 1280×800 and at the minimum window
+[qa 18:26:46] display → 1728×1117: set 1728x1117@60
+[qa 18:26:53] launched pid 91267, window at 224,104, log m6a-legible.log
+[qa 18:27:10] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "c2946dec66ba469d", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] the content viewport is 1280×800 CSS, the Storm Bottle selected
+[qa 18:27:11] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "c2946dec66ba469d", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] idle at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:27:11] run cluster idle at 1280×800: [834.1, 52, 433.9, 89.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 18:27:11] captured m6a-1280x800-idle.png
+[qa 18:27:17] PASS {"kind": "layout", "playing": true, "authority": {"tick": 317, "cursor": 0, "stateHash": "ec7953c19418bb49", "engineHash": "49c31ce04fbf89d5"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":  [layout] recording at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:27:17] run cluster recording at 1280×800: [988.9, 52, 279.1, 97.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 18:27:18] captured m6a-1280x800-recording.png
+[qa 18:27:20] the synthetic click on play was lost (no sim-control event); sending it again
+[qa 18:27:25] PASS {"kind": "layout", "playing": false, "authority": {"tick": 916, "cursor": 0, "stateHash": "3ccd7d7a7e527166", "engineHash": "b2a1188b76ef8d72"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] recorded at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:27:25] run cluster recorded at 1280×800: [828, 52, 440, 123.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 18:27:39] PASS {"kind": "layout", "playing": false, "authority": {"tick": 916, "cursor": 0, "stateHash": "3ccd7d7a7e527166", "engineHash": "b2a1188b76ef8d72"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] replay at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 18:27:39] run cluster replay at 1280×800: [828, 52, 440, 172.3]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 18:27:40] captured m6a-1280x800-replay-end.png
+[qa 18:27:42] PASS {"kind": "layout", "playing": false, "authority": {"tick": 916, "cursor": 0, "stateHash": "3ccd7d7a7e527166", "engineHash": "b2a1188b76ef8d72"}, "viewport": [900, 600], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 316, 40], "tools": [324, 5, 564, 30], "undo": [324, 5, 75.7, 28], "redo":  [layout] replay at 900×600: the recording controls are inside the window and clear of every other UI region
+[qa 18:27:42] run cluster replay at 900×600: [448, 52, 440, 172.3]; selected support [432.4, 183.6, 667.8, 478.3]
+[qa 18:27:42] captured m6a-900x600-replay-end.png
+[qa 18:27:45] PASS {"kind": "layout", "playing": false, "authority": {"tick": 916, "cursor": 0, "stateHash": "3ccd7d7a7e527166", "engineHash": "b2a1188b76ef8d72"}, "viewport": [900, 600], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 316, 40], "tools": [324, 5, 564, 30], "undo": [324, 5, 75.7, 28], "redo":  [layout] recorded at 900×600: the recording controls are inside the window and clear of every other UI region
+[qa 18:27:45] run cluster recorded at 900×600: [448, 52, 440, 123.6]; selected support [432.4, 183.6, 667.8, 478.3]
+[qa 18:27:49] the guard asks about the recording
+[qa 18:27:51] display → 1168×755: set 1168x755@60
+[qa 18:27:54] display restored to 1168x755@60
+[qa 18:27:54] m6a-legible complete
+[qa 18:27:54] display restored to 1168x755@60

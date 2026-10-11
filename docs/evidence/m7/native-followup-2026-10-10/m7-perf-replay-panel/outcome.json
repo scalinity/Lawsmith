@@ -1,0 +1,12 @@
+{
+  "scenario": "m7-perf",
+  "label": "m7-perf-replay-panel",
+  "startedAtUTC": "2026-10-10T23:01:52.763671+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 360,
+  "ownedProcessGroup": 71969,
+  "exitCode": 0,
+  "elapsedSeconds": 260.3285539150238,
+  "finishedAtUTC": "2026-10-10T23:06:13.092229+00:00"
+}

@@ -1,0 +1,63 @@
+{
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "codeTree": "447e723a1871b186d826d9789f91c2ef3bae4ff8",
+  "packagedBuildExit": 0,
+  "packagedExecution": "PENDING new native runs after displayed-panel repair",
+  "architecture": "arm64",
+  "macOS": [
+    "ProductName: macOS",
+    "ProductVersion: 27.2",
+    "BuildVersion: 26B5101f"
+  ],
+  "startupFaultStrings": {
+    "VITE_LAWSMITH_FAULT": "ABSENT",
+    "rapier-hang": "ABSENT"
+  },
+  "artifacts": [
+    {
+      "path": "dist/assets/index-BlGEIOdO.css",
+      "bytes": 17749,
+      "sha256": "ef53f48a1b4fbcacd1ae3c69dfbf8f7537f91a9735e5fd52a56fa3dc494acaff"
+    },
+    {
+      "path": "dist/assets/index-DsgD8sW5.js",
+      "bytes": 5578645,
+      "sha256": "abf7bc7d07e211663b9b4ef6ad5180be1b45dcb0d65b2b3f396243aab992559a"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 16385,
+      "sha256": "1fb4d211e48ca32e047b9efd73f6d1c947ffcb35cd20eb8efb1b4b889ab62f21"
+    },
+    {
+      "path": "src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/lawsmith",
+      "bytes": 14094432,
+      "sha256": "ac502de9440254ec184734e1082e70e017603ed8192df6af95d7a64260e1381a"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 58772,
+      "sha256": "aa9f8966a5e92578daf11ad0080f9d94499f2196b0488320a7673d4ad5726942"
+    },
+    {
+      "path": "src-tauri/Cargo.lock",
+      "bytes": 109849,
+      "sha256": "4d29fd4c326adc35ba20a67a64e07cdc1d383f96d8cb9d5db4c2997ac9aeb463"
+    },
+    {
+      "path": "src/fields/kernel.ts",
+      "bytes": 9295,
+      "sha256": "32e5f3b9f41034d65e5de6ed7db80b4f826fc6486873f085366a1f4239f9a248"
+    },
+    {
+      "path": "src/simulation/host.ts",
+      "bytes": 46701,
+      "sha256": "721bce82a1b9572af716c31b996eb9ac6a88b4304cfe4b16f530a516745db9f6"
+    },
+    {
+      "path": "node_modules/@dimforge/rapier3d-compat/dist/rapier_wasm3d_bg.wasm",
+      "bytes": 3082103,
+      "sha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b"
+    }
+  ]
+}

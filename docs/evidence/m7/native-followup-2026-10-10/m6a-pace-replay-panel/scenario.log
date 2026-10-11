@@ -1,0 +1,14 @@
+[qa 19:14:37] segment: P1 recorded with drags, then replayed, at 1600×1000 under More Space (about 3 minutes)
+[qa 19:14:52] display → 1728×1117: set 1728x1117@60
+[qa 19:14:59] launched pid 34650, window at 224,104, log m6a-pace.log
+[qa 19:15:16] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5ab0e73ecbf92e4c", "engineHash": "c3d5dc76e8887771"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] the content viewport is 1600×1000 CSS, drag-0 selected
+[qa 19:16:01] PASS {"kind": "recording", "action": "stopped", "runId": "run-f458381e-2b82-4b6b-8672-5115b0485705", "title": "P1 Workshop", "commands": 96, "finalTick": 4969, "lastAppliedSequence": 96, "stopped": "user", "finalCheck": {"stateSha256": "1b8f16b1ac2ecda3264bfdd640759c8fafa95cc4301880b7092fd6e99045376c", "  [recording] P1 recorded with its drags, stopped by the user
+[qa 19:16:01] while recording: {"lines": 9, "intervalP95Max": 18, "intervalP99Max": 18, "stepP95Max": 2, "stepP99Max": 5, "editP95Max": 10, "simWallMin": 0.115, "droppedMs": 0, "bodies": 200}
+[qa 19:16:45] PASS {"kind": "replay-complete", "runId": "run-f458381e-2b82-4b6b-8672-5115b0485705", "tick": 4969, "cursor": 96, "finalTick": 4969, "lastAppliedSequence": 96, "check": {"kind": "match"}, "stateSha256": "1b8f16b1ac2ecda3264bfdd640759c8fafa95cc4301880b7092fd6e99045376c", "engineSha256": "994320bf753b65bfd  [replay-complete] the P1 replay reached the recorded end exactly
+[qa 19:16:45] while replaying: {"lines": 9, "intervalP95Max": 18, "intervalP99Max": 19, "stepP95Max": 2, "stepP99Max": 2, "editP95Max": 10, "simWallMin": 0.242, "droppedMs": 0, "bodies": 200}
+[qa 19:16:50] the guard asks about the scene
+[qa 19:16:53] the guard asks about the recording
+[qa 19:16:54] display → 1168×755: set 1168x755@60
+[qa 19:16:57] display restored to 1168x755@60
+[qa 19:16:57] m6a-pace complete
+[qa 19:16:58] display restored to 1168x755@60

@@ -1,0 +1,30 @@
+{
+  "candidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "review": "direct whole-window screenshots and contact sheets; critical publication intervals selected from native event times; raw privacy-sensitive tails/prefixes remain outside Git",
+  "excerpts": [
+    {
+      "producingCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+      "original": "m7-compare-replay-panel/m7-two-futures.mp4",
+      "originalSha256": "5cb4ec98e6a4836d7ab9067fd955054b2bba6e8820320a59a8621beb8b1ab539",
+      "public": "m7-compare-replay-panel/m7-two-futures-public.mp4",
+      "originalIntervalSeconds": [
+        0,
+        38
+      ],
+      "transform": "continuous time excerpt; no spatial crop, overlays, retiming or invented frames",
+      "reason": "exclude later native file-panel/sidebar and nonfunctional device notification after the full Compare/edit/ghost/Replay/New sequence"
+    },
+    {
+      "producingCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+      "original": "m6a-record-replay-panel/m6a-replay.mp4",
+      "originalSha256": "6e8f3ad2c116284f74319433b5da0cb8c47adeb71c0ae8a3d5b6e7971f04cafb",
+      "public": "m6a-record-replay-panel/m6a-replay-public.mp4",
+      "originalIntervalSeconds": [
+        35,
+        80
+      ],
+      "transform": "continuous time excerpt; no spatial crop, overlays, retiming or invented frames",
+      "reason": "exclude native panel sidebar and other-app pixels during the deliberate Hide test; retain resumed replay through the exact end"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "m6b-seek",
+  "label": "m6b-seek-replay-panel",
+  "startedAtUTC": "2026-10-10T23:16:58.077865+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 360,
+  "ownedProcessGroup": 44076,
+  "exitCode": 0,
+  "elapsedSeconds": 228.57634091377258,
+  "finishedAtUTC": "2026-10-10T23:20:46.654212+00:00"
+}

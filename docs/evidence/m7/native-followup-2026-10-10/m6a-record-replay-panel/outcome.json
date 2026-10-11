@@ -1,0 +1,12 @@
+{
+  "scenario": "m6a-record",
+  "label": "m6a-record-replay-panel",
+  "startedAtUTC": "2026-10-10T23:08:09.474636+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 360,
+  "ownedProcessGroup": 314,
+  "exitCode": 0,
+  "elapsedSeconds": 308.3505709171295,
+  "finishedAtUTC": "2026-10-10T23:13:17.825212+00:00"
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "m6a-legible",
+  "label": "m6a-legible-current-1",
+  "startedAtUTC": "2026-10-10T22:24:10.357379+00:00",
+  "codeCandidate": "a6621ea12f4f73cb00908b9abb4490dfcb95b0ac",
+  "evidenceSourceHead": "a6621ea12f4f73cb00908b9abb4490dfcb95b0ac",
+  "timeoutSeconds": 240,
+  "ownedProcessGroup": 91582,
+  "exitCode": 1,
+  "elapsedSeconds": 48.476847887039185,
+  "finishedAtUTC": "2026-10-10T22:24:58.834238+00:00"
+}

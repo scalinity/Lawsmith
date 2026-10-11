@@ -1,0 +1,12 @@
+{
+  "scenario": "m6a-legible",
+  "label": "m6a-legible-replay-panel",
+  "startedAtUTC": "2026-10-10T23:13:17.855999+00:00",
+  "codeCandidate": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "evidenceSourceHead": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "timeoutSeconds": 180,
+  "ownedProcessGroup": 27696,
+  "exitCode": 0,
+  "elapsedSeconds": 78.93965315818787,
+  "finishedAtUTC": "2026-10-10T23:14:36.795657+00:00"
+}

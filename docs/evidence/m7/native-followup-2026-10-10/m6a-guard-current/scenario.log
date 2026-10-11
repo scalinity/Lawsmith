@@ -1,0 +1,14 @@
+[qa 18:46:47] segment: a recording and a dirty scene; Quit from authoring
+[qa 18:47:07] launched pid 95611, window at 0,21, log m6a-guard.log
+[qa 18:47:25] PASS {"kind": "control", "duplicate": "push", "created": "push-2", "reason": null, "laws": 4, "mode": "packaged", "t": 21903}  [control] a law created during the recording
+[qa 18:47:38] PASS {"kind": "control", "law": "calm", "enabled": false, "revision": 4, "mode": "packaged", "t": 34867}  [control] the scene is edited after the recording: dirty
+[qa 18:47:41] the guard asks about the scene
+[qa 18:47:43] the guard asks about the recording
+[qa 18:47:44] PASS  [guard] the scene was asked first (Discard, staged), then the recording (Cancel): [["scene", "discard"], ["recording", "cancel"]]
+[qa 18:47:45] PASS {"kind": "layout", "playing": false, "authority": {"tick": 876, "cursor": 4, "stateHash": "7d732ccb792d3991", "engineHash": "516a09da98e1a987"}, "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo"  [layout] the recording is kept, unsaved, in authoring
+[qa 18:47:45] PASS  [recovery] the staged Discard was not committed: the recovery snapshots are still there (current.lawsmith-recovery.json
+previous.lawsmith-recovery.json)
+[qa 18:47:46] captured guard-01-canceled.png
+[qa 18:47:46] segment: from replay: Save Recording, then Cancel the scene
+[qa 18:48:10] FAIL {"kind": "layout", "playing": false, "authority": {"tick": 395, "cursor": 2, "stateHash": "347d6426ad11aeed", "engineHash": "abbb40d5a2186f48"}, "viewport": [1168, 734], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 584, 40], "tools": [592, 5, 564, 30], "undo": [592, 5, 75.7, 28], "redo"  [layout] the replay names the law the recording created as its record carries it, not by its ID
+[qa 18:48:10] FAIL: expectation failed: the replay names the law the recording created as its record carries it, not by its ID

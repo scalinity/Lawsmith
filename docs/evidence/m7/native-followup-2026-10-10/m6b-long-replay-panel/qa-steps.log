@@ -1,0 +1,32 @@
+[qa 19:20:46] segment: P1 recorded with drags until the 60 s limit, at 1600×1000 under More Space
+[qa 19:20:57] display → 1728×1117: set 1728x1117@60
+[qa 19:21:04] launched pid 64880, window at 224,104, log m6b-long.log
+[qa 19:21:21] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5ab0e73ecbf92e4c", "engineHash": "c3d5dc76e8887771"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] the content viewport is 1600×1000 CSS, drag-0 selected
+[qa 19:22:33] PASS {"kind": "recording", "action": "stopped", "runId": "run-25d07381-d35b-415c-8169-15287dbfaa69", "title": "P1 Workshop", "commands": 144, "finalTick": 7200, "lastAppliedSequence": 144, "stopped": "duration", "finalCheck": {"stateSha256": "b474c781bf80d891c579a56fa4da1a08cf54b130941dbe0846ba8bd18e1063  [recording] the P1 recording closed itself at exactly 60 s
+[qa 19:22:34] segment: a seek left pending at Return to authoring; another canceled once its progress shows
+[qa 19:22:52] recording m6b-long for 100 s (overlay windows skipped by the hit test: 2438)
+[qa 19:22:57] PASS {"kind": "context", "reason": "return", "worlds": 1, "peakWorlds": 3, "authoring": 1, "replay": 0, "candidates": 0, "seeking": 0, "checkpoints": 12, "checkpointBytes": 4412347, "selected": "authoring", "recording": "recorded", "comparison": null, "tick": 7200, "cursor": 168, "runId": null, "qualifie  [context] Return to authoring while the seek was pending: authoring, one world
+[qa 19:23:00] PASS {"kind": "seek", "action": "canceled", "id": 1, "reason": "return", "target": {"tick": 7200, "cursor": 144}, "elapsedMs": 2472, "source": {"kind": "root", "address": {"tick": 0, "cursor": 0}}, "steps": 3076, "batches": 266, "maxBatchMs": 15, "workMs": 2181, "restoreMs": 6, "progressShownAfterMs": 10  [seek] the pending seek ended with Return and never committed
+[qa 19:23:00] PASS  [m6bq deferred] Play pressed twice during the seek only toggled playing from its target; nothing played the displayed replay: 1: ['play-on-commit', 'pause-on-commit'] (expected ['play-on-commit', 'pause-on-commit']); played while pending []; ended canceled
+[qa 19:23:00] PASS  [context-live] the retained authoring world is exactly as it was when the replay began: {'tick': (7200, 7200), 'cursor': (168, 168), 'revision': (168, 168)}
+[qa 19:23:00] captured long-01-returned.png
+[qa 19:23:05] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5ab0e73ecbf92e4c", "engineHash": "c3d5dc76e8887771"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] seeking: the status names the requested tick and its progress, the replay still shows tick 0
+[qa 19:23:05] captured long-02-progress.png
+[qa 19:23:06] PASS {"kind": "seek", "action": "canceled", "id": 2, "reason": "cancel", "target": {"tick": 7200, "cursor": 144}, "elapsedMs": 2168, "source": {"kind": "checkpoint", "address": {"tick": 2880, "cursor": 57}}, "steps": 2160, "batches": 228, "maxBatchMs": 16, "workMs": 1884, "restoreMs": 13, "progressShownA  [seek] Cancel seek ended it, with its progress shown after 100 ms
+[qa 19:23:07] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "5ab0e73ecbf92e4c", "engineHash": "c3d5dc76e8887771"}, "viewport": [1600, 1000], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 1016, 40], "tools": [1024, 5, 564, 30], "undo": [1024, 5, 75.7, 28], "red  [layout] after Cancel: the same replay at tick 0, paused, no seek world, the timeline back at 0
+[qa 19:23:07] captured long-03-canceled.png
+[qa 19:23:07] segment: a newer request supersedes a long reconstruction; only the newer one is shown
+[qa 19:23:26] PASS  [m6bq latest] the long reconstruction was superseded; only the newer request committed and is shown: 2 requests, 1 superseded, 1 committed (stale []); the last 4 at {'tick': 2156, 'cursor': 48}, shown {'tick': 2156, 'cursor': 48}
+[qa 19:23:26] captured long-04-superseded.png
+[qa 19:23:28] waiting for m6b-long to finish
+[qa 19:24:36] recording m6b-long.mp4 written
+[qa 19:24:36] PASS  [m6bq seeks] no superseded or canceled seek ever committed: 4 requested, 1 committed {'checkpoint': 1}, 1 superseded, 2 canceled
+[qa 19:24:36] segment: the app's M6B fixtures on the P1 recording (Shift+C), screen recording off
+[qa 19:25:17] fixtures: compared 46 {'root': 6, 'checkpoint': 40} cached drawn ms (p50 p95 p99 max) [99, 185, 197, 197] committed [92, 181, 188, 188] work [85, 165, 170, 170] steps [120, 233, 239, 239] {'recordingSeconds': 60, 'applies': True, 'drawnP95Ms': 185, 'pass': True} uncached {'action': 'committed', 'elapsedMs': 5416, 'workMs': 5007, 'steps': 7200, 'batches': 610, 'firstBatchMs': 8, 'batchMs': [8, 8, 14, 16], 'progressShownAfterMs': 115} {'batches': True, 'progress': True} cancel {'exercised': True, 'action': 'canceled', 'elapsedMs': 106, 'shownUnchanged': True, 'worlds': 2} peak worlds 3 error None
+[qa 19:25:17] PASS {"kind": "m6b-fixtures", "elapsedMs": 39512, "runId": "run-25d07381-d35b-415c-8169-15287dbfaa69", "finalTick": 7200, "commands": 144, "oracleMs": 4644, "compared": 46, "sources": {"root": 6, "checkpoint": 40}, "divergent": [], "targets": [[3261, 71, "root", 200], [4922, 96, "checkpoint", 200], [6537  [m6b-fixtures] the M6B fixtures pass on P1: exact at every target, cached p95 to the drawn frame within 250 ms on this 60 s recording, ~8 ms batches, progress at 100 ms, cancel, bounded cycles
+[qa 19:25:21] the guard asks about the scene
+[qa 19:25:23] the guard asks about the recording
+[qa 19:25:25] display → 1168×755: set 1168x755@60
+[qa 19:25:28] display restored to 1168x755@60
+[qa 19:25:28] m6b-long complete
+[qa 19:25:28] display restored to 1168x755@60

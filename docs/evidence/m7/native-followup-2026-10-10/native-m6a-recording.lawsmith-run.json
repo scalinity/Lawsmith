@@ -1,0 +1,247 @@
+{
+  "commands": [
+    {"atTick":763,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.7131109080900822,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":1,"transactionId":"tx-1"},
+    {"atTick":791,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.7131109080900826,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":2,"transactionId":"tx-1"},
+    {"atTick":822,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.7131109080900817,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":3,"transactionId":"tx-1"},
+    {"atTick":849,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.7131109080900826,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":4,"transactionId":"tx-1"},
+    {"atTick":879,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.4983377467147712,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":5,"transactionId":"tx-1"},
+    {"atTick":907,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.498337746714772,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":6,"transactionId":"tx-1"},
+    {"atTick":937,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.304096955025204,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":7,"transactionId":"tx-1"},
+    {"atTick":966,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.3040969550252046,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":8,"transactionId":"tx-1"},
+    {"atTick":996,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.3040969550252044,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":9,"transactionId":"tx-1"},
+    {"atTick":1025,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.0839401700674776,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":10,"transactionId":"tx-1"},
+    {"atTick":1053,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-1.0839401700674773,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":11,"transactionId":"tx-1"},
+    {"atTick":1083,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.889246483420711,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":12,"transactionId":"tx-1"},
+    {"atTick":1113,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.8892464834207126,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":13,"transactionId":"tx-1"},
+    {"atTick":1141,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.8892464834207123,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":14,"transactionId":"tx-1"},
+    {"atTick":1171,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.6719330321578114,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":15,"transactionId":"tx-1"},
+    {"atTick":1200,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.6719330321578112,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":16,"transactionId":"tx-1"},
+    {"atTick":1230,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.4807596111768888,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":17,"transactionId":"tx-1"},
+    {"atTick":1257,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.4807596111768877,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":18,"transactionId":"tx-1"},
+    {"atTick":1285,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.48075961117688837,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":19,"transactionId":"tx-1"},
+    {"atTick":1315,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.2593572417655161,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":20,"transactionId":"tx-1"},
+    {"atTick":1344,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.2593572417655159,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":21,"transactionId":"tx-1"},
+    {"atTick":1374,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.0682989570238437,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":22,"transactionId":"tx-1"},
+    {"atTick":1401,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.06829895702384436,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":23,"transactionId":"tx-1"},
+    {"atTick":1431,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.06829895702384414,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":24,"transactionId":"tx-1"},
+    {"atTick":1859,"payload":{"field":{"edgeFade":0.25,"enabled":false,"expression":{"kind":"sum","terms":[{"coreRadius":0.35,"kind":"softRadial","strength":14},{"coreRadius":0.35,"kind":"vortexY","strength":12},{"child":{"coefficient":5,"kind":"linearDrag"},"edgeFade":0.3,"kind":"mask","pose":{"position":[0,-0.45,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.6,1.35,1.6],"kind":"box"}}]},"id":"storm-bottle","pose":{"position":[3.2,1.6,0],"rotation":[0,0,0,1]},"region":{"halfHeight":1.8,"kind":"cylinderY","radius":1.4}},"kind":"putField"},"sequence":25,"transactionId":"tx-2"},
+    {"atTick":2253,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"kind":"sum","terms":[{"coreRadius":0.35,"kind":"softRadial","strength":14},{"coreRadius":0.35,"kind":"vortexY","strength":12},{"child":{"coefficient":5,"kind":"linearDrag"},"edgeFade":0.3,"kind":"mask","pose":{"position":[0,-0.45,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.6,1.35,1.6],"kind":"box"}}]},"id":"storm-bottle","pose":{"position":[3.2,1.6,0],"rotation":[0,0,0,1]},"region":{"halfHeight":1.8,"kind":"cylinderY","radius":1.4}},"kind":"putField"},"sequence":26,"transactionId":"tx-3"},
+    {"atTick":2587,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"kind":"sum","terms":[{"coreRadius":0.35,"kind":"softRadial","strength":14},{"child":{"coreRadius":0.35,"kind":"vortexY","strength":12},"gain":{"kind":"constant","value":1},"kind":"gain"},{"child":{"coefficient":5,"kind":"linearDrag"},"edgeFade":0.3,"kind":"mask","pose":{"position":[0,-0.45,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.6,1.35,1.6],"kind":"box"}}]},"id":"storm-bottle","pose":{"position":[3.2,1.6,0],"rotation":[0,0,0,1]},"region":{"halfHeight":1.8,"kind":"cylinderY","radius":1.4}},"kind":"putField"},"sequence":27,"transactionId":"tx-4"},
+    {"atTick":2587,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"kind":"sum","terms":[{"coreRadius":0.35,"kind":"softRadial","strength":14},{"child":{"coreRadius":0.35,"kind":"vortexY","strength":12},"gain":{"kind":"triangle","max":2,"min":0,"periodTicks":240,"phaseTicks":0},"kind":"gain"},{"child":{"coefficient":5,"kind":"linearDrag"},"edgeFade":0.3,"kind":"mask","pose":{"position":[0,-0.45,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.6,1.35,1.6],"kind":"box"}}]},"id":"storm-bottle","pose":{"position":[3.2,1.6,0],"rotation":[0,0,0,1]},"region":{"halfHeight":1.8,"kind":"cylinderY","radius":1.4}},"kind":"putField"},"sequence":28,"transactionId":"tx-5"},
+    {"atTick":2911,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"kind":"sum","terms":[{"coreRadius":0.35,"kind":"softRadial","strength":14},{"child":{"coreRadius":0.35,"kind":"vortexY","strength":12},"gain":{"kind":"constant","value":1},"kind":"gain"},{"child":{"coefficient":5,"kind":"linearDrag"},"edgeFade":0.3,"kind":"mask","pose":{"position":[0,-0.45,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.6,1.35,1.6],"kind":"box"}}]},"id":"storm-bottle","pose":{"position":[3.2,1.6,0],"rotation":[0,0,0,1]},"region":{"halfHeight":1.8,"kind":"cylinderY","radius":1.4}},"kind":"putField"},"sequence":29,"transactionId":"tx-6"},
+    {"atTick":3329,"payload":{"field":{"edgeFade":0.25,"enabled":false,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.06829895702384414,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":30,"transactionId":"tx-7"},
+    {"atTick":3329,"payload":{"field":{"edgeFade":0.25,"enabled":true,"expression":{"direction":[1,0,0],"kind":"directional","strength":12},"id":"push","pose":{"position":[-0.06829895702384414,1,0],"rotation":[0,0,0,1]},"region":{"halfExtents":[1.5,2,1.5],"kind":"box"}},"kind":"putField"},"sequence":31,"transactionId":"tx-8"}
+  ],
+  "createdLaws": [],
+  "finalCheck": {
+    "engineSha256": "cc01e29b14637c6ea918851a132e21c250495600f9e759a28e239127ff0b842f",
+    "stateSha256": "cc94b95e52ad92eecdd9789923d880c3336a7ad937551d48178a5134fd727e14"
+  },
+  "finalTick": 3329,
+  "format": "lawsmith.run",
+  "lastAppliedSequence": 31,
+  "qualification": {
+    "app": "Lawsmith 0.0.0",
+    "arch": "aarch64",
+    "build": "packaged",
+    "bundle": "index-DsgD8sW5.js sha256:abf7bc7d07e211663b9b4ef6ad5180be1b45dcb0d65b2b3f396243aab992559a",
+    "os": "macOS 27.2 (26B5101f)",
+    "tauri": "tauri 3.0.0-alpha.4; tauri-runtime 3.0.0-alpha.3; tauri-runtime-wry 3.0.0-alpha.4; wry 0.57.0; tao 0.37.1",
+    "webkit": "22625.2.7.1"
+  },
+  "root": {
+    "format": "lawsmith.scene",
+    "metadata": {
+      "title": "M6A lab"
+    },
+    "presentation": {
+      "arrows": true,
+      "laws": [
+        {
+          "color": "#7aa7d9",
+          "id": "calm",
+          "label": "Calm",
+          "visible": true
+        },
+        {
+          "color": "#c58ae5",
+          "id": "push",
+          "label": "Push",
+          "visible": true
+        },
+        {
+          "color": "#c58ae5",
+          "id": "storm-bottle",
+          "label": "Storm Bottle",
+          "visible": true
+        }
+      ]
+    },
+    "requiredCapabilities": ["emitter.xorshift32.v1", "operator.mask.v1", "operator.sum.v1", "primitive.directional.v1", "primitive.linearDrag.v1", "primitive.softRadial.v1", "primitive.vortexY.v1", "region.box.v1", "region.cylinderY.v1", "region.sphere.v1"],
+    "schemaVersion": 1,
+    "semantic": {
+      "bodies": [
+        {
+          "collider": {
+            "halfExtents": [20, 0.1, 20],
+            "kind": "box"
+          },
+          "collisionMode": "all",
+          "id": "floor",
+          "initialAngularVelocity": [0, 0, 0],
+          "initialLinearVelocity": [0, 0, 0],
+          "initialPose": {
+            "position": [0, -2.1, 0],
+            "rotation": [0, 0, 0, 1]
+          },
+          "material": {
+            "friction": 0.6,
+            "restitution": 0.25
+          },
+          "type": "fixed"
+        }
+      ],
+      "emitters": [
+        {
+          "id": "stream",
+          "intervalTicks": 8,
+          "jitter": [0.25, 0, 0.25],
+          "lifetimeTicks": 512,
+          "pose": {
+            "position": [0, 6, 0],
+            "rotation": [0, 0, 0, 1]
+          },
+          "seed": 1279350577,
+          "startTick": 0,
+          "template": {
+            "collider": {
+              "kind": "sphere",
+              "radius": 0.08
+            },
+            "collisionMode": "all",
+            "initialAngularVelocity": [0, 0, 0],
+            "initialLinearVelocity": [0, -0.5, 0],
+            "massKg": 1,
+            "material": {
+              "friction": 0.6,
+              "restitution": 0.25
+            }
+          }
+        }
+      ],
+      "fields": [
+        {
+          "edgeFade": 0.2,
+          "enabled": true,
+          "expression": {
+            "coefficient": 1.5,
+            "kind": "linearDrag"
+          },
+          "id": "calm",
+          "pose": {
+            "position": [-3, 0, 0],
+            "rotation": [0, 0, 0, 1]
+          },
+          "region": {
+            "kind": "sphere",
+            "radius": 1.2
+          }
+        },
+        {
+          "edgeFade": 0.25,
+          "enabled": true,
+          "expression": {
+            "direction": [1, 0, 0],
+            "kind": "directional",
+            "strength": 12
+          },
+          "id": "push",
+          "pose": {
+            "position": [-1.5, 1, 0],
+            "rotation": [0, 0, 0, 1]
+          },
+          "region": {
+            "halfExtents": [1.5, 2, 1.5],
+            "kind": "box"
+          }
+        },
+        {
+          "edgeFade": 0.25,
+          "enabled": true,
+          "expression": {
+            "kind": "sum",
+            "terms": [
+              {
+                "coreRadius": 0.35,
+                "kind": "softRadial",
+                "strength": 14
+              },
+              {
+                "coreRadius": 0.35,
+                "kind": "vortexY",
+                "strength": 12
+              },
+              {
+                "child": {
+                  "coefficient": 5,
+                  "kind": "linearDrag"
+                },
+                "edgeFade": 0.3,
+                "kind": "mask",
+                "pose": {
+                  "position": [0, -0.45, 0],
+                  "rotation": [0, 0, 0, 1]
+                },
+                "region": {
+                  "halfExtents": [1.6, 1.35, 1.6],
+                  "kind": "box"
+                }
+              }
+            ]
+          },
+          "id": "storm-bottle",
+          "pose": {
+            "position": [3.2, 1.6, 0],
+            "rotation": [0, 0, 0, 1]
+          },
+          "region": {
+            "halfHeight": 1.8,
+            "kind": "cylinderY",
+            "radius": 1.4
+          }
+        }
+      ],
+      "seed": 1279350577,
+      "simulation": {
+        "ambientAcceleration": [0, -9.81, 0],
+        "maxAppliedAcceleration": 200,
+        "maxLiveBodies": 256,
+        "profile": "lawsmith-m1-rapier-0.21.0",
+        "stepDenominator": 120,
+        "stepNumerator": 1
+      },
+      "units": "m-kg-s"
+    }
+  },
+  "runId": "run-c42bbd8a-1e64-4416-90d3-ce8de5b259e4",
+  "schemaVersion": 2,
+  "simulationFingerprint": {
+    "commands": "lawsmith.commands.v1: putField, removeField, setAmbient at boundary atTick",
+    "effective": {
+      "contactErp": 0.0728205069899559,
+      "dt": 0.008333333767950535,
+      "lengthUnit": 1,
+      "maxCcdSubsteps": 1,
+      "normalizedAllowedLinearError": 0.004999999888241291,
+      "normalizedPredictionDistance": 0.019999999552965164,
+      "numInternalPgsIterations": 1,
+      "numSolverIterations": 4
+    },
+    "fieldKernel": "affine-ak-v2",
+    "profile": "lawsmith-m1-rapier-0.21.0",
+    "rapier": "0.21.0",
+    "rapierWasmSha256": "17cfa80eebd8de0291b948496dbffba724b98b489687f8272ca236a7bbf1dd4b",
+    "step": "1/120"
+  },
+  "stopped": "user"
+}

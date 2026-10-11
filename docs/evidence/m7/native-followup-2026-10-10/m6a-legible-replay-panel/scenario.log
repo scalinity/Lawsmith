@@ -1,0 +1,25 @@
+[qa 19:13:18] segment: the recording controls at 1280×800 and at the minimum window
+[qa 19:13:33] display → 1728×1117: set 1728x1117@60
+[qa 19:13:40] launched pid 28073, window at 224,104, log m6a-legible.log
+[qa 19:13:58] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "c2946dec66ba469d", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] the content viewport is 1280×800 CSS, the Storm Bottle selected
+[qa 19:13:59] PASS {"kind": "layout", "playing": false, "authority": {"tick": 0, "cursor": 0, "stateHash": "c2946dec66ba469d", "engineHash": "1b79a5ce1689ba83"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":   [layout] idle at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 19:13:59] run cluster idle at 1280×800: [834.1, 52, 433.9, 89.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 19:13:59] captured m6a-1280x800-idle.png
+[qa 19:14:05] PASS {"kind": "layout", "playing": true, "authority": {"tick": 321, "cursor": 0, "stateHash": "7f52e32087014e7a", "engineHash": "4b8f3a7145370d1a"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo":  [layout] recording at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 19:14:05] run cluster recording at 1280×800: [988.9, 52, 279.1, 97.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 19:14:06] captured m6a-1280x800-recording.png
+[qa 19:14:10] PASS {"kind": "layout", "playing": false, "authority": {"tick": 588, "cursor": 0, "stateHash": "9731e76156ca0656", "engineHash": "bc2b9f9a6998bb4b"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] recorded at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 19:14:10] run cluster recorded at 1280×800: [828, 52, 440, 123.6]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 19:14:21] PASS {"kind": "layout", "playing": false, "authority": {"tick": 588, "cursor": 0, "stateHash": "9731e76156ca0656", "engineHash": "bc2b9f9a6998bb4b"}, "viewport": [1280, 800], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 696, 40], "tools": [704, 5, 564, 30], "undo": [704, 5, 75.7, 28], "redo"  [layout] replay at 1280×800: the recording controls are inside the window and clear of every other region and the selected law
+[qa 19:14:21] run cluster replay at 1280×800: [828, 52, 440, 172.3]; selected support [616.6, 244.9, 930.4, 637.7]
+[qa 19:14:21] captured m6a-1280x800-replay-end.png
+[qa 19:14:24] PASS {"kind": "layout", "playing": false, "authority": {"tick": 588, "cursor": 0, "stateHash": "9731e76156ca0656", "engineHash": "bc2b9f9a6998bb4b"}, "viewport": [900, 600], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 316, 40], "tools": [324, 5, 564, 30], "undo": [324, 5, 75.7, 28], "redo":  [layout] replay at 900×600: the recording controls are inside the window and clear of every other UI region
+[qa 19:14:24] run cluster replay at 900×600: [448, 52, 440, 172.3]; selected support [432.4, 183.6, 667.8, 478.3]
+[qa 19:14:24] captured m6a-900x600-replay-end.png
+[qa 19:14:27] PASS {"kind": "layout", "playing": false, "authority": {"tick": 588, "cursor": 0, "stateHash": "9731e76156ca0656", "engineHash": "bc2b9f9a6998bb4b"}, "viewport": [900, 600], "devicePixelRatio": 2, "controls": {"drag-region": [0, 0, 316, 40], "tools": [324, 5, 564, 30], "undo": [324, 5, 75.7, 28], "redo":  [layout] recorded at 900×600: the recording controls are inside the window and clear of every other UI region
+[qa 19:14:27] run cluster recorded at 900×600: [448, 52, 440, 123.6]; selected support [432.4, 183.6, 667.8, 478.3]
+[qa 19:14:31] the guard asks about the recording
+[qa 19:14:33] display → 1168×755: set 1168x755@60
+[qa 19:14:36] display restored to 1168x755@60
+[qa 19:14:36] m6a-legible complete
+[qa 19:14:36] display restored to 1168x755@60

@@ -1,0 +1,12 @@
+{
+  "scenario": "m7-perf",
+  "label": "m7-perf-attempt-4",
+  "startedAtUTC": "2026-10-10T22:12:59.579572+00:00",
+  "codeCandidate": "a6621ea12f4f73cb00908b9abb4490dfcb95b0ac",
+  "evidenceSourceHead": "a6621ea12f4f73cb00908b9abb4490dfcb95b0ac",
+  "timeoutSeconds": 255,
+  "ownedProcessGroup": 31003,
+  "exitCode": 0,
+  "elapsedSeconds": 246.32265377044678,
+  "finishedAtUTC": "2026-10-10T22:17:05.902233+00:00"
+}
