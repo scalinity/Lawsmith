@@ -1693,6 +1693,8 @@ h2[tabindex="-1"]:focus {
   padding: calc(2 * var(--u)) 0 calc(2 * var(--u)) calc(10 * var(--u));
   border-left: calc(2 * var(--u)) solid var(--text-tertiary);
 }
+/* .field-row's display: grid would otherwise override [hidden]: one emitter shows no selector (M8 review R-HUD1). */
+#emitter-pick-row[hidden],
 #emitter-lock[hidden],
 #emitter-lock-action[hidden] {
   display: none;
