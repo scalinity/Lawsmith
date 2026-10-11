@@ -1,0 +1,10 @@
+M8 G4 comment follow-up
+
+review         Sol source review of c7cf5bf2b2adfdef14468495320a53e743152800: functional G4 fix closed; one comment correction requested
+change         65befdcac73d0020fd9626a2c165f6abcf27003e  scripts/verify/native/m8lib.zsh tab_to comment only
+               Option-Tab leaves buttons out when full keyboard access is off; with it on, every control is included either way;
+               ordinary Tab reaches buttons under both settings
+checks         zsh -n scripts/verify/native/m8lib.zsh: exit 0
+               git diff -U0 efad362 65befdc -- scripts/verify/native/m8lib.zsh: comment lines only (0 non-comment lines changed)
+not rerun      test_guards.zsh and other suites: unchanged code; the c7cf5bf receipt (87 passed; negative control) stands
+native         none; keyboard access remains PENDING / UNVERIFIED
