@@ -1,0 +1,10 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run --maxWorkers=1
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  33 passed | 3 skipped (36)
+      Tests  680 passed | 3 skipped (683)
+   Start at  21:05:56
+   Duration  101.44s (tests 97%, import 1%, transform 1%)

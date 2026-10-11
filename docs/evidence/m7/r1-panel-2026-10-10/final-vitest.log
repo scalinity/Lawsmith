@@ -1,0 +1,53 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/ingredients.test.ts (21 tests | 1 failed) 6495ms
+   ❯ AC6: export, reload and reset keep the whole expression and its equal-tick behavior (1)
+     × an edited compound scene saved and reopened runs exactly as the authored one 5645ms
+stdout | tests/invariance.test.ts > AC6 visualization cannot alter authority > the recipe: quiet and two busy views agree exactly at ticks 600 and 1200, edits included
+{"fixture":"visualization-invariance","scene":"the recipe","results":[{"view":"busy seed 7","activity":{"probeSteps":1200,"maxLiveProbes":2000,"maxTrails":32,"explainedSteps":1199,"previews":92,"arrowSamples":33125},"equal":[true,true]},{"view":"busy seed 2654435769","activity":{"probeSteps":1200,"maxLiveProbes":2000,"maxTrails":32,"explainedSteps":1199,"previews":92,"arrowSamples":33125},"equal":[true,true]}]}
+
+stdout | tests/invariance.test.ts > AC6 visualization cannot alter authority > Overlap: quiet and two busy views agree exactly at ticks 600 and 1200, edits included
+{"fixture":"visualization-invariance","scene":"Overlap","results":[{"view":"busy seed 7","activity":{"probeSteps":1200,"maxLiveProbes":2000,"maxTrails":32,"explainedSteps":1199,"previews":92,"arrowSamples":12105},"equal":[true,true]},{"view":"busy seed 2654435769","activity":{"probeSteps":1200,"maxLiveProbes":2000,"maxTrails":32,"explainedSteps":1199,"previews":92,"arrowSamples":12105},"equal":[true,true]}]}
+
+ ❯ tests/invariance.test.ts (17 tests | 2 failed) 24831ms
+   ❯ AC6 visualization cannot alter authority (6)
+     × the recipe: quiet and two busy views agree exactly at ticks 600 and 1200, edits included 5856ms
+     × Overlap: quiet and two busy views agree exactly at ticks 600 and 1200, edits included 5348ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ingredients.test.ts > AC6: export, reload and reset keep the whole expression and its equal-tick behavior > an edited compound scene saved and reopened runs exactly as the authored one
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/ingredients.test.ts:354:3
+    352|
+    353| describe('AC6: export, reload and reset keep the whole expression and …
+    354|   it('an edited compound scene saved and reopened runs exactly as the …
+       |   ^
+    355|     const { controller, host } = stormDocument();
+    356|     controller.editField('storm-bottle', 'Add gain', (f) => ({ ...f, e…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/invariance.test.ts > AC6 visualization cannot alter authority > the recipe: quiet and two busy views agree exactly at ticks 600 and 1200, edits included
+ FAIL  tests/invariance.test.ts > AC6 visualization cannot alter authority > Overlap: quiet and two busy views agree exactly at ticks 600 and 1200, edits included
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/invariance.test.ts:35:5
+     33| describe('AC6 visualization cannot alter authority', () => {
+     34|   for (const [name, root, scripted] of CASES) {
+     35|     it(`${name}: quiet and two busy views agree exactly at ticks 600 a…
+       |     ^
+     36|       const script = scripted ? scriptedEdits(root) : scriptedRecipeEd…
+     37|       const results = visualizationInvariance(root, script);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  2 failed | 31 passed | 3 skipped (36)
+      Tests  3 failed | 677 passed | 3 skipped (683)
+   Start at  21:04:46
+   Duration  39.15s (tests 88%, transform 8%, import 4%)

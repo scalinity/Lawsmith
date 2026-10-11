@@ -1,0 +1,10 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/replayPanel.test.js
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  21:10:00
+   Duration  819ms (transform 46%, tests 38%, import 16%)

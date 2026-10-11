@@ -1,0 +1,234 @@
+{
+  "applicationTestCandidate": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "finalNativeHarnessSha": "dfdf5158918762b1577624053447ae0f7e8c716b",
+  "startingEvidenceHead": "9e2ae309e175ec6b1c062def834d5f6fef6af97a",
+  "reviewedSource": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "acceptedMain": "075c1d5900afed039aa3cf763fa47ac5a4991e49",
+  "changedPaths": [
+    "ORCHESTRATION.html",
+    "docs/evidence/M7.md",
+    "docs/evidence/m7/r1-panel-2026-10-10/cleanup.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/closeout-checks.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/created-and-undo-expectation/m7-r1-panel.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/created-and-undo-expectation/native-run-final.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/created-and-undo-expectation/qa-steps.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/evidence-hashes.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/final-vitest-serial.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/final-vitest.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/headless.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/initial-step-failure/m7-r1-panel.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/initial-step-failure/native-run.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/initial-step-failure/qa-steps.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/lock-handoff-failure/m7-r1-panel.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/lock-handoff-failure/native-run-details.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/lock-handoff-failure/qa-steps.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/native-results.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/negative-control.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/ordinary-replay/m7-r1-panel.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/ordinary-replay/native-run-ordinary.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/ordinary-replay/qa-steps.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/r1-created-endpoint.png",
+    "docs/evidence/m7/r1-panel-2026-10-10/r1-created-intermediate.png",
+    "docs/evidence/m7/r1-panel-2026-10-10/r1-details-121.png",
+    "docs/evidence/m7/r1-panel-2026-10-10/r1-details-201.png",
+    "docs/evidence/m7/r1-panel-2026-10-10/r1-details-281.png",
+    "docs/evidence/m7/r1-panel-2026-10-10/r1-details-endpoint.png",
+    "docs/evidence/m7/r1-panel-2026-10-10/r1-ordinary-replay.png",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-build-hashes.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-build.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-cargo-check.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-cargo-test.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-controls.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-focused.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-headless.json",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-negative-control.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-package.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-typecheck.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/repaired-vitest.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/selected-details/m7-r1-panel.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/selected-details/native-run-resume.log",
+    "docs/evidence/m7/r1-panel-2026-10-10/selected-details/qa-steps.log",
+    "scripts/verify/native/m7-r1-panel.zsh",
+    "src/main.ts",
+    "tests/replayPanel.test.js"
+  ],
+  "artifacts": {
+    "cleanup.json": {
+      "sha256": "8def0b144ec328572e58398f71da1f8e33db3077ac42c112572645bcfaca567c",
+      "bytes": 645
+    },
+    "closeout-checks.json": {
+      "sha256": "14baad5ad2d7e3a6ce78fbe00677d7deeedf746ffaf732b53fcb2c4a12cba002",
+      "bytes": 1036
+    },
+    "created-and-undo-expectation/m7-r1-panel.log": {
+      "sha256": "000a5dd2a406c85fa1e832885d23ed14e7da2edf5eddd1855b16b0da2e59cd04",
+      "bytes": 348174
+    },
+    "created-and-undo-expectation/native-run-final.log": {
+      "sha256": "48d452ce1da7bbf43582cd19908b5d36afcbfef2be067fcdc5362dcd56afb690",
+      "bytes": 5342
+    },
+    "created-and-undo-expectation/qa-steps.log": {
+      "sha256": "c37472216aad71a091f08192777b193782fc080adcfdaeb9fee340d9f0dd5791",
+      "bytes": 5302
+    },
+    "final-vitest-serial.log": {
+      "sha256": "cbada85e9e6b9078f1332a8ea5a5567a500dffae2dbeaab60bc3b4b9f1bce84b",
+      "bytes": 266
+    },
+    "final-vitest.log": {
+      "sha256": "54aa09ae7bd899b9c5ee64a3181e990f19e205ea9621bbe96e9b71e892563f09",
+      "bytes": 3836
+    },
+    "headless.json": {
+      "sha256": "8a593f0299118248b1f676704b782254c93ea28d2ea41180330014ef5184482e",
+      "bytes": 501
+    },
+    "initial-step-failure/m7-r1-panel.log": {
+      "sha256": "dd333696e2206b4d2c7338ba278cf69ea40ffaed08aca5ca1577753b45ed8299",
+      "bytes": 136729
+    },
+    "initial-step-failure/native-run.log": {
+      "sha256": "e09a33fa973a3646d69a63239d828a27e453ff8f50e6818dd8d208359b7993c8",
+      "bytes": 2316
+    },
+    "initial-step-failure/qa-steps.log": {
+      "sha256": "e09a33fa973a3646d69a63239d828a27e453ff8f50e6818dd8d208359b7993c8",
+      "bytes": 2316
+    },
+    "lock-handoff-failure/m7-r1-panel.log": {
+      "sha256": "99749f553c2768a01f3c43837e0befaad8fab9f1135a585721a4da66a183a813",
+      "bytes": 28745
+    },
+    "lock-handoff-failure/native-run-details.log": {
+      "sha256": "b74c0d055ae0c019fdb57a00e008a8d4f13a10431a735751468e5a638ba445d6",
+      "bytes": 830
+    },
+    "lock-handoff-failure/qa-steps.log": {
+      "sha256": "b74c0d055ae0c019fdb57a00e008a8d4f13a10431a735751468e5a638ba445d6",
+      "bytes": 830
+    },
+    "native-results.json": {
+      "sha256": "8bba5e572b9ce576fe1ded07797b3c9e84e2ed864775c1a45f1b116edc5bd2b0",
+      "bytes": 32912
+    },
+    "negative-control.json": {
+      "sha256": "21695b1287ec09fba43ba4d4a74d19311476c385ff515af99911aae83bda9f18",
+      "bytes": 1108
+    },
+    "ordinary-replay/m7-r1-panel.log": {
+      "sha256": "ab513f198d682df750121fb4e6ea2e7ea50a611e5e4c7068419d67c75a0a8f55",
+      "bytes": 163398
+    },
+    "ordinary-replay/native-run-ordinary.log": {
+      "sha256": "7b31d9136dfe135c3f93d8dbe5391a0f5f18077b5182c5303e5afa5f91a65bfa",
+      "bytes": 2757
+    },
+    "ordinary-replay/qa-steps.log": {
+      "sha256": "7b31d9136dfe135c3f93d8dbe5391a0f5f18077b5182c5303e5afa5f91a65bfa",
+      "bytes": 2757
+    },
+    "r1-created-endpoint.png": {
+      "sha256": "e336b134fdffd5a7db51f1c920b46a392b2887dee85f73841fd20c417d0a8dbd",
+      "bytes": 763244
+    },
+    "r1-created-intermediate.png": {
+      "sha256": "261ac0e9028b5d46003ff8efa07528e1781560c5c3922ed8169d44e9d23a3dee",
+      "bytes": 754757
+    },
+    "r1-details-121.png": {
+      "sha256": "9d091f8ce812a64e2768d34f64791ab5dfd463dd4bd59c43233b5162bb6d4bb3",
+      "bytes": 463355
+    },
+    "r1-details-201.png": {
+      "sha256": "74eab922b0c5dc018e4a7926db95b3a370c87576adcbc42b670d84d48515d38a",
+      "bytes": 462985
+    },
+    "r1-details-281.png": {
+      "sha256": "8982802f4fdd2347c4fcfb9f4fcc3c4dfbce27cd2defe5407a75e0fc3bbef9f8",
+      "bytes": 464540
+    },
+    "r1-details-endpoint.png": {
+      "sha256": "c867212a966010b90c6889be08e39301eb16a9d61f5a718cac4234bcc1811edd",
+      "bytes": 480659
+    },
+    "r1-ordinary-replay.png": {
+      "sha256": "593d821e2bb0b89f2d973997c12caba0793dfb7681b68f8fb72c74bdecf5dd33",
+      "bytes": 703376
+    },
+    "repaired-build-hashes.json": {
+      "sha256": "c52d09d2597836615ae98cfcc2b0c2901a4f1855650dc7174ca773eae56876bc",
+      "bytes": 813
+    },
+    "repaired-build.log": {
+      "sha256": "a9aa6433c1180dc64c8007fa33fa32e7561a7309d6667b99fdec85f30e584d2d",
+      "bytes": 800
+    },
+    "repaired-cargo-check.log": {
+      "sha256": "2bc683fb4e4f4f21ee9ee39e2b8ecce2efe20d3b1be57bda5316aa519ab3d30a",
+      "bytes": 72
+    },
+    "repaired-cargo-test.log": {
+      "sha256": "48c3fda3fee2c739845878d094fa1dcf94f19e17ca0bbe2161a69b4e8e252fe3",
+      "bytes": 2365
+    },
+    "repaired-controls.json": {
+      "sha256": "17c1a77665482a7393495ac381d1ecf3e0ecd4e58346f4a6af7b495fb73d036a",
+      "bytes": 607
+    },
+    "repaired-focused.log": {
+      "sha256": "0857e7661251493cd7f95bb406b775d54ffaf7d8ee169b82cb9d19b6a55e631b",
+      "bytes": 247
+    },
+    "repaired-headless.json": {
+      "sha256": "16ad21dd27ce27fdc943cd40f68e4a0d6fcfccade555bdff53af3f2c687fcb93",
+      "bytes": 1158
+    },
+    "repaired-negative-control.log": {
+      "sha256": "e491967375c9e7f450cba3ca51fc32624d7c9c4312f0470adf15dba2f5bf5e75",
+      "bytes": 7714
+    },
+    "repaired-package.log": {
+      "sha256": "7243fc1532991488ac8858950a554b752cbb6ddc7658a435fecfd2f292412284",
+      "bytes": 1393
+    },
+    "repaired-typecheck.log": {
+      "sha256": "fc7ff2eef2870e785ec06e71908e56afc1cc4c7b6aebf00758f501a953091373",
+      "bytes": 68
+    },
+    "repaired-vitest.log": {
+      "sha256": "e725de387a21b81f327d53f70974ebd8c4c84eab813365aeff253abbcd0cea9b",
+      "bytes": 250
+    },
+    "selected-details/m7-r1-panel.log": {
+      "sha256": "51c4a6f7c4ed586b6602404ee8c42d68ed1d908409545253692b3bf3e77bf06f",
+      "bytes": 427214
+    },
+    "selected-details/native-run-resume.log": {
+      "sha256": "1c36613e0cd65ef5ddf269f1b92689c761b98d671feb093a09b4ee672fc1f92e",
+      "bytes": 6960
+    },
+    "selected-details/qa-steps.log": {
+      "sha256": "bd7a4ca1dc17b0191631bf2337aa74def56b3760c7638d9ba672a50436558ad6",
+      "bytes": 6920
+    }
+  },
+  "sourceBlobs": {
+    "src/main.ts": "c42060deb1b2ffe73ed86582ad2e1c9a551e5fba246fc5829efa22f15a6a53f5",
+    "tests/replayPanel.test.js": "1107fc1d6bf80b5a3f089dde4551fe34928a79cfde6b9355a60ad9d2c9425652"
+  },
+  "producerRules": {
+    "repaired-*": "0c7c5a7 final checks/package; negative-control production override d65 as recorded in repaired-controls.json",
+    "final-vitest* and headless.json": "c560563 intermediate failed/default and unchanged serial rerun",
+    "native attempts": "per-attempt application and harness identities in native-results.json; every runner exit retained",
+    "captures": "0c7c5a7 package; original whole-window PNG bytes",
+    "negative-control.json": "final0c7 executor, d65 production source; no copied predicate",
+    "documentation": "evidence descendant; exact final SHA reported after publication"
+  },
+  "privacyReview": {
+    "text": "exact checkout and private-root redaction in public copies only; no remaining credential/nonfunctional personal identifier found",
+    "captures": "seven directly reviewed whole-window images; fixture Lawsmith only",
+    "excluded": "compiled apps, preferences, recovery and agent runtime data; original raw copies retained privately"
+  }
+}

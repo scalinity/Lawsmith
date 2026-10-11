@@ -1,0 +1,23 @@
+{
+  "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "packageCommand": [
+    "npx",
+    "tauri",
+    "build",
+    "--bundles",
+    "app"
+  ],
+  "packageExitCode": 0,
+  "hashes": {
+    "src-tauri/target/release/bundle/macos/Lawsmith.app/Contents/MacOS/lawsmith": "bfe81bb33262baf06af9b139488377cce2d94d7db7181b0cd506289af07442be",
+    "dist/index.html": "20ead93b26e9ec2303758007f18fa132425649340634e6693992bb3588b5c8d1",
+    "dist/assets/index-TQqm3bzE.js": "6d3ea8e48e7cc8b8bdf1fb7520ba240bfef37e3ded4eb466787e959bd6613632",
+    "dist/assets/index-BlGEIOdO.css": "ef53f48a1b4fbcacd1ae3c69dfbf8f7537f91a9735e5fd52a56fa3dc494acaff"
+  },
+  "changedCodePaths": [
+    "scripts/verify/native/m7-r1-panel.zsh",
+    "src/main.ts",
+    "tests/replayPanel.test.js"
+  ],
+  "protectedSourceFilesUnchanged": true
+}

@@ -1,0 +1,1658 @@
+{
+  "applicationSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "attempts": [
+    {
+      "name": "initial-step-failure",
+      "applicationSha": "c560563ef145ab954e8fec04b746fe5707d13157",
+      "harnessSha": "c560563ef145ab954e8fec04b746fe5707d13157",
+      "exitCode": 1,
+      "folder": "initial-step-failure"
+    },
+    {
+      "name": "created-and-undo-expectation",
+      "applicationSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+      "harnessSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+      "exitCode": 1,
+      "folder": "created-and-undo-expectation"
+    },
+    {
+      "name": "lock-handoff-failure",
+      "applicationSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+      "harnessSha": "6248cf441ae5eeb7d5be446b485884c6fd207bb3",
+      "exitCode": 143,
+      "folder": "lock-handoff-failure"
+    },
+    {
+      "name": "selected-details",
+      "applicationSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+      "harnessSha": "79f67544b4a241fd1ac1f25ef13bf413878dbc45",
+      "exitCode": 3,
+      "folder": "selected-details"
+    },
+    {
+      "name": "ordinary-replay",
+      "applicationSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+      "harnessSha": "dfdf5158918762b1577624053447ae0f7e8c716b",
+      "exitCode": 0,
+      "folder": "ordinary-replay"
+    }
+  ],
+  "createdLawIntermediate": {
+    "kind": "layout",
+    "playing": false,
+    "authority": {
+      "tick": 121,
+      "cursor": 1,
+      "stateHash": "7f6453831543cf76",
+      "engineHash": "6403cd3a5d5921c7"
+    },
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 2,
+    "controls": {
+      "drag-region": [
+        0,
+        0,
+        696,
+        40
+      ],
+      "tools": [
+        704,
+        5,
+        564,
+        30
+      ],
+      "undo": [
+        704,
+        5,
+        75.7,
+        28
+      ],
+      "redo": [
+        783.8,
+        5,
+        81.1,
+        28
+      ],
+      "frame-view": [
+        1098.3,
+        5,
+        74.3,
+        28
+      ],
+      "reset-view": [
+        1180.7,
+        5,
+        87.3,
+        28
+      ],
+      "panel": [
+        12,
+        52,
+        284,
+        598
+      ],
+      "file-new": [
+        25,
+        96.3,
+        44.9,
+        28
+      ],
+      "file-open": [
+        75.9,
+        96.3,
+        61.1,
+        28
+      ],
+      "file-save": [
+        143,
+        96.3,
+        47.1,
+        28
+      ],
+      "file-save-as": [
+        196.1,
+        96.3,
+        76.4,
+        28
+      ],
+      "add-directional": [
+        96.3,
+        288.3,
+        46,
+        24
+      ],
+      "add-softRadial": [
+        146.3,
+        288.3,
+        38.1,
+        24
+      ],
+      "add-vortexY": [
+        188.4,
+        288.3,
+        45.4,
+        24
+      ],
+      "add-linearDrag": [
+        237.8,
+        288.3,
+        45.2,
+        24
+      ],
+      "arrows-toggle": [
+        227,
+        416.6,
+        56,
+        24
+      ],
+      "details": null,
+      "law-duplicate": null,
+      "law-delete": null,
+      "law-label": null,
+      "support-box": null,
+      "support-sphere": null,
+      "support-cylinderY": null,
+      "law-fade": null,
+      "ingredient-up": null,
+      "motion": [
+        13,
+        472.7,
+        282,
+        221.5
+      ],
+      "explain-nearest": [
+        162.7,
+        483.7,
+        120.3,
+        24
+      ],
+      "probe-count": [
+        25,
+        616,
+        125,
+        26
+      ],
+      "probe-seed": [
+        158,
+        616,
+        125,
+        26
+      ],
+      "explain": null,
+      "explain-close": null,
+      "explain-applied": null,
+      "explain-preview": null,
+      "transport": [
+        830.2,
+        746,
+        437.8,
+        42
+      ],
+      "play": [
+        837.2,
+        753,
+        96,
+        28
+      ],
+      "step": [
+        941.2,
+        753,
+        64.4,
+        28
+      ],
+      "reset": [
+        1013.5,
+        753,
+        77.5,
+        28
+      ],
+      "run": null,
+      "run-timeline": null,
+      "run-record": null,
+      "run-stop": null,
+      "run-replay": null,
+      "run-restart": null,
+      "run-return": null,
+      "run-save": null,
+      "run-open": null,
+      "compare-from": null,
+      "run-cancel": null,
+      "comparison": [
+        878,
+        52,
+        390,
+        311
+      ],
+      "baseline-compute": [
+        889,
+        224,
+        131.2,
+        28
+      ],
+      "baseline-cancel": null,
+      "baseline-extend": [
+        1026.2,
+        224,
+        147.6,
+        28
+      ],
+      "alternate-replay": [
+        889,
+        258,
+        121.4,
+        28
+      ],
+      "alternate-new": [
+        1016.4,
+        258,
+        189.2,
+        28
+      ],
+      "baseline-ghosts": [
+        889,
+        292,
+        82,
+        28
+      ],
+      "alternate-export": [
+        977,
+        292,
+        169.8,
+        28
+      ],
+      "comparison-close": [
+        889,
+        326,
+        130.6,
+        28
+      ],
+      "overlays": [
+        853.8,
+        692,
+        414.2,
+        44
+      ],
+      "arrows-every": [
+        861.8,
+        700,
+        77.4,
+        28
+      ],
+      "arrows-selected": [
+        939.2,
+        700,
+        95.8,
+        28
+      ],
+      "probes-toggle": [
+        1042,
+        699,
+        64.5,
+        28
+      ],
+      "trail-mode": [
+        1112.5,
+        699,
+        148.5,
+        30
+      ],
+      "trails-off": [
+        1113.5,
+        700,
+        61.7,
+        28
+      ],
+      "trails-selected": [
+        1175.2,
+        700,
+        50,
+        28
+      ],
+      "trails-all": [
+        1225.2,
+        700,
+        34.8,
+        28
+      ],
+      "recovery-offer": null,
+      "recovery-discard": null,
+      "recovery-accept": null,
+      "diagnostics": [
+        12,
+        638,
+        538.8,
+        150
+      ],
+      "sim-error-reset": null,
+      "mode-translate": [
+        873.8,
+        6,
+        67.1,
+        28
+      ],
+      "mode-rotate": [
+        940.9,
+        6,
+        74.9,
+        28
+      ],
+      "mode-scale": [
+        1015.8,
+        6,
+        73.5,
+        28
+      ]
+    },
+    "laws": [
+      {
+        "id": "push",
+        "label": "Push",
+        "select": [
+          25,
+          320.3,
+          172,
+          41.2
+        ],
+        "visible": [
+          201,
+          320.3,
+          34,
+          41.2
+        ],
+        "enabled": [
+          239,
+          320.3,
+          44,
+          41.2
+        ],
+        "enabledState": "true",
+        "enabledText": "On",
+        "locked": true,
+        "visibleState": "true",
+        "color": "#55aaa4",
+        "expression": "directional, 12 m/s\u00b2"
+      },
+      {
+        "id": "sideways",
+        "label": "Sideways",
+        "select": [
+          25,
+          365.4,
+          172,
+          41.2
+        ],
+        "visible": [
+          201,
+          365.4,
+          34,
+          41.2
+        ],
+        "enabled": [
+          239,
+          365.4,
+          44,
+          41.2
+        ],
+        "enabledState": "true",
+        "enabledText": "On",
+        "locked": true,
+        "visibleState": "true",
+        "color": "#55aaa4",
+        "expression": "directional, 0 m/s\u00b2"
+      }
+    ],
+    "inputs": {
+      "law-label": null,
+      "Position x": null,
+      "Position y": null,
+      "Position z": null,
+      "Rotation about x": null,
+      "Rotation about y": null,
+      "Rotation about z": null,
+      "Half extent x": null,
+      "Half extent y": null,
+      "Half extent z": null,
+      "Strength": null,
+      "law-fade": null
+    },
+    "inputValues": {
+      "law-label": "Push",
+      "Position x": "3",
+      "Position y": "2",
+      "Position z": "0",
+      "Rotation about x": "0",
+      "Rotation about y": "0",
+      "Rotation about z": "0",
+      "Half extent x": "1.5",
+      "Half extent y": "2",
+      "Half extent z": "1.5",
+      "Strength": "12",
+      "law-fade": "0.2"
+    },
+    "detailTitle": "Push",
+    "detailKind": "Directional \u00b7 12 m/s\u00b2: pushes along its arrow, which turns with the law",
+    "appliedLaws": [
+      {
+        "id": "push",
+        "enabled": true,
+        "pose": {
+          "position": [
+            3,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            1.5,
+            2,
+            1.5
+          ]
+        },
+        "edgeFade": 0.25,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            1,
+            0,
+            0
+          ],
+          "strength": 12
+        }
+      },
+      {
+        "id": "sideways",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            50,
+            10,
+            10
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0
+        }
+      }
+    ],
+    "swatches": {
+      "#55aaa4": null,
+      "#c58ae5": null,
+      "#d9a35b": null,
+      "#7aa7d9": null
+    },
+    "ingredients": {
+      "law": null,
+      "level": null,
+      "focus": null,
+      "shelf": {
+        "directional": null,
+        "softRadial": null,
+        "vortexY": null,
+        "linearDrag": null
+      },
+      "rows": [],
+      "buttons": [],
+      "fields": [],
+      "live": [],
+      "up": null,
+      "detail": null,
+      "note": "Add one to combine it with this law\u2019s primitive.",
+      "box": null
+    },
+    "selected": null,
+    "selectedField": null,
+    "arrows": 8,
+    "transformMode": "translate",
+    "support": null,
+    "handles": null,
+    "lawHandles": [],
+    "explained": null,
+    "scroll": {
+      "panel": {
+        "scrollWidth": 282,
+        "clientWidth": 282,
+        "scrollHeight": 661,
+        "clientHeight": 596,
+        "scrollTop": 20
+      },
+      "explain": {
+        "scrollWidth": 0,
+        "clientWidth": 0,
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "scrollTop": 0
+      }
+    },
+    "visualization": {
+      "contexts": {
+        "worlds": 2,
+        "peakWorlds": 3,
+        "authoring": 1,
+        "replay": 0,
+        "candidates": 0,
+        "seeking": 0,
+        "checkpoints": 0,
+        "checkpointBytes": 0,
+        "selected": "comparison",
+        "recording": "idle",
+        "comparison": {
+          "worlds": 1,
+          "generation": 2,
+          "buffers": 8,
+          "frames": 601,
+          "identities": 1,
+          "bytes": 26802006,
+          "suffix": 2,
+          "suffixBytes": 6872,
+          "historyBytes": 10472,
+          "horizon": 600
+        }
+      },
+      "render": {
+        "geometries": 32,
+        "textures": 5,
+        "objects": 124
+      },
+      "probes": {
+        "enabled": false,
+        "count": 2000,
+        "seed": 1,
+        "live": 0
+      },
+      "trails": {
+        "mode": "selected",
+        "count": 0
+      },
+      "explained": null,
+      "explainMode": "applied",
+      "arrowScope": "all",
+      "bytes": {
+        "probePositions": 48000,
+        "probeVelocities": 48000,
+        "probeAlive": 2000,
+        "probeBirths": 16000,
+        "trailPositions": 115200,
+        "trailTicks": 76800,
+        "trailRings": 256,
+        "probeInstances": 128000,
+        "trailLinePositions": 229632,
+        "trailLineColors": 229632,
+        "shareLines": 3168,
+        "shareInstances": 5016
+      },
+      "totalBytes": 901704,
+      "drawn": {
+        "trailVertices": 0,
+        "probeInstances": 0,
+        "shareArrows": 0
+      },
+      "comparison": {
+        "geometries": 1,
+        "materials": 1,
+        "objects": 1,
+        "bytes": 294912
+      },
+      "ghostsShown": true
+    },
+    "comparison": {
+      "worlds": 1,
+      "generation": 2,
+      "buffers": 8,
+      "frames": 601,
+      "identities": 1,
+      "bytes": 26802006,
+      "suffix": 2,
+      "suffixBytes": 6872,
+      "historyBytes": 10472,
+      "horizon": 600,
+      "receipt": {
+        "authority": {
+          "tick": 121,
+          "cursor": 1,
+          "stateHash": "7f6453831543cf76",
+          "engineHash": "6403cd3a5d5921c7"
+        },
+        "baselineHash": "191a45395e8fb09e",
+        "pair": {
+          "id": "traveler",
+          "tick": 121,
+          "baseline": [
+            1.0083394050598145,
+            0,
+            0
+          ],
+          "alternate": [
+            1.0083394050598145,
+            0,
+            0
+          ],
+          "separation": 0
+        },
+        "framePastHorizon": false
+      },
+      "address": {
+        "tick": 0,
+        "cursor": 0
+      },
+      "tick": 121,
+      "cursor": 1,
+      "replaying": true,
+      "working": false,
+      "status": "Fork tick 0, change 0. Equal tick 121. A computed through 600 (5.0 s). 2 recorded changes. Replaying retained changes; editing resumes at its end.",
+      "inspect": "traveler\nA [1.008, 0.000, 0.000] m \u00b7 B [1.008, 0.000, 0.000] m\nSeparation 0.000 m",
+      "box": [
+        878,
+        52,
+        390,
+        311
+      ]
+    },
+    "run": {
+      "state": "idle",
+      "title": "Recording",
+      "status": "Resets the motion to tick 0, then records what you change.",
+      "check": null,
+      "meter": null,
+      "box": null,
+      "buttons": {
+        "record": null,
+        "stop": null,
+        "replay": null,
+        "restart": null,
+        "return": null,
+        "cancel": null,
+        "save": null,
+        "open": null
+      },
+      "recording": null,
+      "record": null,
+      "replay": null,
+      "timeline": null,
+      "seeking": null,
+      "contexts": {
+        "worlds": 2,
+        "peakWorlds": 3,
+        "authoring": 1,
+        "replay": 0,
+        "candidates": 0,
+        "seeking": 0,
+        "checkpoints": 0,
+        "checkpointBytes": 0,
+        "selected": "comparison",
+        "recording": "idle",
+        "comparison": {
+          "worlds": 1,
+          "generation": 2,
+          "buffers": 8,
+          "frames": 601,
+          "identities": 1,
+          "bytes": 26802006,
+          "suffix": 2,
+          "suffixBytes": 6872,
+          "historyBytes": 10472,
+          "horizon": 600
+        }
+      }
+    },
+    "camera": [
+      10,
+      9.000000000000004,
+      18
+    ],
+    "viewProjection": [
+      1.406286448893799,
+      -0.2981680629819701,
+      -0.34092513102337657,
+      -0.34075466845786484,
+      2.0939964713351025e-17,
+      2.269728316168873,
+      -0.34092513102337674,
+      -0.340754668457865,
+      -0.5468891745698106,
+      -0.7667178762393516,
+      -0.8766646226315397,
+      -0.8762262903202238,
+      -4.218859346681398,
+      -3.644952443391835,
+      22.157490671799362,
+      22.246411926463463
+    ],
+    "bodies": [
+      {
+        "id": "traveler",
+        "world": [
+          1.0083394050598145,
+          0,
+          0
+        ],
+        "point": [
+          558.2,
+          472.1
+        ]
+      }
+    ],
+    "mode": "packaged",
+    "t": 109303
+  },
+  "selectedLawIntermediates": [
+    {
+      "address": {
+        "tick": 121,
+        "cursor": 1,
+        "stateHash": "61e0001199613b50",
+        "engineHash": "6403cd3a5d5921c7"
+      },
+      "selected": "sideways",
+      "values": {
+        "law-label": "Custom current law",
+        "Position x": "0",
+        "Position y": "0",
+        "Position z": "0",
+        "Rotation about x": "0",
+        "Rotation about y": "0",
+        "Rotation about z": "0",
+        "Half extent x": "50",
+        "Half extent y": "10",
+        "Half extent z": "10",
+        "Strength": "0",
+        "law-fade": "0"
+      },
+      "lawRow": {
+        "id": "sideways",
+        "label": "Custom current law",
+        "select": [
+          25,
+          -19.7,
+          172,
+          41.2
+        ],
+        "visible": [
+          201,
+          -19.7,
+          34,
+          41.2
+        ],
+        "enabled": [
+          239,
+          -19.7,
+          44,
+          41.2
+        ],
+        "enabledState": "false",
+        "enabledText": "Off",
+        "locked": true,
+        "visibleState": "false",
+        "color": "#c58ae5",
+        "expression": "directional, 0 m/s\u00b2"
+      }
+    },
+    {
+      "address": {
+        "tick": 201,
+        "cursor": 2,
+        "stateHash": "30e376e80be4b678",
+        "engineHash": "289de88aeff3afb5"
+      },
+      "selected": "sideways",
+      "values": {
+        "law-label": "Custom current law",
+        "Position x": "0",
+        "Position y": "0",
+        "Position z": "0",
+        "Rotation about x": "0",
+        "Rotation about y": "0",
+        "Rotation about z": "0",
+        "Half extent x": "50",
+        "Half extent y": "10",
+        "Half extent z": "10",
+        "Strength": "3",
+        "law-fade": "0"
+      },
+      "lawRow": {
+        "id": "sideways",
+        "label": "Custom current law",
+        "select": [
+          25,
+          -19.7,
+          172,
+          41.2
+        ],
+        "visible": [
+          201,
+          -19.7,
+          34,
+          41.2
+        ],
+        "enabled": [
+          239,
+          -19.7,
+          44,
+          41.2
+        ],
+        "enabledState": "false",
+        "enabledText": "Off",
+        "locked": true,
+        "visibleState": "false",
+        "color": "#c58ae5",
+        "expression": "directional, 3 m/s\u00b2"
+      }
+    },
+    {
+      "address": {
+        "tick": 281,
+        "cursor": 3,
+        "stateHash": "cbd456cf3e52fdca",
+        "engineHash": "fb9ef1ef06b9acb9"
+      },
+      "selected": "sideways",
+      "values": {
+        "law-label": "Custom current law",
+        "Position x": "0",
+        "Position y": "0",
+        "Position z": "0",
+        "Rotation about x": "0",
+        "Rotation about y": "0",
+        "Rotation about z": "0",
+        "Half extent x": "50",
+        "Half extent y": "10",
+        "Half extent z": "10",
+        "Strength": "3",
+        "law-fade": "0.4"
+      },
+      "lawRow": {
+        "id": "sideways",
+        "label": "Custom current law",
+        "select": [
+          25,
+          -19.7,
+          172,
+          41.2
+        ],
+        "visible": [
+          201,
+          -19.7,
+          34,
+          41.2
+        ],
+        "enabled": [
+          239,
+          -19.7,
+          44,
+          41.2
+        ],
+        "enabledState": "false",
+        "enabledText": "Off",
+        "locked": true,
+        "visibleState": "false",
+        "color": "#c58ae5",
+        "expression": "directional, 3 m/s\u00b2"
+      }
+    }
+  ],
+  "retainedReplayEndpoints": [
+    {
+      "log": "created-and-undo-expectation/m7-r1-panel.log",
+      "authority": {
+        "tick": 396,
+        "cursor": 2,
+        "stateHash": "1321ef45a4b93e62",
+        "engineHash": "7d9ee50486c3fabb"
+      },
+      "baselineHash": "191a45395e8fb09e",
+      "suffix": 2,
+      "playing": false
+    },
+    {
+      "log": "selected-details/m7-r1-panel.log",
+      "authority": {
+        "tick": 396,
+        "cursor": 3,
+        "stateHash": "b071edf1bb3d1ca5",
+        "engineHash": "7d9ee50486c3fabb"
+      },
+      "baselineHash": "191a45395e8fb09e",
+      "suffix": 3,
+      "playing": false
+    }
+  ],
+  "ordinaryIntermediate": {
+    "kind": "layout",
+    "playing": false,
+    "authority": {
+      "tick": 121,
+      "cursor": 1,
+      "stateHash": "7f6453831543cf76",
+      "engineHash": "6403cd3a5d5921c7"
+    },
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 2,
+    "controls": {
+      "drag-region": [
+        0,
+        0,
+        696,
+        40
+      ],
+      "tools": [
+        704,
+        5,
+        564,
+        30
+      ],
+      "undo": [
+        704,
+        5,
+        75.7,
+        28
+      ],
+      "redo": [
+        783.8,
+        5,
+        81.1,
+        28
+      ],
+      "frame-view": [
+        1098.3,
+        5,
+        74.3,
+        28
+      ],
+      "reset-view": [
+        1180.7,
+        5,
+        87.3,
+        28
+      ],
+      "panel": [
+        12,
+        52,
+        284,
+        598
+      ],
+      "file-new": [
+        25,
+        133.1,
+        44.9,
+        28
+      ],
+      "file-open": [
+        75.9,
+        133.1,
+        61.1,
+        28
+      ],
+      "file-save": [
+        143,
+        133.1,
+        47.1,
+        28
+      ],
+      "file-save-as": [
+        196.1,
+        133.1,
+        76.4,
+        28
+      ],
+      "add-directional": [
+        96.3,
+        349.8,
+        46,
+        24
+      ],
+      "add-softRadial": [
+        146.3,
+        349.8,
+        38.1,
+        24
+      ],
+      "add-vortexY": [
+        188.4,
+        349.8,
+        45.4,
+        24
+      ],
+      "add-linearDrag": [
+        237.8,
+        349.8,
+        45.2,
+        24
+      ],
+      "arrows-toggle": [
+        227,
+        478.2,
+        56,
+        24
+      ],
+      "details": null,
+      "law-duplicate": null,
+      "law-delete": null,
+      "law-label": null,
+      "support-box": null,
+      "support-sphere": null,
+      "support-cylinderY": null,
+      "law-fade": null,
+      "ingredient-up": null,
+      "motion": [
+        13,
+        534.3,
+        282,
+        221.5
+      ],
+      "explain-nearest": [
+        162.7,
+        545.3,
+        120.3,
+        24
+      ],
+      "probe-count": [
+        25,
+        677.6,
+        125,
+        26
+      ],
+      "probe-seed": [
+        158,
+        677.6,
+        125,
+        26
+      ],
+      "explain": null,
+      "explain-close": null,
+      "explain-applied": null,
+      "explain-preview": null,
+      "transport": [
+        830.2,
+        746,
+        437.8,
+        42
+      ],
+      "play": [
+        837.2,
+        753,
+        96,
+        28
+      ],
+      "step": [
+        941.2,
+        753,
+        64.4,
+        28
+      ],
+      "reset": [
+        1013.5,
+        753,
+        77.5,
+        28
+      ],
+      "run": [
+        828,
+        52,
+        440,
+        151.5
+      ],
+      "run-timeline": [
+        839,
+        101.5,
+        418,
+        24
+      ],
+      "run-record": null,
+      "run-stop": null,
+      "run-replay": null,
+      "run-restart": [
+        839,
+        132.5,
+        125.8,
+        28
+      ],
+      "run-return": [
+        970.8,
+        132.5,
+        139.4,
+        28
+      ],
+      "run-save": [
+        1116.2,
+        132.5,
+        123,
+        28
+      ],
+      "run-open": [
+        839,
+        166.5,
+        126.6,
+        28
+      ],
+      "compare-from": [
+        971.6,
+        166.5,
+        139.3,
+        28
+      ],
+      "run-cancel": null,
+      "comparison": null,
+      "baseline-compute": null,
+      "baseline-cancel": null,
+      "baseline-extend": null,
+      "alternate-replay": null,
+      "alternate-new": null,
+      "baseline-ghosts": null,
+      "alternate-export": null,
+      "comparison-close": null,
+      "overlays": [
+        853.8,
+        692,
+        414.2,
+        44
+      ],
+      "arrows-every": [
+        861.8,
+        700,
+        77.4,
+        28
+      ],
+      "arrows-selected": [
+        939.2,
+        700,
+        95.8,
+        28
+      ],
+      "probes-toggle": [
+        1042,
+        699,
+        64.5,
+        28
+      ],
+      "trail-mode": [
+        1112.5,
+        699,
+        148.5,
+        30
+      ],
+      "trails-off": [
+        1113.5,
+        700,
+        61.7,
+        28
+      ],
+      "trails-selected": [
+        1175.2,
+        700,
+        50,
+        28
+      ],
+      "trails-all": [
+        1225.2,
+        700,
+        34.8,
+        28
+      ],
+      "recovery-offer": null,
+      "recovery-discard": null,
+      "recovery-accept": null,
+      "diagnostics": [
+        12,
+        638,
+        532,
+        150
+      ],
+      "sim-error-reset": null,
+      "mode-translate": [
+        873.8,
+        6,
+        67.1,
+        28
+      ],
+      "mode-rotate": [
+        940.9,
+        6,
+        74.9,
+        28
+      ],
+      "mode-scale": [
+        1015.8,
+        6,
+        73.5,
+        28
+      ]
+    },
+    "laws": [
+      {
+        "id": "push",
+        "label": "Push",
+        "select": [
+          25,
+          381.8,
+          172,
+          41.2
+        ],
+        "visible": [
+          201,
+          381.8,
+          34,
+          41.2
+        ],
+        "enabled": [
+          239,
+          381.8,
+          44,
+          41.2
+        ],
+        "enabledState": "true",
+        "enabledText": "On",
+        "locked": true,
+        "visibleState": "true",
+        "color": "#55aaa4",
+        "expression": "directional, 12 m/s\u00b2"
+      },
+      {
+        "id": "sideways",
+        "label": "Sideways",
+        "select": [
+          25,
+          427,
+          172,
+          41.2
+        ],
+        "visible": [
+          201,
+          427,
+          34,
+          41.2
+        ],
+        "enabled": [
+          239,
+          427,
+          44,
+          41.2
+        ],
+        "enabledState": "true",
+        "enabledText": "On",
+        "locked": true,
+        "visibleState": "true",
+        "color": "#55aaa4",
+        "expression": "directional, 0 m/s\u00b2"
+      }
+    ],
+    "inputs": {
+      "law-label": null,
+      "Position x": null,
+      "Position y": null,
+      "Position z": null,
+      "Rotation about x": null,
+      "Rotation about y": null,
+      "Rotation about z": null,
+      "Half extent x": null,
+      "Half extent y": null,
+      "Half extent z": null,
+      "Strength": null,
+      "law-fade": null
+    },
+    "inputValues": {
+      "law-label": "Push",
+      "Position x": "3",
+      "Position y": "2",
+      "Position z": "0",
+      "Rotation about x": "0",
+      "Rotation about y": "0",
+      "Rotation about z": "0",
+      "Half extent x": "1.5",
+      "Half extent y": "2",
+      "Half extent z": "1.5",
+      "Strength": "12",
+      "law-fade": "0.25"
+    },
+    "detailTitle": "Push",
+    "detailKind": "Directional \u00b7 12 m/s\u00b2: pushes along its arrow, which turns with the law",
+    "appliedLaws": [
+      {
+        "id": "push",
+        "enabled": true,
+        "pose": {
+          "position": [
+            3,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            1.5,
+            2,
+            1.5
+          ]
+        },
+        "edgeFade": 0.25,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            1,
+            0,
+            0
+          ],
+          "strength": 12
+        }
+      },
+      {
+        "id": "sideways",
+        "enabled": true,
+        "pose": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "region": {
+          "kind": "box",
+          "halfExtents": [
+            50,
+            10,
+            10
+          ]
+        },
+        "edgeFade": 0,
+        "expression": {
+          "kind": "directional",
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "strength": 0
+        }
+      }
+    ],
+    "swatches": {
+      "#55aaa4": null,
+      "#c58ae5": null,
+      "#d9a35b": null,
+      "#7aa7d9": null
+    },
+    "ingredients": {
+      "law": null,
+      "level": null,
+      "focus": null,
+      "shelf": {
+        "directional": null,
+        "softRadial": null,
+        "vortexY": null,
+        "linearDrag": null
+      },
+      "rows": [],
+      "buttons": [],
+      "fields": [],
+      "live": [],
+      "up": null,
+      "detail": null,
+      "note": "Add one to combine it with this law\u2019s primitive.",
+      "box": null
+    },
+    "selected": null,
+    "selectedField": null,
+    "arrows": 8,
+    "transformMode": "translate",
+    "support": null,
+    "handles": null,
+    "lawHandles": [],
+    "explained": null,
+    "scroll": {
+      "panel": {
+        "scrollWidth": 282,
+        "clientWidth": 282,
+        "scrollHeight": 703,
+        "clientHeight": 596,
+        "scrollTop": 0
+      },
+      "explain": {
+        "scrollWidth": 0,
+        "clientWidth": 0,
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "scrollTop": 0
+      }
+    },
+    "visualization": {
+      "contexts": {
+        "worlds": 2,
+        "peakWorlds": 2,
+        "authoring": 1,
+        "replay": 1,
+        "candidates": 0,
+        "seeking": 0,
+        "checkpoints": 0,
+        "checkpointBytes": 0,
+        "selected": "replay",
+        "recording": "recorded",
+        "comparison": null
+      },
+      "render": {
+        "geometries": 31,
+        "textures": 5,
+        "objects": 123
+      },
+      "probes": {
+        "enabled": false,
+        "count": 2000,
+        "seed": 1,
+        "live": 0
+      },
+      "trails": {
+        "mode": "selected",
+        "count": 0
+      },
+      "explained": null,
+      "explainMode": "applied",
+      "arrowScope": "all",
+      "bytes": {
+        "probePositions": 48000,
+        "probeVelocities": 48000,
+        "probeAlive": 2000,
+        "probeBirths": 16000,
+        "trailPositions": 115200,
+        "trailTicks": 76800,
+        "trailRings": 256,
+        "probeInstances": 128000,
+        "trailLinePositions": 229632,
+        "trailLineColors": 229632,
+        "shareLines": 3168,
+        "shareInstances": 5016
+      },
+      "totalBytes": 901704,
+      "drawn": {
+        "trailVertices": 0,
+        "probeInstances": 0,
+        "shareArrows": 0
+      },
+      "comparison": null,
+      "ghostsShown": true
+    },
+    "comparison": null,
+    "run": {
+      "state": "replay",
+      "title": "Replay of \u201cTwo Futures\u201d",
+      "status": "tick 121 of 396, change 1 of 1. Paused.",
+      "check": null,
+      "meter": null,
+      "box": [
+        828,
+        52,
+        440,
+        151.5
+      ],
+      "buttons": {
+        "record": null,
+        "stop": null,
+        "replay": null,
+        "restart": [
+          839,
+          132.5,
+          125.8,
+          28
+        ],
+        "return": [
+          970.8,
+          132.5,
+          139.4,
+          28
+        ],
+        "cancel": null,
+        "save": [
+          1116.2,
+          132.5,
+          123,
+          28
+        ],
+        "open": [
+          839,
+          166.5,
+          126.6,
+          28
+        ]
+      },
+      "recording": null,
+      "record": {
+        "runId": "run-945f68d7-804e-4bfe-bc15-59b6eec0cb8b",
+        "title": "Two Futures",
+        "commands": 1,
+        "finalTick": 396,
+        "lastAppliedSequence": 1,
+        "stopped": "user",
+        "finalCheck": {
+          "stateSha256": "f083152803054b7a35959b50efa5f9a0962deaff2ed930eec61ab702973649fa",
+          "engineSha256": "70bd732e9904212c9f3b5b887af6f26fb0d1255b8d180556f84da2d67c8fffa7"
+        },
+        "qualified": true,
+        "exported": false
+      },
+      "replay": {
+        "address": {
+          "tick": 121,
+          "cursor": 1
+        },
+        "complete": false,
+        "partial": false,
+        "check": null,
+        "generation": 4
+      },
+      "timeline": {
+        "box": [
+          839,
+          101.5,
+          418,
+          24
+        ],
+        "value": 121,
+        "max": 396
+      },
+      "seeking": null,
+      "contexts": {
+        "worlds": 2,
+        "peakWorlds": 2,
+        "authoring": 1,
+        "replay": 1,
+        "candidates": 0,
+        "seeking": 0,
+        "checkpoints": 0,
+        "checkpointBytes": 0,
+        "selected": "replay",
+        "recording": "recorded",
+        "comparison": null
+      }
+    },
+    "camera": [
+      10,
+      9.000000000000004,
+      18
+    ],
+    "viewProjection": [
+      1.406286448893799,
+      -0.2981680629819701,
+      -0.34092513102337657,
+      -0.34075466845786484,
+      2.0939964713351025e-17,
+      2.269728316168873,
+      -0.34092513102337674,
+      -0.340754668457865,
+      -0.5468891745698106,
+      -0.7667178762393516,
+      -0.8766646226315397,
+      -0.8762262903202238,
+      -4.218859346681398,
+      -3.644952443391835,
+      22.157490671799362,
+      22.246411926463463
+    ],
+    "bodies": [
+      {
+        "id": "traveler",
+        "world": [
+          1.0083394050598145,
+          0,
+          0
+        ],
+        "point": [
+          558.2,
+          472.1
+        ]
+      }
+    ],
+    "mode": "packaged",
+    "t": 76769
+  },
+  "ordinaryRetainedMainUnchanged": {
+    "tick": 396,
+    "cursor": 1,
+    "stateHash": "5855a00c065afd52",
+    "engineHash": "7d9ee50486c3fabb"
+  },
+  "limits": "Targeted DOM/host/receipt assertions; native state/engine receipts use existing FNV64 hashes. No new native New/performance/full 35-case or resource campaign is claimed."
+}

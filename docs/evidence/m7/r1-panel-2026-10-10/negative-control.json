@@ -1,0 +1,29 @@
+{
+  "originalSourceSha": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+  "originalMainSha256": "7816b15dcc5f40985e0503afdaa09e3c2bf7f8caee0fa5b0afc1a58abab4b75f",
+  "currentMainSha256": "c42060deb1b2ffe73ed86582ad2e1c9a551e5fba246fc5829efa22f15a6a53f5",
+  "command": [
+    "env",
+    "LAWSMITH_PANEL_SOURCE=d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+    "npx",
+    "vitest",
+    "run",
+    "tests/replayPanel.test.js"
+  ],
+  "exitCode": 1,
+  "testsFailed": 3,
+  "testsPassed": 1,
+  "assertions": [
+    "missing Push in actual produced list at (121,1)",
+    "retained On versus authoritative disabled state",
+    "strength 0 versus 3",
+    "directional versus linearDrag inspector",
+    "fade 0 versus 0.4",
+    "equal-number new world skipped"
+  ],
+  "log": "repaired-negative-control.log",
+  "rebuildPolicy": "Production frame decision and renderPanel bodies extracted from named source; no command-triggered fixture renderer call.",
+  "executorSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "fixtureSha256": "1107fc1d6bf80b5a3f089dde4551fe34928a79cfde6b9355a60ad9d2c9425652",
+  "assertionsFailed": 13
+}

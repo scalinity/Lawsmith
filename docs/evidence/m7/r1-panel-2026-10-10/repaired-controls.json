@@ -1,0 +1,28 @@
+[
+  {
+    "name": "negative-control",
+    "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/replayPanel.test.js"
+    ],
+    "sourceOverride": "d65b7e9a0ee82e7ebdc35f33f78c33bba64582ce",
+    "exitCode": 1,
+    "log": "repaired-negative-control.log"
+  },
+  {
+    "name": "focused",
+    "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/replayPanel.test.js"
+    ],
+    "sourceOverride": null,
+    "exitCode": 0,
+    "log": "repaired-focused.log"
+  }
+]

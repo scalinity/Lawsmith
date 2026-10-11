@@ -1,0 +1,40 @@
+{
+  "applicationTestCandidate": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+  "checkedHarnessSha": "dfdf5158918762b1577624053447ae0f7e8c716b",
+  "checks": [
+    {
+      "command": [
+        "zsh",
+        "-n",
+        "scripts/verify/native/m7-r1-panel.zsh"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "9e2ae309"
+      ],
+      "exitCode": 0,
+      "output": ""
+    }
+  ],
+  "orchestrationStyleAndScriptsUnchanged": true,
+  "publicCredentialAndPrivatePathScanHits": 0,
+  "ownerDecision": "Remaining native coverage reruns in a separately approved window; no historical carry-forward authorized.",
+  "publicLogNormalization": {
+    "trailingEmptyLinesRemoved": [
+      "repaired-vitest.log",
+      "repaired-negative-control.log",
+      "repaired-package.log",
+      "repaired-focused.log",
+      "final-vitest.log",
+      "repaired-cargo-test.log",
+      "final-vitest-serial.log"
+    ],
+    "originalRawLogsPreservedPrivately": true
+  }
+}

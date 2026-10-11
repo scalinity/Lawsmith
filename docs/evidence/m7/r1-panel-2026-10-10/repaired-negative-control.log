@@ -1,0 +1,201 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/replayPanel.test.js
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/replayPanel.test.js (4 tests | 3 failed) 1236ms
+   × R1 created law: frame integration shows Push at an intermediate replay address without incidental refresh 878ms
+   × R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries 152ms
+   × frame invalidation includes world generation and replay mode, defers gestures and preserves focused input 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/replayPanel.test.js > R1 created law: frame integration shows Push at an intermediate replay address without incidental refresh
+AssertionError: expected [ 'sideways' ] to deeply equal [ 'push', 'sideways' ]
+
+- Expected
++ Received
+
+  [
+-   "push",
+    "sideways",
+  ]
+
+ ❯ tests/replayPanel.test.js:150:41
+    148|   expect(c.host.appliedFields().some((law) => law.id === created.value…
+    149|   expect(c.replaying).toBe(true); expect(c.host.tick).toBeLessThan(396…
+    150|   expect(p.rows().map((row) => row.id)).toEqual(c.host.appliedFields()…
+       |                                         ^
+    151|   expect(p.rows().find((row) => row.id === created.value.id)).toMatchO…
+    152|   const renders = p.renders(); p.frame(); expect(p.renders()).toBe(ren…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected [ { id: 'sideways', …(7) } ] to deeply equal [ { id: 'sideways', …(7) } ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    {
+      "color": "#55aaa4",
+-     "enabled": "Off",
++     "enabled": "On",
+      "expression": "directional, 0 m/s²",
+      "id": "sideways",
+      "label": "Custom current law",
+      "locked": true,
+      "selected": "true",
+
+ ❯ tests/replayPanel.test.js:176:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected [ { id: 'sideways', …(7) } ] to deeply equal [ { id: 'sideways', …(7) } ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  [
+    {
+      "color": "#55aaa4",
+-     "enabled": "Off",
+-     "expression": "directional, 3 m/s²",
++     "enabled": "On",
++     "expression": "directional, 0 m/s²",
+      "id": "sideways",
+      "label": "Custom current law",
+      "locked": true,
+      "selected": "true",
+      "visible": "false",
+
+ ❯ tests/replayPanel.test.js:176:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected '0' to be '3' // Object.is equality
+
+Expected: "3"
+Received: "0"
+
+ ❯ tests/replayPanel.test.js:178:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected 'Directional · 0 m/s²: pushes along it…' to contain '3 m/s²'
+
+Expected: "3 m/s²"
+Received: "Directional · 0 m/s²: pushes along its arrow, which turns with the law"
+
+ ❯ tests/replayPanel.test.js:179:46
+    177|     expect(p.$('details').hidden).toBe(false); expect(p.$('details-tit…
+    178|     expect.soft(p.input(key)?.value).toBe(value); expect.soft(p.$('law…
+    179|     expect.soft(p.$('law-kind').textContent).toContain(primitiveDescri…
+       |                                              ^
+    180|   }
+    181|   complete(s, c, p, retained);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected [ { id: 'sideways', …(7) } ] to deeply equal [ { id: 'sideways', …(7) } ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  [
+    {
+      "color": "#55aaa4",
+-     "enabled": "Off",
+-     "expression": "linear drag, 2 s⁻¹",
++     "enabled": "On",
++     "expression": "directional, 0 m/s²",
+      "id": "sideways",
+      "label": "Custom current law",
+      "locked": true,
+      "selected": "true",
+      "visible": "false",
+
+ ❯ tests/replayPanel.test.js:176:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected undefined to be '2' // Object.is equality
+
+- Expected:
+"2"
+
++ Received:
+undefined
+
+ ❯ tests/replayPanel.test.js:178:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected 'Directional · 0 m/s²: pushes along it…' to contain '2 s⁻¹'
+
+Expected: "2 s⁻¹"
+Received: "Directional · 0 m/s²: pushes along its arrow, which turns with the law"
+
+ ❯ tests/replayPanel.test.js:179:46
+    177|     expect(p.$('details').hidden).toBe(false); expect(p.$('details-tit…
+    178|     expect.soft(p.input(key)?.value).toBe(value); expect.soft(p.$('law…
+    179|     expect.soft(p.$('law-kind').textContent).toContain(primitiveDescri…
+       |                                              ^
+    180|   }
+    181|   complete(s, c, p, retained);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  tests/replayPanel.test.js > R1 selected details: disabled, strength, expression and fade controls follow multiple paused intermediate boundaries
+AssertionError: expected '0' to be '0.4' // Object.is equality
+
+Expected: "0.4"
+Received: "0"
+
+ ❯ tests/replayPanel.test.js:178:86
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  tests/replayPanel.test.js > frame invalidation includes world generation and replay mode, defers gestures and preserves focused input
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/replayPanel.test.js:200:52
+    198|   const { s, c } = await setup(); const p = panel(s, 'sideways'); p.fr…
+    199|   const initial = p.renders(); p.frame(); expect(p.renders()).toBe(ini…
+    200|   c.newAlternate(); p.frame(); expect(p.renders()).toBe(initial + 1); …
+       |                                                    ^
+    201|   const input = p.input('strength'); input.value = 'typing'; p.documen…
+    202|   p.interaction.gesture = true;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  21:09:57
+   Duration  2.83s (tests 48%, transform 37%, import 15%)

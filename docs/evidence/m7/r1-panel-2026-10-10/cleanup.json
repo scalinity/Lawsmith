@@ -1,0 +1,30 @@
+{
+  "preferences": [
+    {
+      "attempt": "native-state",
+      "preferencesRestored": true
+    },
+    {
+      "attempt": "native-state-final",
+      "preferencesRestored": true
+    },
+    {
+      "attempt": "native-state-details",
+      "preferencesRestored": true
+    },
+    {
+      "attempt": "native-state-resume",
+      "preferencesRestored": true
+    },
+    {
+      "attempt": "native-state-ordinary",
+      "preferencesRestored": true
+    }
+  ],
+  "displayRestored": true,
+  "display": "1168x755@120",
+  "guiLockReleased": true,
+  "noOwnedApp": true,
+  "applicationBinaryUnchanged": true,
+  "applicationTestTreeEqualsCandidate": true
+}

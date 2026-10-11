@@ -1,0 +1,60 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "exitCode": 0,
+    "seconds": 0.564,
+    "log": "repaired-typecheck.log"
+  },
+  {
+    "name": "vitest",
+    "command": [
+      "npx",
+      "vitest",
+      "run"
+    ],
+    "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "exitCode": 0,
+    "seconds": 26.287,
+    "log": "repaired-vitest.log"
+  },
+  {
+    "name": "build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "exitCode": 0,
+    "seconds": 1.117,
+    "log": "repaired-build.log"
+  },
+  {
+    "name": "cargo-test",
+    "command": [
+      "cargo",
+      "test"
+    ],
+    "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "exitCode": 0,
+    "seconds": 0.581,
+    "log": "repaired-cargo-test.log"
+  },
+  {
+    "name": "cargo-check",
+    "command": [
+      "cargo",
+      "check"
+    ],
+    "sourceSha": "0c7c5a7cab60fd6b926c0009deebf832630f9c71",
+    "exitCode": 0,
+    "seconds": 0.251,
+    "log": "repaired-cargo-check.log"
+  }
+]

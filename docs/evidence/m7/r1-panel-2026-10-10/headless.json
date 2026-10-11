@@ -1,0 +1,28 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "seconds": 2.191,
+    "sourceSha": "c560563ef145ab954e8fec04b746fe5707d13157",
+    "log": "final-typecheck.log"
+  },
+  {
+    "name": "vitest",
+    "command": [
+      "npx",
+      "vitest",
+      "run"
+    ],
+    "cwd": ".",
+    "exitCode": 1,
+    "seconds": 43.493,
+    "sourceSha": "c560563ef145ab954e8fec04b746fe5707d13157",
+    "log": "final-vitest.log"
+  }
+]

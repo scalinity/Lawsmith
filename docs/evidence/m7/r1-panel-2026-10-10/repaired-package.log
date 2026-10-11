@@ -1,0 +1,27 @@
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'tauri' build --bundles app
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build`
+npm notice run lawsmith@0.0.0 build
+npm notice run tsc --noEmit && vite build
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 59 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                    16.38 kB │ gzip:     4.39 kB
+dist/assets/index-BlGEIOdO.css     17.74 kB │ gzip:     4.25 kB
+dist/assets/index-TQqm3bzE.js   5,579.25 kB │ gzip: 2,021.11 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 254ms
+   Compiling lawsmith v0.0.0 (<checkout>/src-tauri)
+    Finished `release` profile [optimized] target(s) in 23.67s
+       Built application at: <checkout>/src-tauri/target/release/lawsmith
+    Bundling Lawsmith.app (<checkout>/src-tauri/target/release/bundle/macos/Lawsmith.app)
+    Finished 1 bundle at:
+        <checkout>/src-tauri/target/release/bundle/macos/Lawsmith.app (13.54 MiB)
