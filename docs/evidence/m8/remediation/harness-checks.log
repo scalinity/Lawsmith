@@ -1,0 +1,39 @@
+# harness checks at 38271e1396f3ef29fc509de6a4667cb62783b502
+zsh -n scripts/verify/native/lib.zsh: exit 0
+zsh -n scripts/verify/native/m2-authoring.zsh: exit 0
+zsh -n scripts/verify/native/m2-demo.zsh: exit 0
+zsh -n scripts/verify/native/m2-files.zsh: exit 0
+zsh -n scripts/verify/native/m2-guard.zsh: exit 0
+zsh -n scripts/verify/native/m2-p0.zsh: exit 0
+zsh -n scripts/verify/native/m2-stage.zsh: exit 0
+zsh -n scripts/verify/native/m3-demo.zsh: exit 0
+zsh -n scripts/verify/native/m3-handles.zsh: exit 0
+zsh -n scripts/verify/native/m3-p1.zsh: exit 0
+zsh -n scripts/verify/native/m4-explain.zsh: exit 0
+zsh -n scripts/verify/native/m4-legible.zsh: exit 0
+zsh -n scripts/verify/native/m4-perf.zsh: exit 0
+zsh -n scripts/verify/native/m4-trails.zsh: exit 0
+zsh -n scripts/verify/native/m5-compose.zsh: exit 0
+zsh -n scripts/verify/native/m5-legible.zsh: exit 0
+zsh -n scripts/verify/native/m5-perf.zsh: exit 0
+zsh -n scripts/verify/native/m6a-guard.zsh: exit 0
+zsh -n scripts/verify/native/m6a-legible.zsh: exit 0
+zsh -n scripts/verify/native/m6a-pace.zsh: exit 0
+zsh -n scripts/verify/native/m6a-record.zsh: exit 0
+zsh -n scripts/verify/native/m6b-long.zsh: exit 0
+zsh -n scripts/verify/native/m6b-seek.zsh: exit 0
+zsh -n scripts/verify/native/m7-compare.zsh: exit 0
+zsh -n scripts/verify/native/m7-perf.zsh: exit 0
+zsh -n scripts/verify/native/m7-r1-panel.zsh: exit 0
+zsh -n scripts/verify/native/m8-keyboard.zsh: exit 0
+zsh -n scripts/verify/native/m8-visual.zsh: exit 0
+zsh -n scripts/verify/native/m8lib.zsh: exit 0
+osacompile lights.js: exit 0
+py_compile m8q.py: exit 0
+Ran 18 tests in 0.001s
+
+OK
+test_m8q exit 0
+Ran 10 tests in 0.000s
+
+OK

@@ -1,0 +1,8 @@
+FAIL: test_duplicate_roles_fail (__main__.Other.test_duplicate_roles_fail)
+FAIL: test_each_missing_role_fails (__main__.Other.test_each_missing_role_fails)
+FAIL: test_empty_or_unreadable_observation_fails (__main__.Other.test_empty_or_unreadable_observation_fails)
+FAIL: test_lights_clearance (__main__.Other.test_lights_clearance)
+FAIL: test_malformed_geometry_fails (__main__.Other.test_malformed_geometry_fails)
+FAIL: test_unknown_role_fails (__main__.Other.test_unknown_role_fails)
+Ran 18 tests in 0.001s
+FAILED (failures=6)

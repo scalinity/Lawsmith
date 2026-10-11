@@ -1,0 +1,6 @@
+     × the selected-law inspector sits in the right context column, outside the scene column and its panel 2ms
+     × its collapse control is its own, outside the collapsing body, and names what it controls 0ms
+     × in replay the fields are inert and the card and its toggle are not 1ms
+     × in authoring nothing in the inspector is inert; a guard freezes the whole card with the rest 0ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  4 failed | 1 passed (5)
