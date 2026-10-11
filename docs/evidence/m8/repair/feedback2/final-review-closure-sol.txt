@@ -1,0 +1,16 @@
+GPT-6.1 Sol: independent source review. No tests, build or native actions were executed.
+
+Initial review at 577ad1f904a756c316416ea8006155d7d69b7776 found:
+- R-HUD1: the single-emitter selector row's hidden state was overridden by .field-row.
+- R-HUD2: hiding the HUD interrupted an active law gesture.
+- R-HUD3: recording-limit feedback stayed hidden behind a hidden HUD.
+
+All three findings are CLOSED at 8595013508ccc381de110a2b11103513a2b2e953:
+- R-HUD1: an explicit CSS rule makes the single-emitter row's hidden state override .field-row.
+- R-HUD2: hiding by H or the button is refused during an active law gesture or gizmo drag, preserving the
+  normal release. The targeted test exercises the production HUD handling with a real LawInteraction and
+  controller history.
+- R-HUD3: the duration, command-count and byte limits restore the HUD with their explanation.
+
+No additional actionable findings. The build can proceed. Tests were inspected, not executed; native
+qualification is pending.
