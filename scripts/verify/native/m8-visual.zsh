@@ -39,25 +39,6 @@ reveal_input() {
 # set_input LABEL VALUE: replaces an inspector value and commits it with Tab.
 set_input() { reveal_input "$1"; keys kd:cmd t:a ku:cmd t:"$2"; key_code 48; sleep 0.4 }
 
-# drag_window DX DY: drags the window by a point in the drag band, clear of the traffic lights; records
-# the window's actual displacement. A displacement other than the drag is the M1 regression watch.
-drag_window() {
-  layout
-  local band=(${=$(logq field $APP_LOG layout controls.drag-region | tr -d '[],')})
-  local x=$(( WIN_X + ${band[1]%.*} + (${band[3]%.*} > 300 ? 200 : ${band[3]%.*} / 2) )) y=$(( WIN_Y + ${band[2]%.*} + ${band[4]%.*} / 2 ))
-  local before=($WIN_X $WIN_Y)
-  drag $x $y $(( x + $1 )) $(( y + $2 )) 16
-  sleep 0.6
-  window_origin
-  local dx=$(( WIN_X - before[1] )) dy=$(( WIN_Y - before[2] ))
-  print -r -- "{\"check\":\"window-drag\",\"scale\":$(field layout interfaceScale),\"from\":[$x,$y],\"asked\":[$1,$2],\"moved\":[$dx,$dy]}" >> $QA_OUT/m8-checks.jsonl
-  if (( dx != $1 || dy != $2 )); then
-    say "WATCH: the window moved ($dx,$dy) for a ($1,$2) drag from the drag band (M1 jump watch)"
-  else
-    say "window moved exactly ($dx,$dy) from the drag band"
-  fi
-}
-
 segment "M8 visual matrix"
 seed_folder $QA_STATE/scenes
 display_set 1728 1117 120
@@ -191,11 +172,13 @@ for pct in 100 200; do
   press_expect comparison-close comparison
 done
 
-# Window dragging from the drag band at each scale, and back.
+# Window dragging from the empty drag band at each scale, and back by the actual displacement. The band
+# yields to scene content beneath it (SPEC; LawGesture.refreshDragRegion), and the fault scene's support
+# fills the window, so an ordinary example's opening framing comes first (M8 R21).
+open_example "Sideways Rain" sideways-rain
 for pct in $SCALES; do
   set_scale $pct
-  drag_window 80 50
-  drag_window -80 -50
+  window_round_trip 80 50
 done
 
 keys kd:cmd t:0 ku:cmd

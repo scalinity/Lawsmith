@@ -88,3 +88,37 @@ tab_to() {
 }
 
 traffic_lights() { osascript -l JavaScript $NATIVE/lights.js $APP_PID $WIN_X $WIN_Y }
+
+# drag_window DX DY: drags the window by a point in the drag band, clear of the traffic lights, from a
+# fresh readback and window origin (lib.zsh's drag hit-tests both ends), and records the window's actual
+# displacement in MOVED and in m8-checks.jsonl. A displacement other than the drag is the M1 jump watch.
+# A drag that does not move the window at all is recorded as failed and stops the run: there is nothing
+# to reverse, and no endpoint is ever assumed from the drag asked for (M8 R21).
+drag_window() {
+  layout
+  local band=(${=$(logq field $APP_LOG layout controls.drag-region | tr -d '[],')})
+  (( $#band == 4 )) || fail "no drag band in the layout"
+  local x=$(( WIN_X + ${band[1]%.*} + (${band[3]%.*} > 300 ? 200 : ${band[3]%.*} / 2) )) y=$(( WIN_Y + ${band[2]%.*} + ${band[4]%.*} / 2 ))
+  local before=($WIN_X $WIN_Y)
+  drag $x $y $(( x + $1 )) $(( y + $2 )) 16
+  sleep 0.6
+  window_origin
+  local dx=$(( WIN_X - before[1] )) dy=$(( WIN_Y - before[2] ))
+  local pass=$(( dx == $1 && dy == $2 ? 1 : 0 ))
+  print -r -- "{\"check\":\"window-drag\",\"pass\":$( (( pass )) && print true || print false ),\"scale\":$(field layout interfaceScale),\"from\":[$x,$y],\"asked\":[$1,$2],\"moved\":[$dx,$dy]}" >> $QA_OUT/m8-checks.jsonl
+  MOVED=($dx $dy)
+  if (( dx == 0 && dy == 0 )); then
+    fail "the window did not move for a ($1,$2) drag from the drag band at ($x,$y)"
+  elif (( ! pass )); then
+    say "WATCH: the window moved ($dx,$dy) for a ($1,$2) drag from the drag band (M1 jump watch)"
+  else
+    say "window moved exactly ($dx,$dy) from the drag band"
+  fi
+}
+
+# window_round_trip DX DY: drags the window, then back by the displacement it actually made.
+window_round_trip() {
+  drag_window $1 $2
+  local back=($(( -MOVED[1] )) $(( -MOVED[2] )))
+  drag_window $back[1] $back[2]
+}
