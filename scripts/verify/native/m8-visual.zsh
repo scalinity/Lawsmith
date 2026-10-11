@@ -76,13 +76,14 @@ for size in "1280 800" "900 600"; do
     for pct in $SCALES; do
       set_scale $pct
       (( pct == 100 )) && base=$(( $(count layout) - 1 ))
+      # Captured right after the fresh layout and before the checks, so a failing case keeps its image (M8 R16).
+      shot m8-$key-${size/ /x}-$pct
       expect layout "content ${size/ /×}" "e['viewport']==[${size/ /,}]"
       m8q example $key $law
       m8q surface
       m8q lights "$(traffic_lights)"
       m8q labels
       m8q scale $base
-      shot m8-$key-${size/ /x}-$pct
     done
   done
 done

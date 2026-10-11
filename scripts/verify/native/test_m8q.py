@@ -60,6 +60,10 @@ class Surface(unittest.TestCase):
         value = layout(); value['controls']['sim-error'] = [840, 60, 400, 40]; value['controls']['comparison'] = [878, 80, 390, 200]
         with self.assertRaises(AssertionError): m8q.surface(value)
 
+    def test_condition_line_over_a_card_fails(self):
+        value = layout(); value['controls']['conditions'] = [840, 60, 400, 40]; value['controls']['run'] = [878, 90, 390, 120]
+        self.assertRaisesRegex(AssertionError, 'conditions .* overlaps run', m8q.surface, value)
+
     def test_squeezed_panel_fails(self):
         # M8 R16: the second native attempt's 2 px Scene panel at 1280x800 and 200%.
         value = layout(); value['scroll']['panel'].update(clientHeight=2)

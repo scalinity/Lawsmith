@@ -25,7 +25,7 @@ FIXED = ['play', 'step', 'reset', 'undo', 'redo', 'file-new', 'file-open', 'file
 REGIONS = ['document', 'panel', 'context-column', 'dock', 'tools', 'diagnostics']
 # Cards stacked inside the context column, the selected law's inspector among them: none may cover another
 # (M7's fault banner did).
-CARDS = ['sim-error', 'run', 'comparison', 'details', 'explain']
+CARDS = ['sim-error', 'conditions', 'run', 'comparison', 'details', 'explain']
 SCROLLERS = {'panel': 'panel', 'context-column': 'context-column'}
 EPS = 0.5
 
