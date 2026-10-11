@@ -3,7 +3,7 @@
 # window: QA_DEADLINE is its end. lib.zsh owns the shared GUI lock, hit tests and the external-input
 # abort; m8lib.zsh adds the deadline and the m8q.py assertions. Disposable scenes and recovery only.
 #
-# Only Option-Tab, Space, Return, Escape, typed text and ⌘ chords reach the app: open an example from its menu,
+# Only Tab, Space, Return, Escape, typed text and ⌘ chords reach the app: open an example from its menu,
 # select its law from the Laws list, change position, rotation, extent and strength, switch it off and
 # on, play, pause, step and reset, undo, save through the macOS Save panel and open the file again.
 # Every focus stop must show its ring inside the window. Typing in a text field must not trigger the

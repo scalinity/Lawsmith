@@ -132,6 +132,9 @@ run_case scroll-delayed-hit-refused 5 'QA_DEADLINE=$(( EPOCHREALTIME + 1.5 )); L
 run_case window-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; QA_DEADLINE=$(( EPOCHREALTIME + 3.5 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_size 1280 800' 'none window-delayed-front-refused "set size"'
 run_case window-delayed-front-enough-time 0 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; command sleep 30 & LOCK_HOLDER=$!; LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; window_origin() { : }; window_size 1280 800; trap - EXIT' 'has window-delayed-front-enough-time "set size"'
 run_case tab-delayed-front-refused 5 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; QA_DEADLINE=$(( EPOCHREALTIME + 1.6 )); LAST_INPUT=$EPOCHREALTIME; FRONT_TAKES=1.0; tab_to "True" 1' 'none tab-delayed-front-refused "key code 48"'
+# M8 G4: the pinned Wry's tabFocusesLinks=YES makes ordinary Tab reach buttons and Option-Tab skip them.
+# tab_to, the production helper, must send key code 48 with no modifier.
+run_case tab-sends-plain-tab 0 'QA_DEADLINE=$(( EPOCHSECONDS + 600 )); source $HERE/m8lib.zsh; LAST_INPUT=$EPOCHREALTIME; layout() { : }; m8q() { : }; logq() { print -r -- "{\"focus\":{\"id\":\"play\"}}" }; tab_to "f[\"id\"]==\"play\"" 1' 'has tab-sends-plain-tab "key code 48" && none tab-sends-plain-tab "using option down"'
 
 # --- F5: the owner's preferences are snapshotted under the lock and restored exactly ----------------
 PLIST='<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>OwnerSetting</key><string>kept</string></dict></plist>'

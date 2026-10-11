@@ -70,15 +70,17 @@ open_example() {
   expect document "example $2 opened" "e['action']=='example' and e['outcome']=='committed' and e['title']=='$1'"
 }
 
-# tab_to PREDICATE [LIMIT]: Option-Tab until the focused control satisfies a Python predicate on `f` (the
-# layout's focus), checking that every stop shows its focus ring inside the window.
-# WebKit moves Tab only between text fields and lists unless macOS Keyboard navigation is on; Option-Tab
-# reaches every control either way, so the walk neither depends on nor changes the owner's setting.
+# tab_to PREDICATE [LIMIT]: Tab until the focused control satisfies a Python predicate on `f` (the layout's
+# focus), checking that every stop shows its focus ring inside the window.
+# The pinned Wry sets WKPreferences.tabFocusesLinks to YES (wry 0.57.0, src/wkwebview/mod.rs). In WebKit
+# that makes ordinary Tab reach buttons as well as fields, whatever macOS Keyboard navigation is set to,
+# while Option-Tab leaves them out (M8 G4: attempt 10's Option-Tab walk skipped every button). So the
+# walk uses ordinary Tab and neither depends on nor changes the owner's setting.
 tab_to() {
   local i
   for (( i = 0; i < ${2:-120}; i++ )); do
     idle_gate 1; guard_front; idle_gate 1
-    osascript -e 'tell application "System Events" to key code 48 using option down' >/dev/null; touched
+    osascript -e 'tell application "System Events" to key code 48' >/dev/null; touched
     sleep 0.3
     layout
     m8q focus >/dev/null
