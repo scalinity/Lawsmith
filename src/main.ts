@@ -44,6 +44,7 @@ import { LinearReplay, firstDivergence as replayDivergence, observe, type Addres
 import type { TransitionObservation } from './simulation/observation';
 import { driveScheduledFrame, FixedStepScheduler } from './simulation/scheduler';
 import { CHECKPOINT_LIMITS, fnv64 } from './simulation/checkpoints';
+import { ownedMaterials } from './rendering/materials';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
 import { createIngredientPanel } from './ui/ingredientPanel';
 import { PlayPace, conditionLines } from './ui/conditions';
@@ -2583,7 +2584,7 @@ async function start() {
       editOrigin: capture.comparison ? 'app-periodic' : 'input',
       periodicEdits: capture.periodicEdits,
       setup: capture.setup,
-      render: { drawCallsLastFrame: renderer.info.render.drawCalls, trianglesLastFrame: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, materials: sceneMaterials(), objects: sceneObjects() },
+      render: { drawCallsLastFrame: renderer.info.render.drawCalls, trianglesLastFrame: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, materials: ownedMaterials(), materialsAttached: sceneMaterials(), objects: sceneObjects() },
       timerResolutionMs: timerMs,
       percentiles: 'p50, p95, p99, max',
       stepMs: percentiles(capture.steps),
@@ -3667,7 +3668,10 @@ async function start() {
     viewport.scene.traverse(() => (count += 1));
     return count;
   };
-  /** Distinct materials in the rendered scene (M9 resource cycles): a leaked view's materials would show here. */
+  /**
+   * Distinct materials attached to the rendered scene. A detached view that was never disposed disappears
+   * from this count, so the resource gate reads ownedMaterials() (allocated, attached or not) instead.
+   */
   const sceneMaterials = () => {
     const seen = new Set<unknown>();
     viewport.scene.traverse((object) => {
@@ -3688,7 +3692,9 @@ async function start() {
       objects: sceneObjects(),
       geometries: renderer.info.memory.geometries,
       textures: renderer.info.memory.textures,
-      materials: sceneMaterials(),
+      // Application-owned materials allocated and not disposed, attached or detached; the attached count beside it.
+      materials: ownedMaterials(),
+      materialsAttached: sceneMaterials(),
       traceBytes: visualizationState().totalBytes,
     };
   };

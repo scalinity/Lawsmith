@@ -28,6 +28,7 @@ import type { Vec3 } from '../domain/scene';
 import { DRIVE_METERS_PER_MS2 } from '../fields/registry';
 import { MAX_PROBES, type ProbeField } from '../observation/probes';
 import { MAX_TRAILS, TRAIL_SAMPLES, type TrailRecorder } from '../observation/trails';
+import { ownedMaterial } from './materials';
 import type { TransitionObservation } from '../simulation/observation';
 import { tokenColor } from './viewport';
 
@@ -82,8 +83,8 @@ export function createExplainView(scene: Scene): ExplainView {
   scene.add(root);
 
   // Overlay materials draw over volumes, so a vector inside a law's support stays readable.
-  const solid = (color: Color) => new MeshBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true });
-  const line = (color: Color, vertexColors = false) => new LineBasicNodeMaterial({ color, vertexColors, depthTest: false, depthWrite: false, transparent: true });
+  const solid = (color: Color) => ownedMaterial(new MeshBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true }));
+  const line = (color: Color, vertexColors = false) => ownedMaterial(new LineBasicNodeMaterial({ color, vertexColors, depthTest: false, depthWrite: false, transparent: true }));
 
   // ---- velocity: a thin shaft ending in an open chevron of four prongs, tip at the origin
   const thinShaft = new CylinderGeometry(1, 1, 1, 6).translate(0, 0.5, 0);
@@ -119,7 +120,7 @@ export function createExplainView(scene: Scene): ExplainView {
   const burst = new LineSegments(geometryOf(burstPoints), line(bright));
   // ---- each law's share and gravity's: thin arrows from the center in the law's color; ∥ ticks on capped ones
   const MAX_SHARES = 33;
-  const shareMaterial = new MeshBasicNodeMaterial({ depthTest: false, depthWrite: false, transparent: true });
+  const shareMaterial = ownedMaterial(new MeshBasicNodeMaterial({ depthTest: false, depthWrite: false, transparent: true }));
   const shareShafts = new InstancedMesh(thinShaft, shareMaterial, MAX_SHARES);
   const shareHeads = new InstancedMesh(cone, shareMaterial, MAX_SHARES);
   for (const mesh of [shareShafts, shareHeads]) {
@@ -151,14 +152,14 @@ export function createExplainView(scene: Scene): ExplainView {
   trailGeometry.setAttribute('position', trailPositions);
   trailGeometry.setAttribute('color', trailColors);
   trailGeometry.setDrawRange(0, 0);
-  const trailLines = new LineSegments(trailGeometry, new LineBasicNodeMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+  const trailLines = new LineSegments(trailGeometry, ownedMaterial(new LineBasicNodeMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
   trailLines.frustumCulled = false;
   scene.add(trailLines);
   let trailVersion = -1;
   let trailSelection: string | null = null;
 
   // ---- probes: small unlit octahedra, dim like dust, never lit spheres like bodies
-  const probeMesh = new InstancedMesh(new OctahedronGeometry(1, 0), new MeshBasicNodeMaterial({ color: tokenColor('--probe'), transparent: true, opacity: 0.85 }), MAX_PROBES);
+  const probeMesh = new InstancedMesh(new OctahedronGeometry(1, 0), ownedMaterial(new MeshBasicNodeMaterial({ color: tokenColor('--probe'), transparent: true, opacity: 0.85 })), MAX_PROBES);
   probeMesh.frustumCulled = false;
   probeMesh.count = 0;
   probeMesh.instanceMatrix.setUsage(DynamicDrawUsage);

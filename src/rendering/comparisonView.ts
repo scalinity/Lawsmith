@@ -1,6 +1,7 @@
 // Baseline outlines are observations only: this module owns no host, collider or field evaluator.
 import { BufferAttribute, BufferGeometry, LineBasicNodeMaterial, LineSegments, Quaternion, Vector3, type Scene } from 'three/webgpu';
 import type { Comparison } from '../simulation/comparison';
+import { ownedMaterial } from './materials';
 import { tokenColor } from './viewport';
 
 const SEGMENTS = 16;
@@ -10,7 +11,7 @@ export function createComparisonView(scene: Scene, capacity: number) {
   const geometry = new BufferGeometry();
   const attribute = new BufferAttribute(positions, 3);
   geometry.setAttribute('position', attribute);
-  const material = new LineBasicNodeMaterial({ color: tokenColor('--baseline'), transparent: true, opacity: 0.7, depthWrite: false });
+  const material = ownedMaterial(new LineBasicNodeMaterial({ color: tokenColor('--baseline'), transparent: true, opacity: 0.7, depthWrite: false }));
   const outlines = new LineSegments(geometry, material);
   outlines.name = 'Baseline A — outlines';
   outlines.frustumCulled = false;

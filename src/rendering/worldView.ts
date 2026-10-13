@@ -28,6 +28,7 @@ import {
 } from 'three/webgpu';
 import { abs, float, max, mix, normalView, smoothstep, uniform, uv } from 'three/tsl';
 import { peel } from '../domain/ingredients';
+import { ownedMaterial } from './materials';
 import type { FieldDefinition, FieldExpression, LawPresentation, MaskExpression, RegionDefinition, SceneDefinition, Vec3 } from '../domain/scene';
 import { nodeAt, walk, type ExprPath } from '../fields/expression';
 import type { CompiledField } from '../fields/kernel';
@@ -200,8 +201,8 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const sphereGeometry = new SphereGeometry(1, 20, 14);
   const dotGeometry = new SphereGeometry(1, 10, 8);
   const shared = new Set<BufferGeometry>([unitBox, unitSphere, unitCylinder, ...Object.values(shapes).map((s) => s.edges), axisLine, ring, shaftGeometry, headGeometry, sphereGeometry, dotGeometry]);
-  const arrowMaterial = new MeshBasicNodeMaterial({ color: lavender });
-  const dotMaterial = new MeshBasicNodeMaterial({ color: tokenColor('--text-secondary'), transparent: true, opacity: 0.75 });
+  const arrowMaterial = ownedMaterial(new MeshBasicNodeMaterial({ color: lavender }));
+  const dotMaterial = ownedMaterial(new MeshBasicNodeMaterial({ color: tokenColor('--text-secondary'), transparent: true, opacity: 0.75 }));
 
   let fixed = new Group();
   let bodies: InstancedMesh | null = null;
@@ -213,7 +214,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       const block = new Group();
       block.position.set(...body.initialPose.position);
       block.quaternion.set(...body.initialPose.rotation);
-      const material = new MeshStandardNodeMaterial({ color: tokenColor('--floor'), roughness: 1 });
+      const material = ownedMaterial(new MeshStandardNodeMaterial({ color: tokenColor('--floor'), roughness: 1 }));
       if (body.collider.kind === 'box') {
         const [hx, hy, hz] = body.collider.halfExtents;
         const mesh = new Mesh(new BoxGeometry(2 * hx, 2 * hy, 2 * hz), material);
@@ -223,6 +224,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
         const size = 2 * Math.min(hx, hz);
         if (size >= 4) {
           const grid = new GridHelper(size, Math.max(1, Math.round(size)), tokenColor('--divider'), tokenColor('--grid-minor'));
+          ownedMaterial(grid.material as Material);
           grid.position.y = hy + 0.002;
           block.add(grid);
         }
@@ -241,14 +243,14 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
       const corners = [-jx, -jz, jx, -jz, jx, -jz, jx, jz, jx, jz, -jx, jz, -jx, jz, -jx, -jz];
       const points: number[] = [];
       for (let i = 0; i < corners.length; i += 2) points.push(corners[i]!, 0, corners[i + 1]!);
-      const outline = new LineSegments(segments(points), new LineBasicNodeMaterial({ color: tertiary }));
+      const outline = new LineSegments(segments(points), ownedMaterial(new LineBasicNodeMaterial({ color: tertiary })));
       outline.position.set(...emitter.pose.position);
       built.add(outline);
     }
 
     const capacity = next.simulation.maxLiveBodies;
     if (!own && bodies && bodies.instanceMatrix.count === capacity) return { fixed: built, bodies: null };
-    const fresh = new InstancedMesh(sphereGeometry, new MeshStandardNodeMaterial({ color: tokenColor('--body'), roughness: 0.45, metalness: 0.05 }), capacity);
+    const fresh = new InstancedMesh(sphereGeometry, ownedMaterial(new MeshStandardNodeMaterial({ color: tokenColor('--body'), roughness: 0.45, metalness: 0.05 })), capacity);
     fresh.castShadow = true;
     fresh.frustumCulled = false;
     return { fixed: built, bodies: fresh };
@@ -299,14 +301,14 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
 
   function createVisual(): LawVisual {
     const shellIntensity = uniform(1);
-    const boxShell = new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide });
+    const boxShell = ownedMaterial(new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide }));
     boxShell.opacityNode = mix(float(0.035), float(0.15), smoothstep(0.86, 1, border)).mul(shellIntensity);
-    const roundShell = new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide });
+    const roundShell = ownedMaterial(new MeshBasicNodeMaterial({ color: teal, transparent: true, depthWrite: false, side: DoubleSide }));
     roundShell.opacityNode = mix(float(0.03), float(0.13), smoothstep(0.55, 1, silhouette)).mul(shellIntensity);
     const shell = new Mesh(unitBox, boxShell);
     shell.renderOrder = 1;
-    const outerMaterial = new LineBasicNodeMaterial({ color: teal, transparent: true });
-    const innerMaterial = new LineBasicNodeMaterial({ color: teal, transparent: true, opacity: 0.35 });
+    const outerMaterial = ownedMaterial(new LineBasicNodeMaterial({ color: teal, transparent: true }));
+    const innerMaterial = ownedMaterial(new LineBasicNodeMaterial({ color: teal, transparent: true, opacity: 0.35 }));
     const outer = new LineSegments(shapes.box.edges, outerMaterial);
     const inner = new LineSegments(shapes.box.edges, innerMaterial);
     const axis = new LineSegments(axisLine, innerMaterial);
@@ -332,7 +334,7 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
     visual.dots.dispose();
   }
 
-  const previewMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.8 });
+  const previewMaterial = ownedMaterial(new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.8 }));
   const preview = new LineSegments(shapes.box.edges, previewMaterial);
   preview.visible = false;
   scene.add(preview);
@@ -394,8 +396,8 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   // ---- spatial handles of the selected law (handle mode), drawn over every volume
   const handleGroup = new Group();
   handleGroup.renderOrder = 20;
-  const overlay = (color: Color) => new MeshBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true });
-  const lineOverlay = (color: Color, opacity = 1) => new LineBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true, opacity });
+  const overlay = (color: Color) => ownedMaterial(new MeshBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true }));
+  const lineOverlay = (color: Color, opacity = 1) => ownedMaterial(new LineBasicNodeMaterial({ color, depthTest: false, depthWrite: false, transparent: true, opacity }));
   const roleMaterial = { extent: overlay(tokenColor('--text')), fade: overlay(teal), strength: overlay(lavender), core: overlay(tokenColor('--text-secondary')) };
   // One knob per handle. A compound law's handle count follows its focused ingredient's masks, so the
   // knobs grow to the longest list shown; every handle that can be grabbed is drawn.
@@ -472,8 +474,8 @@ export function createWorldView(scene: Scene, root: SceneDefinition): WorldView 
   const maskGroup = new Group();
   maskGroup.renderOrder = 3;
   const maskMaterial = lineOverlay(lavender, 0.9);
-  const maskDimMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.35 });
-  const maskInnerMaterial = new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.3 });
+  const maskDimMaterial = ownedMaterial(new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.35 }));
+  const maskInnerMaterial = ownedMaterial(new LineBasicNodeMaterial({ color: lavender, transparent: true, opacity: 0.3 }));
   // One outline per mask in the law, grown to the most masks shown.
   const maskLines: { pose: Group; outer: LineSegments; inner: LineSegments }[] = [];
   const makeMaskLine = () => {
