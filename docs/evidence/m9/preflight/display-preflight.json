@@ -1,0 +1,15 @@
+{
+  "check": "read-only display mode availability",
+  "startedUtc": "2026-10-13T04:22:01.900403+00:00",
+  "endedUtc": "2026-10-13T04:22:02.014869+00:00",
+  "exit": 0,
+  "leftoversAfterTerm": [],
+  "method": "CoreGraphics current mode and available HiDPI modes; no configuration change",
+  "result": {
+    "current": "1168x755@120",
+    "requiredModes": [
+      "1728x1117@120",
+      "1728x1117@60"
+    ]
+  }
+}

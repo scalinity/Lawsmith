@@ -1,0 +1,11 @@
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  00:39:15
+   Duration  197ms (import 58%, transform 36%, worker 3%, tests 3%)
+
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/ownedMaterials.test.ts

@@ -1,0 +1,101 @@
+{
+  "base": "937ac6ff71060707e1fd0947f37be66e1313825d",
+  "status": "failed attempt preserved; corrections pending",
+  "sourceSha256": {
+    "scripts/verify/native/lib.zsh": "1ba6b5cef35ad5a941a9a6590de5229d4cd1fed467bcf5a9035a9524a557a159",
+    "scripts/verify/native/m9-batch.zsh": "9ddc40ab9479de7f139f00da7f29d89c8c771e345f766f482fcbd954e1e7d1f5",
+    "scripts/verify/native/test_m9_batch.zsh": "41a2b94f2d573d85439038e753c20262b9eeaf86c3898f40eeed425ad10718b8",
+    "scripts/verify/native/test_m9_input.zsh": "1b6fe1e1ec24f9eaad1c6a8b2624f1c0432976a5590f36fef5ed336516c9ff7a",
+    "src/main.ts": "829d3a4c4fc0eabfd4b8f90a82d06159ef95f36f2a5baf3b8e0fb880a34813c3",
+    "src/rendering/materials.ts": "dba62c8692fe767a2e687f32589d7cde7e704eaba52a9bd0d6892bf06f496828",
+    "src/rendering/worldView.ts": "61a32a026b53b34bf2dbbc609bb2283a4f731f5b3aec816beee4792b9407a483",
+    "src/rendering/explainView.ts": "e52e61f50c20419390440a77e1f282f6a934112be2dfd0912aab91e8749d3e3e",
+    "src/rendering/comparisonView.ts": "b48fadb8376ac5afa4e5786cad544775ffe1f6f0ab886b3f41037ab60eaba621",
+    "tests/ownedMaterials.test.ts": "63eb9caa5d2b9d4ccc52795a5182b7e344d745d484b5bef4ba26c8b54f56188e"
+  },
+  "checks": [
+    {
+      "label": "review-typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "startedUtc": "2026-10-13T04:33:58.396390+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:33:59.117774+00:00"
+    },
+    {
+      "label": "review-material-tests",
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/ownedMaterials.test.ts",
+        "tests/measurement.test.ts",
+        "tests/invariance.test.ts"
+      ],
+      "startedUtc": "2026-10-13T04:33:58.396387+00:00",
+      "exit": 1,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:34:06.325182+00:00"
+    },
+    {
+      "label": "review-batch-tests",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_m9_batch.zsh"
+      ],
+      "startedUtc": "2026-10-13T04:33:58.396397+00:00",
+      "exit": 1,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:34:25.000842+00:00"
+    },
+    {
+      "label": "review-input-tests",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_m9_input.zsh"
+      ],
+      "startedUtc": "2026-10-13T04:33:58.396438+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:34:08.630707+00:00"
+    },
+    {
+      "label": "review-guard-tests",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_guards.zsh"
+      ],
+      "startedUtc": "2026-10-13T04:33:58.401179+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:34:33.882814+00:00"
+    },
+    {
+      "label": "review-lock-tests",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_lock_lifecycle.zsh"
+      ],
+      "startedUtc": "2026-10-13T04:33:58.400540+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:34:09.033437+00:00"
+    },
+    {
+      "label": "review-syntax",
+      "command": [
+        "zsh",
+        "-c",
+        "for f in lib m9-batch test_m9_batch test_m9_input; do zsh -n scripts/verify/native/$f.zsh || exit; done"
+      ],
+      "startedUtc": "2026-10-13T04:33:58.403464+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:33:58.690064+00:00"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+ok   outside input during a passive wait_log: exit 4 at once, no further synthetic input
+ok   no outside input: the passive wait completes (exit 0)
+ok   outside input just before a segment: exit 4, never waited out, no further synthetic input
+ok   after it: no lock holder left
+ok   first acquisition: waits for quiet as before, then proceeds (exit 0)
+ok   outside input between scenarios (via QA_INPUT_STAMP): the next scenario's first segment exits 4
+ok   no input since the stamp: the next scenario proceeds
+ok   no process of this run left
+8 passed, 0 failed

@@ -1,0 +1,22 @@
+ok   no approval: refused before the lock (exit 2)
+ok   approval for other scenarios: refused (exit 2)
+ok   test-only knobs without a stub: refused (exit 2)
+ok   two scenarios complete: exit 0, both ran under the lent lock
+ok   receipt: both completed, nothing unrun, not evidence (stubbed)
+ok   the lock is free after the batch, the state restored, nothing left
+ok   a failure stops the batch: exit 1, the next scenario never ran and is listed unrun
+ok   outside input: exit 4, yielded and not resumed
+ok   after outside input: lock free, nothing left
+ok   watchdog TERM: exit 124, recorded as expired
+ok   the driver stopped the scenario's app by its logged PID and restored display and preferences
+ok   after the watchdog: lock free, nothing left
+ok   a runner that ignores TERM is killed; the driver still stops its app and restores
+ok   driver TERM: exit 143, the running scenario interrupted, the next unrun
+ok   after driver TERM: app stopped, state restored, lock free, nothing left
+FAIL driver TERM before any launch receipt: the unreceipted app is found by its recovery directory and stopped
+     driver 53889, status 143; {"exit": 143, "restoration": "display:same preferences:same", "lockAfterRelease": "held", "stoppedAtEnd": "", "unrun": ""}
+ok   negative control: another instance of the same executable from the same window survives
+FAIL after the unreceipted case: lock free, nothing left
+ok   a restoration failing only at final cleanup: exit 6, and the receipt and message say 6
+ok   negative control: a released lent lock is detected (exit 3); the next scenario never ran
+18 passed, 2 failed

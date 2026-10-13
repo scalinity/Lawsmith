@@ -1,0 +1,31 @@
+
+ RUN  v5.0.3 <checkout>
+
+ ❯ tests/ownedMaterials.test.ts (2 tests | 1 failed) 5ms
+   ❯ owned material accounting (2)
+     × keeps a detached, undisposed view counted until it is disposed (negative control for the traversal count) 3ms
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 23 passed (24)
+   Start at  00:33:59
+   Duration  7.04s (tests 96%, transform 2%, import 1%)
+
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/ownedMaterials.test.ts tests/measurement.test.ts tests/invariance.test.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ownedMaterials.test.ts > owned material accounting > keeps a detached, undisposed view counted until it is disposed (negative control for the traversal count)
+ReferenceError: getComputedStyle is not defined
+ ❯ tokenColor src/rendering/viewport.ts:43:14
+     41| /** Reads a `:root` color token from src/style.css, so scene colors sh…
+     42| export function tokenColor(name: string): Color {
+     43|   return new Color(getComputedStyle(document.documentElement).getPrope…
+       |              ^
+     44| }
+     45|
+ ❯ createComparisonView src/rendering/comparisonView.ts:14:69
+ ❯ tests/ownedMaterials.test.ts:22:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

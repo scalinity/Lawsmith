@@ -1,0 +1,68 @@
+{
+  "applicationSource": "3eeb003ffcb30df16e352bf90d5aec5458c97779",
+  "harness": "c5951c3aee05300eb06041f421af220e4b960fac",
+  "sourceSha256": {
+    "scripts/verify/native/lib.zsh": "6f21a131dd1891bd53f2321f8a3ce8f049392c295b7c10fe75a7968e23e34d00",
+    "scripts/verify/native/m9-batch.zsh": "49fa07ec10af44907ff398bc9e0dd3c84cc113484dfff0fb23919e878efa2698",
+    "scripts/verify/native/test_m9_batch.zsh": "fe1202fbc33d9f7901ff11f27c7d7e9f4aed5017c9bc7e0ffe951bbc1c6a7468",
+    "scripts/verify/native/test_m9_input.zsh": "1b6fe1e1ec24f9eaad1c6a8b2624f1c0432976a5590f36fef5ed336516c9ff7a",
+    "src/main.ts": "829d3a4c4fc0eabfd4b8f90a82d06159ef95f36f2a5baf3b8e0fb880a34813c3",
+    "src/rendering/materials.ts": "dba62c8692fe767a2e687f32589d7cde7e704eaba52a9bd0d6892bf06f496828",
+    "src/rendering/worldView.ts": "61a32a026b53b34bf2dbbc609bb2283a4f731f5b3aec816beee4792b9407a483",
+    "src/rendering/explainView.ts": "e52e61f50c20419390440a77e1f282f6a934112be2dfd0912aab91e8749d3e3e",
+    "src/rendering/comparisonView.ts": "b48fadb8376ac5afa4e5786cad544775ffe1f6f0ab886b3f41037ab60eaba621",
+    "tests/ownedMaterials.test.ts": "63eb9caa5d2b9d4ccc52795a5182b7e344d745d484b5bef4ba26c8b54f56188e"
+  },
+  "testedBatchScriptSha256": "7f1ed1654b3eaed6cc563a8026664ff3db0f50cc8c63075995db93408263c950",
+  "postTestChange": "Two assertion labels changed from logged PID/recovery directory to owner token; no logic changed. Raw output preserves executed labels.",
+  "checks": [
+    {
+      "label": "author-material-fix-01",
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/ownedMaterials.test.ts"
+      ],
+      "startedUtc": "2026-10-13T04:39:14.292170+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:39:15.319027+00:00"
+    },
+    {
+      "label": "author-batch-fix-01",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_m9_batch.zsh"
+      ],
+      "startedUtc": "2026-10-13T04:39:38.101773+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:40:03.932597+00:00"
+    },
+    {
+      "label": "final-typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "startedUtc": "2026-10-13T04:42:40.032443+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:42:40.629553+00:00"
+    },
+    {
+      "label": "final-syntax",
+      "command": [
+        "zsh",
+        "-c",
+        "for f in lib m9-batch test_m9_batch test_m9_input; do zsh -n scripts/verify/native/$f.zsh || exit; done"
+      ],
+      "startedUtc": "2026-10-13T04:42:40.032443+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:42:40.257365+00:00"
+    }
+  ]
+}

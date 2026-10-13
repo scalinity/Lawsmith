@@ -416,14 +416,14 @@
   <header class="masthead">
     <span><strong>Lawsmith</strong> run order</span>
     <!-- REALIGN: date and the main commit this page was checked against -->
-    <span>Realigned 2026-10-11: M8 ACCEPTED by the owner at branch head <code>ae7e7f5</code> (application <code>8595013</code>, built; harness <code>8839545</code>); acceptance authorizes publishing this candidate to <code>main</code>; native, performance and human checks on the final build unexecuted and carried (performance to M9, integrated checks to M10); M9 eligible, not started; no approval active; previous accepted main <code>0d2f609</code>; post-acceptance harness process-cleanup repair (<code>1c1ddfd</code>, test correction <code>ed9d10a</code>) reviewed and closed</span>
+    <span>Realigned 2026-10-13 against published <code>main 71e9b51</code>: M8 ACCEPTED; its process-cleanup repair is merged. M9 IN PROGRESS on <code>m9</code>, application source <code>3eeb003</code>, harness <code>c5951c3</code>; four source-review findings corrected and checked; independent re-review pending. No M9 build or native qualification yet; no synthetic-input approval active. M10 waits.</span>
   </header>
 
   <!-- REALIGN: the hero names the next unit and its models -->
   <div class="hero">
-    <h1>M8 is accepted; M9 runs next, alone.</h1>
-    <p class="lede">You accepted M8 on 2026-10-11 at branch head <code>ae7e7f5</code>, application <code>8595013</code>. That build has Delete beside the Laws list, examples that engage on Play, a consolidated column at large scale, editable emitter rate and lifetime with visible lock reasons, and <kbd>H</kbd> to hide the whole HUD. GPT-6.1 Sol closed every review finding. Acceptance was your gate decision; it records no new native result. The final build&rsquo;s native batch, current performance and your checklist were not run, so they stay unverified and carried forward. M9 owns final performance qualification and M10 the integrated release checks; neither repeats all of M8. Permanent bodies and the acceleration limit remain design questions, not M9 changes. Your acceptance authorizes publishing this candidate to <code>main</code>. M9 is eligible and should run next, alone; M10 waits for M9.</p>
-    <cite><code>docs/evidence/M7.md</code> Status and Owner acceptance; <code>docs/evidence/M8.md</code> Status, Commands and outcomes; <code>docs/MILESTONES.md</code> M8</cite>
+    <h1>M9 is in progress, alone.</h1>
+    <p class="lede">M9 starts from published <code>main 71e9b51</code>, containing accepted M8 and the shared process-cleanup repair. Opus 5.5 authored profiling, resource-cycle fixtures and guarded native runners; GPT-6.1 Sol found four source-readiness defects; corrections are committed and checked, awaiting independent re-review. Initial targeted checks passed; the packaged build and native measurements remain pending. This session owns <code>src/main.ts</code>, affected rendering and diagnostics, <code>scripts/verify/</code>, M9 evidence, README capacity documentation and this page. The planned native batch takes about 30 minutes, including the prescribed 14-minute capture minimum, and still needs its initial go-ahead. M9 must be qualified before its authorized merge and M10 kickoff. M10 implementation waits for M9 acceptance. Permanent bodies, acceleration-limit removal and emitter rotation remain owner design questions.</p>
+    <cite><code>docs/evidence/M9.md</code> Status, Verification plan, Independent review and remediation; <code>docs/evidence/M8.md</code> Owner acceptance and Post-acceptance cleanup; <code>docs/MILESTONES.md</code> M9</cite>
     <ol class="rail" id="rail" aria-label="Milestone gates"></ol>
     <ul class="rail-key" aria-hidden="true">
       <li><span class="mark"></span>Not started</li>
@@ -694,7 +694,7 @@
       </article>
 
       <!-- REALIGN M9 -->
-      <article class="unit" id="m9" data-gate="M9" data-state="not-started" data-tier="near">
+      <article class="unit" id="m9" data-gate="M9" data-state="in-progress" data-tier="near">
         <div class="gate">M9</div>
         <div>
           <div class="unit-head">
@@ -704,8 +704,8 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews the decision to keep CPU/WASM simulation or admit a worker or WebGPU compute. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">Eligible: M8 accepted on 2026-10-11. Not started.</dd>
-              <dt>Should run</dt><dd class="run">Next, alone, from <code>main</code> containing the accepted M8 candidate. It owns final performance qualification, including M8&rsquo;s unexecuted P0&ndash;P3 on the final visuals, but not a retest of M8. The finite-body and acceleration-limit design questions are not M9 profile changes.</dd>
+              <dt>Graph permits</dt><dd class="soft">In progress on <code>m9</code> from <code>main 71e9b51</code>; M8 accepted on 2026-10-11.</dd>
+              <dt>Should run</dt><dd class="run">Continue this session alone: close independent re-review of the four corrections and build the final affected app, then run the declared native batch after its initial go-ahead. It owns fresh P0&ndash;P3, resource cycles, startup and work-limit characterization. CPU/WASM versus worker/compute remains undecided until measurement and independent review. M10 is not started.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M8 accepted. Contracts C4–C6, C10.</dd>
@@ -714,7 +714,7 @@
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M9 Deliverables, Acceptance criterion 1, Failure / rollback conditions</cite>
+          <cite class="src"><code>docs/MILESTONES.md</code> M9 Deliverables, Acceptance criterion 1, Failure / rollback conditions; <code>docs/evidence/M9.md</code> Status and Independent review</cite>
         </div>
       </article>
 

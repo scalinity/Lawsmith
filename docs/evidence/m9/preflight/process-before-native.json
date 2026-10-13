@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-13T04:46:42.005242+00:00",
+  "lawsmithApps": 0,
+  "lawsmithHelperHolders": 0,
+  "sharedPythonHelperHolders": 0,
+  "sharedLockIndependentProbe": "free",
+  "screenCaptureProcesses": 0,
+  "m9TestProcesses": 0,
+  "method": "Filter executable inventory, then read each Python/zsh process argv separately; Lawsmith helper uses mac-gui-automation.lock lawsmith-m2. Independent nonblocking flock probe.",
+  "note": "Corrected an initial scan using an incorrect helper-name pattern; that initial count is invalid and retained privately. No processes stopped."
+}

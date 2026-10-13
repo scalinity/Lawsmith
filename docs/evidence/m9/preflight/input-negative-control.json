@@ -1,0 +1,14 @@
+{
+  "label": "input-negative-control",
+  "command": [
+    "env",
+    "LIB=<private-copy-of-937ac6f-lib.zsh>",
+    "zsh",
+    "scripts/verify/native/test_m9_input.zsh"
+  ],
+  "startedUtc": "2026-10-13T04:38:18.099025+00:00",
+  "exit": 1,
+  "leftoversAfterTerm": [],
+  "endedUtc": "2026-10-13T04:38:39.341813+00:00",
+  "disposition": "Expected negative control: 5 passed, 3 failed; old code misses input during wait, before segment and between scenarios."
+}
