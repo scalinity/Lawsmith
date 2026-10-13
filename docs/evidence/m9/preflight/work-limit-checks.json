@@ -1,0 +1,36 @@
+{
+  "base": "02fd2ba40ffdf8731f38e1d312e9143496c2058c",
+  "sourceSha256": {
+    "scripts/verify/scenes/p9-work-limits.lawsmith.json": "d3cb521dda0be8c8e70b36bd35a8a81ce5251a102af50e01ba3d0fec4ac85f87",
+    "scripts/verify/native/m9-limits.zsh": "5bd8b34c86f0936d8e1dcfc30b9e3547eb2ad5019384a8df966c2640c489175a",
+    "scripts/verify/native/m9-batch.zsh": "d804bd00e42bd092e0d7b16e211b881ddca05f1a9165432a8f4c22860c0db6ef",
+    "tests/p9WorkLimits.test.ts": "4f99ae07cb5834bb2816140d386ece08560d82edf40dd3b938444e787914d731"
+  },
+  "checks": [
+    {
+      "label": "work-limit-fixture-tests",
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/p9WorkLimits.test.ts"
+      ],
+      "startedUtc": "2026-10-13T04:18:21.782016+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:18:22.487874+00:00"
+    },
+    {
+      "label": "work-limit-syntax",
+      "command": [
+        "zsh",
+        "-c",
+        "zsh -n scripts/verify/native/m9-limits.zsh && zsh -n scripts/verify/native/m9-batch.zsh"
+      ],
+      "startedUtc": "2026-10-13T04:18:21.781819+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:18:21.893303+00:00"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  00:18:22
+   Duration  183ms (transform 50%, tests 35%, import 12%, worker 3%)
+
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/p9WorkLimits.test.ts

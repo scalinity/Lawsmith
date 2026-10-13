@@ -35,7 +35,7 @@ SCENARIOS=$NATIVE
 STUBBED=false
 # Caps in seconds: each scenario's planned reserve plus margin (docs/evidence/M9.md, native batch).
 typeset -A CAPS
-CAPS=(m9-smoke 300 m9-resources 900 m9-perf 1500)
+CAPS=(m9-smoke 300 m9-resources 900 m9-perf 1500 m9-limits 360)
 LFD=
 DRIVER_LOCKED=
 RESULTS=()

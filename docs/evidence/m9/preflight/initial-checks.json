@@ -99,6 +99,17 @@
         "zsh",
         "scripts/verify/native/test_lock_lifecycle.zsh"
       ]
+    },
+    {
+      "label": "guard-tests",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_guards.zsh"
+      ],
+      "startedUtc": "2026-10-13T04:10:39.609594+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:11:13.263474+00:00"
     }
   ],
   "scope": "headless and stubbed harness checks only; no native input or app launch"

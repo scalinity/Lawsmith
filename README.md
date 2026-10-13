@@ -66,10 +66,11 @@ SPEC §15.2's import limits are a different thing: work safeguards, not a promis
 
 Budgets: trace and probe buffers under 32 MiB, the checkpoint cache and the comparison each within 64 MiB. Frame-callback intervals are a pacing proxy, not presented frames. CPU submission is timed; GPU execution is not, and the record says whether the device exposes timestamp queries.
 
-**Procedure.** `scripts/verify/native/m9-batch.zsh` runs the owner-approved batch: `m9-smoke`, `m9-resources`, then `m9-perf P1 P2 P3 P0`. Approval is passed as `QA_APPROVAL` and `QA_APPROVED_SCENARIOS`. The driver holds the shared GUI lock for the whole batch, gives each scenario a finite watchdog, stops at the first failure or any outside input, and checks and restores the display and preferences itself.
+**Procedure.** `scripts/verify/native/m9-batch.zsh` runs the owner-approved batch: `m9-smoke`, `m9-resources`, `m9-perf P1 P2 P3 P0`, then `m9-limits`. Approval is passed as `QA_APPROVAL` and `QA_APPROVED_SCENARIOS`. The driver holds the shared GUI lock for the whole batch, gives each scenario a finite watchdog, stops at the first failure or any outside input, and checks and restores the display and preferences itself.
 - **`m9-perf`**: each workload in its own packaged launch, with three captures of 10 s warmup and 60 s measured. P3 follows SPEC §18.2's order in every capture: fork, the 600-tick baseline measured on its own, a warmed disposable continuation, the fork restored, the 7,200-tick baseline precomputed, then 60 s of playback.
 - **`m9-resources`**: Shift+Y runs 20 scene-load/reset cycles and checks equal-tick authority under visualization. A 60 s P1 recording follows, with real drags. Its read-only replay is checked, and an uncached seek is canceled from its control. Shift+U then runs 20 seek → fork → close → return cycles against the checkpoint-free oracle.
 - **`m9-smoke`**: 1280×800 at 60 Hz and the Retina display at 120 Hz.
+- **`m9-limits`**: one separate characterization of the M5 maximum-work scene (32 laws, 256 leaves, 57 nodes/depth 8 per law) with 2,000 probes and 32 trails. Its figures do not declare supported capacity or admit compute.
 - **`m9perf.py`**: recomputes every percentile and simulated/wall from raw samples, checks P3's setup order, and fails on any missing or malformed data. Its parser controls are `test_m9perf.py`; the driver's are `test_m9_batch.zsh`.
 
 First-frame times are reported for every launch, with the WebKit cache state not controlled: they are neither cold nor warm figures.
