@@ -694,7 +694,7 @@
       </article>
 
       <!-- REALIGN M9 -->
-      <article class="unit" id="m9" data-gate="M9" data-state="in-progress" data-tier="near">
+      <article class="unit" id="m9" data-gate="M9" data-state="owner-check" data-tier="near">
         <div class="gate">M9</div>
         <div>
           <div class="unit-head">
@@ -704,13 +704,13 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol reviews the decision to keep CPU/WASM simulation or admit a worker or WebGPU compute. If Claude limits bind, GPT-6 Astra authors and Opus 5.5 reviews.</dd>
-              <dt>Graph permits</dt><dd class="soft">In progress on <code>m9</code> from <code>main 71e9b51</code>; M8 accepted on 2026-10-11.</dd>
-              <dt>Should run</dt><dd class="run">Continue this session alone: the production app build passed at <code>d903388</code>; run the declared native batch after its initial go-ahead. It owns fresh P0&ndash;P3, resource cycles, startup and work-limit characterization. CPU/WASM versus worker/compute remains undecided until measurement and independent review. M10 is not started.</dd>
+              <dt>Graph permits</dt><dd class="soft">Tooling implemented from <code>main 71e9b51</code>; M8 accepted. M9 remains unqualified and not accepted. On 2026-10-13 the owner deferred its remaining tests into M10 and authorized proceeding.</dd>
+              <dt>Should run</dt><dd class="run">Publish the prepared implementation and hand off to M10. Production build <code>d903388</code> passed and source review closed; no M9 native run occurred. M10 now owns fresh P0&ndash;P3, resource cycles, startup, work-limit characterization and the measured CPU/WASM decision review. No native approval is active.</dd>
             </dl>
             <dl class="facts">
               <dt>Needs</dt><dd>M8 accepted. Contracts C4–C6, C10.</dd>
               <dt>Destroys</dt><dd>Nothing beyond publishing. A failed worker or compute experiment is reverted to the last correct host.</dd>
-              <dt>Your part</dt><dd>Benchmarks run in the packaged app on your Mac, with power mode recorded, as one declared batch you authorize once and that runs to completion.</dd>
+              <dt>Your part</dt><dd>Remaining benchmarks run with M10 on the packaged app. Authorize each concrete native batch once after preparation; the deferred batch was never approved or run.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
@@ -729,17 +729,17 @@
           <div class="unit-body">
             <dl class="facts">
               <dt>Models</dt><dd>Opus 5.5 authors; GPT-6.1 Sol runs the independent accept/reject review. If Claude limits bind, GPT-6 Astra authors.</dd>
-              <dt>Graph permits</dt><dd class="soft">Once M9 is ACCEPTED. It owns the final integrated release checks, including M8&rsquo;s carried interaction and visual observations.</dd>
-              <dt>Should run</dt><dd class="run">Not before. Its final integration fixes may touch every module M9 does. Last approved stopping point: flagship candidate.</dd>
+              <dt>Graph permits</dt><dd class="soft">The normal dependency is accepted M9. Owner exception on 2026-10-13 permits M10 to begin with M9 testing deferred, still unqualified. M10 must complete both M9&rsquo;s remaining checks and its own full suite, including M8&rsquo;s carried observations.</dd>
+              <dt>Should run</dt><dd class="run">Eligible next in a fresh session from published main. Run alone because its integration and deferred M9 checks share the same modules and native Mac. Stop at a verified flagship candidate; missing M9 evidence blocks final qualification.</dd>
             </dl>
             <dl class="facts">
-              <dt>Needs</dt><dd>M9 accepted. All contracts.</dd>
+              <dt>Needs</dt><dd>Owner-authorized M9 deferral; all M9 checks still required alongside M10. All contracts.</dd>
               <dt>Destroys</dt><dd>Nothing by itself. Tags, releases, signing and repository visibility stay your decisions.</dd>
               <dt>Your part</dt><dd>A new tester opens an example, changes a law, saves it and explains the motion. Then the release decision.</dd>
               <dt>Open threads</dt><dd class="thread-list"></dd>
             </dl>
           </div>
-          <cite class="src"><code>docs/MILESTONES.md</code> M10 Deliverables, Visual QA; <code>AGENTS.md</code> Guardrails</cite>
+          <cite class="src"><code>docs/MILESTONES.md</code> M10 Deliverables, Visual QA; <code>docs/evidence/M9.md</code> Owner-directed deferral; <code>AGENTS.md</code> Guardrails</cite>
         </div>
       </article>
 
@@ -753,7 +753,7 @@
     <div class="two-col">
       <div class="verdict">
         <h3>Between units: none</h3>
-        <p>The integration path is one chain, M0 → M1 → … → M10, and each gate starts from its accepted predecessor. Even ignoring the graph, every adjacent pair from M1 to M9 shares at least one expected module. Every unit also writes this page at close-out.</p>
+        <p>The integration path is one chain, M0 → M1 → … → M10. Normally each gate starts from its accepted predecessor; the owner&rsquo;s 2026-10-13 exception lets M10 start while completing M9&rsquo;s deferred tests alongside its own. Even ignoring the graph, every adjacent pair from M1 to M9 shares at least one expected module. Every unit also writes this page at close-out.</p>
         <cite><code>docs/MILESTONES.md</code> Roadmap and dependency graph; <code>AGENTS.md</code> ORCHESTRATION.html</cite>
       </div>
       <div class="verdict">
@@ -1168,16 +1168,22 @@
           <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M1.md</code> finding 2, Owner native check results</cite></td>
         </tr>
-        <tr id="t-f5" data-owner="m9" data-short="Finding 5">
+        <tr id="t-m9-native" data-owner="m10" data-short="M9 qualification">
+          <td data-label="Thread" class="lead">Deferred M9 performance and resources</td>
+          <td data-label="What the record says">M9 source review and production build pass; no native capture or resource cycle ran. The owner deferred remaining tests on 2026-10-13. M10 must execute P0&ndash;P3 under SPEC &sect;18, 20 load/reset and 20 seek/fork cycles, manipulation/cancellation and presentation checks, and obtain the measured worker/compute decision review. Targets remain targets; this is no acceptance or test waiver.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
+          <td data-label="Source"><cite><code>docs/evidence/M9.md</code> Owner-directed deferral; <code>docs/MILESTONES.md</code> M9 AC1&ndash;AC8, M10 AC5</cite></td>
+        </tr>
+        <tr id="t-f5" data-owner="m10" data-short="Finding 5">
           <td data-label="Thread" class="lead">Finding 5: startup compile</td>
-          <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails. In M2 a new bundle’s first launch took about 4.6 s and later launches about 2 s. Moved to M9 by your decision, to measure with the performance envelope.</td>
-          <td data-label="Owner"><a href="#m9">M9</a></td>
+          <td data-label="What the record says">With the real M1 scene, the first frame arrives 3.06 s after a cold launch and about 1.97 s after a warm one. WebKit keeps compiled pipelines across rebuilds. No M1 requirement fails. In M2 a new bundle’s first launch took about 4.6 s and later launches about 2 s. Moved to M9 by your decision, to measure with the performance envelope. Deferred M9 native characterization remains unrun; carried into M10 by owner on 2026-10-13.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M1.md</code> finding 3, Startup, Owner decisions; <code>M2.md</code> finding 7</cite></td>
         </tr>
-        <tr id="t-m5-probes" data-owner="m9" data-short="Probes at the limits">
+        <tr id="t-m5-probes" data-owner="m10" data-short="Probes at the limits">
           <td data-label="Thread" class="lead">Probes at SPEC’s work limits</td>
-          <td data-label="What the record says">At SPEC §15.2’s limits (32 laws, 256 leaves, 57 nodes and depth 8 per law, every body inside every law), one 2,000-probe step takes about 14 ms headless (p50; p95 16 ms), against about 1 ms for P5. The host step stays under 2.1 ms p95 there. Two probe steps per 60 Hz frame would not keep 1× with probes on. The limits are import and work safeguards, not the envelope, and SPEC allows an oversized scene reduced visualization. For M9’s envelope, measured on the packaged app.</td>
-          <td data-label="Owner"><a href="#m9">M9</a></td>
+          <td data-label="What the record says">At SPEC §15.2’s limits (32 laws, 256 leaves, 57 nodes and depth 8 per law, every body inside every law), one 2,000-probe step takes about 14 ms headless (p50; p95 16 ms), against about 1 ms for P5. The host step stays under 2.1 ms p95 there. Two probe steps per 60 Hz frame would not keep 1× with probes on. The limits are import and work safeguards, not the envelope, and SPEC allows an oversized scene reduced visualization. Native capacity must be measured on the packaged app. The prepared M9 work-limit fixture remains unrun; carried into M10 by owner on 2026-10-13.</td>
+          <td data-label="Owner"><a href="#m10">M10</a></td>
           <td data-label="Source"><cite><code>M5.md</code> Performance (headless at the work limits), Review</cite></td>
         </tr>
         <tr id="t-m2-quit" data-owner="owner" data-short="Clean quit">

@@ -41,7 +41,7 @@ Input is guarded. Every click is hit-tested against the Lawsmith process under t
 
 ## Performance envelope (M9)
 
-**Status: not yet measured on the M9 candidate.** The figures below are targets, not results. Earlier milestones' P0–P3 records belong to earlier builds, and no supported envelope is declared until M9's native batch has run on the packaged candidate and `docs/evidence/M9.md` records it.
+**Status: unmeasured; native qualification deferred to M10 by owner on 2026-10-13.** The figures below are targets, not results. M10 must execute the remaining M9 performance/resource checks alongside its full acceptance suite. Earlier milestones' P0–P3 records belong to earlier builds; no supported envelope is declared until fresh packaged-candidate measurements are recorded. See [M9 carry-forward](docs/evidence/M9.md#owner-directed-deferral-to-m10--2026-10-13).
 
 **What is targeted versus what is merely allowed.** The supported envelope is SPEC §18's named workloads in the packaged app:
 
