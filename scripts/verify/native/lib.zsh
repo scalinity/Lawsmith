@@ -186,10 +186,22 @@ launch() {
   local ready=$(grep -c '"kind":"guard","action":"ready"' $APP_LOG 2>/dev/null || true)
   require_lock "launching Lawsmith"
   idle_gate 35
-  open -n $APP --env LAWSMITH_RECOVERY_DIR=$2 --stdout $APP_LOG --stderr $APP_LOG
-  local i
+  # The instance carries this launch's identity in its argv: `lawsmith-qa-owner=<recovery dir>`, a bare word
+  # (no leading dash, so AppKit's argument domain ignores it) that neither the app nor its shell reads. A
+  # driver that stops this run before any receipt finds the instance by that exact token, never by name.
+  local token="lawsmith-qa-owner=$2"
+  open -n $APP --env LAWSMITH_RECOVERY_DIR=$2 --stdout $APP_LOG --stderr $APP_LOG --args $token
+  local i owned= pid
   for i in {1..150}; do
-    APP_PID=$(pgrep -nf "$APP/Contents/MacOS/lawsmith")
+    APP_PID=
+    for pid in $(pgrep -f -- "$token"); do
+      [[ $(ps -o command= -p $pid 2>/dev/null) == "$APP/Contents/MacOS/lawsmith $token" ]] && APP_PID=$pid
+    done
+    # The ownership receipt goes out as soon as the instance exists, before readiness: PID, start, token.
+    if [[ -n $APP_PID && ${before[(Ie)$APP_PID]} == 0 && $APP_PID != $owned ]]; then
+      owned=$APP_PID
+      say "owns app pid $APP_PID started ${(j: :)${=$(ps -o lstart= -p $APP_PID)}} token $token, not yet ready"
+    fi
     if [[ -n $APP_PID && ${before[(Ie)$APP_PID]} == 0 ]] && (( $(grep -c '"kind":"guard","action":"ready"' $APP_LOG 2>/dev/null || true) > ${ready:-0} )); then break; fi
     sleep 0.2
   done

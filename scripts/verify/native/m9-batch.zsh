@@ -112,18 +112,33 @@ prefs_put_back() {
   prefs_match
 }
 
-# stop_owned DIR SINCE: apps the scenario logged as launched (PID, executable path, start not before SINCE),
-# then processes naming DIR, the scenario's own unique directory. Prints what it stopped.
+# app_owned PID DIR: whether a Lawsmith instance is proven to be this run's, never inferred from its name or
+# start time. lib.zsh's launch passes `lawsmith-qa-owner=<recovery dir>` in the app's argv (open --args), and
+# the recovery directory lies inside the scenario's unique DIR; the process must be this APP's executable
+# with that token. Another instance of the same executable, from any other session, carries no such token.
+# (The environment cannot be relied on: `ps -E` shows none for these processes here.)
+app_owned() {
+  local cmd=$(ps -o command= -p $1 2>/dev/null)
+  [[ $cmd == "$APP/Contents/MacOS/lawsmith "* && $cmd == *" lawsmith-qa-owner=$2/"* ]]
+}
+# stop_app PID DIR: TERM, then KILL only if the same process (PID and start) is still there and still owned.
+stop_app() {
+  local pid=$1 start i
+  start=$(start_of $pid)
+  [[ -n $start ]] || return 1
+  kill $pid 2>/dev/null
+  for i in {1..50}; do alive $pid $start || return 0; command sleep 0.1; done
+  alive $pid $start && app_owned $pid $2 && kill -KILL $pid 2>/dev/null
+  return 0
+}
+
+# stop_owned DIR SINCE: this run's apps, receipted or not yet (found by their owner token inside DIR), then
+# processes naming DIR, the scenario's own unique directory. Prints what it stopped.
 stop_owned() {
-  local dir=$1 since=$2 pid start cmd i stopped=()
-  for pid in ${(f)"$(grep -ho 'launched pid [0-9]*' $dir/out/qa-steps.log 2>/dev/null | awk '{print $3}')"}; do
-    start=$(start_of $pid)
-    cmd=$(ps -o command= -p $pid 2>/dev/null)
-    [[ -n $start && $start -ge $(( since - 1 )) && $cmd == "$APP/Contents/MacOS/lawsmith"* ]] || continue
-    kill $pid 2>/dev/null
-    for i in {1..50}; do alive $pid $start || break; command sleep 0.1; done
-    alive $pid $start && kill -KILL $pid 2>/dev/null
-    stopped+=("app:$pid")
+  local dir=$1 pid stopped=()
+  for pid in $(pgrep -f -- "lawsmith-qa-owner=$dir/"); do
+    app_owned $pid $dir || continue
+    stop_app $pid $dir && stopped+=("app:$pid")
   done
   for pid in $(pgrep -f -- "$dir/"); do
     [[ $pid == $sysparams[pid] ]] && continue
@@ -200,6 +215,10 @@ batch_cleanup() {
     leftovers+=(${(s:,:)$(stop_owned $BATCH_STATE/run-$CURRENT 0)})
     RESULTS+=("{\"scenario\":$(json $CURRENT),\"exit\":null,\"verdict\":\"interrupted with the batch\"}")
   fi
+  # Any app carrying this batch's owner token, from any scenario, before the restoration check.
+  for pid in $(pgrep -f -- "lawsmith-qa-owner=$BATCH_STATE/"); do
+    app_owned $pid $BATCH_STATE && stop_app $pid $BATCH_STATE && leftovers+=("app:$pid")
+  done
   if [[ -n $DISPLAY_SNAPSHOT ]]; then restored=$(check_restored final); else restored=not-snapshotted; fi
   release_lock
   lock=$(lock_probe)

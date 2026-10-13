@@ -70,15 +70,29 @@ except BlockingIOError: print(\"held\")' \$GUI_LOCK) > $CASE/$1.lock
 $2" > $CASE/scenarios/$1.zsh
 }
 # Starts the stand-in app in its own session and logs its PID as lib.zsh's launch does.
+# Like lib.zsh's `open -n … --args lawsmith-qa-owner=<recovery dir>`: the stand-in runs under the app's
+# executable path as argv[0] with that owner token in its argv, detached, and, as a LaunchServices launch, with
+# none of its starter's descriptors (so it can never keep a borrowed GUI lock open). It is /bin/zsh -f waiting
+# in a builtin for at most 60 s, so stopping it leaves no child behind.
 cat > $ROOT/start_app.py <<'EOF'
 import os, sys
 if os.fork():
     sys.exit(0)
 os.setsid()
 open(sys.argv[2], "w").write(str(os.getpid()))
-os.execv("/bin/sleep", [sys.argv[1], "60"])
+for fd in sorted({int(n) for n in os.listdir("/dev/fd")} - {0, 1, 2}):
+    try:
+        os.close(fd)
+    except OSError:
+        pass
+os.execv("/bin/zsh", [sys.argv[1], "-f", "-c", "zmodload zsh/zselect; repeat 600 zselect -t 10", "lawsmith-qa-owner=" + sys.argv[3]])
 EOF
-START_APP="python3 -I $ROOT/start_app.py \$APP/Contents/MacOS/lawsmith \$CASE/app.pid; for i in {1..50}; do [[ -s \$CASE/app.pid ]] && break; command sleep 0.1; done; say \"launched pid \$(<\$CASE/app.pid), window at 0,0\""
+wait_pid='for i in {1..50}; do [[ -s $1 ]] && break; command sleep 0.1; done'
+START_APP="python3 -I $ROOT/start_app.py \$APP/Contents/MacOS/lawsmith \$CASE/app.pid \$QA_STATE/recovery-stub; set -- \$CASE/app.pid; $wait_pid; say \"launched pid \$(<\$CASE/app.pid), window at 0,0\""
+# Killed between `open` and any receipt: the app exists with this run's owner token, nothing is logged.
+START_APP_UNRECEIPTED="python3 -I $ROOT/start_app.py \$APP/Contents/MacOS/lawsmith \$CASE/app.pid \$QA_STATE/recovery-early; set -- \$CASE/app.pid; $wait_pid"
+# Another session's instance of the same executable, started in the same window: never this run's.
+START_FOREIGN="python3 -I $ROOT/start_app.py \$APP/Contents/MacOS/lawsmith \$CASE/foreign.pid $ROOT/foreign-recovery; set -- \$CASE/foreign.pid; $wait_pid"
 # A scenario that changes the display and preferences, as a real one does before its own cleanup.
 DIRTY='print -r -- 900x600@60 > $CASE/display; print -r -- changed > $CASE/prefs'
 
@@ -144,7 +158,7 @@ new_case watchdog
 scenario m9-smoke "$START_APP; $DIRTY; repeat 600 command sleep 0.1"
 run_batch M9_CAP=1 M9_GRACE=1 M9_KILL_AFTER=5 -- m9-smoke
 check "watchdog TERM: exit 124, recorded as expired" '[[ $STATUS == 124 && $(field $CASE/out/batch.json scenarios.0.verdict) == "watchdog expired" ]]' "status $STATUS; $(tail -3 $CASE/log)"
-check "the driver stopped the scenario's app by its logged PID and restored display and preferences" '[[ $(field $CASE/out/batch.json scenarios.0.stoppedAfter) == app:* && $(field $CASE/out/batch.json scenarios.0.restoration) == "display:restored-by-driver preferences:restored-by-driver" ]] && app_gone && restored' "$(field $CASE/out/batch.json scenarios.0)"
+check "the driver stopped the scenario's app by its owner token and restored display and preferences" '[[ $(field $CASE/out/batch.json scenarios.0.stoppedAfter) == app:* && $(field $CASE/out/batch.json scenarios.0.restoration) == "display:restored-by-driver preferences:restored-by-driver" ]] && app_gone && restored' "$(field $CASE/out/batch.json scenarios.0)"
 check "after the watchdog: lock free, nothing left" '[[ $(lock_state $CASE/gui.lock) == free ]] && clean'
 
 new_case killed
@@ -165,6 +179,20 @@ driver=$(pgrep -f -- "^zsh $HERE/m9-batch.zsh m9-smoke m9-resources" | head -1)
 until_file $CASE/status
 check "driver TERM: exit 143, the running scenario interrupted, the next unrun" '[[ -n $driver && $(<$CASE/status) == 143 && ! -e $CASE/m9-resources.ran && $(field $CASE/out/batch.json scenarios.-1.verdict) == "interrupted with the batch" ]]' "driver $driver, status $(<$CASE/status 2>/dev/null); $(tail -3 $CASE/log)"
 check "after driver TERM: app stopped, state restored, lock free, nothing left" 'app_gone && restored && [[ $(lock_state $CASE/gui.lock) == free ]] && clean'
+
+# --- an app launched but not yet receipted --------------------------------------------------------------
+new_case unreceipted
+scenario m9-smoke "$START_FOREIGN; $START_APP_UNRECEIPTED; : > $CASE/dirty; repeat 600 command sleep 0.1"
+( run_batch -- m9-smoke; print $STATUS > $CASE/status ) &
+until_file $CASE/dirty
+driver=$(pgrep -f -- "^zsh $HERE/m9-batch.zsh m9-smoke" | head -1)
+[[ -n $driver ]] && kill -TERM $driver
+until_file $CASE/status
+foreign_alive() { [[ -s $CASE/foreign.pid ]] && kill -0 $(<$CASE/foreign.pid) 2>/dev/null }
+check "driver TERM before any launch receipt: the unreceipted app is found by its owner token and stopped" '[[ -n $driver && $(<$CASE/status) == 143 ]] && ! grep -q "pid" $CASE/state/run-m9-smoke/out/qa-steps.log 2>/dev/null && app_gone' "driver $driver, status $(<$CASE/status 2>/dev/null); $(field $CASE/out/batch.json final)"
+check "negative control: another instance of the same executable from the same window survives" 'foreign_alive' "$(field $CASE/out/batch.json final)"
+[[ -s $CASE/foreign.pid ]] && kill $(<$CASE/foreign.pid) 2>/dev/null
+check "after the unreceipted case: lock free, nothing left" '[[ $(lock_state $CASE/gui.lock) == free ]] && clean'
 
 # --- an adopter that releases the lent lock -----------------------------------------------------------
 new_case lost-lock
