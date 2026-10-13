@@ -1,0 +1,63 @@
+{
+  "label": "build-final-app",
+  "command": [
+    "npx",
+    "tauri",
+    "build",
+    "--bundles",
+    "app"
+  ],
+  "startedUtc": "2026-10-13T04:49:37.501289+00:00",
+  "pid": 54750,
+  "processStart": "Tue Oct 13 00:49:37 2026",
+  "exit": 0,
+  "leftoversAfterTerm": [],
+  "endedUtc": "2026-10-13T04:49:58.916369+00:00",
+  "candidate": "d90338874903d03bf2740c067f9a9f8f59e6442a",
+  "applicationSource": "3eeb003ffcb30df16e352bf90d5aec5458c97779",
+  "harnessSource": "c5951c3aee05300eb06041f421af220e4b960fac",
+  "package": "src-tauri/target/release/bundle/macos/Lawsmith.app",
+  "packageManifestSha256": "7219c5140326225c429d77a555dfaf451e26ba341b87b4cf976f64ff7f93112f",
+  "packageFiles": [
+    {
+      "path": "Contents/Info.plist",
+      "bytes": 960,
+      "sha256": "dfac2e7acb02913afcd9fad55de7dd79548d1987bd74c1f5af5bc99705d5e4ad"
+    },
+    {
+      "path": "Contents/MacOS/lawsmith",
+      "bytes": 14110944,
+      "sha256": "a8c0403623b304092a75e77576f257f50edffee33bda29622cb6a500980a8b41"
+    },
+    {
+      "path": "Contents/Resources/icon.icns",
+      "bytes": 105276,
+      "sha256": "0f3ab2bc8760acfd279ec87c574df2ef5493d4471268824b6213d229360482f1"
+    }
+  ],
+  "frontendFiles": [
+    {
+      "path": "dist/assets/index-BWY6Jh2i.css",
+      "bytes": 28338,
+      "sha256": "dc2f0d8db31b466a02cb9c47034ce1a8d142a029567d66aa9fd3aea1d83b7edc"
+    },
+    {
+      "path": "dist/assets/index-DMmyyIvZ.js",
+      "bytes": 5618175,
+      "sha256": "362b82ceb5e8216fe88fc5c354f09653b510bd037598da54c35d0b5611c3d305"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 23280,
+      "sha256": "b8b44c95921ab2a643467e9eb6f2641b0b0ff9617d511b4e05c0075c3359fa99"
+    }
+  ],
+  "productionFaultStringMatches": [],
+  "identityFileHashes": {
+    "package.json": "7bb7898a4471a072d5a8cb675ad618fada96224d4b08849408e268d98dd9766e",
+    "package-lock.json": "aa9f8966a5e92578daf11ad0080f9d94499f2196b0488320a7673d4ad5726942",
+    "src-tauri/Cargo.toml": "4bb4dcc0b067e9dd3a72c1fc6033f9143cbb056752be02a8e40c1812aac8f025",
+    "src-tauri/Cargo.lock": "4d29fd4c326adc35ba20a67a64e07cdc1d383f96d8cb9d5db4c2997ac9aeb463",
+    "src-tauri/tauri.conf.json": "8358e7672c8c1b7a2a6e057e1c86227df79a8b70e1897380ce20f5481a3e565f"
+  }
+}
