@@ -46,8 +46,11 @@ export function tokenColor(name: string): Color {
 export interface FrameHooks {
   /** Simulation and view updates for this presentation frame, before rendering. */
   before(timeMs: number): void;
-  /** Called after the frame is submitted; `intervalMs` is undefined on the first frame. */
-  after(intervalMs: number | undefined, workMs: number): void;
+  /**
+   * Called after the frame is submitted; `intervalMs` is undefined on the first frame. `submitMs` is the
+   * CPU time of the `renderer.render` call alone: submission, not GPU execution.
+   */
+  after(intervalMs: number | undefined, workMs: number, submitMs: number): void;
 }
 
 export interface Viewport {
@@ -183,8 +186,10 @@ export function createViewport(renderer: WebGPURenderer, log: ViewportLog): View
         const begin = performance.now();
         hooks.before(time);
         orbit.update();
+        const submit = performance.now();
         renderer.render(scene, camera);
-        hooks.after(last === undefined ? undefined : time - last, performance.now() - begin);
+        const end = performance.now();
+        hooks.after(last === undefined ? undefined : time - last, end - begin, end - submit);
         last = time;
       });
     },

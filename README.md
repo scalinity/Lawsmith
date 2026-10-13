@@ -39,6 +39,41 @@ Dev-only startup fault injection, compiled out of production builds: `VITE_LAWSM
 
 Input is guarded. Every click is hit-tested against the Lawsmith process under test; keys require it to be frontmost; any keyboard or mouse input newer than the harness's own aborts the run, so it never fights a person. Each focus-changing segment holds an exclusive `flock` on `/private/tmp/mac-gui-automation.lock`, which other automation on the same Mac also takes. The Open and Save panels start in a folder the harness seeds in Lawsmith's own preferences, so they never navigate. Before seeding, under the lock, the harness snapshots the `local.lawsmith` domain into `QA_STATE` (which must lie outside the repository); `restore_preferences` puts that snapshot back exactly, or removes the domain only if it did not exist, and records the outcome in `QA_OUT/cleanup.jsonl`. Only `defaults`' exact not-found answer counts as absence; any other read failure stops the run before anything is written, and fails a restore. The M8 scenarios restore on exit; earlier scenarios leave restoring to their caller. With `QA_DEADLINE` set (epoch seconds, required by the M8 scenarios), no input or native change starts that could end after it, and the lock and quiet waits give up at it.
 
+## Performance envelope (M9)
+
+**Status: not yet measured on the M9 candidate.** The figures below are targets, not results. Earlier milestones' P0–P3 records belong to earlier builds, and no supported envelope is declared until M9's native batch has run on the packaged candidate and `docs/evidence/M9.md` records it.
+
+**What is targeted versus what is merely allowed.** The supported envelope is SPEC §18's named workloads in the packaged app:
+
+| Workload | Scene |
+| --- | --- |
+| P0 | Sideways Rain, at most 64 bodies and 125 arrows |
+| P1 | 200 dynamic bodies, 16 one-leaf laws, 16 fixed colliders and contacts, 32 trails |
+| P2 | 100 bodies, 4 laws, 2,000 CPU probes, 32 trails |
+| P3 | 100 bodies, 4 laws, a 600-tick baseline built in at most 3 s, and active comparison playback over a 7,200-tick baseline |
+
+SPEC §15.2's import limits are a different thing: work safeguards, not a promise that the scene runs at full rate. The limits are 512 live bodies, 32 laws, 256 primitive leaves, 64 nodes and depth 8 per law. A scene near them may run slower than real time; the status line then says so (it never shortens the step or drops ticks) and its optional visualization may need reducing.
+
+**Gates**, per workload at 1600×1000 CSS, a 1.5 pixel-ratio cap, 100% Interface Scale, the HUD shown and 60 Hz:
+
+| Gate | P0 | P1–P3 |
+| --- | --- | --- |
+| Completed step p95 / p99 | ≤ 2 / ≤ 4 ms | ≤ 3 / ≤ 5 ms |
+| CPU frame work p95 | ≤ 12 ms | ≤ 14 ms |
+| Frame-callback interval p95 / p99 | ≤ 20 / ≤ 34 ms | ≤ 20 / ≤ 34 ms |
+| Accepted edit to frame submission p95 | ≤ 50 ms | ≤ 50 ms |
+| Simulated/wall time | ≥ 0.98 | ≥ 0.98 |
+
+Budgets: trace and probe buffers under 32 MiB, the checkpoint cache and the comparison each within 64 MiB. Frame-callback intervals are a pacing proxy, not presented frames. CPU submission is timed; GPU execution is not, and the record says whether the device exposes timestamp queries.
+
+**Procedure.** `scripts/verify/native/m9-batch.zsh` runs the owner-approved batch: `m9-smoke`, `m9-resources`, then `m9-perf P1 P2 P3 P0`. Approval is passed as `QA_APPROVAL` and `QA_APPROVED_SCENARIOS`. The driver holds the shared GUI lock for the whole batch, gives each scenario a finite watchdog, stops at the first failure or any outside input, and checks and restores the display and preferences itself.
+- **`m9-perf`**: each workload in its own packaged launch, with three captures of 10 s warmup and 60 s measured. P3 follows SPEC §18.2's order in every capture: fork, the 600-tick baseline measured on its own, a warmed disposable continuation, the fork restored, the 7,200-tick baseline precomputed, then 60 s of playback.
+- **`m9-resources`**: Shift+Y runs 20 scene-load/reset cycles and checks equal-tick authority under visualization. A 60 s P1 recording follows, with real drags. Its read-only replay is checked, and an uncached seek is canceled from its control. Shift+U then runs 20 seek → fork → close → return cycles against the checkpoint-free oracle.
+- **`m9-smoke`**: 1280×800 at 60 Hz and the Retina display at 120 Hz.
+- **`m9perf.py`**: recomputes every percentile and simulated/wall from raw samples, checks P3's setup order, and fails on any missing or malformed data. Its parser controls are `test_m9perf.py`; the driver's are `test_m9_batch.zsh`.
+
+First-frame times are reported for every launch, with the WebKit cache state not controlled: they are neither cold nor warm figures.
+
 ## Controls
 
 The window is one surface. The scene card at the top left holds the scene's name, its file actions and **Open an example…**; below it the Laws list, Motion and Display settings scroll on their own, and **Hide laws** collapses them completely. Any simulation error, recording and replay, the comparison, the selected law's details and the explained body stack at the top right and scroll together; **Hide details** folds the law's details to their title line. Play, Step, Reset and **Draw options** sit at the bottom right. The drawing options (arrows, probes and trails) start folded at every size; Draw options opens or folds them, and that choice holds when the scale or window changes. The recording card shows only the actions its state needs; **More** shows the rest. Above 100% Interface Scale in a window narrower than about 1,100 interface units, or in a short window, everything joins one scrolling column on the left, in the order Laws, Details, Scene, Recording, with a bar at its top that jumps to each section and moves keyboard focus to its heading; the right side keeps only an error or a running condition. The empty top band moves the window; it never covers a control, a law or the canvas.
@@ -55,7 +90,7 @@ Drag a law's handles in the viewport: <kbd>T</kbd> move, <kbd>R</kbd> rotate, <k
 
 Open Two Futures from **Open an example…** (or `examples/two-futures.lawsmith.json`) for a collision-free example. Set Sideways strength from 0 to 2 after the fork: at 120 ticks the traveler separates vertically by at least 0.5 m, with no acceleration limiting. The independent continuous expectation is 1 m vertical displacement at one second; the locked discrete-step tolerance is `2/120 + 0.0001 m`. Angular motion is retained in both futures.
 
-M7 native qualification uses `m7-compare` for the workflow/captures and `m7-perf` for P3. Shift+J explicitly runs disposable independent complete-state fixtures in the packaged runtime. In a P3 comparison, Shift+K computes the full 7,200-tick horizon; Shift+P runs ten seconds of disposable warmup, restores B to its fork, and measures 60 seconds, with periodic resolved law edits. Numeric capture keeps screen recording off. The P3 fixture contains 100 dynamic spheres and four active directional laws; ambient acceleration cancels their common drive so bodies remain visible. Its measurements describe callback pacing and CPU submission, not input-to-photon or GPU execution time.
+M7 native qualification uses `m7-compare` for the workflow/captures and `m7-perf` for P3. Shift+J explicitly runs disposable independent complete-state fixtures in the packaged runtime. In a comparison, Shift+K computes the full 7,200-tick horizon. Shift+P, from a fresh comparison holding only A's default 600-tick baseline, follows SPEC §18.2's order: ten seconds of warmup in a disposable continuation (restored from the fork whenever it reaches A's horizon), the fork restored, the full 7,200-tick baseline precomputed, then 60 seconds measured with the app's periodic resolved law edits. P3 is measured by `m9-perf`; `m7-perf` and `m8-perf` record the earlier order and do not apply to this build. Numeric capture keeps screen recording off. The P3 fixture contains 100 dynamic spheres and four active directional laws; ambient acceleration cancels their common drive so bodies remain visible. Its measurements describe callback pacing and CPU submission, not input-to-photon or GPU execution time.
 
 
 Scenes are `.lawsmith.json` files: <kbd>⌘O</kbd> opens one, <kbd>⌘S</kbd> saves, <kbd>⇧⌘S</kbd> saves as, <kbd>⌘Z</kbd> and <kbd>⇧⌘Z</kbd> undo and redo law edits and emitter changes. The Scene panel's **Emitter** block sets how many bodies the emitter makes per second and how many seconds it keeps each one. Values become whole ticks, and the block shows the exact result; **Apply and reset** rebuilds the scene from tick 0, and Undo restores the previous rate and lifetime the same way. Bodies always have a finite lifetime (up to an hour), and the block is locked while recording, replaying or comparing. A locked block says why and offers the control that ends the lock: Stop recording, Return to authoring or Close comparison. Save keeps the setup (laws, bodies and emitters), not the current motion; an opened scene starts paused at tick 0. Unsaved work is kept in a recovery copy and offered at the next launch. Closing or quitting with unsaved changes asks to Save, Don't Save or Cancel.

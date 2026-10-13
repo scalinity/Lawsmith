@@ -1,0 +1,105 @@
+{
+  "base": "71e9b517aff413bacf8c5bb7a317933e63e8c6e0",
+  "producer": "working tree recorded in sourceSha256; first M9 application commit contains these bytes",
+  "sourceSha256": {
+    "src/main.ts": "c40eee3feea033ace23f66134ed8554b49fdb7d4b225997a5cc6235d003e9d3d",
+    "src/rendering/viewport.ts": "c3b841bf48b6b8202112eca5f04e091d90252dcb91a5b3ed1ae7bcc6dab344c3",
+    "src/simulation/host.ts": "58f963e51e780556b190b6f4d95497688256821915f61c7c2436210747412414",
+    "tests/sleepingBodies.test.ts": "83a81836c233791e67a870099b83a564d1b4bf8ee023b6c6dc6be56721f90493",
+    "scripts/verify/native/m9-batch.zsh": "467c560dcd3a3ea6f475edef4ee020150de011c87ee746dfed4b84581267c5a3",
+    "scripts/verify/native/m9-perf.zsh": "47ccde9912b6f66fe9084a53fcbdabef83bf4ae7b83b34f19014ef4c1c614a55",
+    "scripts/verify/native/m9-resources.zsh": "377bb40c0f732827153682cddf4a329adfb6388b2e71e052d037b594978aee88",
+    "scripts/verify/native/m9-smoke.zsh": "c488a48e99b9b60fc0d06d46e2da9abb9f690d54d0b53c88f27d5756b44236fa",
+    "scripts/verify/native/m9perf.py": "8e8621c6f990a33c65a83b364924dfb30fe12d5468593dff09643bca9852b163",
+    "scripts/verify/native/test_m9_batch.zsh": "4c5fcd0eabb8231c0ce2c98ba041cb7252c42a0e380ffccf4982204b71c55e88",
+    "scripts/verify/native/test_m9perf.py": "ca9eabbb2649f78f0035707118a8731f034be6410cf086c9fca9e3113cd4494f"
+  },
+  "checks": [
+    {
+      "label": "typecheck",
+      "startedUtc": "2026-10-13T04:10:21.025126+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:10:21.562096+00:00",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "label": "targeted-tests",
+      "startedUtc": "2026-10-13T04:10:21.025378+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:10:27.588747+00:00",
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/measurement.test.ts",
+        "tests/invariance.test.ts",
+        "tests/sleepingBodies.test.ts"
+      ]
+    },
+    {
+      "label": "m9-parser",
+      "startedUtc": "2026-10-13T04:10:21.025355+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:10:21.570781+00:00",
+      "command": [
+        "python3",
+        "-I",
+        "scripts/verify/native/test_m9perf.py"
+      ]
+    },
+    {
+      "label": "m8-parser",
+      "startedUtc": "2026-10-13T04:10:21.025327+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:10:21.726113+00:00",
+      "command": [
+        "python3",
+        "-I",
+        "scripts/verify/native/test_m8perf.py"
+      ]
+    },
+    {
+      "label": "m9-syntax",
+      "startedUtc": "2026-10-13T04:10:21.025247+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:10:21.242053+00:00",
+      "command": [
+        "zsh",
+        "-c",
+        "for f in m9-batch m9-perf m9-resources m9-smoke test_m9_batch; do zsh -n scripts/verify/native/$f.zsh || exit; done"
+      ]
+    },
+    {
+      "label": "m9-batch-tests",
+      "startedUtc": "2026-10-13T04:10:39.609598+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:11:00.056542+00:00",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_m9_batch.zsh"
+      ]
+    },
+    {
+      "label": "lock-lifecycle-tests",
+      "startedUtc": "2026-10-13T04:10:39.609592+00:00",
+      "exit": 0,
+      "leftoversAfterTerm": [],
+      "endedUtc": "2026-10-13T04:10:49.712374+00:00",
+      "command": [
+        "zsh",
+        "scripts/verify/native/test_lock_lifecycle.zsh"
+      ]
+    }
+  ],
+  "scope": "headless and stubbed harness checks only; no native input or app launch"
+}

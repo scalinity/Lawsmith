@@ -43,7 +43,7 @@ import { SIMULATION_FINGERPRINT, exportRun } from './simulation/recorder';
 import { LinearReplay, firstDivergence as replayDivergence, observe, type Address, type Observed } from './simulation/replay';
 import type { TransitionObservation } from './simulation/observation';
 import { driveScheduledFrame, FixedStepScheduler } from './simulation/scheduler';
-import { fnv64 } from './simulation/checkpoints';
+import { CHECKPOINT_LIMITS, fnv64 } from './simulation/checkpoints';
 import { createBodyPanel, type ExplainViewMode } from './ui/bodyPanel';
 import { createIngredientPanel } from './ui/ingredientPanel';
 import { PlayPace, conditionLines } from './ui/conditions';
@@ -583,10 +583,12 @@ async function start() {
       pushBounded(stepTimes, t1 - t0, 480);
       if (p0?.phase === 'measure') {
         p0.steps.push(t1 - t0);
+        p0.fields.push(steppedHost.lastFieldMs);
+        p0.engines.push(steppedHost.lastEngineMs);
         if (probes.settings.enabled && probes.settings.count > 0) p0.probes.push(t2 - t1);
         if (trails.mode !== 'off') p0.trails.push(t3 - t2);
         p0.ticks.push(t3 - t0);
-      }
+      } else if (p0?.phase === 'warmup' && p0.setup) p0.setup.warmTicks += 1;
     };
     if (comparing()) runs.comparison!.advance(completed);
     else { host.step(); if (host.tick !== before) completed(host); }
@@ -1153,18 +1155,23 @@ async function start() {
   // Bundled examples (SPEC §19): opened through the same guard and candidate world as New.
   const exampleMenu = $<HTMLSelectElement>('example-open');
   for (const example of EXAMPLES) exampleMenu.add(new Option(example.title, example.key));
+  /** Opens a bundled example as the menu does; the M9 load cycles (Shift+Y) use the same path. */
+  const openExample = (example: (typeof EXAMPLES)[number]) => {
+    if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
+    const chosen = exampleDocument(example);
+    pendingExample = { example, document: chosen };
+    return workflow.openExample(chosen).then((outcome) => {
+      pendingExample = null;
+      report('file-control', { action: 'example', example: example.key, outcome, tick: host.tick, playing: scheduler.playing });
+      renderPanel();
+      return outcome;
+    });
+  };
   exampleMenu.addEventListener('change', () => {
     const example = EXAMPLES.find((e) => e.key === exampleMenu.value);
     exampleMenu.value = '';
     if (!example || frozen) return;
-    if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
-    const chosen = exampleDocument(example);
-    pendingExample = { example, document: chosen };
-    void workflow.openExample(chosen).then((outcome) => {
-      pendingExample = null;
-      report('file-control', { action: 'example', example: example.key, outcome, tick: host.tick, playing: scheduler.playing });
-      renderPanel();
-    });
+    void openExample(example);
   });
 
   // The laws, inspector and settings collapse completely; the scene card stays.
@@ -1797,6 +1804,9 @@ async function start() {
     report('comparison', { action: 'failed', error: String(error), ...runs.counts() });
     renderPanel();
   };
+  /** Frame-callback intervals while a baseline calculation runs: the UI's responsiveness during it (M9). */
+  let baselineFrames: number[] = [];
+  const framesDuring = (frames: number[]) => ({ count: frames.length, percentiles: 'p50, p95, p99, max', intervalMs: percentiles(frames), raw: frames.map(round3) });
   const computeBaseline = (ticks: number) => {
     const comparison = runs.comparison;
     if (!comparison || frozen || workflow.busy) return;
@@ -1805,6 +1815,7 @@ async function start() {
     try {
       const job = comparison.begin(ticks);
       calculation = { comparison, job };
+      baselineFrames = [];
       report('comparison', { action: 'baseline-start', fork: comparison.address, target: job.target, ...comparison.counts() });
       comparisonChannel.port2.postMessage(null);
       renderPanel();
@@ -1819,7 +1830,7 @@ async function start() {
       else {
         calculation = null;
         const metrics = active.comparison.metrics;
-        report('comparison', { action: `baseline-${result}`, ...active.comparison.counts(), metrics: metrics ? { ...metrics, batches: metrics.batches.length, batchMs: percentiles(metrics.batches) } : null });
+        report('comparison', { action: `baseline-${result}`, target: active.job.target, ...active.comparison.counts(), metrics: metrics ? { ...metrics, batches: metrics.batches.length, batchMs: percentiles(metrics.batches) } : null, uiFrames: framesDuring(baselineFrames) });
         renderPanel();
       }
     } catch (error) { calculation = null; comparisonFailed(error); }
@@ -1851,9 +1862,11 @@ async function start() {
   });
   $('baseline-cancel').addEventListener('click', () => {
     const start = performance.now();
+    // Whether a job was actually running when Cancel was pressed, and its target: a finished job is not a cancel.
+    const running = runs.comparison?.working ?? null;
     calculation = null;
     runs.comparison?.cancel();
-    report('comparison', { action: 'baseline-canceled', latencyMs: performance.now() - start, ...runs.counts() });
+    report('comparison', { action: 'baseline-canceled', latencyMs: performance.now() - start, running: running !== null, target: running?.target ?? null, horizon: runs.comparison?.horizon ?? null, uiFrames: framesDuring(baselineFrames), ...runs.counts() });
     renderPanel();
   });
   $('alternate-replay').addEventListener('click', () => {
@@ -2201,6 +2214,8 @@ async function start() {
   // leave half of every 60 Hz frame idle.
   const seekChannel = new MessageChannel();
   let seekQueued = false;
+  /** Frame-callback intervals while the latest seek request is pending: the UI's responsiveness during it (M9). */
+  let seekFrames: number[] = [];
   const pumpSeek = () => {
     if (seekQueued || !pendingSeek) return;
     seekQueued = true;
@@ -2243,6 +2258,7 @@ async function start() {
     }
     const requested = job;
     return new Promise((resolve) => {
+      seekFrames = [];
       pendingSeek = { job: requested, reason, requestedAt: performance.now(), batches: [], progressShownAfter: null, playOnCommit: false, done: resolve };
       report('seek', { action: 'request', id: requested.id, reason, target, shown: runs.replay!.address, ...cacheCounts() });
       pumpSeek();
@@ -2269,6 +2285,7 @@ async function start() {
       restoreMs: round3(job.restoreMs),
       progressShownAfterMs: pending.progressShownAfter === null ? null : round3(pending.progressShownAfter),
       rejected: job.rejected,
+      uiFrames: framesDuring(seekFrames),
       ...extra,
       ...cacheCounts(),
     });
@@ -2464,10 +2481,17 @@ async function start() {
   runButtons.open.addEventListener('click', () => runFile('openRecording'));
 
   // P0 (SPEC §18.2): 10 s warmup, then a 60 s capture with every raw sample kept.
+  interface P3Setup {
+    /** Disposable continuations restored from the fork when they reached A's 600-tick horizon during warmup. */
+    warmRestores: number;
+    warmTicks: number;
+    restored: { tick: number; cursor: number; suffix: number; fork: Address } | null;
+    precompute: { elapsedMs: number; ticks: number; batches: number; bytes: number } | null;
+  }
   interface P0Capture {
     run: number;
     comparison: boolean;
-    phase: 'warmup' | 'measure';
+    phase: 'warmup' | 'restore' | 'precompute' | 'measure';
     phaseStart: number;
     tickStart: number;
     droppedStart: number;
@@ -2480,15 +2504,42 @@ async function start() {
     probes: number[];
     trails: number[];
     ticks: number[];
+    /** Per completed step: the field evaluation and the engine step inside it (M9 profile). */
+    fields: number[];
+    engines: number[];
+    /** Per frame: simulation and view preparation, the render call's CPU submission, and its draw calls. */
+    prep: number[];
+    submit: number[];
+    draws: number[];
+    /** P3's resolved law edits made by the app during the measured minute; P0–P2 take theirs from input. */
+    periodicEdits: number;
+    /** P3 only: its setup, in SPEC §18.2's order. */
+    setup: P3Setup | null;
     invalid: string | null;
   }
   const startP0 = () => {
     if (p0 || frozen) return;
-    if (comparing() && (runs.comparison!.horizon - runs.comparison!.address.tick !== 7200 || runs.comparison!.replaying || runs.comparison!.working)) return;
-    if (comparing()) { runs.comparison!.newAlternate(); showWorld('p3-warmup'); applyFreeze(); }
+    const c = runs.comparison;
+    // P3 begins from a fresh comparison holding only its default 600-tick baseline, measured separately (SPEC §18.2).
+    if (c && (c.horizon - c.address.tick !== COMPARISON_LIMITS.initialTicks || c.replaying || c.working)) return;
+    if (c) { c.newAlternate(); showWorld('p3-warmup'); applyFreeze(); }
     setPlaying(true, 'p0');
-    p0 = { comparison: comparing(), run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], probes: [], trails: [], ticks: [], invalid: null };
-    report('p0', { phase: 'warmup', run: p0.run });
+    p0 = { comparison: !!c, run: ++p0Runs, phase: 'warmup', phaseStart: performance.now(), tickStart: 0, droppedStart: 0, supersededStart: 0, intervals: [], work: [], steps: [], edits: [], probes: [], trails: [], ticks: [], fields: [], engines: [], prep: [], submit: [], draws: [], periodicEdits: 0, setup: c ? { warmRestores: 0, warmTicks: 0, restored: null, precompute: null } : null, invalid: null };
+    report('p0', { phase: 'warmup', run: p0.run, ...(c ? { fork: c.address, identity: c.identity, comparison: c.counts() } : {}) });
+  };
+  /** P3's own law edit (SPEC §18.2), once per simulated second while its active continuation plays. */
+  const periodicEdit = (capture: P0Capture) => {
+    if (!capture.comparison || runs.comparison!.atHorizon || host.tick % 120 >= 2) return;
+    const law = host.appliedFields()[0]!;
+    const strength = Math.floor(host.tick / 120) % 2 ? 0.09 : 0.11;
+    const next = { ...law, expression: { kind: 'directional' as const, direction: [0, 1, 0] as const, strength } };
+    submit(next, editor().newTransaction());
+    if (capture.phase === 'measure') capture.periodicEdits += 1;
+  };
+  /** Opens the measured minute: its clocks, counters and the edit-latency record start here. */
+  const beginMeasure = (capture: P0Capture, now: number) => {
+    Object.assign(capture, { phase: 'measure', phaseStart: now, tickStart: host.tick, droppedStart: scheduler.droppedMs, supersededStart: editLatency.superseded });
+    report('p0', { phase: 'measure', run: capture.run, tick: host.tick, ...(runs.comparison ? { comparison: runs.comparison.counts() } : {}) });
   };
   const finishP0 = (capture: P0Capture, now: number) => {
     const wallMs = now - capture.phaseStart;
@@ -2523,6 +2574,16 @@ async function start() {
       // The optional visualization during the capture (M4): P0 runs with all of it off, P2 with it on.
       visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
       viewport: { css: [window.innerWidth, window.innerHeight], devicePixelRatio: window.devicePixelRatio, pixelRatio: renderer.getPixelRatio(), canvas: [canvas.width, canvas.height] },
+      // The presentation the capture ran with (M9): Interface Scale, the HUD, the developer readout.
+      presentation: { interfaceScale: uiScale, hudHidden, developerReadout: !$('diagnostics').hidden, drawFolded: $('overlays').dataset.folded === 'true' },
+      // The fixed step and the engine's sleeping state, observed (SPEC §9.3): never adaptive, never asleep.
+      profile: { id: SIMULATION_PROFILE.id, dt: SIMULATION_PROFILE.effective.dt, sleepingBodies: host.sleepingBodies() },
+      // CPU submission is timed; GPU execution is not, whether or not the device exposes timestamp queries.
+      gpuTiming: { timestampQueryExposed: backend.features.includes('timestamp-query'), measured: false },
+      editOrigin: capture.comparison ? 'app-periodic' : 'input',
+      periodicEdits: capture.periodicEdits,
+      setup: capture.setup,
+      render: { drawCallsLastFrame: renderer.info.render.drawCalls, trianglesLastFrame: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, materials: sceneMaterials(), objects: sceneObjects() },
       timerResolutionMs: timerMs,
       percentiles: 'p50, p95, p99, max',
       stepMs: percentiles(capture.steps),
@@ -2532,6 +2593,11 @@ async function start() {
       probeMs: percentiles(capture.probes),
       trailMs: percentiles(capture.trails),
       tickMs: percentiles(capture.ticks),
+      fieldMs: percentiles(capture.fields),
+      engineMs: percentiles(capture.engines),
+      prepMs: percentiles(capture.prep),
+      submitMs: percentiles(capture.submit),
+      drawCalls: percentiles(capture.draws),
       samples: { steps: capture.steps.length, edits: capture.edits.length, frames: capture.intervals.length, probeSteps: capture.probes.length, trailSteps: capture.trails.length },
       editsSuperseded: editLatency.superseded - capture.supersededStart,
       raw: {
@@ -2542,6 +2608,11 @@ async function start() {
         probeMs: capture.probes.map(round3),
         trailMs: capture.trails.map(round3),
         tickMs: capture.ticks.map(round3),
+        fieldMs: capture.fields.map(round3),
+        engineMs: capture.engines.map(round3),
+        prepMs: capture.prep.map(round3),
+        submitMs: capture.submit.map(round3),
+        drawCalls: capture.draws,
       },
     });
   };
@@ -2688,6 +2759,9 @@ async function start() {
       focusLayout: document.documentElement.dataset.focus === 'true',
       drawFolded: $('overlays').dataset.folded === 'true',
       hudHidden,
+      // Read-only replay (SPEC §13.2), as applied: the inspector and shelf inert, the handle modes off, no gizmo.
+      readOnly: readOnly(),
+      editing: { inspectorInert: $('details-body').inert, shelfInert: $('law-shelf').inert, modesDisabled: [...document.querySelectorAll<HTMLButtonElement>('[data-mode]')].every((b) => b.disabled), gizmoAttached: viewport.gizmo.object !== undefined && viewport.gizmo.object !== null, gizmoEnabled: viewport.gizmo.enabled },
       recordingCollapsed: $('run').dataset.collapsed === 'true',
       scroll: Object.fromEntries(['panel', 'context-column', 'explain'].map((id) => { const e = $(id); return [id, { scrollWidth: e.scrollWidth, clientWidth: e.clientWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight, scrollTop: e.scrollTop }]; })),
       visualization: { ...visualizationState(), comparison: ghosts?.counts() ?? null, ghostsShown },
@@ -3074,6 +3148,207 @@ async function start() {
     renderPanel();
   };
 
+  // M9 T11 (SPEC §18.2): the resources each cycle samples, and the ones that must come back exactly.
+  type Resources = ReturnType<typeof resourceSample>;
+  const RENDER_KEYS = ['worlds', 'objects', 'geometries', 'textures', 'materials', 'traceBytes', 'comparisonBytes'] as const;
+  const sameResources = (a: Resources, b: Resources, keys: readonly (keyof Resources)[]) => keys.every((k) => a[k] === b[k]);
+  const MIB = 1024 * 1024;
+
+  /**
+   * M9 (Shift+Y), from clean authoring: 20 scene-load/reset cycles through the examples menu's own path and
+   * Reset, cycling the bundled examples. Each cycle samples worlds, render objects, geometries, textures,
+   * materials and managed bytes; a cycle must equal the cycle one round of examples earlier, so nothing
+   * accumulates. Then equal-tick authority under quiet and busy visualization (M4's fixture) on each
+   * example's frozen root, in this runtime.
+   */
+  const runLoadCycles = async () => {
+    if (frozen || replaying() || comparing() || workflow.busy || runs.recordingState === 'recording' || (runs.record !== null && !runs.exported)) {
+      report('m9-load-cycles', { error: 'Shift+Y needs clean authoring with no unexported recording' });
+      return;
+    }
+    setPlaying(false, 'fixtures');
+    await nextFrame();
+    const t0 = performance.now();
+    const settle = async () => { for (let f = 0; f < 3; f++) await nextFrame(); };
+    const period = EXAMPLES.length;
+    resetPeakWorlds();
+    const before = resourceSample();
+    const cycles: { example: string; opened: boolean | null; tick: number; sample: Resources }[] = [];
+    const roots: { example: string; root: Parameters<typeof visualizationInvariance>[0] }[] = [];
+    for (let cycle = 0; cycle < 20; cycle++) {
+      const example = EXAMPLES[cycle % period]!;
+      const opened = await openExample(example);
+      await settle();
+      resetScene();
+      await settle();
+      cycles.push({ example: example.key, opened, tick: host.tick, sample: resourceSample() });
+      if (opened !== true) break;
+      if (cycle < period) roots.push({ example: example.key, root: cloneFrozen(authoring.scene) });
+    }
+    const cyclesMs = performance.now() - t0;
+    const peakWorlds = worldCounts().peak;
+    // Equal-tick authority, the same frozen root and commands observed quietly or by 2,000 probes and 32 trails.
+    const authority: { example: string; views: { view: string; checkpoints: number; equal: boolean; firstDifference: unknown }[] }[] = [];
+    for (const { example, root } of roots) {
+      const observed = visualizationInvariance(root, scriptedEdits(root));
+      authority.push({ example, views: observed.map((v) => ({ view: v.view, checkpoints: v.comparison.length, equal: v.comparison.every((c) => c.equal), firstDifference: v.comparison.find((c) => !c.equal) ?? null })) });
+      await nextFrame();
+    }
+    const repeats = cycles.slice(period).map((c, i) => ({ cycle: i + period, equalsRoundBefore: sameResources(c.sample, cycles[i]!.sample, [...RENDER_KEYS, 'checkpoints', 'checkpointBytes']) }));
+    const checks = {
+      allOpened: cycles.length === 20 && cycles.every((c) => c.opened === true),
+      resetToZero: cycles.every((c) => c.tick === 0),
+      steady: repeats.length === 20 - period && repeats.every((r) => r.equalsRoundBefore),
+      oneWorld: cycles.every((c) => c.sample.worlds === before.worlds),
+      // A transactional import holds at most one unstepped candidate world beside the scene it replaces.
+      peakBounded: peakWorlds - before.worlds <= 1,
+      traceUnder32MiB: cycles.every((c) => c.sample.traceBytes < 32 * MIB),
+      authority: authority.length === Math.min(period, cycles.length) && authority.every((a) => a.views.length > 1 && a.views.every((v) => v.equal && v.checkpoints > 0)),
+    };
+    report('m9-load-cycles', {
+      elapsedMs: Math.round(performance.now() - t0),
+      cyclesMs: Math.round(cyclesMs),
+      period,
+      before,
+      cycles,
+      repeats,
+      peakWorlds,
+      authority,
+      checks,
+      pass: Object.values(checks).every(Boolean),
+    });
+    renderPanel();
+  };
+
+  /**
+   * M9 (Shift+U), on a finished recording, from authoring: 20 cycles of enter replay → seek → Compare from
+   * here with A's default baseline → Close comparison → Return to authoring. The first seek, to the end, is
+   * uncached (the history's checkpoints are discarded first); the others land on seeded targets with the
+   * checkpoints it left. Every shown target is compared with the checkpoint-free oracle. Resources are sampled
+   * in replay, in the comparison and back in authoring, where they must equal the state before the cycles.
+   */
+  const runSeekForkCycles = async () => {
+    const record = runs.record;
+    if (frozen || replaying() || comparing() || !record || runs.recordingState !== 'recorded') {
+      report('m9-seek-cycles', { error: 'Shift+U needs a finished recording, from authoring' });
+      return;
+    }
+    setPlaying(false, 'fixtures');
+    await nextFrame();
+    const t0 = performance.now();
+    const last = record.finalTick;
+    const key = (a: Address) => `${a.tick}:${a.cursor}`;
+    let seed = 0x6d39c0de;
+    const random = (n: number) => {
+      seed = xorshift32(seed);
+      return seed % n;
+    };
+    const at = (n: number) => tickAddress(record, n);
+    const targets = [at(last), ...Array.from({ length: 19 }, () => at(random(last + 1)))];
+    const expected = new Map<string, Observed>();
+    const oracle = new LinearReplay(record);
+    for (const a of [...targets].sort((x, y) => x.tick - y.tick || x.cursor - y.cursor)) {
+      oracle.runTo(a);
+      expected.set(key(a), observe(oracle.host));
+    }
+    oracle.dispose();
+    const oracleMs = performance.now() - t0;
+    runs.checkpoints.discardHistory(runs.scope(record).historyContextId);
+    await nextFrame();
+    resetPeakWorlds();
+    const outside = resourceSample();
+    const cycles: {
+      target: Address; action: string | null; source: string | null; steps: number | null; drawnMs: number | null; elapsedMs: number | null;
+      batches: number | null; batchMs: (number | null)[] | null; progressShownAfterMs: number | null; divergence: unknown;
+      forked: boolean; baseline: { frames: number; working: boolean } | null; closed: boolean; returned: boolean;
+      inReplay: Resources; inComparison: Resources | null; after: Resources;
+    }[] = [];
+    for (let cycle = 0; cycle < 20; cycle++) {
+      const target = targets[cycle]!;
+      enterReplay();
+      await nextFrame();
+      const inReplay = resourceSample();
+      const outcome = await requestSeek(target, cycle === 0 ? 'm9-uncached' : 'm9-cycle');
+      const drawnMs = outcome?.action === 'committed' ? await outcome.drawn : null;
+      const shownAt = runs.replay?.address ?? null;
+      const divergence = shownAt && shownAt.tick === target.tick && shownAt.cursor === target.cursor ? replayDivergence(expected.get(key(target))!, observe(host)) : { entity: 'address', observed: shownAt };
+      $<HTMLButtonElement>('compare-from').click();
+      const forked = comparing();
+      for (let f = 0; f < 600 && runs.comparison?.working; f++) await nextFrame();
+      const c = runs.comparison;
+      const baseline = c ? { frames: c.horizon - c.address.tick, working: c.working !== null } : null;
+      const inComparison = c ? resourceSample() : null;
+      $<HTMLButtonElement>('comparison-close').click();
+      await nextFrame();
+      const closed = !comparing() && replaying();
+      returnToAuthoring();
+      await nextFrame();
+      await nextFrame();
+      cycles.push({
+        target,
+        action: outcome?.action ?? (shownAt ? 'shown' : null),
+        source: outcome?.job.source?.kind ?? null,
+        steps: outcome?.job.steps ?? null,
+        drawnMs: drawnMs === null ? null : round3(drawnMs),
+        elapsedMs: outcome ? round3(outcome.elapsedMs) : null,
+        batches: outcome ? outcome.batches.length : null,
+        batchMs: outcome ? percentiles(outcome.batches.slice(1)) : null,
+        progressShownAfterMs: outcome?.progressShownAfter == null ? null : round3(outcome.progressShownAfter),
+        divergence,
+        forked,
+        baseline,
+        closed,
+        returned: !replaying() && !comparing(),
+        inReplay,
+        inComparison,
+        after: resourceSample(),
+      });
+    }
+    const after = resourceSample();
+    const peakWorlds = worldCounts().peak;
+    const first = cycles[0];
+    const cached = cycles.slice(1).filter((c) => c.source === 'checkpoint' && c.drawnMs !== null);
+    const latency = percentiles(cached.map((c) => c.drawnMs!));
+    const checkpointSeries = cycles.map((c) => c.after.checkpointBytes);
+    const checks = {
+      exact: cycles.length === 20 && cycles.every((c) => c.divergence === null && (c.action === 'committed' || c.action === 'shown')),
+      uncachedFromRoot: first?.source === 'root' && first.action === 'committed',
+      // About 8 ms per batch (within one unit of work over it); progress within a frame or so of 100 ms.
+      uncachedBatches: first?.batchMs === null || (first?.batchMs?.[1] ?? Infinity) <= REPLAY_BUDGET_MS + 2,
+      uncachedProgress: first !== undefined && first.elapsedMs !== null && (first.elapsedMs < SEEK_PROGRESS_MS || (first.progressShownAfterMs !== null && first.progressShownAfterMs >= SEEK_PROGRESS_MS && first.progressShownAfterMs <= SEEK_PROGRESS_MS + 50)),
+      cachedMeasured: cached.length >= 10,
+      // The gate is for a 60-second recording (SPEC §18.2); on a shorter one the figures are reported, not gated.
+      cachedLatency: last !== RUN_LIMITS.ticks || (latency !== null && latency[1]! <= 250),
+      forkedAndBaselined: cycles.every((c) => c.forked && c.baseline !== null && c.baseline.frames === COMPARISON_LIMITS.initialTicks && !c.baseline.working),
+      closedAndReturned: cycles.every((c) => c.closed && c.returned),
+      worldsPerContext: cycles.every((c) => c.inReplay.worlds === outside.worlds + 1 && c.inComparison !== null && c.inComparison.worlds === outside.worlds + 2),
+      backToAuthoring: cycles.every((c) => sameResources(c.after, outside, RENDER_KEYS)) && sameResources(after, outside, RENDER_KEYS),
+      checkpointsBounded: checkpointSeries.every((b) => b <= CHECKPOINT_LIMITS.cacheBytes),
+      // After the first reconstruction fills the history, the cache holds still: no growth over the last ten cycles.
+      checkpointsSteady: checkpointSeries.slice(-10).every((b) => b === checkpointSeries[checkpointSeries.length - 1]),
+      comparisonBounded: cycles.every((c) => (c.inComparison?.comparisonBytes ?? Infinity) <= COMPARISON_LIMITS.bytes),
+      // Authoring, replay, the seek's reconstruction or the comparison's alternate and its baseline job.
+      peakBounded: peakWorlds - outside.worlds <= 3,
+    };
+    report('m9-seek-cycles', {
+      elapsedMs: Math.round(performance.now() - t0),
+      oracleMs: Math.round(oracleMs),
+      runId: record.runId,
+      finalTick: last,
+      recordingSeconds: last / 120,
+      commands: record.commands.length,
+      outside,
+      cycles,
+      after,
+      peakWorlds,
+      cached: { percentiles: 'p50, p95, p99, max', count: cached.length, drawnMs: latency },
+      checkpointSeries,
+      checks,
+      pass: Object.values(checks).every(Boolean),
+    });
+    renderPanel();
+  };
+
   window.addEventListener('keydown', (event) => {
     // The replay timeline takes no text: Play, Step and the other keys still work while it has focus.
     const typing = (event.target instanceof HTMLInputElement && event.target.type !== 'range') || event.target instanceof HTMLTextAreaElement || (event.target instanceof HTMLElement && event.target.isContentEditable);
@@ -3160,6 +3435,12 @@ async function start() {
         return;
       case 'C':
         runSeekFixtures().catch((error: unknown) => report('m6b-fixtures', { error: String(error) }));
+        return;
+      case 'Y':
+        runLoadCycles().catch((error: unknown) => report('m9-load-cycles', { error: String(error) }));
+        return;
+      case 'U':
+        runSeekForkCycles().catch((error: unknown) => report('m9-seek-cycles', { error: String(error) }));
         return;
       case 'J':
         if (comparing() || workflow.busy || scheduler.playing || interaction.gesture) return;
@@ -3386,6 +3667,31 @@ async function start() {
     viewport.scene.traverse(() => (count += 1));
     return count;
   };
+  /** Distinct materials in the rendered scene (M9 resource cycles): a leaked view's materials would show here. */
+  const sceneMaterials = () => {
+    const seen = new Set<unknown>();
+    viewport.scene.traverse((object) => {
+      const material = (object as Mesh).material as unknown;
+      if (Array.isArray(material)) for (const m of material) seen.add(m);
+      else if (material) seen.add(material);
+    });
+    return seen.size;
+  };
+  /** The resources T11 tracks (SPEC §18.2): worlds and caches, render objects, and managed buffer bytes. */
+  const resourceSample = () => {
+    const { worlds, checkpoints, checkpointBytes, comparison } = runs.counts();
+    return {
+      worlds,
+      checkpoints,
+      checkpointBytes,
+      comparisonBytes: comparison?.bytes ?? 0,
+      objects: sceneObjects(),
+      geometries: renderer.info.memory.geometries,
+      textures: renderer.info.memory.textures,
+      materials: sceneMaterials(),
+      traceBytes: visualizationState().totalBytes,
+    };
+  };
   const visualizationState = () => {
     const bytes = { ...probes.bytes(), ...trails.bytes(), ...explainView.bytes() };
     return {
@@ -3587,7 +3893,7 @@ async function start() {
       }
       frameBeforeMs = performance.now() - beforeStart;
     },
-    after(interval, frameWork) {
+    after(interval, frameWork, submitMs) {
       const submitted = performance.now();
       if (drawWait && host.generation === drawWait.generation) {
         const elapsedMs = submitted - drawWait.requestedAt;
@@ -3627,26 +3933,60 @@ async function start() {
       pushBounded(work, frameWork, 240);
       pushBounded(frameSteps, stepsThisFrame, 240);
       pace.frame(interval, stepsThisFrame, scheduler.playing);
+      if (calculation) baselineFrames.push(interval);
+      if (pendingSeek) seekFrames.push(interval);
       if (p0) {
-        if (!scheduler.playing && !(p0.comparison && runs.comparison?.atHorizon)) p0.invalid ??= 'paused during capture';
-        if (p0.phase === 'warmup' && submitted - p0.phaseStart >= 10_000) {
-          if (p0.comparison) {
+        const c = runs.comparison;
+        // P3's restore and precompute are setup, paused by design; every other phase must keep playing.
+        const setupPhase = p0.phase === 'restore' || p0.phase === 'precompute';
+        if (!setupPhase && !scheduler.playing && !(p0.comparison && c?.atHorizon)) p0.invalid ??= 'paused during capture';
+        if (p0.phase === 'warmup') {
+          // P3's warmup is a disposable continuation of the fork with A's default 600-tick horizon; at that
+          // horizon it is restored from the fork and plays on (a deliberate horizon pause, outside any sample).
+          if (p0.comparison && c!.atHorizon && submitted - p0.phaseStart < 10_000) {
             const capture = p0; p0 = null;
-            runs.comparison!.newAlternate(); showWorld('p3-restore-fork'); applyFreeze(); setPlaying(true, 'p3-measure');
+            c!.newAlternate(); showWorld('p3-warm-restore'); applyFreeze(); setPlaying(true, 'p3-warmup');
             p0 = capture;
-            editLatency = new EditLatency();
+            p0.setup!.warmRestores += 1;
+          } else if (p0.comparison) periodicEdit(p0);
+          if (submitted - p0.phaseStart >= 10_000) {
+            if (p0.comparison) {
+              // SPEC §18.2's order: restore the fork, then precompute the full 7,200-tick baseline, then measure.
+              const capture = p0; p0 = null;
+              c!.newAlternate(); showWorld('p3-restore-fork'); applyFreeze();
+              capture.setup!.restored = { tick: host.tick, cursor: host.lastAppliedSequence, suffix: c!.suffixCount, fork: c!.address };
+              Object.assign(capture, { phase: 'restore', phaseStart: submitted });
+              report('p0', { phase: 'restore', run: capture.run, ...capture.setup!.restored, playing: scheduler.playing, comparison: c!.counts() });
+              computeBaseline(COMPARISON_LIMITS.ticks);
+              p0 = capture;
+              Object.assign(p0, { phase: 'precompute', phaseStart: performance.now() });
+              report('p0', { phase: 'precompute', run: p0.run, working: c!.working !== null, target: c!.working?.target ?? null });
+              if (!c!.working) p0.invalid ??= 'the 7,200-tick baseline did not start';
+            } else beginMeasure(p0, submitted);
           }
-          Object.assign(p0, { phase: 'measure', phaseStart: submitted, tickStart: host.tick, droppedStart: scheduler.droppedMs, supersededStart: editLatency.superseded });
-          report('p0', { phase: 'measure', run: p0.run });
+        } else if (p0.phase === 'precompute') {
+          if (!c?.working) {
+            if (c && c.horizon - c.address.tick === COMPARISON_LIMITS.ticks && !p0.invalid) {
+              const m = c.metrics;
+              p0.setup!.precompute = { elapsedMs: round3(submitted - p0.phaseStart), ticks: c.horizon - c.address.tick, batches: m?.batches.length ?? 0, bytes: c.bytes };
+              const capture = p0; p0 = null;
+              setPlaying(true, 'p3-measure');
+              p0 = capture;
+              editLatency = new EditLatency();
+              beginMeasure(p0, submitted);
+            } else {
+              p0.invalid ??= 'the 7,200-tick baseline did not complete';
+              finishP0(p0, submitted);
+              p0 = null;
+            }
+          }
         } else if (p0.phase === 'measure') {
-          if (p0.comparison && !runs.comparison!.atHorizon && host.tick % 120 < 2) {
-            const law = host.appliedFields()[0]!;
-            const strength = Math.floor(host.tick / 120) % 2 ? 0.09 : 0.11;
-            const next = { ...law, expression: { kind: 'directional' as const, direction: [0, 1, 0] as const, strength } };
-            submit(next, editor().newTransaction());
-          }
+          periodicEdit(p0);
           p0.intervals.push(interval);
           p0.work.push(frameWork);
+          p0.prep.push(frameBeforeMs);
+          p0.submit.push(submitMs);
+          p0.draws.push(renderer.info.render.drawCalls);
           if (submitted - p0.phaseStart >= 60_000 || p0.comparison && runs.comparison!.atHorizon) {
             finishP0(p0, submitted);
             p0 = null;

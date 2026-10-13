@@ -1,0 +1,11 @@
+
+ RUN  v5.0.3 <checkout>
+
+
+ Test Files  3 passed (3)
+      Tests  23 passed (23)
+   Start at  00:10:21
+   Duration  5.86s (tests 97%, transform 2%, import 1%)
+
+npm notice run lawsmith@0.0.0 npx
+npm notice run 'vitest' run tests/measurement.test.ts tests/invariance.test.ts tests/sleepingBodies.test.ts

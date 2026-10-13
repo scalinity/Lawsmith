@@ -367,6 +367,12 @@ export class SimulationHost {
   private emitters: EmitterState[] = [];
   /** Live dynamic bodies: authored in ID order, then emitted in spawn order. */
   private bodies: LiveBody[] = [];
+  /** Diagnostic (M9): live bodies the engine reports asleep. Every body is built with sleeping disabled (§9.3). */
+  sleepingBodies(): number {
+    let n = 0;
+    for (const b of this.bodies) if (b.body.isSleeping()) n += 1;
+    return n;
+  }
   private pending: PendingCommand[] = [];
   private acks: CommandAck[] = [];
 
