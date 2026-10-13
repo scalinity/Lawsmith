@@ -224,6 +224,9 @@ batch_cleanup() {
     app_owned $pid $BATCH_STATE && stop_app $pid $BATCH_STATE && leftovers+=("app:$pid")
   done
   if [[ -n $DISPLAY_SNAPSHOT ]]; then restored=$(check_restored final); else restored=not-snapshotted; fi
+  # The exit is settled before anything reports it: a restoration that failed only now still fails the batch,
+  # and an earlier failure keeps its own code.
+  [[ $restored == *FAILED* ]] && (( code == 0 )) && code=6
   release_lock
   lock=$(lock_probe)
   for pid in $(pgrep -f -- "$BATCH_STATE/"); do kill $pid 2>/dev/null && leftovers+=("path:$pid"); done
@@ -237,7 +240,6 @@ print(json.dumps({"approval": approval, "approvedScenarios": approved.split(";")
     "{\"exit\":$code,\"restoration\":$(json "$restored"),\"lockAfterRelease\":$(json $lock),\"stoppedAtEnd\":$(json "${(j:,:)leftovers}"),\"unrun\":$(json "${(j:;:)UNRUN}")}" \
     > $BATCH_OUT/batch.json
   say "batch ended (exit $code): $restored; lock $lock after release; stopped at end [${(j:,:)leftovers}]; unrun [${(j:; :)UNRUN}]"
-  [[ $restored == *FAILED* ]] && (( code == 0 )) && code=6
   exit $code
 }
 

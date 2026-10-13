@@ -53,6 +53,16 @@ snapshot_preferences() {
 }
 prefs_match() { if [[ $PREFS_ORIGINAL == absent ]]; then [[ ! -e $CASE/prefs ]]; else cmp -s $CASE/prefs $PREFS_SNAPSHOT; fi }
 prefs_put_back() { if [[ $PREFS_ORIGINAL == absent ]]; then rm -f $CASE/prefs; else cp $PREFS_SNAPSHOT $CASE/prefs; fi; prefs_match }
+# FINAL_DRIFT: the display reads as changed only from the third read (the final cleanup's) and cannot be put
+# back, so the batch's only failure is its final restoration.
+if [[ -n $FINAL_DRIFT ]]; then
+  display_get() {
+    local n=$(( $(<$CASE/display-reads 2>/dev/null || print 0) + 1 ))
+    print -r -- $n > $CASE/display-reads
+    if (( n >= 3 )); then print -r -- 900x600@60; else print -r -- "$(<$CASE/display)"; fi
+  }
+  display_apply() { print -r -- "configure failed" }
+fi
 EOF
 
 # scenario NAME BODY: a stub scenario that sources the real lib.zsh and adopts the lent lock first.
@@ -193,6 +203,12 @@ check "driver TERM before any launch receipt: the unreceipted app is found by it
 check "negative control: another instance of the same executable from the same window survives" 'foreign_alive' "$(field $CASE/out/batch.json final)"
 [[ -s $CASE/foreign.pid ]] && kill $(<$CASE/foreign.pid) 2>/dev/null
 check "after the unreceipted case: lock free, nothing left" '[[ $(lock_state $CASE/gui.lock) == free ]] && clean'
+
+# --- a failure only in the final restoration ----------------------------------------------------------
+new_case final-restore
+scenario m9-smoke 'exit 0'
+run_batch FINAL_DRIFT=1 -- m9-smoke
+check "a restoration failing only at final cleanup: exit 6, and the receipt and message say 6" '[[ $STATUS == 6 && $(field $CASE/out/batch.json final.exit) == 6 ]] && grep -q "batch ended (exit 6)" $CASE/log && [[ $(field $CASE/out/batch.json final.restoration) == *FAILED* ]]' "status $STATUS; $(field $CASE/out/batch.json final)"
 
 # --- an adopter that releases the lent lock -----------------------------------------------------------
 new_case lost-lock
