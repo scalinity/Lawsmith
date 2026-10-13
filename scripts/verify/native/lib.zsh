@@ -26,6 +26,9 @@ mkdir -p $QA_STATE $QA_OUT
 APP_PID=
 APP_LOG=
 LAST_INPUT=0
+# QA_INPUT_STAMP (optional, set by a batch driver): a file holding the time of the batch's last synthetic event
+# or quiet acquisition, so the next scenario inherits it and outside input between scenarios is still seen.
+[[ -n $QA_INPUT_STAMP && -s $QA_INPUT_STAMP ]] && LAST_INPUT=$(<$QA_INPUT_STAMP)
 WIN_X=0
 WIN_Y=0
 
@@ -153,15 +156,29 @@ require_lock() { [[ -z $QA_DEADLINE || -n $LOCK_HOLDER ]] || fail "$1 needs the 
 idle_seconds() { ioreg -c IOHIDSystem | awk '/HIDIdleTime/ {print $NF/1e9; exit}' }
 logq() { python3 -I $NATIVE/logq.py "$@" }
 
-# Waits until nobody has touched the keyboard or mouse for QA_IDLE seconds (gives up after ~1 h).
+# outside_input: once this run (or the batch before it) has sent input or acquired quiet, any keyboard or
+# mouse input newer than that is the owner's: yield (exit 4). Before that point there is nothing to compare.
+outside_input() {
+  (( LAST_INPUT > 0 )) || return 0
+  local idle=$(idle_seconds)
+  local since=$(( EPOCHREALTIME - LAST_INPUT ))
+  (( idle + 0.3 < since )) && fail "outside input ${idle}s ago (our last event ${since}s ago): yielding to the owner" 4
+  return 0
+}
+
+# Waits until nobody has touched the keyboard or mouse for QA_IDLE seconds (gives up after ~1 h). The first
+# acquisition waits for the owner to stop. Once input or quiet has been recorded, input since then is never
+# waited out and forgotten: it ends the run.
 wait_quiet() {
   local tries=0
+  outside_input
   while (( $(idle_seconds) < QA_IDLE )); do
     deadline_gate
+    outside_input
     (( tries++ > 720 )) && fail "the owner stayed active; native QA not started" 4
     sleep 5
   done
-  LAST_INPUT=$EPOCHREALTIME
+  touched
 }
 
 # idle_gate [SECONDS]: aborts if any input arrived after our own last synthetic event, and checks the
@@ -176,7 +193,11 @@ idle_gate() {
     fail "outside input ${idle}s ago (our last event ${since}s ago): yielding to the owner" 4
   fi
 }
-touched() { LAST_INPUT=$EPOCHREALTIME }
+touched() {
+  LAST_INPUT=$EPOCHREALTIME
+  [[ -n $QA_INPUT_STAMP ]] && print -r -- $LAST_INPUT > $QA_INPUT_STAMP
+  return 0
+}
 
 # launch NAME RECOVERY_DIR: a fresh instance with isolated recovery state; waits for its own guard.
 # The log is appended to when a name is reused, so readiness counts new events, not old lines.
@@ -353,10 +374,12 @@ key_code() {
   sleep 0.4
 }
 
-# wait_log KIND [COUNT] [TIMEOUT_S]: waits until the log holds at least COUNT events of KIND.
+# wait_log KIND [COUNT] [TIMEOUT_S]: waits until the log holds at least COUNT events of KIND. A passive wait
+# still watches for the owner: outside input during it ends the run (exit 4).
 wait_log() {
   local want=${2:-1} deadline=$(( EPOCHREALTIME + ${3:-10} ))
   while (( $(logq count $APP_LOG $1) < want )); do
+    outside_input
     (( EPOCHREALTIME > deadline )) && fail "timed out waiting for $want '$1' events"
     sleep 0.2
   done

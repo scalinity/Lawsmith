@@ -28,6 +28,10 @@ if (( $# == 0 )) || [[ -z $QA_APPROVAL || ${QA_APPROVED_SCENARIOS-} != ${(j:;:)@
   print -u2 "m9-batch: refusing to start: QA_APPROVAL must be set and QA_APPROVED_SCENARIOS must be exactly '${(j:;:)@}'"
   exit 2
 fi
+# The batch's last synthetic event or quiet acquisition, inherited by each scenario's lib.zsh, so outside input
+# between scenarios is seen by the next one instead of being waited out.
+export QA_INPUT_STAMP=$QA_STATE/last-input
+rm -f $QA_INPUT_STAMP
 source ${0:A:h}/lib.zsh
 BATCH_STATE=$QA_STATE
 BATCH_OUT=$QA_OUT
