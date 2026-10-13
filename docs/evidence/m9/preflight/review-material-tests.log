@@ -28,4 +28,3 @@ ReferenceError: getComputedStyle is not defined
  ❯ tests/ownedMaterials.test.ts:22:18
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
-
